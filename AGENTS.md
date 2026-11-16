@@ -5,8 +5,7 @@ working in this repo, in the main checkout or in any git worktree. If this file 
 config disagree, the lint config wins.
 
 Stack: pnpm + turbo monorepo. `apps/api` (NestJS 11 + nestjs-trpc + Prisma 7), `apps/web` (Vite
-SPA, TanStack Router/Query), `apps/desktop` (Electron), `apps/docs` (Astro Starlight),
-`packages/*` (shared, database, eslint-config, eslint-plugin-repo, ui, ...). Node `>=22.22.3`,
+SPA, TanStack Router/Query), `packages/*` (shared, database, eslint-config, eslint-plugin-repo, ui, ...). Node `>=22.22.3`,
 pnpm `10.34.9`.
 
 ## Bootstrap a fresh worktree (do all four first)
@@ -54,7 +53,7 @@ every test case each suite runs, and `pnpm verify:inventory` compares a run agai
 case, an unexpected one, a duplicated title or a skipped case blocks the lane even when the suite
 exits 0. `--accept` writes additions, removals need `--allow-removals` on top, and
 `pnpm verify:inventory --merge-audit` run on a merged tree reports inventory changes neither parent
-explains (that is merge damage). See `apps/docs/src/content/docs/operations/testing-strategy.md`.
+explains (that is merge damage).
 
 `scripts/ci/pre-push.sh` mirrors `.github/workflows/ci.yml`; `scripts/ci/pre-push.manifest.json`
 lists the commands, and the lint-meta rule `pre-push-ci-parity` fails if they drift from ci.yml.
@@ -127,7 +126,7 @@ sandbox. To run them by hand:
   scaffolds one, red until it is written. See `apps/api/security-spec/README.md`.
 - **E2e** (Playwright, `apps/web/e2e`): `pnpm e2e:lane` owns the whole stack. It recreates
   `saas_starter_e2e` from the template, seeds it with `db:seed` (fresh and near-empty, the shape CI uses,
-  NOT `db:seed:dev`), builds the api and `vite build --base=/`, starts both on free ports, waits on
+  NOT `db:seed:dev`), builds the api and the web app, starts both on free ports, waits on
   an HTTP probe, runs Playwright with `--retries=0` and tears the children down by process group
   even on failure. It never falls back to an ambient server: no sandbox, no run. Pass Playwright
   arguments after `--`:
@@ -142,7 +141,7 @@ Do not bind host port 5432 yourself, and do not touch another checkout's contain
 ## Commits
 
 - Conventional commits: `type(scope): subject`. commitlint's `scope-enum` allows only:
-  `api, web, desktop, ui, shared, database, email, config, deps, auth, audit, observability, docs`
+  `api, web, ui, shared, database, email, config, deps, auth, audit, observability, docs`
   (`commitlint.config.cjs` is the source of truth; there is no `ci`, `lint` or `repo` scope).
 - `Closes #N` in the footer of the commit that completes an issue, `Refs #N` for partial work.
 - No em dashes (U+2014) in code, comments, docs or commit messages. Use colons, commas or parens.
@@ -181,4 +180,3 @@ Read only the one that matches your task; do not load them all.
 | changing merge bar, hooks or secret scanning | `CONTRIBUTING.md`, `scripts/ci/pre-push.sh`                                |
 | adding or changing a `pnpm.overrides` entry  | `overrides.ledger.json` (the `pnpm-override-ledger` rule)                  |
 | running a support procedure                  | `docs/runbooks/`                                                           |
-| updating the docs site                       | `apps/docs/src/content/docs/`                                              |

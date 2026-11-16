@@ -14,7 +14,7 @@ Report it privately through GitHub private vulnerability reporting: open the rep
 
 Include where possible:
 
-- The affected area (api, web, desktop, or a package).
+- The affected area (api, web, or a package).
 - Steps to reproduce, or a proof of concept.
 - The impact you observed (data exposure, auth bypass, cross-tenant access, and so on).
 

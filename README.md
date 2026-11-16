@@ -12,15 +12,13 @@
 > before the swap.
 
 `nest-vite-saas-starter` is an open-source starter for multi-tenant SaaS products, built as a
-monorepo with **Vite + React**, **NestJS 11**, and **Electron**: type-safe from database to
-desktop, with authentication, tenancy, auditing, background jobs, observability and a strict
-verification harness already wired.
+monorepo with **Vite + React** and **NestJS 11**: type-safe from database to browser, with
+authentication, tenancy, auditing, background jobs, observability and a strict verification harness
+already wired.
 
 The display name ("SaaS Starter") lives in one place: `PRODUCT_NAME` in `@repo/shared/constants`.
 Rebranding is a one-line change there plus the handful of surfaces that cannot read a constant
-(`apps/desktop/electron-builder.cjs`, `apps/web/index.html`, the compose files).
-
-The full starter documentation is the Starlight site in `apps/docs` (`pnpm docs:dev`).
+(`apps/web/index.html`, the compose files).
 
 ## Tech Stack
 
@@ -28,7 +26,6 @@ The full starter documentation is the Starlight site in `apps/docs` (`pnpm docs:
 | ------------ | ---------------------------------------------------------------------------------------- |
 | **Frontend** | React 19, Vite 8, TanStack Router (file-based), TanStack Query, Zustand                  |
 | **Backend**  | NestJS 11, tRPC (nestjs-trpc), Prisma 7, BullMQ                                          |
-| **Desktop**  | Electron with S3-based auto-updater                                                      |
 | **Database** | PostgreSQL 17, Redis 7                                                                   |
 | **Auth**     | Session-based (Redis-backed), Argon2id hashing, CSRF double-submit, Cloudflare Turnstile |
 | **UI**       | shadcn/ui (Radix + Tailwind CSS v4), 40+ components, 8 color themes                      |
@@ -48,7 +45,6 @@ The full starter documentation is the Starlight site in `apps/docs` (`pnpm docs:
 - **8 color themes** with light/dark mode (OKLCH color space)
 - **Error boundaries**: React ErrorBoundary wrapping route layouts
 - **Docker-ready**: multi-stage Dockerfiles for API and Web, production compose file
-- **Desktop support**: Electron with secure sandbox, IPC bridge, custom protocol
 
 ## Prerequisites
 
@@ -89,8 +85,6 @@ The API runs on `http://localhost:3000` and the web app on `http://localhost:517
 apps/
   api/              NestJS 11 API with tRPC
   web/              Vite + React SPA
-  desktop/          Electron app
-  docs/             Starlight documentation site
 
 packages/
   database/         Prisma 7 schema, client, migrations, seed
@@ -104,17 +98,14 @@ packages/
 
 ## Scripts
 
-| Script                 | Description                               |
-| ---------------------- | ----------------------------------------- |
-| `pnpm dev`             | Start API + Web dev servers via Turborepo |
-| `pnpm build`           | Build all packages and apps               |
-| `pnpm lint`            | Lint all packages and apps                |
-| `pnpm check-types`     | Type-check all packages and apps          |
-| `pnpm test`            | Run all tests                             |
-| `pnpm format`          | Format all files with Prettier            |
-| `pnpm desktop:dev`     | Start Electron dev mode                   |
-| `pnpm docs:dev`        | Start the docs site (Starlight)           |
-| `./start.sh storybook` | Start the `@repo/ui` Storybook            |
+| Script             | Description                               |
+| ------------------ | ----------------------------------------- |
+| `pnpm dev`         | Start API + Web dev servers via Turborepo |
+| `pnpm build`       | Build all packages and apps               |
+| `pnpm lint`        | Lint all packages and apps                |
+| `pnpm check-types` | Type-check all packages and apps          |
+| `pnpm test`        | Run all tests                             |
+| `pnpm format`      | Format all files with Prettier            |
 
 ## Docker Services
 
@@ -145,7 +136,7 @@ See `apps/api/Dockerfile`, `apps/web/Dockerfile`, and `docker-compose.prod.yml`.
 ## Architecture
 
 ```
-Browser/Desktop
+Browser
      |
      | tRPC (HTTP + WebSocket)
      v

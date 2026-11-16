@@ -1,6 +1,6 @@
 # Contributing
 
-This is a pnpm monorepo (Vite SPA + NestJS + Electron). One command set, one
+This is a pnpm monorepo (Vite SPA + NestJS). One command set, one
 merge bar. Local green is CI green.
 
 ## Setup
@@ -49,7 +49,7 @@ Conventional commits, enforced by commitlint on every commit message:
 
 - Type from the conventional set: `feat`, `fix`, `docs`, `chore`, `ci`, `build`,
   `refactor`, `perf`, `test`, `revert`, `style`.
-- Scope must come from this set: `api`, `web`, `desktop`, `ui`, `shared`,
+- Scope must come from this set: `api`, `web`, `ui`, `shared`,
   `database`, `email`, `config`, `deps`, `auth`, `audit`, `observability`,
   `docs` (`commitlint.config.cjs` is the source of truth).
 - Example: `feat(auth): add session revocation`.
