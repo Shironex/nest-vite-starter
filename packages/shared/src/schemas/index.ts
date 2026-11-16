@@ -119,17 +119,3 @@ export {
   type ActiveSessionItem,
   type RevokeSessionInput,
 } from './sessions.js';
-
-export {
-  TOUR_PROGRESS_MAX_ENTRIES,
-  tourIdSchema,
-  tourProgressEntrySchema,
-  tourProgressMapSchema,
-  tourProgressOutput,
-  tourProgressSaveInput,
-  type TourId,
-  type TourProgressEntry,
-  type TourProgressMap,
-  type TourProgressOutput,
-  type TourProgressSaveInput,
-} from './help.js';

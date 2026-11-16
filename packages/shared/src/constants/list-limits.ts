@@ -35,8 +35,3 @@ export const AUDIT_LOG_MAX_RANGE_DAYS = 400;
 
 /** How many actions one quick filter / multi-select may OR together. */
 export const AUDIT_LOG_MAX_ACTIONS = 20;
-
-// --- help ------------------------------------------------------------------
-
-/** Most tours one user's progress blob may name. */
-export const TOUR_PROGRESS_MAX_ENTRIES = 200;

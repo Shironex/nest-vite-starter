@@ -84,16 +84,6 @@
         "types": "./dist/audit/index.d.cts",
         "default": "./dist/audit/index.cjs"
       }
-    },
-    "./desktop": {
-      "import": {
-        "types": "./dist/desktop/index.d.ts",
-        "default": "./dist/desktop/index.js"
-      },
-      "require": {
-        "types": "./dist/desktop/index.d.cts",
-        "default": "./dist/desktop/index.cjs"
-      }
     }
   },
   "scripts": {

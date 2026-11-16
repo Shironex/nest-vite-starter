@@ -451,7 +451,6 @@
     "EMAIL_IN_USE": "That email address is already taken.",
     "PASSWORD_NOT_SET": "This account does not have a password set. Set one via password reset to continue.",
     "TWO_FACTOR_INVALID_CODE": "That two-factor code is not valid.",
-    "TWO_FACTOR_CHALLENGE_EXPIRED": "The two-factor challenge expired. Start signing in again.",
-    "TWO_FACTOR_ENROLLMENT_REQUIRED": "Your organization requires two-factor authentication. Set it up to continue."
+    "TWO_FACTOR_CHALLENGE_EXPIRED": "The two-factor challenge expired. Start signing in again."
   }
 }

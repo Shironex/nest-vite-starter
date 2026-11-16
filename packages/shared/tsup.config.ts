@@ -19,7 +19,6 @@ const SCHEMA_DOMAINS = [
   'common',
   'data-export',
   'workspace',
-  'help',
   'sessions',
   'user',
 ] as const;
@@ -37,7 +36,6 @@ export default defineConfig({
     'permissions/index': 'src/permissions/index.ts',
     'money/index': 'src/money/index.ts',
     'audit/index': 'src/audit/index.ts',
-    'desktop/index': 'src/desktop/index.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,
