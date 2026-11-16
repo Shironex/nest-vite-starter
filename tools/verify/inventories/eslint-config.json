@@ -7,7 +7,6 @@
       "no-cross-feature-imports > invalid > import { InvoiceForm } from '@/features/billing/components/InvoiceForm';": 1,
       "no-cross-feature-imports > valid > import { Button } from '@/features/shared';": 1,
       "no-cross-feature-imports > valid > import { total } from '@/features/billing/lib';": 1,
-      "no-cross-feature-imports > valid > import { WorkspaceSelect } from '@/features/workspace/components/WorkspaceSelect';": 1,
       "no-cross-feature-imports > valid > import type { Client } from '@/features/clients';": 1
     },
     "packages/eslint-config/tests/async-safety.test.js": {

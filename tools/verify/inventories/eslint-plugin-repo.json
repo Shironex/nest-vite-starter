@@ -70,7 +70,7 @@
       "trpc-invalidate-with-path-key > invalid > queryClient.refetchQueries({ queryKey: trpc.a.list.queryKey() });": 1,
       "trpc-invalidate-with-path-key > invalid > queryClient.removeQueries({ queryKey: trpc.a.list.queryKey() });": 1,
       "trpc-invalidate-with-path-key > invalid > queryClient.resetQueries({ queryKey: trpc.a.list.queryKey() });": 1,
-      "trpc-invalidate-with-path-key > invalid > sharedQueryClient.invalidateQueries({ queryKey: trpc.workspaces.list.queryKey() });": 1,
+      "trpc-invalidate-with-path-key > invalid > sharedQueryClient.invalidateQueries({ queryKey: trpc.sessions.list.queryKey() });": 1,
       "trpc-invalidate-with-path-key > valid > client.somethingElse({ queryKey: trpc.x.list.queryKey() });": 1,
       "trpc-invalidate-with-path-key > valid > const data = queryClient.getQueryData(trpc.notifications.list.queryKey());": 1,
       "trpc-invalidate-with-path-key > valid > const key = trpc.x.list.queryKey(); queryClient.invalidateQueries({ queryKey: key });": 1,

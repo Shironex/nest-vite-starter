@@ -1,38 +1,6 @@
 {
   "suite": "isolation",
   "cases": {
-    "apps/api/src/common/database/tenant-isolation.isolation.spec.ts": {
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T1 scoped read isolation: findMany returns only the active tenant rows": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T10 updateMany cannot move rows to another tenant (data.tenantId is stripped)": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T11 a scoped update inside a rolled-back transaction does not persist": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T11b a scoped delete inside a rolled-back transaction does not persist": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T11c a scoped findUnique inside a transaction sees that transaction uncommitted write": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T12 concurrent same-tick findUnique across tenants does not cross the batch": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T13 a compound-unique selector carrying another tenant id matches no row": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T2 scoped findUnique by cross-tenant id resolves to null": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T3 scoped findFirst by cross-tenant id resolves to null": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T4 cross-tenant update by id matches no row and throws (other tenant unchanged)": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T4b cross-tenant deleteMany by id removes 0 rows (other tenant unchanged)": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T4c cross-tenant delete by id matches no row and throws (other tenant unchanged)": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T5 create auto-stamps the active tenant id": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T6 fail-closed: a workspace query with no tenant in context throws": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T7 the deliberate unscoped leak: unscoped client sees BOTH tenants": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T8 update cannot move a row to another tenant (data.tenantId is stripped)": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T8b update cannot move a row via a nested relation write (data.tenant.connect)": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T8c upsert cannot move a row via a nested relation write in its update branch": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T9 create ignores a client-supplied tenantId and stamps the active tenant": 1
-    },
-    "apps/api/src/common/database/tenant-scope-coverage.isolation.spec.ts": {
-      "every model the extension isolates has a cross-tenant case > C0 the fixtures cover the whole registry, so a new scoped model cannot skip this file": 1,
-      "every model the extension isolates has a cross-tenant case > workspace > C1 a row of tenant A is invisible to a scoped read under tenant B": 1,
-      "every model the extension isolates has a cross-tenant case > workspace > C2 fails closed when there is no tenant in context": 1
-    },
-    "apps/api/src/modules/audit/audit-read.isolation.spec.ts": {
-      "audit read isolation (live DB, explicit clause is the only boundary) > A1 tenant A sees its own rows AND its users pre-auth rows, nothing else": 1,
-      "audit read isolation (live DB, explicit clause is the only boundary) > A2 tenant B sees the mirror image": 1,
-      "audit read isolation (live DB, explicit clause is the only boundary) > A3 an actions filter cannot widen the boundary: tenant A asking for failed logins gets only its own": 1,
-      "audit read isolation (live DB, explicit clause is the only boundary) > A5 keyset pagination walks the tenant feed newest-first without leaks or repeats": 1
-    },
     "apps/api/src/modules/auth/account-pre-hijack.isolation.spec.ts": {
       "account pre-hijacking > control: register, verify, then sign in with the password still works": 1,
       "account pre-hijacking > the registrant's pre-verification session no longer validates once the owner verifies": 1
@@ -43,23 +11,15 @@
       "password lockout under a parallel burst > counting never extends the window: the TTL is set once, on create": 1,
       "password lockout under a parallel burst > the burst still arms the progressive tier in the row": 1
     },
-    "apps/api/src/modules/user/membership-lock.isolation.spec.ts": {
-      "lockTenantMembership against real Postgres > does not serialize two transactions on different organizations": 1,
-      "lockTenantMembership against real Postgres > executes without a deserialization error": 1,
-      "lockTenantMembership against real Postgres > is re-entrant within one transaction": 1,
-      "lockTenantMembership against real Postgres > lets exactly one transaction inside the lock at a time under a burst": 1,
-      "lockTenantMembership against real Postgres > serializes two transactions competing for the same organization": 1
+    "apps/api/src/modules/user/admin-set-lock.isolation.spec.ts": {
+      "lockAdminSet against real Postgres > executes without a deserialization error": 1,
+      "lockAdminSet against real Postgres > is re-entrant within one transaction": 1,
+      "lockAdminSet against real Postgres > lets exactly one transaction inside the lock at a time under a burst": 1,
+      "lockAdminSet against real Postgres > serializes two competing transactions": 1
     },
     "apps/api/src/modules/user/user-purge-audit-scrub.isolation.spec.ts": {
       "scrub on purge (audit PII registry -> user purge) > erases the declared email fields of a purged user and keeps every audit row": 1,
       "scrub on purge (audit PII registry -> user purge) > leaves a surviving user's declared fields alone": 1
-    },
-    "apps/api/src/modules/workspace/workspace.isolation.spec.ts": {
-      "the Workspace gate other modules call before trusting a workspaceId > F1: refuses another organization's Workspace exactly like a missing one, and passes the own": 1,
-      "the Workspace gate other modules call before trusting a workspaceId > F2: lists the own organization's Workspaces only": 1,
-      "workspaces list (the picker every Workspace screen reads) > R0: lists only the own organization's workspaces, and a created one joins them": 1,
-      "workspaces list (the picker every Workspace screen reads) > R0b: the same workspace name is free again under a different organization": 1,
-      "workspaces list (the picker every Workspace screen reads) > R0c: editing another organization's Workspace resolves to not found": 1
     }
   }
 }

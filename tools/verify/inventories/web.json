@@ -15,7 +15,7 @@
     },
     "apps/web/src/features/admin/components/DeleteMemberDialog/DeleteMemberDialog.test.tsx": {
       "DeleteMemberDialog > renders nothing when closed": 1,
-      "DeleteMemberDialog > warns that the whole account is deleted, not just the organization membership": 1
+      "DeleteMemberDialog > warns that the whole account is deleted, not only disabled": 1
     },
     "apps/web/src/features/admin/components/MembersSection/MembersSection.hooks.test.tsx": {
       "useMembersSection > holds one page and states the position against the total": 1,
@@ -36,12 +36,11 @@
       "MembersSection > opens the reset dialog for the chosen member": 1,
       "MembersSection > opens the unlock dialog for a locked member": 1,
       "MembersSection > renders members with their 2FA status badges": 1,
-      "MembersSection > the two membership states > labels each row with the state it is actually in": 1,
-      "MembersSection > the two membership states > marks the owner, and only the owner": 1,
-      "MembersSection > the two membership states > never offers to remove or delete the owner": 1,
-      "MembersSection > the two membership states > offers removal to an active regular member": 1,
-      "MembersSection > the two membership states > offers restore to a removed member, and not removal again": 1,
-      "MembersSection > the two membership states > opens the restore dialog for a removed member": 1
+      "MembersSection > the two account states > labels each row with the state it is actually in": 1,
+      "MembersSection > the two account states > never offers to disable or delete an admin": 1,
+      "MembersSection > the two account states > offers disable to an active regular member": 1,
+      "MembersSection > the two account states > offers enable to a disabled account, and not disable again": 1,
+      "MembersSection > the two account states > opens the enable dialog for a disabled account": 1
     },
     "apps/web/src/features/admin/components/RemoveMemberDialog/RemoveMemberDialog.hooks.test.tsx": {
       "useRemoveMemberDialog > leaves the dialog open on failure, so the admin sees what did not happen": 1,
@@ -341,7 +340,6 @@
       "AppSidebar > renders each group under its own heading": 1,
       "AppSidebar > renders every nav item supplied by the hook": 1,
       "AppSidebar > renders the app brand label": 1,
-      "AppSidebar > renders the organization identity block in the footer slot": 1,
       "AppSidebar > ships no disabled placeholder entries": 1
     },
     "apps/web/src/features/layout/components/AppTopbar/AppTopbar.hooks.test.tsx": {
@@ -359,19 +357,6 @@
       "AppTopbar > renders the page title for the current route": 1,
       "AppTopbar > renders the subtitle when the route supplies one": 1,
       "AppTopbar > renders the title as the one and only h1": 1
-    },
-    "apps/web/src/features/layout/components/OrganizationIdentity/OrganizationIdentity.hooks.test.tsx": {
-      "useOrganizationIdentity > derives the name and two-letter initials from the organization name": 1,
-      "useOrganizationIdentity > falls back to a translated placeholder when the organization has no name": 1,
-      "useOrganizationIdentity > falls back to the translated placeholder when the lookup fails": 1,
-      "useOrganizationIdentity > reports pending until the query resolves": 1
-    },
-    "apps/web/src/features/layout/components/OrganizationIdentity/OrganizationIdentity.test.tsx": {
-      "OrganizationIdentity > renders no interactive elements": 1,
-      "OrganizationIdentity > renders the fallback name when the lookup failed": 1,
-      "OrganizationIdentity > renders the initials in the avatar glyph": 1,
-      "OrganizationIdentity > renders the organization name": 1,
-      "OrganizationIdentity > reserves the footer with a skeleton while the identity is pending": 1
     },
     "apps/web/src/features/layout/components/UserMenu/UserMenu.hooks.test.tsx": {
       "useUserMenu > clears the CSRF token and query cache then routes to login on logout": 1,
@@ -398,7 +383,7 @@
       "isActivePath > does not match an unrelated route": 1,
       "isActivePath > matches a nested route": 1,
       "isActivePath > matches the route exactly": 1,
-      "NAV_GROUPS > leaves the Workspaces screen open to every staff account": 1,
+      "NAV_GROUPS > gates the audit log to admins": 1,
       "NAV_GROUPS > reaches every page title from the nav or a route": 1,
       "NAV_GROUPS > ships no entry without a destination": 1
     },
@@ -549,68 +534,6 @@
       "TwoFactorChallenge > the segmented code field > is a single labeled input, not six anonymous boxes": 1,
       "TwoFactorChallenge > toggles to the backup-code variant": 1
     },
-    "apps/web/src/features/workspace/components/WorkspaceFormDialog/WorkspaceFormDialog.hooks.test.tsx": {
-      "useWorkspaceFormDialog (create) > closes, toasts and hands the saved row back on success": 1,
-      "useWorkspaceFormDialog (create) > leaves the statutory name out entirely when it is blank, like its siblings": 1,
-      "useWorkspaceFormDialog (create) > omits blank optional fields rather than sending empty strings": 1,
-      "useWorkspaceFormDialog (create) > pins a duplicate name to the name field": 1,
-      "useWorkspaceFormDialog (create) > refuses a blank name without calling the server": 1,
-      "useWorkspaceFormDialog (create) > sends the statutory legal name": 1,
-      "useWorkspaceFormDialog (edit) > can set a statutory name on a Workspace that never had one": 1,
-      "useWorkspaceFormDialog (edit) > re-seeds when pointed at a different workspace": 1,
-      "useWorkspaceFormDialog (edit) > seeds the form from the row being edited, NULL columns as blanks": 1,
-      "useWorkspaceFormDialog (edit) > sends null for a blanked field so the column is cleared, not kept": 1
-    },
-    "apps/web/src/features/workspace/components/WorkspaceFormDialog/WorkspaceFormDialog.test.tsx": {
-      "WorkspaceFormDialog > announces an inline error and marks the input invalid": 1,
-      "WorkspaceFormDialog > locks the submit while the write is in flight": 1,
-      "WorkspaceFormDialog > renders every registration field with an accessible label": 1,
-      "WorkspaceFormDialog > routes typing to the field-change handler": 1,
-      "WorkspaceFormDialog > submits and cancels through the hook handlers": 1,
-      "WorkspaceFormDialog > ties only the error to the statutory name input when it is invalid": 1
-    },
-    "apps/web/src/features/workspace/components/WorkspaceListPage/WorkspaceListPage.hooks.test.tsx": {
-      "useWorkspaceListPage > does not repeat a legal name identical to the working name": 1,
-      "useWorkspaceListPage > loads first, then shows every workspace with a display string per cell": 1,
-      "useWorkspaceListPage > narrows by name or city": 1,
-      "useWorkspaceListPage > opens create blank and edit seeded with the row, and clears both on close": 1,
-      "useWorkspaceListPage > points an ADMIN at the add button and a USER at their administrator": 1,
-      "useWorkspaceListPage > reports a failed load and refetches on retry": 1,
-      "useWorkspaceListPage > tells a filtered empty list apart from an organization with no workspaces": 1
-    },
-    "apps/web/src/features/workspace/components/WorkspaceListPage/WorkspaceListPage.test.tsx": {
-      "WorkspaceListPage > announces a load failure and retries on request": 1,
-      "WorkspaceListPage > mounts the shared dialog in the mode the hook asks for, seeded with the row": 1,
-      "WorkspaceListPage > offers add and per-row edit to an ADMIN, naming the workspace on the button": 1,
-      "WorkspaceListPage > offers no write affordance to a USER": 1,
-      "WorkspaceListPage > renders one row per workspace with its details": 1,
-      "WorkspaceListPage > replaces the table with the empty state rather than a bare header row": 1,
-      "WorkspaceListPage > shows the loading line while the first load is in flight": 1
-    },
-    "apps/web/src/features/workspace/components/WorkspaceSelect/WorkspaceSelect.hooks.test.tsx": {
-      "useWorkspaceSelect > exposes the tenant workspaces once loaded": 1,
-      "useWorkspaceSelect > reports an empty roster so the caller can prompt for the first workspace": 1,
-      "useWorkspaceSelect > resolves the selected row from the list, so the edit dialog can seed from it": 1,
-      "useWorkspaceSelect > selects a freshly saved workspace, so the user is not left re-picking": 1,
-      "useWorkspaceSelect > walks the dialog through create, edit and closed states": 1
-    },
-    "apps/web/src/features/workspace/components/WorkspaceSelect/WorkspaceSelect.test.tsx": {
-      "WorkspaceSelect > hides the create affordance unless it is allowed": 1,
-      "WorkspaceSelect > keeps edit hidden without the create/manage affordance gate": 1,
-      "WorkspaceSelect > keeps the dialog unmounted while closed": 1,
-      "WorkspaceSelect > labels the trigger so the picker is reachable by name": 1,
-      "WorkspaceSelect > mounts the dialog in the mode the hook is holding": 1,
-      "WorkspaceSelect > offers a way back from a failed load": 1,
-      "WorkspaceSelect > offers edit only when a workspace is selected": 1,
-      "WorkspaceSelect > opens the create dialog when creation is allowed": 1,
-      "WorkspaceSelect > points a fresh organization at creating its first workspace": 1,
-      "WorkspaceSelect > surfaces a load failure instead of rendering an empty picker silently": 1,
-      "WorkspaceSelect as a form control > announces a mandatory picker as required": 1,
-      "WorkspaceSelect as a form control > forwards a ref to the trigger, so a rejected field can be focused": 1,
-      "WorkspaceSelect as a form control > passes a hand-wired error id through to the trigger": 1,
-      "WorkspaceSelect as a form control > passes what FormControl injects through to the trigger": 1,
-      "WorkspaceSelect as a form control > says nothing about required when the picker is a filter": 1
-    },
     "apps/web/src/lib/avatar.test.ts": {
       "getInitials > falls back to first two chars of email when name is empty string": 1,
       "getInitials > falls back to first two chars of email when name is null": 1,
@@ -662,7 +585,7 @@
       "scrubEvent: credentials inside URL strings > blanks the credential in the Referer header, not just the url": 1,
       "scrubEvent: credentials inside URL strings > blanks the credential in verify-email and keeps the route": 1,
       "scrubEvent: credentials inside URL strings > leaves ordinary search params alone": 1,
-      "scrubEvent: identifiers denied at the Sentry boundary only > keeps organization and document identifiers, which name no person and carry the triage": 1,
+      "scrubEvent: identifiers denied at the Sentry boundary only > keeps record identifiers, which name no person and carry the triage": 1,
       "scrubEvent: identifiers denied at the Sentry boundary only > redacts userId in extra, contexts, tags and request, including compound names": 1
     },
     "apps/web/src/lib/format.test.ts": {
@@ -699,7 +622,7 @@
       "pendingSkeletonForPath > maps /dashboard to the cards silhouette": 1,
       "pendingSkeletonForPath > maps /settings to the detail silhouette": 1,
       "pendingSkeletonForPath > maps /settings/security to the detail silhouette": 1,
-      "pendingSkeletonForPath > maps /workspaces/f_1 to the detail silhouette": 1
+      "pendingSkeletonForPath > maps /settings/sessions to the detail silhouette": 1
     },
     "apps/web/src/lib/strings.test.ts": {
       "errorStrings > carries a non-empty sentence for every code": 1,
@@ -759,13 +682,6 @@
       "/_authenticated/settings/ route search > drops unrelated params": 1,
       "/_authenticated/settings/ route search > keeps a known section id": 1,
       "/_authenticated/settings/ route search > never throws on an empty search": 1
-    },
-    "apps/web/src/routes/_authenticated/workspaces.test.tsx": {
-      "/_authenticated/workspaces route > announces a load failure and offers a retry": 1,
-      "/_authenticated/workspaces route > carries no role guard": 1,
-      "/_authenticated/workspaces route > mounts the Workspaces screen": 1,
-      "/_authenticated/workspaces route > renders a skeleton rather than a blank frame while loading": 1,
-      "/_authenticated/workspaces route > titles the document with its own page title": 1
     },
     "apps/web/src/routes/auth.test.tsx": {
       "/auth layout guard > forwards a bare /auth visit to the sign-in screen": 1,

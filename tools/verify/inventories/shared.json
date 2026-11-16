@@ -2,7 +2,7 @@
   "suite": "shared",
   "cases": {
     "packages/shared/src/audit/index.test.ts": {
-      "persisted audit action values > keeps the Workspace actions on their persisted strings": 1
+      "persisted audit action values > keeps the account disable actions on their persisted strings": 1
     },
     "packages/shared/src/logger/redact.test.ts": {
       "createCredentialSegmentRedactor > redacts nothing when built with no prefixes": 1,
@@ -111,16 +111,6 @@
       "userProfileOutput > accepts a complete profile": 1,
       "userProfileOutput > refuses a profile missing a required field": 1,
       "userProfileOutput > strips a credential column a careless select would carry": 1
-    },
-    "packages/shared/src/schemas/workspace.test.ts": {
-      "workspace registration inputs > creates with no registration data at all": 1,
-      "workspace registration inputs > distinguishes clearing a field (null) from leaving it untouched (absent) on update": 1,
-      "workspace registration inputs > the statutory legalName is settable (audit A1) > allows the full registered form, longer than the working label": 1,
-      "workspace registration inputs > the statutory legalName is settable (audit A1) > carries legalName through create, trimmed": 1,
-      "workspace registration inputs > the statutory legalName is settable (audit A1) > carries legalName through update, and clears it with null": 1,
-      "workspace registration inputs > the statutory legalName is settable (audit A1) > rejects a blank or whitespace-only legalName rather than storing one": 1,
-      "workspace registration inputs > the statutory legalName is settable (audit A1) > stays optional: a client can be recorded before its paperwork arrives": 1,
-      "workspace registration inputs > validates registration data when present": 1
     }
   }
 }

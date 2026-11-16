@@ -4,8 +4,7 @@
     "apps/web/e2e/app-shell-headings.spec.ts": {
       "App shell headings › /audit has exactly one h1, carrying the page title": 1,
       "App shell headings › /dashboard has exactly one h1, carrying the page title": 1,
-      "App shell headings › /settings has exactly one h1, carrying the page title": 1,
-      "App shell headings › /workspaces has exactly one h1, carrying the page title": 1
+      "App shell headings › /settings has exactly one h1, carrying the page title": 1
     },
     "apps/web/e2e/auth-login.spec.ts": {
       "Authentication (real login) › logs in with a seeded user and reaches the authenticated dashboard": 1,
