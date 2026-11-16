@@ -16,7 +16,7 @@
 #
 # Stage 1: Install dependencies
 FROM node:22-slim@sha256:48e4b67d85f87bd551df43704e24d252f56cc5f8e9718841aace50f19948f0f9 AS deps
-RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
+RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
@@ -36,7 +36,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 
 # Stage 2: Build
 FROM node:22-slim@sha256:48e4b67d85f87bd551df43704e24d252f56cc5f8e9718841aace50f19948f0f9 AS builder
-RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
+RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app
 COPY --from=deps /app ./
 COPY . .
@@ -50,7 +50,7 @@ FROM node:22-slim@sha256:48e4b67d85f87bd551df43704e24d252f56cc5f8e9718841aace50f
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tini \
     && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
+RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app/packages/database
 COPY --from=builder /app/packages/database/package.json ./
 COPY --from=builder /app/packages/database/prisma ./prisma
@@ -69,7 +69,7 @@ FROM node:22-slim@sha256:48e4b67d85f87bd551df43704e24d252f56cc5f8e9718841aace50f
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tini wget \
     && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@10.33.2 --activate
+RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/api/dist ./apps/api/dist

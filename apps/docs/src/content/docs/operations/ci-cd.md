@@ -37,7 +37,7 @@ Turbo path filtering: `TURBO_AFFECTED` is set to `--affected` only on `pull_requ
 
 #### `quality` (Lint & Type Check)
 
-Steps: checkout (full history), pnpm 10.33.2 + Node 22 setup, `pnpm install --frozen-lockfile`, `pnpm build:packages`, then:
+Steps: checkout (full history), pnpm 10.34.9 + Node 22 setup, `pnpm install --frozen-lockfile`, `pnpm build:packages`, then:
 
 ```sh
 pnpm exec turbo lint $TURBO_AFFECTED

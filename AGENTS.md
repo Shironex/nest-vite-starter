@@ -7,7 +7,7 @@ config disagree, the lint config wins.
 Stack: pnpm + turbo monorepo. `apps/api` (NestJS 11 + nestjs-trpc + Prisma 7), `apps/web` (Vite
 SPA, TanStack Router/Query), `apps/desktop` (Electron), `apps/docs` (Astro Starlight),
 `packages/*` (shared, database, eslint-config, eslint-plugin-repo, ui, ...). Node `>=22.22.3`,
-pnpm `10.33.2`.
+pnpm `10.34.9`.
 
 ## Bootstrap a fresh worktree (do all four first)
 

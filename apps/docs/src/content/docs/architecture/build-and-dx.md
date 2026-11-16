@@ -79,7 +79,7 @@ Turbo path filtering with `--affected` only works when invoked directly through 
 ## pnpm workspace conventions
 
 - **`workspace:*` protocol.** Every internal dependency between apps/packages uses `"workspace:*"` in `package.json` (see `monorepo-overview.md`'s dependency table), never a version range.
-- **`packageManager` pin.** `"packageManager": "pnpm@10.33.2"` at the root; CI's `pnpm/action-setup` steps pass the same version explicitly.
+- **`packageManager` pin.** `"packageManager": "pnpm@10.34.9"` at the root; CI's `pnpm/action-setup` steps pass the same version explicitly.
 - **`onlyBuiltDependencies`.** The root `package.json`'s `pnpm.onlyBuiltDependencies` allowlists the packages permitted to run native postinstall/build scripts (`@nestjs/core`, `@swc/core`, `@prisma/engines`, `prisma`, `esbuild`, `electron`): pnpm otherwise blocks arbitrary install scripts by default for supply-chain safety.
 - **`pnpm.overrides`.** A long list of transitive-dependency version pins, mostly CVE remediations (e.g. `minimatch`, `brace-expansion`, `tar`, `undici`, `esbuild`) pulled from Dependabot alerts. When bumping a top-level dependency, check whether an override for one of its transitive deps is still needed.
 - **`postinstall`.** `node scripts/fix-trpc-native-perms.mjs`: a workaround for `nestjs-trpc`'s native binary losing its executable bit after install.

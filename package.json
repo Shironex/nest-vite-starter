@@ -2,7 +2,7 @@
   "name": "nest-vite-saas-starter",
   "version": "0.0.0",
   "private": true,
-  "packageManager": "pnpm@10.33.2",
+  "packageManager": "pnpm@10.34.9",
   "scripts": {
     "dev": "turbo dev --filter=!@repo/desktop --filter=!@repo/docs",
     "build": "turbo build",

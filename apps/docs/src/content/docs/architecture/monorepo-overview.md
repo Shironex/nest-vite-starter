@@ -38,7 +38,7 @@ Everything under `apps/` is a top-level target: three of them are deployable app
 └── docs/                   decisions, invariants, runbooks and operating docs
 ```
 
-The package manager is pinned via `packageManager: "pnpm@10.33.2"` in the root `package.json`. Node `>=22.22.1` is required (`engines`).
+The package manager is pinned via `packageManager: "pnpm@10.34.9"` in the root `package.json`. Node `>=22.22.1` is required (`engines`).
 
 ## Apps
 
