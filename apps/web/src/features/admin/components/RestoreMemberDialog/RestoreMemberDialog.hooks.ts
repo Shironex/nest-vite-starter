@@ -15,7 +15,7 @@ export function useRestoreMemberDialog({
   const queryClient = useQueryClient();
 
   const restoreMutation = useMutation({
-    ...trpc.user.restoreMember.mutationOptions(),
+    ...trpc.user.enableUser.mutationOptions(),
     onSuccess: () => {
       toast.success(adminStrings.restoreDialog.success);
       void queryClient.invalidateQueries(trpc.user.listUsers.pathFilter());

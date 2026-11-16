@@ -8,7 +8,7 @@ vi.mock('@/lib/trpc', () => ({
   trpc: {
     user: {
       listUsers: { pathFilter: () => ({ queryKey: ['user', 'listUsers'] }) },
-      removeMember: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
+      disableUser: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
     },
   },
 }));

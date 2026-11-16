@@ -8,7 +8,7 @@ import {
   twoFactorDisableSchema,
   twoFactorRegenerateSchema,
   twoFactorStatusOutput,
-  resetMemberTwoFactorSchema,
+  resetUserTwoFactorSchema,
   authAckOutput,
 } from '@repo/shared/schemas';
 import { TwoFactorService } from './services/two-factor.service';
@@ -100,15 +100,15 @@ export class TwoFactorRouter {
   // Admin procedure.
   // ---------------------------------------------------------------------------
 
-  @Mutation({ input: resetMemberTwoFactorSchema, output: authAckOutput })
+  @Mutation({ input: resetUserTwoFactorSchema, output: authAckOutput })
   @UseMiddlewares(AuthMiddleware, AdminMiddleware)
-  async resetMemberTwoFactor(
-    @Input() input: z.infer<typeof resetMemberTwoFactorSchema>,
+  async resetUserTwoFactor(
+    @Input() input: z.infer<typeof resetUserTwoFactorSchema>,
     @Ctx() ctx: IAuthenticatedContextType,
   ) {
     const ip = getClientIp(ctx.req);
     const userAgent = getUserAgent(ctx.req);
-    await this.twoFactorAdminResetService.resetMemberTwoFactor(
+    await this.twoFactorAdminResetService.resetUserTwoFactor(
       ctx.user.id,
       input.userId,
       ip,

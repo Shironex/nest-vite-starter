@@ -12,7 +12,7 @@ export function useResetMemberDialog({
   const queryClient = useQueryClient();
 
   const resetMutation = useMutation({
-    ...trpc.twoFactor.resetMemberTwoFactor.mutationOptions(),
+    ...trpc.twoFactor.resetUserTwoFactor.mutationOptions(),
     onSuccess: () => {
       toast.success(adminStrings.resetDialog.success);
       // Every cursor page carries a distinct query key, so invalidate the whole

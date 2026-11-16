@@ -12,7 +12,7 @@ export function useRemoveMemberDialog({
   const queryClient = useQueryClient();
 
   const removeMutation = useMutation({
-    ...trpc.user.removeMember.mutationOptions(),
+    ...trpc.user.disableUser.mutationOptions(),
     onSuccess: () => {
       toast.success(adminStrings.removeDialog.success);
       // Every cursor page carries a distinct query key, so invalidate the whole

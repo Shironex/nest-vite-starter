@@ -4,7 +4,7 @@ import {
   accountDeletedOutput,
   ackOutput,
   adminUserListPageOutput,
-  memberActionSchema,
+  userActionSchema,
   userProfileOutput,
 } from '@repo/shared/schemas';
 import { ROLES } from '@repo/shared/permissions';
@@ -115,13 +115,12 @@ export class UserRouter {
    *
    * The reversible alternative to deleting an account, which leaves nothing
    * recoverable. The guards (no self, no ADMIN target) are in the service,
-   * where the write repeats the role predicate. The procedure keeps its
-   * historical name until the admin surface is redesigned.
+   * where the write repeats the role predicate.
    */
-  @Mutation({ input: memberActionSchema, output: ackOutput })
+  @Mutation({ input: userActionSchema, output: ackOutput })
   @UseMiddlewares(AuthMiddleware, AdminMiddleware)
-  async removeMember(
-    @Input() input: z.infer<typeof memberActionSchema>,
+  async disableUser(
+    @Input() input: z.infer<typeof userActionSchema>,
     @Ctx() ctx: IAuthenticatedContextType,
   ) {
     await this.userService.disableUser(ctx.user.id, input.userId);
@@ -129,9 +128,9 @@ export class UserRouter {
   }
 
   /** Enable a disabled account (admin only). */
-  @Mutation({ input: memberActionSchema, output: ackOutput })
+  @Mutation({ input: userActionSchema, output: ackOutput })
   @UseMiddlewares(AuthMiddleware, AdminMiddleware)
-  async restoreMember(@Input() input: z.infer<typeof memberActionSchema>) {
+  async enableUser(@Input() input: z.infer<typeof userActionSchema>) {
     await this.userService.enableUser(input.userId);
     return { success: true as const };
   }

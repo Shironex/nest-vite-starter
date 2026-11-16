@@ -175,7 +175,7 @@ async function enroll(page: Page): Promise<{ nextCode: () => string; recoveryCod
  * Reset one member's 2FA from the (already-signed-in) admin's members tab.
  *
  * Asserting the post-state rather than the transition is what makes this
- * re-runnable: `resetMemberTwoFactor` wipes factors unconditionally, so a
+ * re-runnable: `resetUserTwoFactor` wipes factors unconditionally, so a
  * member who is already 2FA-free ends up exactly where an enrolled one does.
  *
  * Split in two so a caller can assert something between the confirm click and
@@ -209,7 +209,7 @@ async function expectMemberTwoFactorResetSettled({
   await expect(memberRow.getByText('Disabled')).toBeVisible();
 }
 
-async function resetMemberTwoFactor(page: Page, email: string): Promise<void> {
+async function resetUserTwoFactor(page: Page, email: string): Promise<void> {
   await expectMemberTwoFactorResetSettled(await confirmMemberTwoFactorReset(page, email));
 }
 
@@ -310,7 +310,7 @@ test.describe.serial('Two-factor authentication (real enroll + challenge)', () =
 
       // Same procedure, now as fixture hygiene for the journeys below.
       for (const email of Object.values(TWO_FACTOR_FIXTURE_EMAILS)) {
-        await resetMemberTwoFactor(page, email);
+        await resetUserTwoFactor(page, email);
       }
     });
   });

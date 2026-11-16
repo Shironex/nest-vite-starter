@@ -14,7 +14,7 @@ const buildRouter = () => {
     revokeTrustedDevices: jest.fn().mockResolvedValue(undefined),
   };
   const adminResetService = {
-    resetMemberTwoFactor: jest.fn().mockResolvedValue(undefined),
+    resetUserTwoFactor: jest.fn().mockResolvedValue(undefined),
   };
   const router = new TwoFactorRouter(
     twoFactorService as unknown as Services[0],
@@ -102,14 +102,14 @@ describe('TwoFactorRouter (wiring)', () => {
     expect(result).toEqual({ success: true });
   });
 
-  it('resetMemberTwoFactor passes caller id, target id + ip/ua', async () => {
+  it('resetUserTwoFactor passes caller id, target id + ip/ua', async () => {
     const { router, adminResetService } = buildRouter();
     const { ctx } = buildCtx();
-    const result = await router.resetMemberTwoFactor(
+    const result = await router.resetUserTwoFactor(
       { userId: 'm1' },
-      ctx as unknown as Parameters<typeof router.resetMemberTwoFactor>[1],
+      ctx as unknown as Parameters<typeof router.resetUserTwoFactor>[1],
     );
-    expect(adminResetService.resetMemberTwoFactor).toHaveBeenCalledWith(
+    expect(adminResetService.resetUserTwoFactor).toHaveBeenCalledWith(
       'u-1',
       'm1',
       '1.2.3.4',

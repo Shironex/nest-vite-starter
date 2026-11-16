@@ -7,7 +7,7 @@ factor). This is a manual, operator-run process performed by platform support.
 It is not a self-service action and not an in-app admin action.
 
 Do not use this document for the earlier rungs. If the user still holds any
-recovery code, or an admin can reach `twoFactor.resetMemberTwoFactor` on
+recovery code, or an admin can reach `twoFactor.resetUserTwoFactor` on
 their behalf, that is the correct path and this runbook does not apply.
 
 ## The reset ladder
@@ -17,7 +17,7 @@ There are exactly three rungs, tried in order:
 1. **Recovery code (self-serve).** At the login challenge the user submits a
    16-character recovery code instead of a TOTP. No operator involvement. This
    is the primary lost-authenticator path.
-2. **Admin reset.** An admin calls `twoFactor.resetMemberTwoFactor` for another
+2. **Admin reset.** An admin calls `twoFactor.resetUserTwoFactor` for another
    user (cannot target self). Wipes that user's factors and forces re-enrollment.
 3. **Platform support reset (this runbook).** Only when rungs 1 and 2 are both
    exhausted.
@@ -58,7 +58,7 @@ genuinely unavailable. Concretely, all of the following hold:
 1. The user has lost access to their authenticator app (the active TOTP
    factor).
 2. The user has no remaining unused recovery code.
-3. No admin can perform `twoFactor.resetMemberTwoFactor` for them (single
+3. No admin can perform `twoFactor.resetUserTwoFactor` for them (single
    admin who is themselves locked out, or the admin's own factor is lost).
 
 If any earlier rung is still reachable, use it instead. A support reset is the
@@ -112,7 +112,7 @@ gets a chance to intervene before their second factor is removed.
 
 Once the contest window has elapsed with no objection, apply **admin-reset
 semantics PLUS a forced password reset**. The semantic template is
-`TwoFactorPolicyService.resetMemberTwoFactor`
+`TwoFactorPolicyService.resetUserTwoFactor`
 (`apps/api/src/modules/auth/services/two-factor-policy.service.ts`), run by an
 operator rather than by an admin session.
 

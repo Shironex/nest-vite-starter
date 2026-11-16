@@ -274,8 +274,8 @@ export const twoFactorRegenerateSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-/** `twoFactor.resetMemberTwoFactor` input (admin). */
-export const resetMemberTwoFactorSchema = z.object({
+/** `twoFactor.resetUserTwoFactor` input (admin). */
+export const resetUserTwoFactorSchema = z.object({
   userId: z.string().min(1, 'User id is required'),
 });
 
@@ -296,7 +296,7 @@ export type TwoFactorRecoveryCodesOutput = z.infer<typeof twoFactorRecoveryCodes
 export type TwoFactorDisableInput = z.infer<typeof twoFactorDisableSchema>;
 export type TwoFactorRegenerateInput = z.infer<typeof twoFactorRegenerateSchema>;
 export type TwoFactorStatusOutput = z.infer<typeof twoFactorStatusOutput>;
-export type ResetMemberTwoFactorInput = z.infer<typeof resetMemberTwoFactorSchema>;
+export type ResetUserTwoFactorInput = z.infer<typeof resetUserTwoFactorSchema>;
 export type VerifyTwoFactorInput = z.infer<typeof verifyTwoFactorSchema>;
 export type ResetPasswordTokenStateInput = z.infer<typeof resetPasswordTokenStateSchema>;
 export type ResetPasswordTokenStateOutput = z.infer<typeof resetPasswordTokenStateOutput>;

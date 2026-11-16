@@ -83,8 +83,8 @@ export type AdminUserListPageOutput = z.infer<typeof adminUserListPageOutput>;
  * this one is reversible, stamps `disabledAt`, and leaves the account and its
  * audit trail standing. `adminDeleteUser` remains the destructive one.
  */
-export const memberActionSchema = z.object({
+export const userActionSchema = z.object({
   userId: z.string().min(1, 'User is required'),
 });
 
-export type MemberActionInput = z.infer<typeof memberActionSchema>;
+export type UserActionInput = z.infer<typeof userActionSchema>;

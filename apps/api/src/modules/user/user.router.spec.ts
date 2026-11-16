@@ -79,12 +79,12 @@ describe('UserRouter (wiring)', () => {
     expect(result).toEqual({ deleted: true });
   });
 
-  it('removeMember() delegates target + caller id to userService.disableUser', async () => {
+  it('disableUser() delegates target + caller id to userService.disableUser', async () => {
     const { router, userService } = buildRouter();
 
-    const result = await router.removeMember(
+    const result = await router.disableUser(
       { userId: 'target-1' },
-      buildCtx('admin-1') as unknown as Parameters<UserRouter['removeMember']>[1],
+      buildCtx('admin-1') as unknown as Parameters<UserRouter['disableUser']>[1],
     );
 
     // The caller's id comes from the session, never from the input: the
@@ -93,10 +93,10 @@ describe('UserRouter (wiring)', () => {
     expect(result).toEqual({ success: true });
   });
 
-  it('restoreMember() delegates the target to userService.enableUser', async () => {
+  it('enableUser() delegates the target to userService.enableUser', async () => {
     const { router, userService } = buildRouter();
 
-    const result = await router.restoreMember({ userId: 'target-1' });
+    const result = await router.enableUser({ userId: 'target-1' });
 
     expect(userService.enableUser).toHaveBeenCalledWith('target-1');
     expect(result).toEqual({ success: true });

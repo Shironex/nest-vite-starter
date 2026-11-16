@@ -143,7 +143,7 @@ export interface AuthMocks {
     verifyChallenge: jest.Mock;
   };
   twoFactorAdminReset: {
-    resetMemberTwoFactor: jest.Mock;
+    resetUserTwoFactor: jest.Mock;
   };
   totp: {
     generateSecret: jest.Mock;
@@ -525,7 +525,7 @@ const buildAuthMocks = (
       verifyChallenge: jest.fn(),
     },
     twoFactorAdminReset: {
-      resetMemberTwoFactor: jest.fn().mockResolvedValue(undefined),
+      resetUserTwoFactor: jest.fn().mockResolvedValue(undefined),
     },
     totp: {
       generateSecret: jest

@@ -58,7 +58,7 @@ function MemberRow({
   // is always an admin here), so the menu never offers what the api will deny:
   // a button that always errors is worse than no button.
   const canDelete = member.role !== ROLES.ADMIN;
-  // removeMember (disable) refuses ADMIN targets too, and routes them through demotion.
+  // disableUser (disable) refuses ADMIN targets too, and routes them through demotion.
   const canRemove = member.status === 'active' && member.role !== ROLES.ADMIN;
   const isRemoved = member.status === 'disabled';
   const statusLabel = adminStrings.members.status[member.status];

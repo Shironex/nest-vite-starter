@@ -37,7 +37,7 @@ export class TwoFactorAdminResetService {
    * Wipes factors, trusted devices and pending challenges, revokes sessions,
    * audits, and emails the member.
    */
-  async resetMemberTwoFactor(
+  async resetUserTwoFactor(
     callerId: string,
     targetUserId: string,
     ip: string,

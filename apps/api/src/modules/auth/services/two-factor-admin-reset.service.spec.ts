@@ -17,13 +17,13 @@ describe('TwoFactorAdminResetService', () => {
     return { ...ctx, service: ctx.get(TwoFactorAdminResetService), prisma };
   };
 
-  describe('resetMemberTwoFactor', () => {
+  describe('resetUserTwoFactor', () => {
     it('wipes factors + trust + pendings, revokes sessions, audits and emails the member', async () => {
       const { service, mocks, prisma } = await buildCtx();
       prisma.client.user.findFirst.mockResolvedValue({ id: 'm1', email: 'm1@x.c' });
       mocks.redis.smembers.mockResolvedValue([]);
 
-      await service.resetMemberTwoFactor('admin-1', 'm1', 'ip', 'ua');
+      await service.resetUserTwoFactor('admin-1', 'm1', 'ip', 'ua');
 
       expect(mocks.secondFactor.deleteAllForUser).toHaveBeenCalledWith('m1');
       expect(mocks.trustedDevice.revokeAll).toHaveBeenCalledWith('m1');
@@ -37,7 +37,7 @@ describe('TwoFactorAdminResetService', () => {
     it('refuses to reset the caller themselves', async () => {
       const { service } = await buildCtx();
       await expect(
-        service.resetMemberTwoFactor('admin-1', 'admin-1', 'ip', 'ua'),
+        service.resetUserTwoFactor('admin-1', 'admin-1', 'ip', 'ua'),
       ).rejects.toMatchObject({ appCode: AppErrorCode.FORBIDDEN });
     });
 
@@ -45,7 +45,7 @@ describe('TwoFactorAdminResetService', () => {
       const { service, prisma } = await buildCtx();
       prisma.client.user.findFirst.mockResolvedValue(null);
       await expect(
-        service.resetMemberTwoFactor('admin-1', 'other', 'ip', 'ua'),
+        service.resetUserTwoFactor('admin-1', 'other', 'ip', 'ua'),
       ).rejects.toMatchObject({ appCode: AppErrorCode.FORBIDDEN });
     });
   });

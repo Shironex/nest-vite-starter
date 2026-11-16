@@ -21,11 +21,11 @@ vi.mock('@/lib/trpc', () => ({
       updateUserRole: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
       unlockUser: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
       adminDeleteUser: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
-      removeMember: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
-      restoreMember: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
+      disableUser: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
+      enableUser: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
     },
     twoFactor: {
-      resetMemberTwoFactor: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
+      resetUserTwoFactor: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
     },
   },
 }));
