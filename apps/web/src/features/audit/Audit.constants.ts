@@ -80,8 +80,6 @@ const SUCCESS_MARKERS = [
   '.rehired',
   '.handled',
   '.renewed',
-  'oauth.signup',
-  'oauth.link',
 ];
 
 /**
