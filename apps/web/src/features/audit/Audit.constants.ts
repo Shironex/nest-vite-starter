@@ -22,7 +22,7 @@ export const AUDIT_QUICK_FILTER_ACTIONS: Record<AuditQuickFilter, readonly Audit
  * The event-type dropdown, grouped by the action's domain prefix so ~50
  * entries stay scannable. Derived from the canonical vocabulary: a new action
  * in `@repo/shared/audit` appears here without a second list to maintain (its
- * label falls back to the raw action name until the catalog learns it).
+ * label falls back to the raw action name until the strings table learns it).
  */
 export const AUDIT_ACTION_GROUPS: readonly { key: string; actions: readonly AuditAction[] }[] =
   (() => {

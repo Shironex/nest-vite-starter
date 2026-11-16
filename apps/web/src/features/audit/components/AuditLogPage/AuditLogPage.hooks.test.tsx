@@ -74,7 +74,7 @@ describe('useAuditLogPage', () => {
     const row = result.current.rows[0];
     expect(row?.actorName).toBe('System');
     expect(row?.isSystem).toBe(true);
-    // The catalog fallback keeps the raw action visible instead of a bare key.
+    // The fallback keeps the raw action visible instead of a bare key.
     expect(row?.actionLabel).toBe('future.unknown.action');
   });
 

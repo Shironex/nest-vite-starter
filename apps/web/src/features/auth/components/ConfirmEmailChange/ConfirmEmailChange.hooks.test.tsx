@@ -94,7 +94,7 @@ describe('useConfirmEmailChange', () => {
   });
 
   // A transport failure never reached the api, so its message is a browser
-  // internal ("Failed to fetch"); the user gets catalog copy instead.
+  // internal ("Failed to fetch"); the user gets the app's own copy instead.
   it('shows the network sentence for a transport failure', async () => {
     confirmFn.mockRejectedValue(
       Object.assign(new Error('Failed to fetch'), { name: 'TRPCClientError' }),

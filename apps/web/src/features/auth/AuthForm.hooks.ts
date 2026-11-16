@@ -34,7 +34,7 @@ export interface IUseAuthFormOptions<TFieldValues extends FieldValues> {
   readonly mode?: UseFormProps<TFieldValues>['mode'];
   /**
    * User-facing copy per structured AppErrorCode (see getAppErrorCode). Codes
-   * without an entry fall back to the shared catalog sentence for that code,
+   * without an entry fall back to the shared `errorStrings` sentence for that code,
    * then to the generic unexpected-error copy.
    */
   readonly errorMessages?: Partial<Record<AppErrorCode, string>>;
@@ -44,7 +44,7 @@ export interface IUseAuthFormResult<TFieldValues extends FieldValues> {
   readonly form: UseFormReturn<TFieldValues>;
   readonly serverError: string | null;
   readonly setServerError: (message: string | null) => void;
-  /** Mutation onError handler: form-specific copy, else the shared catalog, else generic. */
+  /** Mutation onError handler: form-specific copy, else the shared `errorStrings`, else generic. */
   readonly handleServerError: (error: { message: string }) => void;
   /**
    * Pass to TurnstileField (forms without a captcha just leave it unused).
@@ -112,7 +112,7 @@ export function useAuthForm<TFieldValues extends FieldValues>(
       const mapped = code !== undefined ? errorMessages?.[code] : undefined;
       // `loginErrorMessages` maps only two codes, so INVALID_CREDENTIALS,
       // RATE_LIMITED and INTERNAL_ERROR used to reach the sign-in screen as
-      // the api's own sentence. The shared catalog has reviewed copy for
+      // the api's own sentence. `errorStrings` has reviewed copy for
       // every AppErrorCode, so it is the second choice, not the message.
       setServerError(mapped ?? translateAppError(error) ?? commonStrings.errors.unexpected);
     },

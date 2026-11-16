@@ -50,7 +50,7 @@ describe('translateAppError', () => {
   });
 
   // `data` present means the api answered; the message on that path is the
-  // api's own sentence for a failure the catalog has no code for.
+  // api's own sentence for a failure `errorStrings` has no code for.
   it('falls back to the raw message when a real response carries no mapped code', () => {
     expect(
       translateAppError({

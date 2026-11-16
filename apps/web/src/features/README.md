@@ -57,66 +57,49 @@ Props are visual. A component never takes a secret-shaped prop (`token`,
 `userId`, `sessionId`, ...); read those from the route or a store inside the
 hook instead (`props-must-be-visual`).
 
-## Translations (`locales/`)
+## Copy (`*.strings.ts`)
 
-A feature that ships user-facing copy owns a `locales/` folder at the feature
-root, one file per language and one i18next namespace per feature. The app
-ships in English only, so today that is one file:
+The app ships in English only and has no i18n framework. A feature that ships
+user-facing copy owns one `<Name>.strings.ts` at the feature root: a plain
+`as const` object, with a small function for any entry that interpolates a value
+or pluralizes.
 
 ```
 workspace/
-  locales/
-    en.json              # the only language, bundled
+  Workspace.strings.ts   # export const workspaceStrings = { ... } as const
   components/
   Workspaces.queries.ts
 ```
 
-`pnpm new:feature` scaffolds the catalog AND the `<Name>.i18n.ts` that
-registers it (module scope is fine, i18next init is synchronous):
-
 ```ts
-// Workspace.i18n.ts
-import { registerFeatureNamespace } from '@/lib/i18n';
-import en from './locales/en.json';
-
-registerFeatureNamespace('workspace', { en });
-
-export const WORKSPACE_NS = 'workspace';
+// Workspace.strings.ts
+export const workspaceStrings = {
+  title: 'Workspaces',
+  list: {
+    editFor: ({ name }: { name: string }) => `Edit ${name}`,
+  },
+} as const;
 ```
 
-A component registers the catalog with a side-effect import of that module, and
-its hook reads the namespace back through the exported constant rather than
-repeating the string. The import lives in the component, never in a route file
-(`route-i18n-side-effect`).
-
-English is passed as the parsed JSON because it is what every session renders.
-Adding a second language is a documented, bounded change: see "ADDING A
-LANGUAGE" in `src/lib/i18n/index.ts` (a `locales/<lng>.json` beside every
-`en.json`, a lazy `import()` loader per registration, and a `loadLanguage`
-helper). Until then there is nothing to switch to, so there is no switcher and
-no stored language preference.
-
-```tsx
-const { t } = useTranslation('workspace');
-```
+Components and hooks import the table and read it directly
+(`workspaceStrings.list.editFor({ name })`). `pnpm new:feature` scaffolds the
+file.
 
 Rules:
 
-- A feature never imports another feature's `locales/`: that is
+- A feature never imports another feature's strings: that is
   `no-cross-feature-imports`, same as any other cross-domain import. Copy shared
-  by two domains goes in `src/lib/i18n/locales/` under the `common` namespace.
-- Error copy is not per-feature. `src/lib/i18n/locales/*.json` carries an
-  `errors` namespace keyed by `AppErrorCode`, and
-  `src/lib/i18n/error-catalog.ts` `satisfies Record<AppErrorCode, string>` so a
-  missing or misspelled code is a compile error. Outside React (query caches,
-  stores) use `translateAppError` from `@/lib/trpc-errors`, which reads the
-  standalone `i18n.t`; inside components use `useTranslation()`.
-- Dates, numbers, and money go through `@/lib/i18n/format`, which formats in
+  by two domains goes in `src/lib/strings.ts` (`commonStrings`).
+- Error copy is not per-feature. `errorStrings` in `src/lib/strings.ts` is keyed
+  by `AppErrorCode` and `satisfies Record<AppErrorCode, string>`, so a missing or
+  misspelled code is a compile error. Use `translateAppError` from
+  `@/lib/trpc-errors` to turn a caught error into a sentence, in or out of React.
+- A lookup by a runtime key (a role, a status, an audit action) goes through
+  `labelFor` in `src/lib/strings.ts`, which falls back to the key itself.
+- Dates, numbers, and money go through `@/lib/format`, which formats in
   `APP_LOCALE` from `@repo/shared/constants` (`en-US`, so `MM/dd/yyyy`; change
   that one constant to change every formatter). `formatCurrency` delegates to `formatMoney` in
   `@repo/shared/money`: never write a second currency formatter.
-- Legacy English screens are deliberately not backfilled; translate new
-  surfaces only.
 
 ## Routes are seams
 

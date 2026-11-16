@@ -15,9 +15,8 @@ import type { IListFilterPopoverProps } from './ListFilterPopover.types';
  * one of them behind this single button, and this component is that button.
  *
  * It owns WHERE filters live, not WHAT they are. Each surface passes its own
- * controls as children and its own copy as labels, because some screens read
- * their copy from a feature catalog while audit and settings read from
- * `common`.
+ * controls as children and its own copy as labels, because screens take
+ * their copy from different strings tables.
  *
  * The count badge is the whole reason a collapsed panel is safe: a filtered
  * list that looks unfiltered is how a user concludes rows are missing.

@@ -5,7 +5,7 @@ import BrandPanel from './BrandPanel';
 
 /**
  * The copy comes from the auth strings table, so the expectations read the English
- * catalog rather than repeating its sentences here.
+ * strings table rather than repeating its sentences here.
  */
 describe('BrandPanel', () => {
   it('renders the wordmark and the marketing headline', () => {

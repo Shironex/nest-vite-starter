@@ -67,7 +67,7 @@ test.describe('Authentication (real login)', () => {
     // Stays on /auth/login (no redirect to the authenticated area).
     await expect(page).toHaveURL(/\/auth\/login/);
     /*
-     * The banner says the credentials were wrong, in the AppErrorCode catalog's
+     * The banner says the credentials were wrong, in the AppErrorCode strings table's
      * words rather than the server's own sentence (`translateAppError` used to
      * fall through to it). Asserting the message rather than a data attribute is
      * deliberate: the copy IS the behavior here, and the previous wording (the

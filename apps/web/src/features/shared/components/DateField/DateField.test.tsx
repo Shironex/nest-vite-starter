@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { DateField } from './index';
 
 /**
- * The wrapper's whole job is attaching the catalog copy and the app locale
+ * The wrapper's whole job is attaching the shared copy and the app locale
  * (`APP_LOCALE`, `en-US`), so that is what is asserted here. The typing, parsing and keyboard behavior are
  * the primitive's and are covered in `@repo/ui`.
  */
@@ -20,7 +20,7 @@ describe('DateField', () => {
     expect(screen.getByLabelText('Date')).toHaveAttribute('placeholder', 'mm/dd/yyyy');
   });
 
-  it('names the calendar trigger from the catalog', () => {
+  it('names the calendar trigger from the strings table', () => {
     render(<DateField value="" onChange={vi.fn()} />);
     expect(screen.getByRole('button', { name: 'Open calendar' })).toBeInTheDocument();
     expect(

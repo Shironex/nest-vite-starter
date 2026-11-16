@@ -91,7 +91,7 @@ describe('useDataExportSection', () => {
     act(() => result.current.onDownload());
 
     // Not a tRPC error response, so translateAppError returns undefined and
-    // the panel's own catalog copy renders instead of the raw message.
+    // the panel's own copy renders instead of the raw message.
     await waitFor(() => expect(result.current.errorMessage).toBe(settingsStrings.dataExport.error));
     expect(result.current.errorMessage).not.toBe('boom');
     expect(result.current.isPending).toBe(false);

@@ -42,12 +42,12 @@ export function useConfirmPasswordDialog({
     onError: (error) => {
       const code = getAppErrorCode(error);
       if (code === AppErrorCode.INVALID_CREDENTIALS) {
-        // Field-level copy like DisableDialog: the catalog sentence for this
+        // Field-level copy like DisableDialog: the `errorStrings` sentence for this
         // code mentions the e-mail address, which is wrong under a lone
         // password field.
         form.setError('password', { message: authStrings.sudo.invalidPassword });
       } else if (code === AppErrorCode.RATE_LIMITED) {
-        // 5 attempts per 300 s per user; the catalog copy fits verbatim.
+        // 5 attempts per 300 s per user; that copy fits verbatim.
         form.setError('password', { message: errorStrings.RATE_LIMITED });
       } else {
         toast.error(translateAppError(error) ?? commonStrings.errors.unexpected);

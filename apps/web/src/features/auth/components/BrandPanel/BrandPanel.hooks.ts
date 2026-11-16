@@ -2,7 +2,7 @@ import type { IBrandPanelView } from './BrandPanel.types';
 import { authStrings } from '@/features/auth/Auth.strings';
 
 /**
- * Placeholder brand copy for the auth screens, from the `auth` catalog. The
+ * Placeholder brand copy for the auth screens, from the auth strings table. The
  * foot line states something the starter actually does rather than a customer
  * count it does not have.
  */

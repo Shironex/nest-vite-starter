@@ -54,7 +54,7 @@ export function useDataExportSection(): IDataExportSectionView {
   });
 
   // RATE_LIMITED (5 exports per hour, enforced in DataExportService) arrives
-  // with an appCode and translates via the errors catalog; anything else falls
+  // with an appCode and maps it through `errorStrings`; anything else falls
   // back to this section's own generic line. Rendered inline, not toasted: the
   // button the user just pressed is right below it.
   const errorMessage = downloadMutation.isError
