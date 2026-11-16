@@ -30,7 +30,7 @@ export interface IConfirmDialogProps {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Question the user is answering, for example "Delete this workspace?". */
+  /** Question the user is answering, for example "Delete this project?". */
   title: React.ReactNode;
   /** What will happen, including anything that cannot be undone. */
   description: React.ReactNode;

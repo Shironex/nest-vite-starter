@@ -5,8 +5,8 @@ import { render, screen } from '@testing-library/react';
 import { Combobox } from './combobox';
 
 const OPTIONS = [
-  { value: 'f-1', label: 'Workspace one' },
-  { value: 'f-2', label: 'Workspace two' },
+  { value: 'f-1', label: 'Project one' },
+  { value: 'f-2', label: 'Project two' },
 ];
 
 function renderCombobox(props: Partial<React.ComponentProps<typeof Combobox>> = {}) {
@@ -15,8 +15,8 @@ function renderCombobox(props: Partial<React.ComponentProps<typeof Combobox>> = 
       options={OPTIONS}
       value={null}
       onValueChange={() => undefined}
-      placeholder="Choose a workspace"
-      searchPlaceholder="Search workspaces"
+      placeholder="Choose a project"
+      searchPlaceholder="Search projects"
       emptyText="No results"
       {...props}
     />,
@@ -76,10 +76,10 @@ describe('Combobox form contract', () => {
   });
 
   it('forwards unnamed props such as aria-required to the trigger', () => {
-    renderCombobox({ 'aria-required': true, name: 'workspaceId' });
+    renderCombobox({ 'aria-required': true, name: 'projectId' });
 
     expect(trigger()).toHaveAttribute('aria-required', 'true');
-    expect(trigger()).toHaveAttribute('name', 'workspaceId');
+    expect(trigger()).toHaveAttribute('name', 'projectId');
   });
 
   /**
@@ -97,9 +97,9 @@ describe('Combobox form contract', () => {
   });
 
   it('keeps its own attributes when a caller spreads a conflicting one', () => {
-    renderCombobox({ id: 'workspace-picker' });
+    renderCombobox({ id: 'project-picker' });
 
-    expect(trigger()).toHaveAttribute('id', 'workspace-picker');
+    expect(trigger()).toHaveAttribute('id', 'project-picker');
     expect(trigger()).toHaveAttribute('type', 'button');
   });
 });

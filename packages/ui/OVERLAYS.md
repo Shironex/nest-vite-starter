@@ -90,17 +90,17 @@ import {
 } from '@repo/ui/double-sheet';
 
 <DetailDrawer open={Boolean(selectedId)} onOpenChange={(open) => !open && clearSelection()}>
-  <DetailDrawerContent description="Workspace card">
+  <DetailDrawerContent description="Project card">
     <DetailDrawerHeader>
       <DetailDrawerClose label="Close" />
-      <DetailDrawerTitle>Workspace details</DetailDrawerTitle>
+      <DetailDrawerTitle>Project details</DetailDrawerTitle>
     </DetailDrawerHeader>
 
     <DetailDrawerSummary>{/* avatar, name, status, contact */}</DetailDrawerSummary>
 
     <DetailDrawerTabs defaultValue="contacts">
-      <DetailDrawerTabsList aria-label="Workspace card sections">
-        <DetailDrawerTab value="details">Workspace details</DetailDrawerTab>
+      <DetailDrawerTabsList aria-label="Project card sections">
+        <DetailDrawerTab value="details">Project details</DetailDrawerTab>
         <DetailDrawerTab value="contacts">Contacts</DetailDrawerTab>
       </DetailDrawerTabsList>
 
@@ -153,7 +153,7 @@ import { ConfirmDialog } from '@repo/ui/confirm-dialog';
 <ConfirmDialog
   open={confirmOpen}
   onOpenChange={setConfirmOpen}
-  title="Delete this workspace?"
+  title="Delete this project?"
   description="This permanently deletes Northwind Ltd and its related data. This cannot be undone."
   confirmLabel="Delete"
   cancelLabel="Cancel"

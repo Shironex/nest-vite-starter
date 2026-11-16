@@ -36,15 +36,15 @@ function scrollLockStyleCount(): number {
   ).length;
 }
 
-function WorkspaceFlow({ onSheetOpenChange }: { onSheetOpenChange?: (open: boolean) => void }) {
+function ProjectFlow({ onSheetOpenChange }: { onSheetOpenChange?: (open: boolean) => void }) {
   return (
     <DetailDrawer>
       <DetailDrawerTrigger asChild>
-        <Button>Open workspace card</Button>
+        <Button>Open project card</Button>
       </DetailDrawerTrigger>
-      <DetailDrawerContent description="Workspace card">
+      <DetailDrawerContent description="Project card">
         <DetailDrawerHeader>
-          <DetailDrawerTitle>Workspace details</DetailDrawerTitle>
+          <DetailDrawerTitle>Project details</DetailDrawerTitle>
         </DetailDrawerHeader>
         <DetailDrawerSection
           title="Contracts"
@@ -85,8 +85,8 @@ function WorkspaceFlow({ onSheetOpenChange }: { onSheetOpenChange?: (open: boole
  * `aria-hidden`, so anything inside it is no longer reachable by role query.
  */
 async function openDrawerAndSheet(): Promise<HTMLElement> {
-  fireEvent.click(screen.getByRole('button', { name: 'Open workspace card' }));
-  await screen.findByText('Workspace details');
+  fireEvent.click(screen.getByRole('button', { name: 'Open project card' }));
+  await screen.findByText('Project details');
   const sheetTrigger = screen.getByRole('button', { name: 'Add contract' });
   fireEvent.click(sheetTrigger);
   await screen.findByText('Add contract', { selector: '[data-slot="double-sheet-title"]' });
@@ -95,7 +95,7 @@ async function openDrawerAndSheet(): Promise<HTMLElement> {
 
 describe('DoubleSheet beside DetailDrawer', () => {
   it('docks the sheet to the left of the drawer inside one dock', async () => {
-    render(<WorkspaceFlow />);
+    render(<ProjectFlow />);
     await openDrawerAndSheet();
 
     const drawerHost = hostOf('detail-drawer-content');
@@ -108,7 +108,7 @@ describe('DoubleSheet beside DetailDrawer', () => {
   });
 
   it('tints exactly one scrim while both panels are open', async () => {
-    render(<WorkspaceFlow />);
+    render(<ProjectFlow />);
     await openDrawerAndSheet();
 
     const drawerOverlay = document.querySelector('[data-slot="detail-drawer-overlay"]');
@@ -120,9 +120,9 @@ describe('DoubleSheet beside DetailDrawer', () => {
   });
 
   it('does not double apply the scroll lock', async () => {
-    render(<WorkspaceFlow />);
-    fireEvent.click(screen.getByRole('button', { name: 'Open workspace card' }));
-    await screen.findByText('Workspace details');
+    render(<ProjectFlow />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open project card' }));
+    await screen.findByText('Project details');
 
     const withDrawerOnly = scrollLockStyleCount();
     expect(withDrawerOnly).toBeGreaterThan(0);
@@ -134,7 +134,7 @@ describe('DoubleSheet beside DetailDrawer', () => {
   });
 
   it('hides the drawer from assistive tech while the sheet is on top', async () => {
-    render(<WorkspaceFlow />);
+    render(<ProjectFlow />);
     await openDrawerAndSheet();
 
     const dialogs = screen.getAllByRole('dialog');
@@ -145,7 +145,7 @@ describe('DoubleSheet beside DetailDrawer', () => {
 
   it('closes only the sheet on Escape and puts focus back inside the drawer', async () => {
     const onSheetOpenChange = vi.fn();
-    render(<WorkspaceFlow onSheetOpenChange={onSheetOpenChange} />);
+    render(<ProjectFlow onSheetOpenChange={onSheetOpenChange} />);
     const sheetTrigger = await openDrawerAndSheet();
 
     fireEvent.keyDown(document, { key: 'Escape' });
@@ -159,13 +159,13 @@ describe('DoubleSheet beside DetailDrawer', () => {
       expect(document.activeElement).toBe(sheetTrigger);
     });
     expect(hostOf('detail-drawer-content')).not.toHaveAttribute('aria-hidden');
-    expect(screen.getByRole('dialog')).toHaveAccessibleName('Workspace details');
+    expect(screen.getByRole('dialog')).toHaveAccessibleName('Project details');
   });
 
   it('traps focus inside whichever panel is on top', async () => {
-    render(<WorkspaceFlow />);
-    fireEvent.click(screen.getByRole('button', { name: 'Open workspace card' }));
-    await screen.findByText('Workspace details');
+    render(<ProjectFlow />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open project card' }));
+    await screen.findByText('Project details');
 
     const drawerContent = document.querySelector('[data-slot="detail-drawer-content"]');
     await waitFor(() => {
@@ -182,7 +182,7 @@ describe('DoubleSheet beside DetailDrawer', () => {
   });
 
   it('drops the slide animation under prefers-reduced-motion', async () => {
-    render(<WorkspaceFlow />);
+    render(<ProjectFlow />);
     await openDrawerAndSheet();
 
     for (const slot of ['detail-drawer-content', 'double-sheet-content']) {
@@ -193,8 +193,8 @@ describe('DoubleSheet beside DetailDrawer', () => {
   });
 
   it('closes the drawer on the second Escape and restores the page trigger', async () => {
-    render(<WorkspaceFlow />);
-    const drawerTrigger = screen.getByRole('button', { name: 'Open workspace card' });
+    render(<ProjectFlow />);
+    const drawerTrigger = screen.getByRole('button', { name: 'Open project card' });
     await openDrawerAndSheet();
 
     fireEvent.keyDown(document, { key: 'Escape' });
@@ -216,7 +216,7 @@ describe('DoubleSheet beside DetailDrawer', () => {
   });
 
   it('releases the scroll lock only once both panels have closed', async () => {
-    render(<WorkspaceFlow />);
+    render(<ProjectFlow />);
     await openDrawerAndSheet();
 
     fireEvent.keyDown(document, { key: 'Escape' });
@@ -235,7 +235,7 @@ describe('DoubleSheet beside DetailDrawer', () => {
   });
 
   it('closes the sheet from the footer cancel control', async () => {
-    render(<WorkspaceFlow />);
+    render(<ProjectFlow />);
     await openDrawerAndSheet();
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -250,11 +250,11 @@ describe('DoubleSheet beside DetailDrawer', () => {
     render(
       <DoubleSheet>
         <DoubleSheetTrigger asChild>
-          <Button>Add workspace</Button>
+          <Button>Add project</Button>
         </DoubleSheetTrigger>
-        <DoubleSheetContent description="New workspace form">
+        <DoubleSheetContent description="New project form">
           <DoubleSheetHeader>
-            <DoubleSheetTitle>Add workspace</DoubleSheetTitle>
+            <DoubleSheetTitle>Add project</DoubleSheetTitle>
           </DoubleSheetHeader>
           <DoubleSheetBody>
             <input aria-label="First name" />
@@ -263,7 +263,7 @@ describe('DoubleSheet beside DetailDrawer', () => {
       </DoubleSheet>,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add workspace' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add project' }));
     await screen.findByRole('dialog');
 
     expect(hostOf('double-sheet-content').style.order).toBe('0');

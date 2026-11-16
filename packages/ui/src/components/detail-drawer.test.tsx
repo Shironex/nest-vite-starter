@@ -19,16 +19,16 @@ import {
   DetailDrawerTrigger,
 } from './detail-drawer';
 
-function WorkspaceDrawer({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
+function ProjectDrawer({ onOpenChange }: { onOpenChange?: (open: boolean) => void }) {
   return (
     <DetailDrawer {...(onOpenChange ? { onOpenChange } : {})}>
       <DetailDrawerTrigger asChild>
-        <Button>Open workspace card</Button>
+        <Button>Open project card</Button>
       </DetailDrawerTrigger>
-      <DetailDrawerContent description="Workspace card">
+      <DetailDrawerContent description="Project card">
         <DetailDrawerHeader>
           <DetailDrawerClose label="Close" />
-          <DetailDrawerTitle>Workspace details</DetailDrawerTitle>
+          <DetailDrawerTitle>Project details</DetailDrawerTitle>
         </DetailDrawerHeader>
         <DetailDrawerTabs defaultValue="personal">
           <DetailDrawerTabsList aria-label="Record sections">
@@ -55,18 +55,18 @@ function WorkspaceDrawer({ onOpenChange }: { onOpenChange?: (open: boolean) => v
 
 describe('DetailDrawer', () => {
   it('exposes a modal dialog labeled by its title', async () => {
-    render(<WorkspaceDrawer />);
-    fireEvent.click(screen.getByRole('button', { name: 'Open workspace card' }));
+    render(<ProjectDrawer />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open project card' }));
 
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
-    expect(dialog).toHaveAccessibleName('Workspace details');
-    expect(dialog).toHaveAccessibleDescription('Workspace card');
+    expect(dialog).toHaveAccessibleName('Project details');
+    expect(dialog).toHaveAccessibleDescription('Project card');
   });
 
   it('mounts into the shared overlay dock rather than straight into the body', async () => {
-    render(<WorkspaceDrawer />);
-    fireEvent.click(screen.getByRole('button', { name: 'Open workspace card' }));
+    render(<ProjectDrawer />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open project card' }));
     await screen.findByRole('dialog');
 
     const dock = document.querySelector('[data-slot="overlay-dock"]');
@@ -77,8 +77,8 @@ describe('DetailDrawer', () => {
   });
 
   it('removes the dock once the last panel unmounts', async () => {
-    const { unmount } = render(<WorkspaceDrawer />);
-    fireEvent.click(screen.getByRole('button', { name: 'Open workspace card' }));
+    const { unmount } = render(<ProjectDrawer />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open project card' }));
     await screen.findByRole('dialog');
 
     unmount();
@@ -88,8 +88,8 @@ describe('DetailDrawer', () => {
   });
 
   it('follows the WAI-ARIA tabs pattern with arrow key navigation', async () => {
-    render(<WorkspaceDrawer />);
-    fireEvent.click(screen.getByRole('button', { name: 'Open workspace card' }));
+    render(<ProjectDrawer />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open project card' }));
     await screen.findByRole('dialog');
 
     const tablist = screen.getByRole('tablist', { name: 'Record sections' });
@@ -113,9 +113,9 @@ describe('DetailDrawer', () => {
 
   it('closes on Escape and returns focus to the trigger', async () => {
     const onOpenChange = vi.fn();
-    render(<WorkspaceDrawer onOpenChange={onOpenChange} />);
+    render(<ProjectDrawer onOpenChange={onOpenChange} />);
 
-    const trigger = screen.getByRole('button', { name: 'Open workspace card' });
+    const trigger = screen.getByRole('button', { name: 'Open project card' });
     fireEvent.click(trigger);
     await screen.findByRole('dialog');
 
@@ -131,8 +131,8 @@ describe('DetailDrawer', () => {
   });
 
   it('closes from the header close control', async () => {
-    render(<WorkspaceDrawer />);
-    fireEvent.click(screen.getByRole('button', { name: 'Open workspace card' }));
+    render(<ProjectDrawer />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open project card' }));
     await screen.findByRole('dialog');
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));

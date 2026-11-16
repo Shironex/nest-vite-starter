@@ -26,7 +26,7 @@ import { cn } from '@repo/ui/lib/utils';
  *   (3 options), a record status, a role, a sort order. Every
  *   option is on screen, so there is nothing to search for.
  * - `Combobox` is for a list the user has to FIND something in: every user
- *   in a tenant, every workspace, the 74 audit event types. If you cannot
+ *   of the app, every project, the 74 audit event types. If you cannot
  *   promise the list stays short, it belongs here.
  *
  * The API makes the choice hard to get wrong: `searchPlaceholder` is required,

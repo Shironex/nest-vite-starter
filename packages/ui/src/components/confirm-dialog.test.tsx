@@ -13,16 +13,16 @@ import {
 } from './detail-drawer';
 
 const COPY = {
-  title: 'Delete this workspace?',
+  title: 'Delete this project?',
   description:
-    'This removes the workspace Northwind Trading Ltd together with its related data. This action cannot be undone.',
+    'This removes the project Northwind Trading Ltd together with its related data. This action cannot be undone.',
   confirmLabel: 'Delete',
   cancelLabel: 'Cancel',
 };
 
 describe('ConfirmDialog', () => {
   it('is a modal dialog labeled and described by its copy', async () => {
-    render(<ConfirmDialog {...COPY} defaultOpen trigger={<Button>Delete workspace</Button>} />);
+    render(<ConfirmDialog {...COPY} defaultOpen trigger={<Button>Delete project</Button>} />);
 
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
@@ -112,18 +112,18 @@ describe('ConfirmDialog', () => {
     render(
       <DetailDrawer defaultOpen>
         <DetailDrawerTrigger asChild>
-          <Button>Open workspace card</Button>
+          <Button>Open project card</Button>
         </DetailDrawerTrigger>
-        <DetailDrawerContent description="Workspace card">
+        <DetailDrawerContent description="Project card">
           <DetailDrawerHeader>
-            <DetailDrawerTitle>Workspace details</DetailDrawerTitle>
+            <DetailDrawerTitle>Project details</DetailDrawerTitle>
           </DetailDrawerHeader>
-          <ConfirmDialog {...COPY} trigger={<Button>Delete workspace</Button>} />
+          <ConfirmDialog {...COPY} trigger={<Button>Delete project</Button>} />
         </DetailDrawerContent>
       </DetailDrawer>,
     );
 
-    const confirmTrigger = await screen.findByRole('button', { name: 'Delete workspace' });
+    const confirmTrigger = await screen.findByRole('button', { name: 'Delete project' });
     fireEvent.click(confirmTrigger);
 
     await waitFor(() => {
