@@ -20,11 +20,9 @@ import type {
  * BullMQ job NAME is the discriminator (the processor switches on `job.name`),
  * so the variants are distinguished by their structural payload here.
  *
- * The producer wraps these in `withJobContext(...)`, which appends reserved
- * `_ctx` / `_traceparent` keys at the top level; the processor runtime-parses
- * `job.data` against the matching schema in email-delivery.schemas.ts (zod
- * strip mode), so those reserved keys never leak into render input or the
- * outgoing email.
+ * The processor runtime-parses `job.data` against the matching schema in
+ * email-delivery.schemas.ts (zod strip mode), so a key the schema does not name
+ * never leaks into render input or the outgoing email.
  */
 export interface ISendVerificationJobData {
   readonly to: string;

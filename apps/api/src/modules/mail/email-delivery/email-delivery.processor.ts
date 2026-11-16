@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import { Processor } from '@nestjs/bullmq';
 import { UnrecoverableError } from 'bullmq';
 import type { Job } from 'bullmq';
-import { TracedWorkerHost } from '../../../common/queue/traced-worker.host';
+import { QueueProcessor } from '../../../common/queue/queue-processor';
 import { parseJobData } from '../../../common/queue/job-payload';
 import { EmailRendererService } from '../email-renderer.service';
 import { EMAIL_PROVIDER, type IEmailProvider } from '../providers/email-provider.interface';
@@ -31,11 +31,11 @@ import {
  * `@repo/email` template and sends through the configured `IEmailProvider`.
  * Throws on send failure so BullMQ retries per `EMAIL_DELIVERY_DEFAULTS`
  * (5 attempts, exponential backoff); after exhaustion the job is retained in
- * the failed set (the DLQ, bounded by `removeOnFail`). Tracing/ALS re-entry
- * and failure logging come from `TracedWorkerHost`.
+ * the failed set (the DLQ, bounded by `removeOnFail`). The job-scoped request
+ * context and failure logging come from `QueueProcessor`.
  */
 @Processor(EMAIL_DELIVERY_QUEUE_NAME, { concurrency: EMAIL_DELIVERY_DEFAULTS.concurrency })
-export class EmailDeliveryProcessor extends TracedWorkerHost {
+export class EmailDeliveryProcessor extends QueueProcessor {
   constructor(
     private readonly renderer: EmailRendererService,
     @Inject(EMAIL_PROVIDER) private readonly provider: IEmailProvider,
@@ -49,9 +49,8 @@ export class EmailDeliveryProcessor extends TracedWorkerHost {
 
   // Each case runtime-validates the Redis-persisted payload (parseJobData
   // throws a non-retryable UnrecoverableError straight to the DLQ on
-  // mismatch) and works from the PARSED data, so the withJobContext `_ctx` /
-  // `_traceparent` siblings are stripped and never reach render input or the
-  // outgoing email.
+  // mismatch) and works from the PARSED data, so a key the schema does not
+  // name never reaches render input or the outgoing email.
   private async deliver(job: Job): Promise<void> {
     switch (job.name) {
       case EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION: {

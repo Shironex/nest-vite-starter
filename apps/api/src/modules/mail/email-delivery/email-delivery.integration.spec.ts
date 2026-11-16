@@ -18,6 +18,7 @@ import { ConfigModule } from '@nestjs/config';
 import { BullModule, getQueueToken } from '@nestjs/bullmq';
 import RedisMock from 'ioredis-mock';
 import { Queue } from 'bullmq';
+import { EmailDeliveryWorkerModule } from './email-delivery-worker.module';
 import type { Job } from 'bullmq';
 import { MailService } from '../mail.service';
 import { MailModule } from '../mail.module';
@@ -91,6 +92,7 @@ describe('email-delivery DI graph + job run (ioredis-mock)', () => {
         // separately in queue.module.spec.ts.)
         BullModule.forRoot({ connection: new RedisMock() as never }),
         MailModule,
+        EmailDeliveryWorkerModule,
         QueueObservabilityModule,
         HealthModule,
       ],

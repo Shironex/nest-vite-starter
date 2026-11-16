@@ -8,7 +8,6 @@ import {
   PASSWORD_RESET_TOKEN_TTL_MS,
   VERIFICATION_TOKEN_TTL_MS,
 } from '@repo/shared/constants';
-import { withJobContext } from '../../common/queue';
 import { getRequestContext } from '../../common/context/request-context';
 import { sha256Hex } from '../../common/utils/crypto';
 import {
@@ -62,7 +61,7 @@ export class MailService {
     const jobId = `verification-${sha256Hex(verificationUrl)}`;
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION,
-      withJobContext({
+      {
         to,
         props: {
           verificationUrl,
@@ -70,7 +69,7 @@ export class MailService {
           // Expiry prose follows the real TTL (shared constant).
           expiresIn: formatTokenTtl(VERIFICATION_TOKEN_TTL_MS),
         },
-      }),
+      },
       { jobId },
     );
     // Recipient is intentionally not logged.
@@ -85,7 +84,7 @@ export class MailService {
     const jobId = `password-reset-${sha256Hex(resetUrl)}`;
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_RESET,
-      withJobContext({
+      {
         to,
         props: {
           resetUrl,
@@ -94,7 +93,7 @@ export class MailService {
           // Expiry prose follows the real TTL (shared constant).
           expiresIn: formatTokenTtl(PASSWORD_RESET_TOKEN_TTL_MS),
         },
-      }),
+      },
       { jobId },
     );
     this.logger.log('Password reset email enqueued');
@@ -107,7 +106,7 @@ export class MailService {
     // retry inside the completed-set retention window collapses to one mail.
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_WELCOME,
-      withJobContext({ to, props: { loginUrl, appName: this.appName } }),
+      { to, props: { loginUrl, appName: this.appName } },
       { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, jobId: `welcome-${userId}` },
     );
     this.logger.log('Welcome email enqueued');
@@ -123,7 +122,7 @@ export class MailService {
     const jobId = this.requestScopedJobId('password-changed');
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_CHANGED,
-      withJobContext({ to, props: { appName: this.appName } }),
+      { to, props: { appName: this.appName } },
       { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, ...(jobId ? { jobId } : {}) },
     );
     this.logger.log('Password changed email enqueued');
@@ -138,7 +137,7 @@ export class MailService {
     const jobId = this.requestScopedJobId('two-factor-enabled');
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_TWO_FACTOR_ENABLED,
-      withJobContext({ to, props: { appName: this.appName, settingsUrl: this.settingsUrl() } }),
+      { to, props: { appName: this.appName, settingsUrl: this.settingsUrl() } },
       { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, ...(jobId ? { jobId } : {}) },
     );
     this.logger.log('Two-factor enabled email enqueued');
@@ -153,7 +152,7 @@ export class MailService {
     const jobId = this.requestScopedJobId('two-factor-disabled');
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_TWO_FACTOR_DISABLED,
-      withJobContext({ to, props: { appName: this.appName, settingsUrl: this.settingsUrl() } }),
+      { to, props: { appName: this.appName, settingsUrl: this.settingsUrl() } },
       { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, ...(jobId ? { jobId } : {}) },
     );
     this.logger.log('Two-factor disabled email enqueued');
@@ -164,7 +163,7 @@ export class MailService {
     const jobId = this.requestScopedJobId('recovery-code-used');
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_RECOVERY_CODE_USED,
-      withJobContext({ to, props: { appName: this.appName, settingsUrl: this.settingsUrl() } }),
+      { to, props: { appName: this.appName, settingsUrl: this.settingsUrl() } },
       { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, ...(jobId ? { jobId } : {}) },
     );
     this.logger.log('Recovery code used email enqueued');
@@ -175,7 +174,7 @@ export class MailService {
     const jobId = this.requestScopedJobId('two-factor-admin-reset');
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_TWO_FACTOR_ADMIN_RESET,
-      withJobContext({ to, props: { appName: this.appName } }),
+      { to, props: { appName: this.appName } },
       { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, ...(jobId ? { jobId } : {}) },
     );
     this.logger.log('Two-factor admin reset email enqueued');
@@ -194,14 +193,14 @@ export class MailService {
     const jobId = `two-factor-support-reset-contest-${sha256Hex(ticketRef)}`;
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_TWO_FACTOR_SUPPORT_RESET_CONTEST,
-      withJobContext({
+      {
         to,
         props: {
           appName: this.appName,
           ticketRef,
           contestDeadline: contestUntil.toUTCString(),
         },
-      }),
+      },
       { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, jobId },
     );
     this.logger.log('Two-factor support reset contest email enqueued');
@@ -220,7 +219,7 @@ export class MailService {
     const jobId = `email-change-verification-${sha256Hex(confirmUrl)}`;
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_EMAIL_CHANGE_VERIFICATION,
-      withJobContext({
+      {
         to,
         props: {
           confirmUrl,
@@ -228,7 +227,7 @@ export class MailService {
           // Expiry prose follows the real TTL (shared constant).
           expiresIn: formatTokenTtl(EMAIL_CHANGE_TOKEN_TTL_MS),
         },
-      }),
+      },
       { jobId },
     );
     this.logger.log('Email change verification email enqueued');
@@ -246,10 +245,10 @@ export class MailService {
     const jobId = this.requestScopedJobId('email-change-requested');
     await this.queue.add(
       EMAIL_DELIVERY_JOB_NAMES.SEND_EMAIL_CHANGE_REQUESTED,
-      withJobContext({
+      {
         to,
         props: { appName: this.appName, newEmail, settingsUrl: this.settingsUrl() },
-      }),
+      },
       { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, ...(jobId ? { jobId } : {}) },
     );
     this.logger.log('Email change requested email enqueued');

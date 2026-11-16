@@ -212,8 +212,6 @@ export const config = [
       'code-quality': codeQuality,
     },
     rules: {
-      'repo/processor-must-extend-traced-worker-host': 'error',
-      'repo/queue-add-must-wrap-job-context': 'error',
       'repo/job-name-must-be-constant': 'error',
       'code-quality/no-bare-date-now': ['error', { allowIn: NO_BARE_DATE_NOW_ALLOW_IN }],
     },

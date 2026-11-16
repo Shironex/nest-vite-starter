@@ -18,9 +18,8 @@ import type {
  * The interfaces in email-delivery.types.ts type the PRODUCER side; these
  * validate what the WORKER reads back from Redis (see
  * common/queue/job-payload.ts for why a compile-time cast is not enough).
- * Default zod strip mode is deliberate: the reserved `withJobContext`
- * siblings (`_ctx`, `_traceparent`, `_tracestate`) ride on top of the payload
- * and are dropped by parsing. `satisfies z.ZodType<...>` keeps each schema
+ * Default zod strip mode is deliberate: a key the schema does not name is
+ * dropped by parsing, so it never reaches render input. `satisfies z.ZodType<...>` keeps each schema
  * structurally locked to its interface.
  */
 export const sendVerificationJobSchema = z.object({

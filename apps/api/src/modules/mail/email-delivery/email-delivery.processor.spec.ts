@@ -83,13 +83,12 @@ describe('EmailDeliveryProcessor', () => {
     );
   });
 
-  it('renders the welcome template and sends once, ignoring withJobContext keys', async () => {
+  it('renders the welcome template and sends once, ignoring keys the schema does not name', async () => {
     await processor.processJob(
       makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_WELCOME, {
         to: 'jane@example.com',
         props: { loginUrl: 'https://login', appName: 'SaaS Starter' },
-        _ctx: { requestId: 'r1' },
-        _traceparent: '00-trace',
+        extra: { requestId: 'r1' },
       }),
     );
 
@@ -223,13 +222,12 @@ describe('EmailDeliveryProcessor', () => {
       ).rejects.toBeInstanceOf(UnrecoverableError);
     });
 
-    it('strips the withJobContext reserved keys via the schema before rendering', async () => {
+    it('strips keys the schema does not name before rendering', async () => {
       await processor.processJob(
         makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_CHANGED, {
           to: 'a@b.c',
           props: { appName: 'SaaS Starter' },
-          _ctx: { requestId: 'r1' },
-          _traceparent: '00-trace',
+          extra: { requestId: 'r1' },
         }),
       );
       expect(renderer.renderPasswordChangedEmail).toHaveBeenCalledWith({ appName: 'SaaS Starter' });

@@ -18,6 +18,7 @@
     "build": "nest build -b swc",
     "start": "node dist/src/main",
     "start:prod": "node dist/src/main",
+    "start:worker": "node dist/src/worker",
     "lint": "eslint .",
     "check-types": "tsc --noEmit -p tsconfig.build.json --incremental --tsBuildInfoFile node_modules/.cache/tsc/build.tsbuildinfo && tsc -p tsconfig.spec.json",
     "generate:trpc": "nestjs-trpc generate",

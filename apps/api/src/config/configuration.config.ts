@@ -25,6 +25,11 @@ export const validationSchema = Joi.object({
   // Redis
   REDIS_URL: Joi.string().uri().required(),
 
+  // Where the BullMQ workers run (common/queue/queue-worker.ts). `inline`: in
+  // the api process. `off`: the api only enqueues and a separate process
+  // (`pnpm --filter @repo/api start:worker`, src/worker.ts) consumes.
+  QUEUE_WORKER: Joi.string().valid('inline', 'off').default('inline'),
+
   // Express trust proxy. Loopback covers a reverse proxy on the same host.
   // For multi-hop proxies (CloudFront -> Traefik) use '2' or specific IPs.
   // See https://expressjs.com/en/guide/behind-proxies.html

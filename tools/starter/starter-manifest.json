@@ -60,7 +60,7 @@
     "redis": {
       "kind": "core",
       "description": "Redis: sessions, cache, BullMQ and the throttler.",
-      "keys": ["REDIS_URL", "REDIS_PASSWORD"],
+      "keys": ["REDIS_URL", "REDIS_PASSWORD", "QUEUE_WORKER"],
       "secrets": ["REDIS_PASSWORD"],
       "required": ["REDIS_URL"],
       "prodRequired": [],

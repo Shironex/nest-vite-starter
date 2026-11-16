@@ -17,11 +17,13 @@ import { AppErrorHandler, appErrorFormatter } from './trpc/trpc.error-handler';
 import { PingRouter } from './trpc/ping.router';
 import { HealthModule } from './modules/health/health.module';
 import { MailModule } from './modules/mail/mail.module';
+import { EmailDeliveryWorkerModule } from './modules/mail/email-delivery/email-delivery-worker.module';
 import { SessionModule } from './modules/auth/session.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { DataExportModule } from './modules/data-export/data-export.module';
 import { QueueModule } from './common/queue/queue.module';
+import { inlineQueueWorker } from './common/queue/queue-worker';
 import { QueueObservabilityModule } from './common/queue/queue-observability.module';
 import { RequestContextModule } from './common/context/request-context.module';
 import { AuditModule } from './modules/audit/audit.module';
@@ -95,6 +97,9 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
     }),
     HealthModule,
     MailModule,
+    // The queue consumers, in this process unless QUEUE_WORKER=off (then
+    // src/worker.ts runs them). Keep this list and WorkerModule's in step.
+    inlineQueueWorker(EmailDeliveryWorkerModule),
     SessionModule,
     AuthModule,
     UserModule,

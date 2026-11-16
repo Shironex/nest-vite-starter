@@ -21,6 +21,7 @@ import architecture from '@noctcore/eslint-plugin-architecture';
 const NO_PROCESS_EXIT_ALLOW_IN = [
   '**/otel.ts',
   '**/apps/api/src/main.ts',
+  '**/apps/api/src/worker.ts',
   '**/apps/desktop/**',
   '**/packages/database/**',
   '**/tools/**',

@@ -56,8 +56,8 @@ export type EmailDeliveryJobName =
 
 /**
  * Retry/backoff/retention policy, applied once at the producer so no call site
- * re-specifies it. Failed jobs are retained as the DLQ for inspection (paired
- * with the `queue_jobs_failed` gauge from `QueueMetricsService`), but bounded to
+ * re-specifies it. Failed jobs are retained as the DLQ for inspection (their
+ * count feeds the queue health indicator via `QueueMetricsService`), but bounded to
  * a 7-day window: the failed payload includes the recipient address, so an
  * unbounded DLQ is unbounded PII-at-rest (GDPR). 7 days keeps the debugging
  * window while capping growth; tune it to your own retention policy.

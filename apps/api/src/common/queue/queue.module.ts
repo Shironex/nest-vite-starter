@@ -3,9 +3,8 @@ import { BullModule } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
-// Producers stamp request/trace context onto job.data via `withJobContext`;
-// processors extend `TracedWorkerHost` to re-enter that context inside the
-// worker. See ./index.ts and ./example.processor.ts for the pattern.
+// Processors extend `QueueProcessor`. See ./index.ts and ./example.processor.ts
+// for the pattern.
 export * from './index';
 
 /**

@@ -19,8 +19,8 @@ impossible to forget.
 ## Entry points
 
 - `common/queue/register-queue.ts` - `registerQueueWithDefaults`, the only sanctioned registration.
-- `common/queue/traced-worker.host.ts` - the processor base class.
-- `common/queue/job-context.ts` - `withJobContext`, which carries request context into the worker.
+- `common/queue/queue-processor.ts` - `QueueProcessor`, the processor base class.
+- `common/queue/queue-worker.ts` - `QUEUE_WORKER`: whether the api process runs the workers.
 - Every `*.processor.ts` and its `*.constants.ts` under `apps/api/src/modules`.
 
 ## Risks
@@ -30,8 +30,8 @@ impossible to forget.
 - A worker that assumes exactly-once corrupts on the retry that will eventually happen.
 - A job name written as a literal drifts from the processor's `switch`, and the mismatch is a job
   that is enqueued and never handled.
-- A worker that does not carry job context logs without a correlation id, so a failing job cannot
-  be traced back to the request that queued it.
+- A processor on the bare `WorkerHost` logs without a job-scoped request id and reports nothing on
+  its final failure, so a job that never succeeds leaves no trace.
 
 ## Invariants
 
@@ -39,13 +39,11 @@ impossible to forget.
 
 **Enforced by:** `lint-meta:queue-registration-through-helper`, `file:apps/api/src/common/queue/register-queue.ts`
 
-### A processor extends `TracedWorkerHost`
+### A processor extends `QueueProcessor`
 
-**Enforced by:** `eslint:repo/processor-must-extend-traced-worker-host`
+**Enforced by:** `unenforced`, follow-up in `docs/invariants/README.md#unenforced-invariants`
 
-### Every `queue.add` wraps its data in job context
-
-**Enforced by:** `eslint:repo/queue-add-must-wrap-job-context`
+The email-delivery processor and the example both extend it; review is the gate for a new one.
 
 ### A job name comes from a constant, never a literal
 

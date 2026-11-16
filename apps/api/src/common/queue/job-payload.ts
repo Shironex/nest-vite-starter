@@ -15,9 +15,8 @@ import type { z } from 'zod';
  * message carries issue paths + codes only, never payload values (job data
  * contains recipient addresses).
  *
- * Returns the PARSED data (zod strip mode), so `withJobContext`'s reserved
- * `_ctx` / `_traceparent` siblings are dropped and can never leak into
- * processor logic.
+ * Returns the PARSED data (zod strip mode), so a key the schema does not name
+ * is dropped and can never leak into processor logic.
  */
 export function parseJobData<TSchema extends z.ZodType>(
   schema: TSchema,

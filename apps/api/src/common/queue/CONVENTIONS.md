@@ -17,18 +17,28 @@ how `email-delivery/` sits under `modules/mail/`). Each folder holds:
   non-zero `concurrency`; a defaults object that leaves any of them out fails
   `check-types`.
 - `<queue>.types.ts`: the typed job-data contract (a union keyed by job name).
-- `<queue>.processor.ts`: `extends TracedWorkerHost`, decorated
+- `<queue>.processor.ts`: `extends QueueProcessor`, decorated
   `@Processor(QUEUE_NAMES.X, { concurrency })`, `processJob` switches on
   `job.name`.
 - `<queue>.module.ts`: `registerQueueWithDefaults(QUEUE_NAME, X_DEFAULTS)` from
-  `common/queue` (registered exactly once), provides the processor,
-  `exports: [BullModule]`. Calling `BullModule.registerQueue(` directly outside
+  `common/queue` (registered exactly once), `exports: [BullModule]`. The
+  producer side only. Calling `BullModule.registerQueue(` directly outside
   `common/queue` is a `lint:meta` failure
   (`queue-registration-through-helper`): it is the one call that can silently
   drop `defaultJobOptions`.
+- `<queue>-worker.module.ts`: provides the processor (plus whatever it sends
+  through) and imports `<queue>.module.ts`. Registering a `@Processor` is what
+  starts a worker, so this module is imported in two places only: AppModule,
+  through `inlineQueueWorker(...)`, and `src/worker.module.ts`.
 
-Three lint rules enforce the load-bearing parts: `repo/processor-must-extend-traced-worker-host`,
-`repo/job-name-must-be-constant`, `repo/queue-add-must-wrap-job-context`.
+## Where the workers run (`QUEUE_WORKER`)
+
+- `inline` (the default): the api process consumes the queues. One container.
+- `off`: the api only enqueues, and the standalone worker consumes:
+  `pnpm --filter @repo/api start:worker` after a build (`node dist/src/worker`,
+  so a second container can run the api image with that command).
+
+Producers never change: the queue is registered in both modes.
 
 ## Idempotency contract (the important part)
 
@@ -37,7 +47,7 @@ transient failure, or a worker crash mid-process). Design for re-execution.
 
 - **The CALLER owns dedup**, not the worker. To collapse duplicate enqueues of
   the same logical action, pass a stable `jobId`:
-  `queue.add(name, withJobContext(data), { jobId })`. Example: one verification
+  `queue.add(name, data, { jobId })`. Example: one verification
   email per token issuance keys on the token id. Do NOT try to make the worker
   itself dedup: the dedup key is domain-specific and lives at the call site.
 - **Cron sweeps are idempotent by predicate.** A filtered `deleteMany` /
@@ -57,24 +67,22 @@ transient failure, or a worker crash mid-process). Design for re-execution.
 - **Use a BullMQ job scheduler** (`queue.upsertJobScheduler` with a fixed id,
   single dispatch) only when a job must run **exactly once across the fleet**
   (e.g. a billing run) and cannot be made safely idempotent. That is the
-  exception, not the default. Wrap the template data in `withJobContext(...)` by
-  hand (the `queue-add-must-wrap-job-context` rule only sees `.add`), and remove
-  any scheduler left under an old id after the upsert so it cannot double the
-  job. The legacy `queue.add(name, data, { repeat })` form was removed in
+  exception, not the default. Remove any scheduler left under an old id after
+  the upsert so it cannot double the job. The legacy `queue.add(name, data, { repeat })` form was removed in
   BullMQ 6.
 
 ## Failure handling / DLQ
 
-`removeOnFail: false` is intentional: exhausted jobs are retained in the failed
-set as the DLQ for inspection. The `queue_jobs_failed{queue}` gauge
-(`QueueMetricsService`) makes the failed set observable; the queue health
+Exhausted jobs are retained in the failed set as the DLQ for inspection,
+bounded by `removeOnFail`. `QueueMetricsService` caches each queue's job counts
+so the failed set is observable without a Redis round-trip per probe; the queue health
 indicator (observability-only, on `GET /health`, never depooling) reports `down`
 above a threshold. A failed-job replay endpoint / admin UI is deferred to a
 later admin phase.
 
 ## Observability
 
-Producers wrap payloads in `withJobContext(...)` so the worker re-enters the
-request's ALS context and trace (`TracedWorkerHost`). Never spread `job.data`
-into downstream calls: destructure the fields you need, so the reserved
-`_ctx` / `_traceparent` keys never leak.
+`QueueProcessor` runs each job under a `job-<id>` request id, so every log line
+the job writes is greppable by job, logs every failed attempt, and reports the
+final one to Sentry (a no-op without `SENTRY_DSN`). Never spread `job.data`
+into downstream calls: parse it with `parseJobData` and use the parsed fields.

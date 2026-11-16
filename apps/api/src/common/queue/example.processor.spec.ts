@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { UnrecoverableError } from 'bullmq';
 import type { Job } from 'bullmq';
 import { ExampleProcessor } from './example.processor';
-import { TracedWorkerHost } from './traced-worker.host';
+import { QueueProcessor } from './queue-processor';
 
 const jobWith = (data: unknown): Job =>
   ({ id: 'job-7', name: 'greet', queueName: 'example', data }) as unknown as Job;
@@ -18,8 +18,8 @@ describe('ExampleProcessor', () => {
     logSpy.mockRestore();
   });
 
-  it('is a TracedWorkerHost, so it inherits context and trace propagation', () => {
-    expect(new ExampleProcessor()).toBeInstanceOf(TracedWorkerHost);
+  it('is a QueueProcessor, so it inherits the job context and failure reporting', () => {
+    expect(new ExampleProcessor()).toBeInstanceOf(QueueProcessor);
   });
 
   it('processes a valid payload and names the job and the user in its log line', async () => {
@@ -34,11 +34,9 @@ describe('ExampleProcessor', () => {
     expect(logSpy).toHaveBeenCalledWith('Processing example job job-7 for user anon');
   });
 
-  it('ignores the withJobContext envelope keys instead of rejecting the payload', async () => {
+  it('ignores keys the schema does not name instead of rejecting the payload', async () => {
     await expect(
-      new ExampleProcessor().processJob(
-        jobWith({ userId: 'u-1', _ctx: { requestId: 'r-1' }, _traceparent: '00-abc-def-01' }),
-      ),
+      new ExampleProcessor().processJob(jobWith({ userId: 'u-1', extra: { requestId: 'r-1' } })),
     ).resolves.toBeUndefined();
   });
 
