@@ -60,15 +60,6 @@ export const mailSendFailuresTotal = new Counter({
   labelNames: ['template'] as const,
 });
 
-// The old-avatar S3 cleanup after an avatar change is best-effort by design
-// (a delete failure must not block the profile update), so each failure
-// leaves an orphaned object behind. The warn log alone gives no trend line;
-// this counter makes the leak rate visible.
-export const storageOrphanCleanupFailuresTotal = new Counter({
-  name: 'storage_orphan_cleanup_failures_total',
-  help: 'Total best-effort old-avatar S3 cleanup deletions that failed (objects orphaned in storage)',
-});
-
 export const userPurgeDeletedTotal = new Counter({
   name: 'user_purge_deleted_total',
   help: 'Total soft-deleted user rows hard-deleted by the scheduled user-purge sweep after the grace window',

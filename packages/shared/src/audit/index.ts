@@ -84,13 +84,6 @@ export const AUDIT_ACTIONS = {
   // as auth.email.changed.
   USER_ROLE_CHANGED: 'user.role.changed',
 
-  // before/after: { avatarUrl }: storage keys, not PII. The row exists
-  // because User.avatarUrl keeps no history: once overwritten, which image a
-  // profile used is unrecoverable, and the old object is deleted from S3 right
-  // after. Note storage.file.deleted already audits removing an avatar OBJECT,
-  // so without this, deleting one left a trail and setting one did not.
-  USER_AVATAR_CHANGED: 'user.avatar.changed',
-
   // user.account (deletion lifecycle: soft delete, admin soft delete, purge)
   USER_ACCOUNT_DELETED: 'user.account.deleted',
   USER_ACCOUNT_ADMIN_DELETED: 'user.account.admin_deleted',
@@ -98,9 +91,6 @@ export const AUDIT_ACTIONS = {
 
   // data_export (GDPR Art. 20 data portability; access events, metadata only)
   DATA_EXPORT_DOWNLOADED: 'data_export.downloaded',
-
-  // storage (destructive object operations)
-  STORAGE_FILE_DELETED: 'storage.file.deleted',
 
   // workspace (the platform Organization -> Workspace tier, modules/workspace).
   // The workspace every tenant-owned record below the organization hangs off.

@@ -36,11 +36,6 @@ export const AUDIT_LOG_MAX_RANGE_DAYS = 400;
 /** How many actions one quick filter / multi-select may OR together. */
 export const AUDIT_LOG_MAX_ACTIONS = 20;
 
-// --- storage ---------------------------------------------------------------
-
-/** Hard cap on an uploaded asset (avatars and the like), in bytes. 5 MB. */
-export const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
 // --- help ------------------------------------------------------------------
 
 /** Most tours one user's progress blob may name. */

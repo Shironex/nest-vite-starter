@@ -21,7 +21,6 @@ const SCHEMA_DOMAINS = [
   'workspace',
   'help',
   'sessions',
-  'storage',
   'user',
 ] as const;
 

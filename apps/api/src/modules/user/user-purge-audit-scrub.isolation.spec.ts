@@ -32,7 +32,6 @@ import { AuditService } from '../audit/audit.service';
 import { AuditPiiScrubService } from '../audit/audit-pii-scrub.service';
 import type { SessionService } from '../auth/services/session.service';
 import type { MailService } from '../mail/mail.service';
-import type { StorageService } from '../storage/storage.service';
 import type { AuthSharedService } from '../auth/services/auth-shared.service';
 import { EmailChangeService } from '../auth/services/email-change.service';
 import type { StepUpService } from '../auth/services/step-up.service';
@@ -128,7 +127,6 @@ const buildPurge = (audit: AuditService) =>
   new UserPurgeService(
     prismaService,
     { getOrThrow: () => GRACE_DAYS } as unknown as ConfigService,
-    { deletePrefix: jest.fn().mockResolvedValue(0) } as unknown as StorageService,
     audit,
     new AuditPiiScrubService(prismaService),
   );

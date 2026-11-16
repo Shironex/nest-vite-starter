@@ -68,26 +68,6 @@ export {
 } from './auth.js';
 
 export {
-  MAX_FILE_SIZE,
-  ALLOWED_IMAGE_TYPES,
-  ALLOWED_IMAGE_ACCEPT,
-  uploadRequestSchema,
-  uploadResponseSchema,
-  avatarKeySchema,
-  avatarKeyPrefix,
-  getUrlSchema,
-  getUrlOutput,
-  deleteFileSchema,
-  type AllowedImageType,
-  type UploadRequest,
-  type UploadResponse,
-  type AvatarKey,
-  type GetUrlInput,
-  type GetUrlOutput,
-  type DeleteFileInput,
-} from './storage.js';
-
-export {
   DATA_EXPORT_SCHEMA_VERSION,
   userDataExportOutput,
   type UserDataExport,

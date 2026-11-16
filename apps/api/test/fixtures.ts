@@ -26,7 +26,6 @@ export interface UserFixture {
    */
   passwordHash: string | null;
   displayName: string | null;
-  avatarUrl: string | null;
   role: string;
   emailVerified: boolean;
   failedAttempts: number;
@@ -57,7 +56,6 @@ export const userFixture = (overrides: Partial<UserFixture> = {}): UserFixture =
   passwordHash:
     '$argon2id$v=19$m=19456,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBA',
   displayName: null,
-  avatarUrl: null,
   role: 'USER',
   emailVerified: false,
   failedAttempts: 0,
@@ -78,7 +76,6 @@ export const userProfileFixture = (overrides: Partial<UserFixture> = {}): IUserP
     id: u.id,
     email: u.email,
     displayName: u.displayName,
-    avatarUrl: u.avatarUrl,
     role: u.role,
     emailVerified: u.emailVerified,
     createdAt: u.createdAt,

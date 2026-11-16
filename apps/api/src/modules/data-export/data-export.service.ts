@@ -58,7 +58,7 @@ export class DataExportService {
     );
 
     // v1: account profile only. getProfile uses the canonical safe projection
-    // (id, email, displayName, avatarUrl, role, kind, emailVerified, createdAt)
+    // (id, email, displayName, role, kind, emailVerified, createdAt)
     // and never loads passwordHash. A fork adds further sections here, read in one
     // transaction for a consistent snapshot.
     const account = await this.userService.getProfile(userId);

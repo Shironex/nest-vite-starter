@@ -22,7 +22,7 @@ import { loadEnvFiles } from './config/load-env-files';
  * start` from `apps/api`, which means a stray `apps/api/.env` silently beats the
  * repo root's for every key it happens to define, with nothing anywhere saying
  * so. That is not hypothetical: a three-month-old `apps/api/.env` left over from
- * the template era pinned `S3_BUCKET` to a bucket that no longer exists, and the
- * only symptom was every upload failing with `NoSuchBucket`.
+ * the template era pinned a stale value for a key the root file also set, and
+ * nothing said which file had won.
  */
 export const loadedEnvFiles = loadEnvFiles(process.cwd());

@@ -31,9 +31,6 @@
     "check": "pnpm check-types && pnpm lint && pnpm knip && pnpm -w lint:meta && pnpm -w check:lint-meta-docs"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1132.0",
-    "@aws-sdk/s3-presigned-post": "^3.1132.0",
-    "@aws-sdk/s3-request-presigner": "^3.1132.0",
     "@nest-lab/throttler-storage-redis": "^1.2.0",
     "@nestjs/bullmq": "^11.0.5",
     "@nestjs/common": "^11.1.28",

@@ -157,15 +157,13 @@ export const config = [
       // closure and the event loop. Measured 0 hits across the tree when wired.
       'noctcore-async-safety/no-leaky-race-timeout': 'error',
       // The clients configured once at construction, which never see a
-      // per-request `signal`. Both already carry their budgets (the storage and
-      // object store clients set `requestHandler` timeouts, the SMTP provider
-      // sets connection/greeting/socket timeouts); this keeps a new client from
+      // per-request `signal`. The SMTP provider already carries its budget
+      // (connection/greeting/socket timeouts); this keeps a new transport from
       // shipping without one. The rule only proves a key is PRESENT.
       'noctcore-async-safety/require-client-timeout': [
         'error',
         {
           clients: [
-            { callee: 'S3Client', construct: true, requireAnyOf: ['requestHandler'] },
             {
               callee: 'nodemailer.createTransport',
               requireAnyOf: ['connectionTimeout', 'socketTimeout'],

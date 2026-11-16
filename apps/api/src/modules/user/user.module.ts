@@ -6,7 +6,6 @@ import { UserPurgeService } from './user-purge.service';
 import { SessionModule } from '../auth/session.module';
 import { AuthMiddlewareModule } from '../auth/auth-middleware.module';
 import { LockoutModule } from '../auth/lockout.module';
-import { StorageModule } from '../storage/storage.module';
 import { IdempotencyModule } from '../../common/idempotency/idempotency.module';
 
 /**
@@ -23,7 +22,7 @@ import { IdempotencyModule } from '../../common/idempotency/idempotency.module';
  * method-level after auth on its mutations.
  */
 @Module({
-  imports: [SessionModule, AuthMiddlewareModule, LockoutModule, StorageModule, IdempotencyModule],
+  imports: [SessionModule, AuthMiddlewareModule, LockoutModule, IdempotencyModule],
   providers: [UserRepository, UserService, UserRouter, UserPurgeService],
   exports: [UserService, UserRepository],
 })

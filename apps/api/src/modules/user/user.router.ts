@@ -1,12 +1,9 @@
 import { Router, Query, Mutation, Ctx, Input, UseMiddlewares } from 'nestjs-trpc';
 import { z } from 'zod';
-import { TRPCError } from '@trpc/server';
 import {
   accountDeletedOutput,
   ackOutput,
   adminUserListPageOutput,
-  avatarKeyPrefix,
-  avatarKeySchema,
   memberActionSchema,
   userProfileOutput,
   userTenantOutput,
@@ -18,10 +15,6 @@ import { AuthMiddleware } from '../auth/middleware/auth.middleware';
 import { AdminMiddleware } from '../auth/middleware/role.middleware';
 import { IdempotencyMiddleware } from '../../common/idempotency/idempotency.middleware';
 import type { IAuthenticatedContextType } from '../../trpc/trpc.context';
-
-// avatarUrl carries a server-issued S3 object key; the shared avatarKeySchema
-// rejects anything that is not exactly avatars/<id>/<uuid>.<allowed-ext>.
-const updateAvatarInputSchema = z.object({ avatarUrl: avatarKeySchema.nullable() });
 
 const listUsersInputSchema = z
   .object({
@@ -52,7 +45,7 @@ export class UserRouter {
 
   /**
    * Get the authenticated user's profile.
-   * Returns: id, email, displayName, avatarUrl, role, emailVerified,
+   * Returns: id, email, displayName, role, emailVerified,
    * createdAt. Self-scoped: the id comes from ctx.user.id.
    */
   @Query({ output: userProfileOutput })
@@ -68,30 +61,6 @@ export class UserRouter {
   @Query({ output: userTenantOutput })
   async tenant() {
     return this.userService.getTenantIdentity();
-  }
-
-  /**
-   * Update the authenticated user's avatar URL.
-   * Accepts the S3 object key from the storage service.
-   */
-  @Mutation({ input: updateAvatarInputSchema, output: ackOutput })
-  @UseMiddlewares(AuthMiddleware, IdempotencyMiddleware)
-  async updateAvatar(
-    @Ctx() ctx: IAuthenticatedContextType,
-    @Input() input: z.infer<typeof updateAvatarInputSchema>,
-  ) {
-    // avatarKeySchema only validates shape; ownership must be enforced here
-    // (same guard as storage.getUrl/deleteFile). Without it a foreign key
-    // would be attached and the old-key cleanup on the next change would
-    // delete another user's live object.
-    if (input.avatarUrl !== null && !input.avatarUrl.startsWith(avatarKeyPrefix(ctx.user.id))) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You can only use your own uploaded files',
-      });
-    }
-    await this.userService.updateAvatar(ctx.user.id, input.avatarUrl);
-    return { success: true as const };
   }
 
   // ── Admin procedures ──────────────────────────────────────────────

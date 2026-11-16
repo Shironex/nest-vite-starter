@@ -12,7 +12,6 @@ export const userProfileOutput = z.object({
   id: z.string(),
   email: z.string(),
   displayName: z.string().nullable(),
-  avatarUrl: z.string().nullable(),
   role: z.string(),
   emailVerified: z.boolean(),
   createdAt: z.date(),

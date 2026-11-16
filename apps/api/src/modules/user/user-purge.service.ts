@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { AUDIT_ACTIONS } from '@repo/shared/audit';
-import { avatarKeyPrefix } from '@repo/shared/schemas';
 import { PrismaService } from '../../common/database/prisma.service';
 import { APP_TIME_ZONE, MS_PER_DAY, nowMs } from '../../common/clock';
 import * as Sentry from '@sentry/nestjs';
@@ -12,7 +11,6 @@ import {
   cronSweepFailuresTotal,
   cronSweepLastSuccessTimestampSeconds,
 } from '../metrics/metrics.registry';
-import { StorageService } from '../storage/storage.service';
 import { AuditService } from '../audit/audit.service';
 import { AuditPiiScrubService } from '../audit/audit-pii-scrub.service';
 import { errorStack } from '../../common/utils/error';
@@ -36,14 +34,12 @@ export const USER_PURGE_MAX_PER_SWEEP = 500;
  * actor of. That registry is the one `observability/audit-pii-declared` makes
  * every audit write declare against, so a declared field is an erased field.
  *
- * Per-user order matters, and there are three steps: the S3 prefix delete,
- * then the audit scrub, then the row. A failure at any step skips the row for
- * this sweep. The scrub sits
+ * Per-user order matters, and there are two steps: the audit scrub, then the
+ * row. A failure at either step skips the row for this sweep. The scrub sits
  * immediately before the row because AuditLog.userId is SetNull: once the row
  * is gone, the rows the user ACTED in can no longer be found by their id, so a
- * scrub after the delete would silently miss them. The row is the
- * only pointer to the objects, so deleting it before the objects would orphan
- * them in storage forever; keeping the row re-arms the sweep to retry next tick.
+ * scrub after the delete would silently miss them; keeping the row re-arms the
+ * sweep to retry next tick.
  *
  * Follows the repo cron contract (see AuditRetentionService):
  *   - Idempotent by predicate (deletedAt < cutoff), so it races safely when
@@ -68,7 +64,6 @@ export class UserPurgeService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
-    private readonly storageService: StorageService,
     private readonly auditService: AuditService,
     private readonly auditPiiScrub: AuditPiiScrubService,
   ) {
@@ -88,7 +83,7 @@ export class UserPurgeService {
 
   /**
    * Hard-delete soft-deleted users whose grace window has elapsed, one row at
-   * a time so a single failure (S3 or DB) defers only that user to the next
+   * a time so a single failure defers only that user to the next
    * sweep. Returns the count purged (0 on failure).
    */
   async sweep(): Promise<number> {
@@ -107,10 +102,6 @@ export class UserPurgeService {
       let purged = 0;
       for (const row of expired) {
         try {
-          // S3 first: a throw here skips the row THIS sweep, so a deleted row
-          // can never leave objects behind (the inverse order would).
-          await this.storageService.deletePrefix(avatarKeyPrefix(row.id));
-
           // Scrub BEFORE the row delete (SetNull would unlink the actor arm)
           // and let a throw defer the row: an erased user whose audit rows
           // still hold their address is the state this step exists to prevent.

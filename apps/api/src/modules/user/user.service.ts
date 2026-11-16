@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { isDisposableEmail } from 'disposable-email-domains-js';
 import Redis from 'ioredis';
 import { AppErrorCode } from '@repo/shared/errors';
@@ -12,8 +12,6 @@ import { REDIS_CLIENT } from '../../common/redis/redis.module';
 import { RedisKeys } from '../../common/redis/redis-keys';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '../../common/database/prisma.service';
-import { storageOrphanCleanupFailuresTotal } from '../metrics/metrics.registry';
-import { StorageService } from '../storage/storage.service';
 import { SessionService } from '../auth/services/session.service';
 import { AuditService } from '../audit/audit.service';
 
@@ -21,7 +19,6 @@ export interface IUserProfile {
   id: string;
   email: string;
   displayName: string | null;
-  avatarUrl: string | null;
   role: string;
   emailVerified: boolean;
   createdAt: Date;
@@ -75,11 +72,8 @@ export interface IListUsersParams {
 
 @Injectable()
 export class UserService {
-  private readonly logger = new Logger(UserService.name);
-
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly storageService: StorageService,
     private readonly sessionService: SessionService,
     private readonly auditService: AuditService,
     private readonly prismaService: PrismaService,
@@ -671,79 +665,5 @@ export class UserService {
 
     const name = await this.userRepository.getTenantName(tenantId);
     return { name };
-  }
-
-  /**
-   * Update a user's avatar URL (S3 object key).
-   *
-   * Cleans up the previous object so changing or clearing an avatar doesn't
-   * orphan storage. Ownership of the old key is claimed with a compare-and-
-   * swap: a plain read-then-write would let two concurrent updates both claim
-   * the same old key and one of them would delete an object the other still
-   * references. Only the caller whose swap succeeded deletes the old object.
-   * Best-effort: only our own stored keys (not external http(s) URLs), only
-   * when the key actually changed, and a delete failure never blocks the
-   * update.
-   */
-  async updateAvatar(userId: string, avatarUrl: string | null): Promise<void> {
-    const current = await this.userRepository.getProfile(userId);
-    if (!current) {
-      throw new NotFoundError();
-    }
-
-    let oldKey = current.avatarUrl ?? null;
-    let swapped = await this.userRepository.updateAvatarIfCurrent(userId, avatarUrl, oldKey);
-
-    if (!swapped) {
-      // Lost a concurrent swap: re-read the fresh key and retry once.
-      const fresh = await this.userRepository.getProfile(userId);
-      if (!fresh) {
-        throw new NotFoundError();
-      }
-      oldKey = fresh.avatarUrl ?? null;
-      swapped = await this.userRepository.updateAvatarIfCurrent(userId, avatarUrl, oldKey);
-    }
-
-    if (!swapped) {
-      // Second race loss: land the caller's write (last write wins on the
-      // value) but skip deletion, since this caller cannot prove ownership
-      // of whichever key it would be overwriting.
-      const count = await this.userRepository.updateAvatar(userId, avatarUrl);
-      if (count === 0) {
-        throw new NotFoundError();
-      }
-      // Audited like any other landed write. `before` is the key this caller
-      // last read, which after two lost races is not necessarily what it
-      // overwrote; `raced` says so rather than letting the row imply a
-      // certainty the code does not have.
-      await this.auditService.log({
-        action: AUDIT_ACTIONS.USER_AVATAR_CHANGED,
-        targetType: 'User',
-        targetId: userId,
-        before: { avatarUrl: oldKey },
-        after: { avatarUrl },
-        metadata: { raced: true },
-      });
-      return;
-    }
-
-    await this.auditService.log({
-      action: AUDIT_ACTIONS.USER_AVATAR_CHANGED,
-      targetType: 'User',
-      targetId: userId,
-      before: { avatarUrl: oldKey },
-      after: { avatarUrl },
-    });
-
-    if (oldKey && oldKey !== avatarUrl && !/^https?:\/\//i.test(oldKey)) {
-      try {
-        await this.storageService.delete(oldKey);
-      } catch (err) {
-        // Best-effort: the object is now orphaned in S3. Counted so the leak
-        // rate is observable, not just individually logged.
-        storageOrphanCleanupFailuresTotal.inc();
-        this.logger.warn('Failed to delete previous avatar object', err);
-      }
-    }
   }
 }

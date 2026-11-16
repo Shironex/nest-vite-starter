@@ -536,7 +536,6 @@ export class TwoFactorChallengeService {
       id: user.id,
       email: user.email,
       displayName: user.displayName,
-      avatarUrl: user.avatarUrl,
       role: user.role,
       emailVerified: user.emailVerified,
       createdAt: user.createdAt,

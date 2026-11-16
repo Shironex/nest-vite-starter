@@ -1,7 +1,6 @@
 import type { ConfigService } from '@nestjs/config';
 import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import type { PrismaService } from '../../common/database/prisma.service';
-import type { StorageService } from '../storage/storage.service';
 import type { AuditService } from '../audit/audit.service';
 import type { AuditPiiScrubService } from '../audit/audit-pii-scrub.service';
 import { UserPurgeService, USER_PURGE_MAX_PER_SWEEP } from './user-purge.service';
@@ -34,17 +33,15 @@ const buildSubject = (graceDays = 30) => {
       return graceDays;
     }),
   };
-  const storage = { deletePrefix: jest.fn().mockResolvedValue(0) };
   const audit = { log: jest.fn().mockResolvedValue(undefined) };
   const scrub = { scrubUser: jest.fn().mockResolvedValue(3) };
   const service = new UserPurgeService(
     prisma as unknown as PrismaService,
     config as unknown as ConfigService,
-    storage as unknown as StorageService,
     audit as unknown as AuditService,
     scrub as unknown as AuditPiiScrubService,
   );
-  return { service, findMany, deleteMany, storage, audit, scrub };
+  return { service, findMany, deleteMany, audit, scrub };
 };
 
 describe('UserPurgeService.sweep', () => {
@@ -90,21 +87,15 @@ describe('UserPurgeService.sweep', () => {
     );
   });
 
-  it('per user: deletes the S3 prefix FIRST, then the row, then counts and audits the purge as a system event', async () => {
-    const { service, findMany, deleteMany, storage, audit } = buildSubject();
+  it('per user: deletes the row, then counts and audits the purge as a system event', async () => {
+    const { service, findMany, deleteMany, audit } = buildSubject();
     const deletedAt = new Date('2026-05-20T12:00:00Z');
     findMany.mockResolvedValue([expiredRow('u-1', deletedAt)]);
 
     const purged = await service.sweep();
 
     expect(purged).toBe(1);
-    expect(storage.deletePrefix).toHaveBeenCalledWith('avatars/u-1/');
     expect(deleteMany).toHaveBeenCalledWith({ where: { id: 'u-1' } });
-    // S3 strictly before the row delete: the row is the only pointer to the
-    // objects, so the inverse order could orphan them forever.
-    expect(storage.deletePrefix.mock.invocationCallOrder[0]!).toBeLessThan(
-      deleteMany.mock.invocationCallOrder[0]!,
-    );
     expect(deletedSpy).toHaveBeenCalledTimes(1);
     // System sweep: no request context, so every audit field is explicit.
     expect(audit.log).toHaveBeenCalledWith({
@@ -116,8 +107,8 @@ describe('UserPurgeService.sweep', () => {
     });
   });
 
-  it('scrubs the user audit PII after the S3 delete and BEFORE the row delete', async () => {
-    const { service, findMany, deleteMany, storage, scrub } = buildSubject();
+  it('scrubs the user audit PII BEFORE the row delete', async () => {
+    const { service, findMany, deleteMany, scrub } = buildSubject();
     findMany.mockResolvedValue([expiredRow('u-1')]);
 
     await service.sweep();
@@ -127,9 +118,6 @@ describe('UserPurgeService.sweep', () => {
     // acted in from their id, so the scrub must see them first.
     expect(scrub.scrubUser.mock.invocationCallOrder[0]!).toBeLessThan(
       deleteMany.mock.invocationCallOrder[0]!,
-    );
-    expect(storage.deletePrefix.mock.invocationCallOrder[0]!).toBeLessThan(
-      scrub.scrubUser.mock.invocationCallOrder[0]!,
     );
   });
 
@@ -143,25 +131,6 @@ describe('UserPurgeService.sweep', () => {
 
     const purged = await service.sweep();
 
-    expect(purged).toBe(1);
-    expect(deleteMany).toHaveBeenCalledTimes(1);
-    expect(deleteMany).toHaveBeenCalledWith({ where: { id: 'u-2' } });
-    expect(failuresSpy).toHaveBeenCalledTimes(1);
-    expect(audit.log).toHaveBeenCalledTimes(1);
-    expect(audit.log).toHaveBeenCalledWith(expect.objectContaining({ targetId: 'u-2' }));
-  });
-
-  it('skips the row THIS sweep when the S3 prefix delete fails (never orphans objects behind a deleted row)', async () => {
-    const { service, findMany, deleteMany, storage, audit } = buildSubject();
-    findMany.mockResolvedValue([expiredRow('u-1'), expiredRow('u-2')]);
-    storage.deletePrefix.mockRejectedValueOnce(new Error('S3 down')).mockResolvedValueOnce(2);
-    jest
-      .spyOn((service as unknown as { logger: { error: jest.Mock } }).logger, 'error')
-      .mockImplementation(() => undefined);
-
-    const purged = await service.sweep();
-
-    // u-1 deferred (row kept, failure counted), u-2 still purged.
     expect(purged).toBe(1);
     expect(deleteMany).toHaveBeenCalledTimes(1);
     expect(deleteMany).toHaveBeenCalledWith({ where: { id: 'u-2' } });
@@ -199,13 +168,12 @@ describe('UserPurgeService.sweep', () => {
   });
 
   it('terminates without deleting when nothing is past the grace window (idempotent by predicate)', async () => {
-    const { service, findMany, deleteMany, storage } = buildSubject();
+    const { service, findMany, deleteMany } = buildSubject();
     findMany.mockResolvedValue([]);
 
     const purged = await service.sweep();
 
     expect(purged).toBe(0);
-    expect(storage.deletePrefix).not.toHaveBeenCalled();
     expect(deleteMany).not.toHaveBeenCalled();
   });
 

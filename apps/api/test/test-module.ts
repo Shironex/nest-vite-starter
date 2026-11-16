@@ -78,7 +78,6 @@ export interface AuthMocks {
     verifyEmail: jest.Mock;
     listUsers: jest.Mock;
     getProfile: jest.Mock;
-    updateAvatar: jest.Mock;
     softDeleteById: jest.Mock;
     softDeleteSelfKeepingOneAdmin: jest.Mock;
     assertDeletionLeavesNobodyStranded: jest.Mock;
@@ -94,8 +93,6 @@ export interface AuthMocks {
     getProfile: jest.Mock;
     listUsers: jest.Mock;
     verifyEmail: jest.Mock;
-    updateAvatar: jest.Mock;
-    updateAvatarIfCurrent: jest.Mock;
     updatePassword: jest.Mock;
     softDelete: jest.Mock;
     findRoleScoped: jest.Mock;
@@ -512,7 +509,6 @@ const buildAuthMocks = (
       verifyEmail: jest.fn(),
       listUsers: jest.fn(),
       getProfile: jest.fn(),
-      updateAvatar: jest.fn(),
       softDeleteById: jest.fn().mockResolvedValue(1),
       // The self-service deletion, guard and write in one serialized act.
       // Permissive by default: a sole user deleting their own account strands
@@ -531,8 +527,6 @@ const buildAuthMocks = (
       getProfile: jest.fn(),
       listUsers: jest.fn(),
       verifyEmail: jest.fn(),
-      updateAvatar: jest.fn(),
-      updateAvatarIfCurrent: jest.fn(),
       updatePassword: jest.fn(),
       softDelete: jest.fn(),
       findRoleScoped: jest.fn(),

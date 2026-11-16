@@ -6,7 +6,6 @@ const buildRouter = () => {
   const userService = {
     getProfile: jest.fn().mockResolvedValue({ id: 'u-1', email: 'e' }),
     getTenantIdentity: jest.fn().mockResolvedValue({ name: 'Acme Robotics' }),
-    updateAvatar: jest.fn().mockResolvedValue(undefined),
     listUsers: jest.fn().mockResolvedValue({ items: [], nextCursor: null }),
     updateRole: jest.fn().mockResolvedValue(undefined),
     adminDeleteUser: jest.fn().mockResolvedValue(undefined),
@@ -44,28 +43,6 @@ describe('UserRouter (wiring)', () => {
     const result = await router.tenant();
     expect(userService.getTenantIdentity).toHaveBeenCalledWith();
     expect(result).toEqual({ name: 'Acme Robotics' });
-  });
-
-  it('updateAvatar() with non-null URL delegates and returns success', async () => {
-    const { router, userService } = buildRouter();
-    const result = await router.updateAvatar(buildCtx('u-1'), { avatarUrl: 'avatars/u-1/x.png' });
-    expect(userService.updateAvatar).toHaveBeenCalledWith('u-1', 'avatars/u-1/x.png');
-    expect(result).toEqual({ success: true });
-  });
-
-  it('updateAvatar() with null passes null through', async () => {
-    const { router, userService } = buildRouter();
-    const result = await router.updateAvatar(buildCtx('u-1'), { avatarUrl: null });
-    expect(userService.updateAvatar).toHaveBeenCalledWith('u-1', null);
-    expect(result).toEqual({ success: true });
-  });
-
-  it('updateAvatar() rejects a key under another user prefix without touching the service', async () => {
-    const { router, userService } = buildRouter();
-    await expect(
-      router.updateAvatar(buildCtx('u-1'), { avatarUrl: 'avatars/u-2/x.png' }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
-    expect(userService.updateAvatar).not.toHaveBeenCalled();
   });
 
   it('listUsers() forwards the zod-defaulted pagination input to userService.listUsers', async () => {

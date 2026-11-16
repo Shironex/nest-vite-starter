@@ -6,14 +6,12 @@ import { PrismaService } from '../../common/database/prisma.service';
 import { now } from '../../common/clock';
 import type { IUserProfile, IAdminUserListPage, IListUsersParams } from './user.service';
 import { idCursorArgs, pageByIdCursor } from '../../common/utils/cursor-page';
-import type { AvatarOwnerPort } from '../storage/avatar-owner.port';
 
 // The `user.me` projection.
 const PROFILE_SELECT = {
   id: true,
   email: true,
   displayName: true,
-  avatarUrl: true,
   role: true,
   emailVerified: true,
   createdAt: true,
@@ -30,7 +28,6 @@ const CREDENTIAL_FREE_SELECT = {
   id: true,
   email: true,
   displayName: true,
-  avatarUrl: true,
   role: true,
   emailVerified: true,
   lockedUntil: true,
@@ -51,7 +48,7 @@ const ADMIN_LIST_SELECT = {
 } as const;
 
 @Injectable()
-export class UserRepository extends BaseRepository implements AvatarOwnerPort {
+export class UserRepository extends BaseRepository {
   constructor(prisma: PrismaService) {
     super(prisma);
   }
@@ -282,45 +279,6 @@ export class UserRepository extends BaseRepository implements AvatarOwnerPort {
         membershipEndedAt: null,
       },
     });
-  }
-
-  /**
-   * Guarded by the soft-delete filter; returns the affected count so the
-   * service can throw NotFound on zero rows.
-   */
-  async updateAvatar(userId: string, avatarUrl: string | null): Promise<number> {
-    const result = await this.client.user.updateMany({
-      where: { id: userId, ...this.notDeleted },
-      data: { avatarUrl },
-    });
-    return result.count;
-  }
-
-  /**
-   * Compare-and-swap avatar write: updates only when the stored avatarUrl
-   * still equals `expectedCurrent` (soft-delete guarded). Ownership of the
-   * old S3 key transfers to the caller only when this returns true, so two
-   * concurrent updates can never both claim (and delete) the same old object.
-   */
-  async updateAvatarIfCurrent(
-    userId: string,
-    avatarUrl: string | null,
-    expectedCurrent: string | null,
-  ): Promise<boolean> {
-    const result = await this.client.user.updateMany({
-      where: { id: userId, avatarUrl: expectedCurrent, ...this.notDeleted },
-      data: { avatarUrl },
-    });
-    return result.count > 0;
-  }
-
-  /**
-   * AvatarOwnerPort: drop the avatar reference when the object behind it was
-   * deleted. The same compare-and-swap as above with a null target, so a
-   * profile that has moved on to a newer avatar keeps it.
-   */
-  async clearAvatarIfCurrent(userId: string, key: string): Promise<boolean> {
-    return this.updateAvatarIfCurrent(userId, null, key);
   }
 
   /**

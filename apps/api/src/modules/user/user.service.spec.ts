@@ -3,11 +3,9 @@ import { AppErrorCode } from '@repo/shared/errors';
 import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
-import { StorageService } from '../storage/storage.service';
 import { SessionService } from '../auth/services/session.service';
 import { AuditService } from '../audit/audit.service';
 import { requestContext } from '../../common/context/request-context';
-import { storageOrphanCleanupFailuresTotal } from '../metrics/metrics.registry';
 import { REDIS_CLIENT } from '../../common/redis/redis.module';
 import { PrismaService } from '../../common/database/prisma.service';
 import { RedisKeys } from '../../common/redis/redis-keys';
@@ -28,8 +26,6 @@ const buildSubject = async () => {
     getProfile: jest.fn(),
     listUsers: jest.fn(),
     verifyEmail: jest.fn(),
-    updateAvatar: jest.fn(),
-    updateAvatarIfCurrent: jest.fn(),
     updatePassword: jest.fn(),
     updateRoleScoped: jest.fn().mockResolvedValue(1),
     softDelete: jest.fn(),
@@ -51,7 +47,6 @@ const buildSubject = async () => {
     endMembership: jest.fn().mockResolvedValue(1),
     restoreMembership: jest.fn().mockResolvedValue(1),
   };
-  const storage = { delete: jest.fn().mockResolvedValue(undefined) };
   const sessionService = { deleteAllUserSessions: jest.fn().mockResolvedValue(undefined) };
   const audit = { log: jest.fn().mockResolvedValue(undefined) };
   const redis = { del: jest.fn().mockResolvedValue(1) };
@@ -62,7 +57,6 @@ const buildSubject = async () => {
     providers: [
       UserService,
       { provide: UserRepository, useValue: repo },
-      { provide: StorageService, useValue: storage },
       { provide: SessionService, useValue: sessionService },
       { provide: AuditService, useValue: audit },
       { provide: PrismaService, useValue: prisma },
@@ -72,7 +66,6 @@ const buildSubject = async () => {
   return {
     service: module.get(UserService),
     repo,
-    storage,
     sessionService,
     audit,
     redis,
@@ -208,133 +201,6 @@ describe('UserService', () => {
         code: 'NOT_FOUND',
         message: AppErrorCode.NOT_FOUND,
       });
-    });
-
-    it('updateAvatar swaps against the current key (accepts null)', async () => {
-      const { service, repo } = await buildSubject();
-      repo.getProfile.mockResolvedValue(userProfileFixture({ avatarUrl: null }));
-      repo.updateAvatarIfCurrent.mockResolvedValue(true);
-      await service.updateAvatar('u-1', null);
-      expect(repo.updateAvatarIfCurrent).toHaveBeenCalledWith('u-1', null, null);
-    });
-
-    it('updateAvatar throws NOT_FOUND when the user is missing or soft-deleted', async () => {
-      const { service, repo, storage } = await buildSubject();
-      repo.getProfile.mockResolvedValue(null);
-      await expect(service.updateAvatar('ghost', null)).rejects.toMatchObject({
-        code: 'NOT_FOUND',
-        message: AppErrorCode.NOT_FOUND,
-      });
-      expect(repo.updateAvatarIfCurrent).not.toHaveBeenCalled();
-      expect(storage.delete).not.toHaveBeenCalled();
-    });
-
-    it('updateAvatar deletes the previous stored object when the swap succeeded', async () => {
-      const { service, repo, storage } = await buildSubject();
-      repo.getProfile.mockResolvedValue(userProfileFixture({ avatarUrl: 'avatars/u-1/old.png' }));
-      repo.updateAvatarIfCurrent.mockResolvedValue(true);
-      await service.updateAvatar('u-1', 'avatars/u-1/new.png');
-      expect(repo.updateAvatarIfCurrent).toHaveBeenCalledWith(
-        'u-1',
-        'avatars/u-1/new.png',
-        'avatars/u-1/old.png',
-      );
-      expect(storage.delete).toHaveBeenCalledWith('avatars/u-1/old.png');
-    });
-
-    it('updateAvatar does NOT delete external http(s) avatar URLs', async () => {
-      const { service, repo, storage } = await buildSubject();
-      repo.getProfile.mockResolvedValue(
-        userProfileFixture({ avatarUrl: 'https://example.com/me.png' }),
-      );
-      repo.updateAvatarIfCurrent.mockResolvedValue(true);
-      await service.updateAvatar('u-1', 'avatars/u-1/new.png');
-      expect(storage.delete).not.toHaveBeenCalled();
-    });
-
-    it('updateAvatar still resolves when deleting the old object fails, counting the orphan', async () => {
-      const { service, repo, storage } = await buildSubject();
-      const incSpy = jest.spyOn(storageOrphanCleanupFailuresTotal, 'inc');
-      repo.getProfile.mockResolvedValue(userProfileFixture({ avatarUrl: 'avatars/u-1/old.png' }));
-      repo.updateAvatarIfCurrent.mockResolvedValue(true);
-      storage.delete.mockRejectedValue(new Error('S3 down'));
-      await expect(service.updateAvatar('u-1', 'avatars/u-1/new.png')).resolves.toBeUndefined();
-      // The failed best-effort cleanup orphans the old object: it must be
-      // counted, not just warn-logged.
-      expect(incSpy).toHaveBeenCalledTimes(1);
-      incSpy.mockRestore();
-    });
-
-    it('updateAvatar retries the swap once against the re-read key after losing a race, then deletes the key it owns', async () => {
-      const { service, repo, storage } = await buildSubject();
-      // A concurrent update moved the avatar from old.png to mid.png between
-      // this caller's read and its swap.
-      repo.getProfile
-        .mockResolvedValueOnce(userProfileFixture({ avatarUrl: 'avatars/u-1/old.png' }))
-        .mockResolvedValueOnce(userProfileFixture({ avatarUrl: 'avatars/u-1/mid.png' }));
-      repo.updateAvatarIfCurrent.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
-
-      await service.updateAvatar('u-1', 'avatars/u-1/new.png');
-
-      expect(repo.updateAvatarIfCurrent).toHaveBeenNthCalledWith(
-        1,
-        'u-1',
-        'avatars/u-1/new.png',
-        'avatars/u-1/old.png',
-      );
-      expect(repo.updateAvatarIfCurrent).toHaveBeenNthCalledWith(
-        2,
-        'u-1',
-        'avatars/u-1/new.png',
-        'avatars/u-1/mid.png',
-      );
-      // Only the key this caller actually swapped out may be deleted; the
-      // stale old.png now belongs to whoever replaced it.
-      expect(storage.delete).toHaveBeenCalledTimes(1);
-      expect(storage.delete).toHaveBeenCalledWith('avatars/u-1/mid.png');
-    });
-
-    it('updateAvatar throws NOT_FOUND when the user vanishes between the failed swap and the re-read', async () => {
-      const { service, repo, storage } = await buildSubject();
-      repo.getProfile
-        .mockResolvedValueOnce(userProfileFixture({ avatarUrl: 'avatars/u-1/old.png' }))
-        .mockResolvedValueOnce(null);
-      repo.updateAvatarIfCurrent.mockResolvedValue(false);
-
-      await expect(service.updateAvatar('u-1', 'avatars/u-1/new.png')).rejects.toMatchObject({
-        code: 'NOT_FOUND',
-        message: AppErrorCode.NOT_FOUND,
-      });
-      expect(storage.delete).not.toHaveBeenCalled();
-    });
-
-    it('updateAvatar lands the write but skips deletion when both swaps lose the race', async () => {
-      const { service, repo, storage } = await buildSubject();
-      repo.getProfile
-        .mockResolvedValueOnce(userProfileFixture({ avatarUrl: 'avatars/u-1/old.png' }))
-        .mockResolvedValueOnce(userProfileFixture({ avatarUrl: 'avatars/u-1/mid.png' }));
-      repo.updateAvatarIfCurrent.mockResolvedValue(false);
-      repo.updateAvatar.mockResolvedValue(1);
-
-      await expect(service.updateAvatar('u-1', 'avatars/u-1/new.png')).resolves.toBeUndefined();
-
-      // The fallback write is unconditional on the key (still soft-delete
-      // guarded), and no deletion happens: ownership was never proven.
-      expect(repo.updateAvatar).toHaveBeenCalledWith('u-1', 'avatars/u-1/new.png');
-      expect(storage.delete).not.toHaveBeenCalled();
-    });
-
-    it('updateAvatar throws NOT_FOUND when the fallback guarded write matches zero rows', async () => {
-      const { service, repo, storage } = await buildSubject();
-      repo.getProfile.mockResolvedValue(userProfileFixture({ avatarUrl: 'avatars/u-1/old.png' }));
-      repo.updateAvatarIfCurrent.mockResolvedValue(false);
-      repo.updateAvatar.mockResolvedValue(0);
-
-      await expect(service.updateAvatar('u-1', 'avatars/u-1/new.png')).rejects.toMatchObject({
-        code: 'NOT_FOUND',
-        message: AppErrorCode.NOT_FOUND,
-      });
-      expect(storage.delete).not.toHaveBeenCalled();
     });
 
     it('listUsers → repo.listUsers, scoped to the caller tenant with the pagination params', async () => {

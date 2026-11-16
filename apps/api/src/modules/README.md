@@ -14,23 +14,19 @@ suffix is added here and only here.
 
 Standard NestJS, used the standard way:
 
-| Suffix        | Holds                                                             | Example                          |
-| ------------- | ----------------------------------------------------------------- | -------------------------------- |
-| `.module`     | Nest wiring only                                                  | `user/user.module.ts`            |
-| `.service`    | Domain logic and writes                                           | `user/user.service.ts`           |
-| `.repository` | Prisma queries only; extends `common/database/base.repository.ts` | `user/user.repository.ts`        |
-| `.router`     | tRPC procedures; the default entry point                          | `user/user.router.ts`            |
-| `.controller` | Plain HTTP, for what tRPC cannot serve: bytes, redirects, feeds   | `auth/oauth/oauth.controller.ts` |
-| `.constants`  | One module's enums, unions and DI tokens                          | `auth/auth.constants.ts`         |
+| Suffix        | Holds                                                             | Example                       |
+| ------------- | ----------------------------------------------------------------- | ----------------------------- |
+| `.module`     | Nest wiring only                                                  | `user/user.module.ts`         |
+| `.service`    | Domain logic and writes                                           | `user/user.service.ts`        |
+| `.repository` | Prisma queries only; extends `common/database/base.repository.ts` | `user/user.repository.ts`     |
+| `.router`     | tRPC procedures; the default entry point                          | `user/user.router.ts`         |
+| `.controller` | Plain HTTP, for what tRPC cannot serve: bytes, redirects, feeds   | `health/health.controller.ts` |
+| `.constants`  | One module's enums, unions and DI tokens                          | `auth/auth.constants.ts`      |
 
 There is one more, unsuffixed by convention: `<module>.public.ts` names what
 another module may import from this one by value.
 
 Local vocabulary:
-
-- **`.port`** - an abstract class used as a DI token: the sanctioned seam
-  between two clusters, bound `useExisting` so there is one instance and one
-  writer. `storage/avatar-owner.port.ts`
 
 Sweeps have no suffix of their own: they are ordinary services named
 `*-sweep.service.ts`. A suffix that appears exactly once (`.store`, `.rules`,

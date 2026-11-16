@@ -8,17 +8,6 @@
 /** Cloudflare siteverify answers in well under a second; sign-in waits on it. */
 export const TURNSTILE_VERIFY_TIMEOUT_MS = 5_000;
 
-/** Time allowed to open the TCP/TLS connection to the S3 endpoint. */
-export const S3_CONNECTION_TIMEOUT_MS = 5_000;
-
-/**
- * S3 socket INACTIVITY budget, not a total request cap: a streaming
- * PUT or GET of a large document keeps resetting it while bytes move, so only a
- * genuinely stalled transfer is cut. (`requestTimeout` is deliberately unused:
- * it is a total cap, and the SDK only warns on it without `throwOnRequestTimeout`.)
- */
-export const S3_SOCKET_TIMEOUT_MS = 60_000;
-
 /** SMTP: time to open the connection, to receive the server greeting, and to sit idle. */
 export const SMTP_CONNECTION_TIMEOUT_MS = 10_000;
 export const SMTP_GREETING_TIMEOUT_MS = 10_000;

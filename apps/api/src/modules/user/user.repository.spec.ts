@@ -374,61 +374,6 @@ describe('UserRepository guarded soft-delete writes', () => {
     });
   });
 
-  it('updateAvatar guards on { id, deletedAt: null } and returns the count', async () => {
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.updateMany.mockResolvedValue({ count: 1 });
-
-    await expect(repo.updateAvatar('u-1', 'avatars/u-1/new.png')).resolves.toBe(1);
-    expect(prisma.client.user.updateMany).toHaveBeenCalledWith({
-      where: { id: 'u-1', deletedAt: null },
-      data: { avatarUrl: 'avatars/u-1/new.png' },
-    });
-  });
-
-  it('updateAvatarIfCurrent compare-and-swaps on the expected current key (soft-delete guarded)', async () => {
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.updateMany.mockResolvedValue({ count: 1 });
-
-    await expect(
-      repo.updateAvatarIfCurrent('u-1', 'avatars/u-1/new.png', 'avatars/u-1/old.png'),
-    ).resolves.toBe(true);
-    expect(prisma.client.user.updateMany).toHaveBeenCalledWith({
-      where: { id: 'u-1', avatarUrl: 'avatars/u-1/old.png', deletedAt: null },
-      data: { avatarUrl: 'avatars/u-1/new.png' },
-    });
-  });
-
-  it('updateAvatarIfCurrent returns false when the stored key no longer matches', async () => {
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.updateMany.mockResolvedValue({ count: 0 });
-
-    await expect(repo.updateAvatarIfCurrent('u-1', 'avatars/u-1/new.png', null)).resolves.toBe(
-      false,
-    );
-    expect(prisma.client.user.updateMany).toHaveBeenCalledWith({
-      where: { id: 'u-1', avatarUrl: null, deletedAt: null },
-      data: { avatarUrl: 'avatars/u-1/new.png' },
-    });
-  });
-
-  it('clearAvatarIfCurrent nulls the avatar only while it still equals the deleted key', async () => {
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.updateMany.mockResolvedValue({ count: 1 });
-
-    await expect(repo.clearAvatarIfCurrent('u-1', 'avatars/u-1/old.png')).resolves.toBe(true);
-    expect(prisma.client.user.updateMany).toHaveBeenCalledWith({
-      where: { id: 'u-1', avatarUrl: 'avatars/u-1/old.png', deletedAt: null },
-      data: { avatarUrl: null },
-    });
-  });
-
-  it('clearAvatarIfCurrent leaves a profile that moved on to a newer avatar alone', async () => {
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.updateMany.mockResolvedValue({ count: 0 });
-
-    await expect(repo.clearAvatarIfCurrent('u-1', 'avatars/u-1/old.png')).resolves.toBe(false);
-  });
-
   it('softDelete guards on { id, deletedAt: null }, stamps deletedAt, and returns the count', async () => {
     const { repo, prisma } = await buildSubject();
     prisma.client.user.updateMany.mockResolvedValue({ count: 1 });

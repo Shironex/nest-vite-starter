@@ -10,13 +10,13 @@
  * configuration.config.ts so app.module.spec.ts can boot the real AppModule's
  * ConfigModule.forRoot validation. Values are valid-format-only test stand-ins
  * (the URIs never get dialed at compile time): the spec only resolves the DI
- * graph, it never opens a real DB / Redis / S3 connection.
+ * graph, it never opens a real DB / Redis connection.
  *
  * Only fills values that are unset, so a value provided by the surrounding
  * shell / CI env always wins.
  */
 const TEST_ENV_DEFAULTS: Record<string, string> = {
-  // Joi `.uri()` on DATABASE_URL / REDIS_URL / S3_ENDPOINT, so a valid scheme is
+  // Joi `.uri()` on DATABASE_URL / REDIS_URL, so a valid scheme is
   // mandatory. These hosts are never connected to here; the AppModule spec
   // overrides every infra provider that would otherwise dial them.
   DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
@@ -34,14 +34,6 @@ const TEST_ENV_DEFAULTS: Record<string, string> = {
   // A valid hex-64 (32-byte) key with high byte diversity, test-only. Clears
   // both the Joi pattern and EncryptionService's boot-time entropy gate.
   ENCRYPTION_KEY: '6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81',
-
-  // S3 storage: all five required. S3_ENDPOINT must pass Joi `.uri()`; the
-  // S3Client is constructed (lazily, no socket) but never sends a command here.
-  S3_ENDPOINT: 'http://localhost:4568',
-  S3_REGION: 'us-east-1',
-  S3_BUCKET: 'test-bucket',
-  S3_ACCESS_KEY: 'S3RVER',
-  S3_SECRET_KEY: 'S3RVER',
 };
 
 for (const [key, value] of Object.entries(TEST_ENV_DEFAULTS)) {

@@ -126,15 +126,6 @@ export const validationSchema = Joi.object({
     otherwise: Joi.string().optional().allow(''),
   }),
 
-  // S3 Storage: all required. Local development points at s3rver
-  // (S3_ACCESS_KEY=S3RVER / S3_SECRET_KEY=S3RVER) so dev still boots,
-  // but prod must supply real values explicitly.
-  S3_ENDPOINT: Joi.string().uri().required(),
-  S3_REGION: Joi.string().required(),
-  S3_BUCKET: Joi.string().required(),
-  S3_ACCESS_KEY: Joi.string().required(),
-  S3_SECRET_KEY: Joi.string().required(),
-
   // Admin seed credentials (optional)
   ADMIN_EMAIL: Joi.string().email().optional().allow(''),
   ADMIN_PASSWORD: Joi.string().optional().allow(''),
@@ -145,7 +136,7 @@ export const validationSchema = Joi.object({
   AUDIT_LOG_RETENTION_DAYS: Joi.number().integer().min(30).default(365),
 
   // Grace window for the user-purge cron: soft-deleted accounts older than
-  // this many days are hard-deleted (row + S3 objects). 0 means purge on the
+  // this many days are hard-deleted. 0 means purge on the
   // next sweep; the default gives 30 days to reverse an accidental deletion.
   USER_PURGE_GRACE_DAYS: Joi.number().integer().min(0).default(30),
 

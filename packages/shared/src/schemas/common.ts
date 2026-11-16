@@ -11,8 +11,7 @@ export const pingOutputSchema = z.object({
 
 /**
  * Domain-neutral acknowledgment output for mutations whose only meaningful
- * result is "it worked" (storage.deleteFile, user.updateAvatar, unlockUser,
- * updateUserRole). Set as the procedure `output:` so the server zod-strips the
+ * result is "it worked" (unlockUser, updateUserRole). Set as the procedure `output:` so the server zod-strips the
  * wire response to exactly `{ success: true }` and nothing internal can leak
  * through a wider return value.
  *

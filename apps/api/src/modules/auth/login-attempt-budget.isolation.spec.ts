@@ -90,7 +90,6 @@ const buildSubject = () => {
           id: true,
           email: true,
           displayName: true,
-          avatarUrl: true,
           role: true,
           tenantId: true,
           emailVerified: true,

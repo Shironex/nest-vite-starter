@@ -29,7 +29,6 @@ import type { PrismaService } from '../../common/database/prisma.service';
 import type { CsrfService } from '../../common/security/csrf.service';
 import type { AuditService } from '../audit/audit.service';
 import type { MailService } from '../mail/mail.service';
-import type { StorageService } from '../storage/storage.service';
 import { UserRepository } from '../user/user.repository';
 import { UserService } from '../user/user.service';
 import { LockoutRepository } from './repositories/lockout.repository';
@@ -88,7 +87,6 @@ const buildSubject = () => {
   const userRepository = new UserRepository(prismaService);
   const userService = new UserService(
     userRepository,
-    {} as StorageService,
     sessionService,
     audit as unknown as AuditService,
     prismaService,

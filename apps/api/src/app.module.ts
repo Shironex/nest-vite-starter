@@ -22,7 +22,6 @@ import { SessionModule } from './modules/auth/session.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { DataExportModule } from './modules/data-export/data-export.module';
-import { StorageModule } from './modules/storage/storage.module';
 import { WorkspaceModule } from './modules/workspace/workspace.module';
 import { QueueModule } from './common/queue/queue.module';
 import { QueueObservabilityModule } from './common/queue/queue-observability.module';
@@ -111,7 +110,6 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
     AuthModule,
     UserModule,
     DataExportModule,
-    StorageModule,
     WorkspaceModule,
   ],
   providers: [

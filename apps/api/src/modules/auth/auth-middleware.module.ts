@@ -7,7 +7,7 @@ import { ManageUsersMiddleware } from './middleware/permission.middleware';
 /**
  * Provides the tRPC auth middlewares (AuthMiddleware, AdminMiddleware,
  * ManageUsersMiddleware). Mirrors the SessionModule cycle-breaker pattern:
- * routers in feature modules (UserModule, StorageModule, AuthModule) need
+ * routers in feature modules (UserModule, AuthModule) need
  * `@UseMiddlewares(AuthMiddleware)`, and AuthService needs UserService for
  * data lookups. Keeping the middleware providers in their own module breaks
  * the AuthModule ↔ UserModule cycle that previously required `forwardRef`.

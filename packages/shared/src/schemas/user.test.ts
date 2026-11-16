@@ -5,7 +5,6 @@ const profile = {
   id: 'user-1',
   email: 'a@example.com',
   displayName: null,
-  avatarUrl: null,
   role: 'USER',
   emailVerified: true,
   createdAt: new Date('2026-01-01T00:00:00Z'),
