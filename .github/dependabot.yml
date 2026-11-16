@@ -39,8 +39,6 @@ updates:
           - 'patch'
           - 'minor'
         exclude-patterns:
-          - 'electron'
-          - 'electron-builder'
           - 'react'
           - 'react-dom'
     labels:

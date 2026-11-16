@@ -6,7 +6,4 @@ dist
 .env
 .env.*
 !.env.example
-apps/desktop
 coverage
-.storybook
-storybook-static

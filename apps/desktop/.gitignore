@@ -1,8 +1,0 @@
-dist/
-release/
-node_modules/
-*.js
-*.js.map
-*.d.ts
-!scripts/*.mjs
-!electron-builder.cjs

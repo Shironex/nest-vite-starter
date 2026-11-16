@@ -17,7 +17,6 @@ body:
       options:
         - apps/api
         - apps/web
-        - apps/desktop
         - packages/ui
         - packages/database
         - other

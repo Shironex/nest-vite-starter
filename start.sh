@@ -1,6 +1,6 @@
 #!/bin/bash
 # SaaS Starter - TUI Launcher
-# Interactive menu for launching in Web or Electron mode, with port management
+# Interactive menu for launching the web stack, with port management
 
 set -e
 
@@ -13,20 +13,19 @@ cd "$SCRIPT_DIR"
 
 APP_NAME="SaaS Starter"
 SELECTED_OPTION=1
-MAX_OPTIONS=5
+MAX_OPTIONS=3
 
 # Known ports
 API_PORT=3000
 WEB_PORT=5173
-STORYBOOK_PORT=6006
 REDIS_PORT=6379
 POSTGRES_PORT=5432
 MAILPIT_SMTP_PORT=1025
 MAILPIT_UI_PORT=8025
 S3_PORT=4569
 
-ALL_PORTS=($API_PORT $WEB_PORT $STORYBOOK_PORT $REDIS_PORT $POSTGRES_PORT $MAILPIT_SMTP_PORT $MAILPIT_UI_PORT $S3_PORT)
-DEV_PORTS=($API_PORT $WEB_PORT $STORYBOOK_PORT)
+ALL_PORTS=($API_PORT $WEB_PORT $REDIS_PORT $POSTGRES_PORT $MAILPIT_SMTP_PORT $MAILPIT_UI_PORT $S3_PORT)
+DEV_PORTS=($API_PORT $WEB_PORT)
 
 # ANSI Colors
 ESC=$(printf '\033')
@@ -132,7 +131,6 @@ show_port_status() {
     local ports_info=(
         "$API_PORT:API Server"
         "$WEB_PORT:Vite Dev Server"
-        "$STORYBOOK_PORT:Storybook"
         "$REDIS_PORT:Redis"
         "$POSTGRES_PORT:PostgreSQL"
         "$MAILPIT_SMTP_PORT:Mailpit SMTP"
@@ -280,7 +278,7 @@ check_dev_port_conflicts() {
     local mode="$1"
     local conflicts=false
 
-    if [ "$mode" = "web" ] || [ "$mode" = "electron" ]; then
+    if [ "$mode" = "web" ]; then
         if is_port_in_use "$API_PORT"; then
             local pids
             pids=$(get_pids_on_port "$API_PORT" | xargs 2>/dev/null)
@@ -294,15 +292,6 @@ check_dev_port_conflicts() {
             local pids
             pids=$(get_pids_on_port "$WEB_PORT" | xargs 2>/dev/null)
             center_print "Port $WEB_PORT in use (PID: $pids)" "$C_YELLOW"
-            conflicts=true
-        fi
-    fi
-
-    if [ "$mode" = "storybook" ]; then
-        if is_port_in_use "$STORYBOOK_PORT"; then
-            local pids
-            pids=$(get_pids_on_port "$STORYBOOK_PORT" | xargs 2>/dev/null)
-            center_print "Port $STORYBOOK_PORT in use (PID: $pids)" "$C_YELLOW"
             conflicts=true
         fi
     fi
@@ -325,7 +314,7 @@ check_dev_port_conflicts() {
             case "$choice" in
                 [kK])
                     echo ""
-                    if [ "$mode" = "web" ] || [ "$mode" = "electron" ]; then
+                    if [ "$mode" = "web" ]; then
                         if is_port_in_use "$API_PORT"; then
                             kill_port "$API_PORT"
                             center_print "Port $API_PORT freed" "$C_GREEN"
@@ -335,12 +324,6 @@ check_dev_port_conflicts() {
                         if is_port_in_use "$WEB_PORT"; then
                             kill_port "$WEB_PORT"
                             center_print "Port $WEB_PORT freed" "$C_GREEN"
-                        fi
-                    fi
-                    if [ "$mode" = "storybook" ]; then
-                        if is_port_in_use "$STORYBOOK_PORT"; then
-                            kill_port "$STORYBOOK_PORT"
-                            center_print "Port $STORYBOOK_PORT freed" "$C_GREEN"
                         fi
                     fi
                     echo ""
@@ -423,7 +406,7 @@ show_header() {
     local sub_len=50
     local sub_pad=$(( (TERM_COLS - sub_len) / 2 ))
     printf "%${sub_pad}s" ""
-    echo -e "${C_MUTE}Vite + NestJS + Electron Monorepo${RESET}  ${C_GRAY}│${RESET}  ${C_GREEN}${version}${RESET}"
+    echo -e "${C_MUTE}Vite + NestJS Monorepo${RESET}  ${C_GRAY}│${RESET}  ${C_GREEN}${version}${RESET}"
 
     echo ""
     echo ""
@@ -439,40 +422,34 @@ show_menu() {
     printf "╮${RESET}\n"
 
     # Menu items
-    local sel1="" sel2="" sel3="" sel4="" sel5=""
-    local txt1="${C_MUTE}" txt2="${C_MUTE}" txt3="${C_MUTE}" txt4="${C_MUTE}" txt5="${C_MUTE}"
+    local sel1="" sel2="" sel3=""
+    local txt1="${C_MUTE}" txt2="${C_MUTE}" txt3="${C_MUTE}"
 
     case $SELECTED_OPTION in
         1) sel1="${C_ACC}▸${RESET} ${C_PRI}"; txt1="${C_WHITE}" ;;
         2) sel2="${C_ACC}▸${RESET} ${C_PRI}"; txt2="${C_WHITE}" ;;
         3) sel3="${C_ACC}▸${RESET} ${C_PRI}"; txt3="${C_WHITE}" ;;
-        4) sel4="${C_ACC}▸${RESET} ${C_PRI}"; txt4="${C_WHITE}" ;;
-        5) sel5="${C_ACC}▸${RESET} ${C_PRI}"; txt5="${C_WHITE}" ;;
     esac
 
     [[ -z "$sel1" ]] && sel1="  ${C_MUTE}"
     [[ -z "$sel2" ]] && sel2="  ${C_MUTE}"
     [[ -z "$sel3" ]] && sel3="  ${C_MUTE}"
-    [[ -z "$sel4" ]] && sel4="  ${C_MUTE}"
-    [[ -z "$sel5" ]] && sel5="  ${C_MUTE}"
 
     printf "%s${border}  ${sel1}[1]${RESET}  ${txt1}Web Mode${RESET}          ${C_MUTE}API + Vite (localhost)${RESET}        ${border}\n" "$pad"
-    printf "%s${border}  ${sel2}[2]${RESET}  ${txt2}Electron Mode${RESET}     ${C_MUTE}Desktop App (external API)${RESET}    ${border}\n" "$pad"
-    printf "%s${border}  ${sel3}[3]${RESET}  ${txt3}Storybook${RESET}         ${C_MUTE}UI Components (port $STORYBOOK_PORT)${RESET}    ${border}\n" "$pad"
-    printf "%s${border}  ${sel4}[4]${RESET}  ${txt4}Kill Ports${RESET}        ${C_MUTE}Free occupied dev ports${RESET}       ${border}\n" "$pad"
+    printf "%s${border}  ${sel2}[2]${RESET}  ${txt2}Kill Ports${RESET}        ${C_MUTE}Free occupied dev ports${RESET}       ${border}\n" "$pad"
 
     printf "%s${C_GRAY}├" "$pad"
     draw_line "─" "$C_GRAY" "$MENU_INNER_WIDTH"
     printf "┤${RESET}\n"
 
-    printf "%s${border}  ${sel5}[Q]${RESET}  ${C_MUTE}Exit${RESET}                                               ${border}\n" "$pad"
+    printf "%s${border}  ${sel3}[Q]${RESET}  ${C_MUTE}Exit${RESET}                                               ${border}\n" "$pad"
 
     printf "%s${C_GRAY}╰" "$pad"
     draw_line "─" "$C_GRAY" "$MENU_INNER_WIDTH"
     printf "╯${RESET}\n"
 
     echo ""
-    local footer="[Up/Down] Navigate  [Enter] Select  [1-4] Quick  [Q] Exit"
+    local footer="[Up/Down] Navigate  [Enter] Select  [1-2] Quick  [Q] Exit"
     local f_pad=$(( (TERM_COLS - ${#footer}) / 2 ))
     printf "%${f_pad}s" ""
     echo -e "${DIM}${footer}${RESET}"
@@ -550,47 +527,6 @@ launch_web() {
     exec pnpm dev
 }
 
-launch_electron() {
-    show_header
-    spinner "Preparing Electron Mode"
-    echo ""
-
-    build_packages
-
-    center_print "Starting API + Desktop App..." "$C_PRI"
-    echo ""
-    center_print "API:      http://localhost:$API_PORT" "$C_WHITE"
-    center_print "Desktop:  Electron (app://app)" "$C_WHITE"
-    echo ""
-
-    show_cursor
-    stty echo icanon 2>/dev/null || true
-
-    trap - EXIT
-
-    exec pnpm desktop:dev
-}
-
-launch_storybook() {
-    show_header
-    spinner "Preparing Storybook"
-    echo ""
-
-    build_packages
-
-    center_print "Starting Storybook Dev Server..." "$C_PRI"
-    echo ""
-    center_print "Storybook:  http://localhost:$STORYBOOK_PORT" "$C_WHITE"
-    echo ""
-
-    show_cursor
-    stty echo icanon 2>/dev/null || true
-
-    trap - EXIT
-
-    exec pnpm --filter @repo/ui storybook
-}
-
 # ============================================================================
 # ARGUMENT PARSING
 # ============================================================================
@@ -604,8 +540,6 @@ USAGE:
 
 MODES:
   web              Launch API + Vite dev servers
-  electron         Launch Electron desktop app
-  storybook        Launch Storybook UI dev server
   kill-ports       Kill processes on dev ports
 
 OPTIONS:
@@ -614,7 +548,7 @@ OPTIONS:
 KEYBOARD SHORTCUTS (in menu):
   Up/Down arrows   Navigate between options
   Enter            Select highlighted option
-  1-4              Jump to mode
+  1-2              Jump to mode
   Q                Exit
 
 EOF
@@ -630,18 +564,6 @@ case "${1:-}" in
         check_required_commands
         get_term_size
         check_dev_port_conflicts "web" && launch_web
-        exit 0
-        ;;
-    electron)
-        check_required_commands
-        get_term_size
-        check_dev_port_conflicts "electron" && launch_electron
-        exit 0
-        ;;
-    storybook)
-        check_required_commands
-        get_term_size
-        check_dev_port_conflicts "storybook" && launch_storybook
         exit 0
         ;;
     kill-ports)
@@ -682,17 +604,9 @@ while true; do
                     check_dev_port_conflicts "web" && launch_web
                     ;;
                 2)
-                    get_term_size
-                    check_dev_port_conflicts "electron" && launch_electron
-                    ;;
-                3)
-                    get_term_size
-                    check_dev_port_conflicts "storybook" && launch_storybook
-                    ;;
-                4)
                     show_port_status
                     ;;
-                5)
+                3)
                     echo ""
                     center_print "Goodbye!" "$C_MUTE"
                     exit 0
@@ -707,18 +621,6 @@ while true; do
             ;;
         2)
             SELECTED_OPTION=2
-            show_cursor
-            get_term_size
-            check_dev_port_conflicts "electron" && launch_electron
-            ;;
-        3)
-            SELECTED_OPTION=3
-            show_cursor
-            get_term_size
-            check_dev_port_conflicts "storybook" && launch_storybook
-            ;;
-        4)
-            SELECTED_OPTION=4
             show_cursor
             show_port_status
             ;;
