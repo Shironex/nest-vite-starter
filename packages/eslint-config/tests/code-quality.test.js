@@ -11,7 +11,7 @@ import { ruleTester } from './rule-tester.js';
  * bootstrap/CLI dirs).
  */
 const NO_PROCESS_EXIT_ALLOW_IN = [
-  '**/otel.ts',
+  '**/instrument.ts',
   '**/apps/api/src/main.ts',
   '**/apps/desktop/**',
   '**/packages/database/**',
@@ -60,7 +60,7 @@ ruleTester.run('no-process-exit', codeQuality.rules['no-process-exit'], {
     },
     {
       code: 'process.exit(0);',
-      filename: '/repo/apps/api/src/otel.ts',
+      filename: '/repo/apps/api/src/instrument.ts',
       options: allowExitOptions,
     },
   ],

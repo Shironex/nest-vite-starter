@@ -2,13 +2,13 @@
  * Side-effect entry point for environment loading. Kept as its own module so
  * `main.ts` can put it above every other import: ES import bindings are
  * hoisted, so an inline `loadEnvFiles()` call in `main.ts` would run AFTER
- * `./otel` and after the transitive `@nestjs/*` graph had already read
+ * `./instrument` and after the transitive `@nestjs/*` graph had already read
  * `process.env`.
  *
  * Deliberately imports nothing but `node:fs` / `node:path` (via
- * `./config/load-env-files`), so it cannot capture references to the modules
- * `./otel` monkey-patches and therefore cannot break tracing by sitting above
- * it. See ./config/load-env-files.ts for the precedence rules.
+ * `./config/load-env-files`), so sitting above `./instrument` loads none of the
+ * modules Sentry instruments. See ./config/load-env-files.ts for the precedence
+ * rules.
  */
 import { loadEnvFiles } from './config/load-env-files';
 

@@ -131,16 +131,6 @@
       "prodRequired": [],
       "services": []
     },
-    "otel": {
-      "kind": "presence",
-      "toggle": "OTEL_EXPORTER_OTLP_ENDPOINT",
-      "description": "OpenTelemetry trace and metric export. Empty disables the SDK.",
-      "keys": ["OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_PROTOCOL", "OTEL_SERVICE_NAME"],
-      "secrets": [],
-      "required": [],
-      "prodRequired": [],
-      "services": []
-    },
     "web-dev": {
       "kind": "core",
       "description": "Development-only web knobs, read by apps/web/vite.config.ts at config time and never bundled.",

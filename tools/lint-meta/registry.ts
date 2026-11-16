@@ -96,18 +96,7 @@ const githubActionsShaPinnedRule = adoptHarnessRule(createGithubActionsShaPinned
 const githubActionsRunnerPinnedRule = adoptHarnessRule(createGithubActionsRunnerPinnedRule());
 const securityScannerVersionParityRule = adoptHarnessRule(createSecurityScannerVersionParityRule());
 const dockerfileBaseImageDigestPinRule = adoptHarnessRule(createDockerfileBaseImageDigestPinRule());
-const serviceImageDigestPinRule = adoptHarnessRule(
-  createServiceImageDigestPinRule({
-    /*
-     * The registry does not serve it: Docker Hub has no `0.125.0` tag for the
-     * OpenTelemetry collector (it lists no 0.125.x at all), so the observability
-     * stack's collector already fails to pull and there is no digest to write.
-     * Bumping it to a tag that exists is a behavior change outside this rule;
-     * when that happens the pinned ref passes on its own and this entry can go.
-     */
-    allowUnpinned: ['otel/opentelemetry-collector-contrib:0.125.0'],
-  }),
-);
+const serviceImageDigestPinRule = adoptHarnessRule(createServiceImageDigestPinRule());
 
 /*
  * The four fences around the seam that mints a session, from the package. They

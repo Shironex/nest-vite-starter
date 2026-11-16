@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
  *
  *   - `@repo/database` throws at module scope when `DATABASE_URL` is unset, and
  *     `main.ts` dynamic-imports it as the first statement of `bootstrap()`;
- *   - `./otel.ts` reads `OTEL_*` / `SENTRY_*` at module scope.
+ *   - `./instrument.ts` reads `SENTRY_*` at module scope.
  *
  * Neither pnpm nor turbo populates the environment from a `.env` file, so on a
  * fresh clone the values only reach the process if the process loads them

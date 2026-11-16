@@ -1,18 +1,15 @@
-// IMPORTANT: ./load-env is the ONLY import allowed above ./otel, and it must
-// stay there. It populates process.env from the repo's .env files, and every
-// module-scope env reader below depends on that having already happened:
-// ./otel reads OTEL_* / SENTRY_* at import time, and bootstrap() dynamic-
-// imports @repo/database, which throws on a missing DATABASE_URL at ITS module
-// scope, both before ConfigModule.forRoot() ever runs. It touches only
-// node:fs / node:path, so it captures none of the modules ./otel patches.
+// IMPORTANT: ./load-env is the ONLY import allowed above ./instrument, and it
+// must stay there. It populates process.env from the repo's .env files, and
+// every module-scope env reader below depends on that having already happened:
+// ./instrument reads SENTRY_* at import time, and bootstrap() dynamic-imports
+// @repo/database, which throws on a missing DATABASE_URL at ITS module scope,
+// both before ConfigModule.forRoot() ever runs.
 import { loadedEnvFiles } from './load-env';
 
-// IMPORTANT: ./otel must be imported before any @nestjs/* import, and before
-// any module that itself imports @nestjs/*. The OTel auto-instrumentations
-// monkey-patch http / pg / ioredis / nestjs-core / prisma at require time; if
-// Nest loads first those modules capture references to the un-patched
-// originals and tracing silently misses spans.
-import './otel';
+// IMPORTANT: ./instrument (Sentry, dormant without SENTRY_DSN) must be imported
+// before any @nestjs/* import, so Sentry.init() runs before the modules it
+// instruments load.
+import './instrument';
 
 import * as Sentry from '@sentry/nestjs';
 import { NestFactory } from '@nestjs/core';
@@ -46,7 +43,6 @@ async function bootstrap() {
             requestId?: string | undefined;
             userId?: string | undefined;
             traceId?: string | undefined;
-            spanId?: string | undefined;
           }
         | undefined,
     ) => void;
@@ -58,7 +54,6 @@ async function bootstrap() {
       requestId: ctx.requestId,
       userId: ctx.userId,
       traceId: ctx.traceId,
-      spanId: ctx.spanId,
     };
   });
 
@@ -67,7 +62,7 @@ async function bootstrap() {
   // them in its own format. Once the app is constructed we swap in the
   // DI-managed CustomLogger via `app.useLogger(...)`, which flushes the buffered
   // lines through it, so every line, framework lines included, goes through
-  // the structured logger and the OTel/Sentry pipeline in every mode (dev too).
+  // the structured logger and the Sentry pipeline in every mode (dev too).
   //
   // `bodyParser: false` so Nest registers no parser of its own. Its defaults
   // are registered during `init()`, i.e. after every `app.use` below but with
@@ -228,7 +223,7 @@ async function bootstrap() {
   logger.log(`API running on http://localhost:${port}`, 'Bootstrap');
 }
 // A promise that rejected with nobody listening: log it, drain Sentry, exit 1,
-// with or without SENTRY_DSN (otel.ts pins Sentry's own listener to capture
+// with or without SENTRY_DSN (instrument.ts pins Sentry's own listener to capture
 // only). Deliberate fire-and-forget work goes through detach() and never
 // arrives here. See common/observability/unhandled-rejection.ts for why exit.
 installUnhandledRejectionPolicy({
@@ -242,7 +237,7 @@ bootstrap().catch((err: unknown) => {
   // exists, so log through the module-scope structured factory: in production
   // this emits one redacted NDJSON line instead of raw ANSI text. Exit non-zero
   // so the orchestrator restarts the container instead of keeping a half-built
-  // process alive on whatever handles (Redis, OTel timers) were already opened.
+  // process alive on whatever handles (Redis, timers) were already opened.
   const fatalLogger = createAppLogger('Bootstrap');
   fatalLogger.error(
     'Fatal: API bootstrap failed',

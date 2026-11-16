@@ -12,8 +12,8 @@
  * `IDENTIFIER_QUERY_KEYS`.
  *
  * Why this lives here and not only in `sentry-scrub.spec.ts`: that spec calls
- * `scrubEvent` directly, so it stays green if `otel.ts` stops handing the
- * scrubber to `Sentry.init`. This file loads the real `otel.ts` with a DSN set
+ * `scrubEvent` directly, so it stays green if `instrument.ts` stops handing the
+ * scrubber to `Sentry.init`. This file loads the real `instrument.ts` with a DSN set
  * and drives the `beforeSend` it registered, so it goes red on either break.
  * No database.
  */
@@ -42,11 +42,10 @@ let beforeSend: NonNullable<ISentryInitOptions['beforeSend']>;
 
 beforeAll(async () => {
   process.env.SENTRY_DSN = 'https://public@sentry.invalid/1';
-  delete process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
-  // Imported only now: otel.ts reads the DSN once, at module load.
-  await import('@/otel');
+  // Imported only now: instrument.ts reads the DSN once, at module load.
+  await import('@/instrument');
   const registered = mockSentryInits[0]?.beforeSend;
-  if (!registered) throw new Error('otel.ts did not register a beforeSend with Sentry.init');
+  if (!registered) throw new Error('instrument.ts did not register a beforeSend with Sentry.init');
   beforeSend = registered;
 });
 

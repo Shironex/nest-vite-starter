@@ -40,9 +40,7 @@ const adapter = new PrismaPg({
 // `PrismaClient` so existing consumer types continue to compile. The slow-
 // query extension is the *only* runtime difference: every operation is
 // timed, and queries above `slow-query.thresholdMs` (default 200 ms) emit a
-// structured warn to stdout. The `@prisma/instrumentation` auto-
-// instrumentation continues to create per-query spans independently: keep
-// the two complementary, no histogram is emitted from this hook.
+// structured warn to stdout. No histogram is emitted from this hook.
 export const prisma = new PrismaClient({ adapter }).$extends(
   buildSlowQueryExtension(),
 ) as unknown as PrismaClient;

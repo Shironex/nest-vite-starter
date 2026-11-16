@@ -18,7 +18,7 @@ import { config as baseConfig } from './base.js';
 // (which matches against the absolute filename).
 const NO_BARE_DATE_NOW_ALLOW_IN = [
   '**/common/clock/clock.ts',
-  '**/otel.ts',
+  '**/instrument.ts',
   '**/modules/logger/logger.middleware.ts',
   '**/modules/health/indicators/database.health.ts',
   '**/modules/health/indicators/redis.health.ts',

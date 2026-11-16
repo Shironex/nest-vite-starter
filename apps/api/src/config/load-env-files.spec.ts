@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { loadEnvFiles, resolveEnvFiles } from './load-env-files';
 
 /**
- * Guards the boot-time env cascade that `main.ts` imports above `./otel`.
+ * Guards the boot-time env cascade that `main.ts` imports above `./instrument`.
  * Regression cover for the boot failure where nothing populated DATABASE_URL
  * before `@repo/database` read it at module scope, so the two properties that
  * matter here are (a) the workspace-root `.env` is found from the `apps/api`

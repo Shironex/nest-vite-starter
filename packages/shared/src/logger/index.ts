@@ -158,8 +158,8 @@ export interface LoggerOptions {
   /**
    * Function that returns the current trace/span IDs dynamically. When
    * present, every structured log line will include `traceId` / `spanId`
-   * fields if either is set. Caller decides resolution strategy (e.g. an OTel
-   * active-span lookup wrapped in an ALS fallback).
+   * fields if either is set. Caller decides resolution strategy (e.g. an ALS
+   * lookup of the inbound trace-id).
    */
   getTraceContext?: () => TraceContext | undefined;
 }

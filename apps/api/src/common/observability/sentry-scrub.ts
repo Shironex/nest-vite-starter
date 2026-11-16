@@ -23,7 +23,7 @@
  * The shared list is the FLOOR, not the whole rule. This module sits on a
  * different trust boundary from the structured log: the log is first-party
  * storage, this is egress to a third party with `sendDefaultPii: false`
- * (otel.ts). Anything the shared list allows through because it is harmless
+ * (instrument.ts). Anything the shared list allows through because it is harmless
  * in our own storage gets denied again below, so tuning the logger's ergonomics
  * cannot loosen what leaves the building.
  *

@@ -103,7 +103,7 @@ const PRISMA_CODE_PROMOTIONS: Record<string, string> = {
  * Expected domain outcomes (DomainError, ConcurrencyError, client-caused tRPC
  * codes) never reach this. Captures the original cause when present so the
  * Sentry issue groups on the real failure, not the tRPC wrapper. Safe no-op
- * when SENTRY_DSN is unset (see otel.ts).
+ * when SENTRY_DSN is unset (see instrument.ts).
  *
  * `getRequestId()` resolves against the scope `onError` re-opened below, which
  * is what keeps the reported id the request's real one.

@@ -20,13 +20,13 @@
  *    here (`detach()`, common/utils/detach.ts), and the type-aware
  *    `no-floating-promises` lint refuses the unsanctioned ones in apps/api/src.
  *
- * Sentry is pinned to the same choice: otel.ts registers
+ * Sentry is pinned to the same choice: instrument.ts registers
  * `onUnhandledRejectionIntegration({ mode: SENTRY_UNHANDLED_REJECTION_MODE })`,
  * so with a DSN Sentry only CAPTURES the rejection (its listener runs first,
  * because Sentry.init runs first) and neither prints its own warning nor
  * decides whether to exit. This handler decides, in both environments.
  *
- * Deliberately free of @nestjs and of the Sentry SDK: it is imported by otel.ts,
+ * Deliberately free of @nestjs and of the Sentry SDK: it is imported by instrument.ts,
  * which must load before any @nestjs module, and the effects are injected so the
  * policy unit-tests without a process to kill.
  */

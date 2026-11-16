@@ -11,7 +11,7 @@ import { ruleTester } from './rule-tester.js';
  * just `process.env.X`) is caught by the single MemberExpression visitor.
  */
 const NO_DIRECT_PROCESS_ENV_ALLOWED_FILES = [
-  '**/otel.ts',
+  '**/instrument.ts',
   '**/packages/shared/src/logger/**',
   '**/apps/api/src/modules/logger/logger.service.ts',
   '**/apps/api/src/common/observability/sentry-scrub.ts',

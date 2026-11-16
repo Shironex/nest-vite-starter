@@ -1,16 +1,10 @@
 /**
  * Prisma slow-query observability hook.
  *
- * Sister-signal to the OTel @prisma/instrumentation auto-instrumentation:
- *   - The auto-instrumentation creates spans for every query → these reach
- *     Tempo and are visible in trace waterfalls.
- *   - This module emits a structured warn line ONLY for queries above a
- *     threshold (default 200 ms) → reaches stdout, then Loki via Promtail.
- *
- * Two surfaces, one log line per slow query, no double-counting. The slow
- * threshold is intentionally a stderr signal-on-warn, not a Prometheus
- * histogram, because the OTel pg/Prisma spans already underpin latency
- * histograms in Tempo.
+ * Emits a structured warn line ONLY for queries above a threshold (default
+ * 200 ms), on stdout with the rest of the structured logs. One log line per
+ * slow query. Deliberately a signal-on-warn, not a latency histogram: a
+ * metrics or tracing pipeline is a deployment's choice, not this package's.
  *
  * Request-context resolution:
  *   `packages/database` is a leaf: it must not depend on `@nestjs/common`,

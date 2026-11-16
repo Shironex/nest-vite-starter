@@ -1,9 +1,9 @@
 // The standalone queue worker. Run it when the api is started with
 // QUEUE_WORKER=off: `pnpm --filter @repo/api start:worker` (after a build), or
 // `node dist/src/worker` in a container that shares the api image. Import order
-// follows main.ts: ./load-env first, then ./otel, before any @nestjs/* import.
+// follows main.ts: ./load-env first, then ./instrument, before any @nestjs/*.
 import { loadedEnvFiles } from './load-env';
-import './otel';
+import './instrument';
 
 import * as Sentry from '@sentry/nestjs';
 import { NestFactory } from '@nestjs/core';

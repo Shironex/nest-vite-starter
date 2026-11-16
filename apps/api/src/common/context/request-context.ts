@@ -19,15 +19,11 @@ export interface IRequestContext {
   method?: string | undefined;
   path?: string | undefined;
   /**
-   * W3C trace-id (lowercase hex, 32 chars) when an OTel active span exists for
-   * the request. When OTel is disabled or no span is active, this is undefined
-   * and `requestId` becomes the only correlation identifier.
+   * W3C trace-id (lowercase hex, 32 chars) from an inbound `traceparent`
+   * header, when an upstream proxy or client sent a valid one. Otherwise
+   * undefined, and `requestId` is the only correlation identifier.
    */
   traceId?: string | undefined;
-  /**
-   * W3C span-id (lowercase hex, 16 chars) of the request's root span.
-   */
-  spanId?: string | undefined;
 }
 
 export const requestContext = new AsyncLocalStorage<IRequestContext>();
@@ -38,12 +34,4 @@ export function getRequestContext(): IRequestContext | undefined {
 
 export function getRequestId(): string {
   return requestContext.getStore()?.requestId ?? 'no-context';
-}
-
-export function getTraceId(): string | undefined {
-  return requestContext.getStore()?.traceId;
-}
-
-export function getSpanId(): string | undefined {
-  return requestContext.getStore()?.spanId;
 }

@@ -6,7 +6,7 @@ import { AppErrorCode } from '@repo/shared/errors';
 import { normalizeError, redactCredentialPath } from '@repo/shared/logger';
 import { createAppLogger } from '../../modules/logger/logger.service';
 import { getRequestContext } from '../context/request-context';
-import { redactUrlText } from '../observability/otel-http-redaction';
+import { redactUrlText } from '../observability/url-redaction';
 
 const logger = createAppLogger('ExceptionFilter');
 
@@ -149,7 +149,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
       requestId: reqCtx?.requestId,
       userId: reqCtx?.userId,
       traceId: reqCtx?.traceId,
-      spanId: reqCtx?.spanId,
       statusCode: status,
       appCode,
       message: redactUrlText(message),
@@ -160,7 +159,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // 5xx only: a 4xx is a client error (validation, missing auth, bad route)
     // and would drown the Sentry quota in noise. captureException is a safe
-    // no-op when SENTRY_DSN is unset (see otel.ts).
+    // no-op when SENTRY_DSN is unset (see instrument.ts).
     if (status >= 500) {
       Sentry.captureException(exception, {
         extra: {

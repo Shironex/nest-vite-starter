@@ -19,7 +19,7 @@ import architecture from '@noctcore/eslint-plugin-architecture';
  * path ESLint reports.
  */
 const NO_PROCESS_EXIT_ALLOW_IN = [
-  '**/otel.ts',
+  '**/instrument.ts',
   '**/apps/api/src/main.ts',
   '**/apps/api/src/worker.ts',
   '**/apps/desktop/**',
@@ -30,7 +30,7 @@ const NO_PROCESS_EXIT_ALLOW_IN = [
 ];
 
 const NO_DIRECT_PROCESS_ENV_ALLOWED_FILES = [
-  '**/otel.ts',
+  '**/instrument.ts',
   '**/packages/shared/src/logger/**',
   '**/apps/api/src/modules/logger/logger.service.ts',
   '**/apps/api/src/common/observability/sentry-scrub.ts',

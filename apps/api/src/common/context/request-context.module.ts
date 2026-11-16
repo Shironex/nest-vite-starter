@@ -1,7 +1,6 @@
 import { Injectable, NestMiddleware, Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import type { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'node:crypto';
-import { trace } from '@opentelemetry/api';
 import { redactCredentialPath } from '@repo/shared/logger';
 import { requestContext } from './request-context';
 import type { IRequestContext } from './request-context';
@@ -84,9 +83,9 @@ function resolveRequestIdentity(
   if (cached !== undefined) return cached;
 
   // Source of truth for `requestId`:
-  //   1. Lower 8 bytes (16 hex chars) of the active/inbound trace-id when
-  //      present. Keeps logs joinable to traces without inventing a second
-  //      identifier per request.
+  //   1. Lower 8 bytes (16 hex chars) of the inbound W3C trace-id when an
+  //      upstream proxy or client sent one. Keeps logs joinable to that trace
+  //      without inventing a second identifier per request.
   //   2. The legacy x-request-id header when no trace exists.
   //   3. Fresh UUID otherwise.
   const identity: IRequestIdentity = {
@@ -121,20 +120,9 @@ function resolveRequestIdentity(
  * of its own (a hand-built `?input=`, a mailed token),
  * and `path` exists to be logged, so nothing that rides a query string may
  * enter the store.
- *
- * The trace back door is closed by the same reasoning in
- * common/observability/otel-http-redaction.ts, which redacts the URL attributes
- * of every incoming http span.
  */
 export function buildRequestContextStore(req: Request, pathOverride?: string): IRequestContext {
-  // The OTel http instrumentation has already extracted the inbound
-  // traceparent into the active context by the time express middleware
-  // runs, so the active span (if any) reflects the propagated trace.
-  const activeSpan = trace.getActiveSpan();
-  const activeSpanCtx = activeSpan?.spanContext();
-
-  const inboundTraceId =
-    activeSpanCtx?.traceId ?? parseTraceparent(req.headers['traceparent'] as string | undefined);
+  const inboundTraceId = parseTraceparent(req.headers['traceparent'] as string | undefined);
 
   const { requestId, dedupeNonce } = resolveRequestIdentity(req, inboundTraceId);
 
@@ -145,8 +133,7 @@ export function buildRequestContextStore(req: Request, pathOverride?: string): I
     path: pathOverride ?? redactCredentialPath(req.path),
     ip: req.ip ?? undefined,
     userAgent: (req.headers['user-agent'] as string | undefined) ?? undefined,
-    traceId: activeSpanCtx?.traceId ?? inboundTraceId,
-    spanId: activeSpanCtx?.spanId,
+    traceId: inboundTraceId,
   };
 }
 

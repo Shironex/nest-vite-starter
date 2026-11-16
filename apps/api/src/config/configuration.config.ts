@@ -104,18 +104,9 @@ export const validationSchema = Joi.object({
   // next sweep; the default gives 30 days to reverse an accidental deletion.
   USER_PURGE_GRACE_DAYS: Joi.number().integer().min(0).default(30),
 
-  // OpenTelemetry: empty endpoint disables the SDK entirely (no-op),
-  // matching the default local-dev path. When set, the SDK pushes OTLP/HTTP
-  // to that base URL plus /v1/traces and /v1/metrics. See apps/api/src/otel.ts.
-  OTEL_EXPORTER_OTLP_ENDPOINT: Joi.string().uri().optional().allow(''),
-  OTEL_EXPORTER_OTLP_PROTOCOL: Joi.string()
-    .valid('http/protobuf', 'http/json', 'grpc')
-    .default('http/protobuf'),
-  OTEL_SERVICE_NAME: Joi.string().optional().allow(''),
-
   // Sentry: runtime error capture only. Empty/unset disables Sentry entirely
   // (no-op, zero egress), matching the default local-dev path. See
-  // apps/api/src/otel.ts. APP_VERSION names the release (the runner launches
+  // apps/api/src/instrument.ts. APP_VERSION names the release (the runner launches
   // dist/main.js directly, so npm_package_version is undefined); set it as a
   // Dockerfile build arg for a real release name, else it defaults to 0.0.0.
   // SENTRY_ENVIRONMENT overrides the NODE_ENV-derived environment tag.

@@ -1,5 +1,4 @@
 import { Injectable, LoggerService } from '@nestjs/common';
-import { trace } from '@opentelemetry/api';
 import { createLogger, normalizeError, setTimestampsEnabled } from '@repo/shared/logger';
 import type { Logger, TraceContext } from '@repo/shared/logger';
 import { getRequestId, getRequestContext } from '../../common/context/request-context';
@@ -10,30 +9,20 @@ setTimestampsEnabled(true);
 const isProduction = process.env.NODE_ENV === 'production';
 
 /**
- * Resolve trace context for log enrichment, preferring the OTel active span
- * (always fresh) and falling back to the values RequestContextMiddleware
- * stamped onto the ALS store at request entry. The active span lookup wins
- * because nested operations (BullMQ workers, Prisma queries) start child
- * spans whose IDs differ from the root request span.
+ * Resolve trace context for log enrichment from the trace-id
+ * RequestContextMiddleware stamped onto the ALS store at request entry (from an
+ * inbound `traceparent`), so a line stays joinable to an upstream trace.
  */
 function resolveTraceContext(): TraceContext | undefined {
-  const activeSpan = trace.getActiveSpan();
-  const ctx = activeSpan?.spanContext();
-  if (ctx?.traceId && ctx?.spanId) {
-    return { traceId: ctx.traceId, spanId: ctx.spanId };
-  }
-  const stored = getRequestContext();
-  if (stored?.traceId || stored?.spanId) {
-    return { traceId: stored.traceId, spanId: stored.spanId };
-  }
-  return undefined;
+  const traceId = getRequestContext()?.traceId;
+  return traceId ? { traceId } : undefined;
 }
 
 /**
  * Canonical module-scope logger factory for the API. Wires the same options
  * CustomLogger uses: structured NDJSON in production (so error paths ride the
  * redaction pipeline instead of emitting ANSI text), plus dynamic requestId
- * and trace-context resolution from the ALS store / active OTel span.
+ * and trace-context resolution from the ALS store.
  *
  * For code that runs at import time, before the DI container exists (exception
  * filter, tRPC error handler, module-scope middlewares), where ConfigService is
