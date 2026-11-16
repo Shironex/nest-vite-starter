@@ -74,7 +74,7 @@ rule holds them as named entry points, each with its reason.
 
 ## What lint already guarantees
 
-`packages/eslint-config/nestjs.js` runs seventeen rules at `error`, production
+`packages/eslint-config/nestjs.js` runs sixteen rules at `error`, production
 code only (`interface-prefix-i` is the one that also polices specs). By class:
 
 - **Data access and transactions (4)** - no raw SQL outside an allowlist, a
@@ -83,7 +83,6 @@ code only (`interface-prefix-i` is the one that also polices specs). By class:
 
 - **Single-writer fences** - a fenced column is written by exactly one named
   service.
-- **Queue (1)** - job names come from constants.
 - **Audit (3)** - an audit write never runs inside a transaction, so a rollback
   cannot erase it; every PII-shaped key in an audit payload is declared; and
   every `@Mutation()` entry point must reach an audit write

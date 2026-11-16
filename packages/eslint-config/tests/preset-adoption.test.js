@@ -112,7 +112,7 @@ const plugins = await Promise.all(
 
 describe('noctcore preset adoption', () => {
   it('checks every @noctcore plugin this package declares', () => {
-    expect(plugins.length).toBe(8);
+    expect(plugins.length).toBe(9);
     for (const { name, plugin } of plugins) {
       expect(presetRuleIds(plugin).length, `${name} has no recommended preset`).toBeGreaterThan(0);
     }

@@ -9,6 +9,6 @@
     "incremental": true,
     "tsBuildInfoFile": "../node_modules/.cache/tsc/tools.tsbuildinfo"
   },
-  "include": ["**/*.ts", "../packages/eslint-plugin-repo/src/types/*.d.ts"],
+  "include": ["**/*.ts"],
   "exclude": ["node_modules"]
 }

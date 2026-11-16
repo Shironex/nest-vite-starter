@@ -67,18 +67,18 @@ const REQUIRED_RULES: readonly IRequiredRule[] = [
       'Every model-level guard (the soft-delete filter, the select allowlists, parameter binding) lives on the Prisma model, and a raw query has none. Without this rule a raw SELECT that forgets `deletedAt`, or interpolates caller input, type-checks and trips no other guard.',
   },
   {
-    ruleId: 'repo/effect-fired-mutation-must-bind-callbacks',
+    ruleId: 'noctcore-query/effect-fired-mutation-must-bind-callbacks',
     packageDir: 'apps/web',
     probe: 'src/features/admin/components/Example/Example.hooks.ts',
     rationale:
       'TanStack Query delivers a per-call `mutate(vars, { onSuccess })` handler only while the issuing observer still has listeners. An effect-fired probe is ref-guarded against a duplicate request, so once a remount detaches that observer there is no second call either: the screen holds its spinner forever with the failure path swallowed too, which means no retry control and no error anywhere. The verify-email and reset-password screens fire this way, and they are exactly the screens a locked-out person reaches.',
   },
   {
-    ruleId: 'repo/trpc-invalidate-with-path-key',
+    ruleId: 'noctcore-query/trpc-invalidate-with-path-key',
     packageDir: 'apps/web',
     probe: 'src/features/admin/Example.mutations.ts',
     rationale:
-      "An input-less `queryKey()` is `[path, { type: 'query' }]` and prefix-matches no infinite query, so an `invalidateQueries` written with it goes silently dead the day its procedure moves to `useInfiniteQuery`: the mutation reaches the server and the row on screen never changes. The compliance agenda shipped exactly that, and only the merged-tree e2e caught it. `pathKey()` reaches every entry of the procedure.",
+      "An input-less `queryKey()` is `[path, { type: 'query' }]` and prefix-matches no infinite query, so an `invalidateQueries` written with it goes silently dead the day its procedure moves to `useInfiniteQuery`: the mutation reaches the server and the row on screen never changes. That bug has shipped before, and only a merged-tree e2e caught it. `pathKey()` reaches every entry of the procedure.",
   },
 ];
 

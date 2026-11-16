@@ -9,8 +9,8 @@ import type { IDateFieldProps } from './DateField.types';
  *
  * Every date input in the app goes through here rather than through the
  * primitive directly, so the copy is resolved once and the locale cannot
- * be forgotten at a call site. `repo/no-native-date-input` is the gate that
- * keeps a `<input type="date">` from coming back.
+ * be forgotten at a call site. Review is the gate that keeps a
+ * `<input type="date">` from coming back.
  */
 export default function DateField(props: IDateFieldProps) {
   const v = useDateField();

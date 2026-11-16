@@ -47,7 +47,7 @@ The email-delivery processor and the example both extend it; review is the gate 
 
 ### A job name comes from a constant, never a literal
 
-**Enforced by:** `eslint:repo/job-name-must-be-constant`
+**Enforced by:** `unenforced`, follow-up in `docs/invariants/README.md#unenforced-invariants`
 
 ### A queue's retry, backoff and retention policy is declared once and completely
 

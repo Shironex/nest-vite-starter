@@ -9,8 +9,8 @@ export default [
     // that ships its own eslint.config.* therefore resolves that file, not this
     // one, no matter where eslint is invoked from. What this config actually
     // governs is the rest of the tree: root-level files, scripts/, and the
-    // two eslint-authoring packages (packages/eslint-config and
-    // packages/eslint-plugin-repo), which have no local config of their own.
+    // eslint-authoring package (packages/eslint-config), which has no local
+    // config of its own.
     // tools/ resolves its own tools/eslint.config.mjs (base policy plus
     // noInlineConfig), linted by `pnpm lint:tools`.
     // That now holds for lint-staged too, which used to resolve this config for

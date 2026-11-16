@@ -80,9 +80,6 @@
     "lint": {
       "dependsOn": ["^build"]
     },
-    "@repo/eslint-plugin-repo#lint": {
-      "dependsOn": ["^build", "build"]
-    },
     "lint:fast": {
       "dependsOn": ["^build"],
       "cache": false
@@ -95,12 +92,7 @@
       "dependsOn": ["^build", "//#check-types:tools"]
     },
     "//#check-types:tools": {
-      "inputs": [
-        "tools/**/*.ts",
-        "tools/tsconfig.json",
-        "packages/eslint-plugin-repo/src/**/*.ts",
-        "packages/tsconfig/base.json"
-      ]
+      "inputs": ["tools/**/*.ts", "tools/tsconfig.json", "packages/tsconfig/base.json"]
     },
     "test": {
       "dependsOn": ["^build"],

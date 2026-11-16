@@ -51,7 +51,7 @@
     "kind": "security",
     "advisories": ["GHSA-g7r4-m6w7-qqqr"],
     "firstPatched": "0.28.1",
-    "reason": "Load-bearing floor: the 2026-07-31 audit proved 0.27.7 reappears without it. It drags tsup and bundle-require across a 0.x minor, which is a major under semver, so the whole build pipeline was exercised before keeping it (packages/email and packages/eslint-plugin-repo both build green).",
+    "reason": "Load-bearing floor: the 2026-07-31 audit proved 0.27.7 reappears without it. It drags tsup and bundle-require across a 0.x minor, which is a major under semver, so the whole build pipeline was exercised before keeping it (packages/email builds green).",
     "reviewBy": "2026-12-01"
   },
   "find-my-way@<=9.6.0": {

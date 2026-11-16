@@ -98,7 +98,6 @@ packages/
   shared/           Shared types, schemas, constants, logger (dual ESM/CJS)
   ui/               40+ shadcn/ui components with 8 color themes
   email/            React Email templates
-  eslint-plugin-repo/ Repo-specific ESLint rules
   eslint-config/    Shared ESLint flat configs (base, react, nestjs)
   tsconfig/         Shared TypeScript configs
 ```

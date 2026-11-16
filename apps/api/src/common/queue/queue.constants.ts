@@ -3,8 +3,7 @@ import type { BackoffOptions, JobsOptions } from 'bullmq';
 /**
  * Canonical queue-name registry. Every queue name is referenced through this
  * object, never as an inline string literal, so a typo cannot silently create
- * a second queue and the `repo/job-name-must-be-constant` lint rule has a
- * source of truth to point producers and `@Processor(...)` decorators at.
+ * a second queue: producers and `@Processor(...)` decorators point here.
  */
 export const QUEUE_NAMES = {
   EMAIL_DELIVERY: 'email-delivery',

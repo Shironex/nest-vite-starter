@@ -9,7 +9,7 @@ import security from '@noctcore/eslint-plugin-security';
 import architecture from '@noctcore/eslint-plugin-architecture';
 
 /*
- * These rules previously lived in @repo/eslint-plugin-repo; they are now the
+ * These rules previously lived in a local ESLint plugin; they are now the
  * published @noctcore/eslint-plugin-* equivalents (option-driven generalizations
  * of the same logic). The option objects below reproduce this repo's prior
  * defaults exactly. One subtlety: the noctcore allowlist matchers run against the

@@ -102,11 +102,6 @@ export const CHECKS: readonly ICheckSpec[] = [
   { id: 'contrast', profiles: STATIC, command: ['pnpm', 'check:contrast'] },
   { id: 'unit', profiles: FEATURE, command: ['pnpm', 'exec', 'turbo', 'test'] },
   {
-    id: 'eslint-plugin',
-    profiles: FEATURE,
-    command: ['pnpm', '--filter', '@repo/eslint-plugin-repo', 'test'],
-  },
-  {
     id: 'knip-api',
     profiles: FEATURE,
     command: ['pnpm', '--filter', '@repo/api', 'knip'],

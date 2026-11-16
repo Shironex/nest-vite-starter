@@ -94,16 +94,6 @@ jobs:
 
       - run: pnpm --filter @repo/web knip
 
-      - name: Test internal ESLint plugin
-        run: pnpm --filter @repo/eslint-plugin-repo test
-
-      # The inventory compares the JUnit report the step above just wrote
-      # against tools/verify/inventories/. A deleted, skipped, duplicated or
-      # merge-damaged case fails here even when the suite itself was green.
-      # No services, about a second.
-      - name: Internal ESLint plugin test inventory
-        run: pnpm verify:inventory --from-report --suite=eslint-plugin-repo
-
   build:
     name: Build
     runs-on: ubuntu-24.04

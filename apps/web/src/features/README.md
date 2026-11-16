@@ -120,7 +120,7 @@ also `I`-prefixed.
 
 These rules come from the published `@noctcore/eslint-plugin-react`,
 `@noctcore/eslint-plugin-architecture`, and `@noctcore/eslint-plugin-code-quality`
-packages (they used to live in this repo's `@repo/eslint-plugin-repo`), wired via
+packages, wired via
 `@repo/eslint-config/react-architecture`, and run at `error`:
 
 - `component-folder-structure` - the sibling set must be present
@@ -151,5 +151,5 @@ Invalidate a tRPC procedure with no input by its path: `queryClient.invalidateQu
 trpc.<router>.<proc>.pathKey() })` (or `pathFilter()`), never a bare `queryKey()`. An input-less
 `queryKey()` is `[path, { type: 'query' }]` and matches no infinite query, so the invalidation dies
 silently once the procedure moves to `useInfiniteQuery`; `pathKey()` is `[path]` and reaches both.
-`repo/trpc-invalidate-with-path-key` enforces this and autofixes it. A key with an input is exact on
+`noctcore-query/trpc-invalidate-with-path-key` (from `@noctcore/eslint-plugin-query`) enforces this and autofixes it. A key with an input is exact on
 purpose and stays as is (`setQueryData(trpc.x.list.queryKey({}), ...)`).

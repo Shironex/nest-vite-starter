@@ -40,8 +40,8 @@ describe('tsconfig-include-paths-exist', () => {
 
   it('accepts a relative entry that climbs out of the workspace', () => {
     const fixture = createFixture({
-      'tools/tsconfig.json': tsconfig(['../packages/eslint-plugin-repo/src']),
-      'packages/eslint-plugin-repo/src/index.ts': '',
+      'tools/tsconfig.json': tsconfig(['../packages/some-plugin/src']),
+      'packages/some-plugin/src/index.ts': '',
     });
 
     assert.deepEqual(checkTsconfigIncludePathsExist(fixture.root), []);
@@ -87,7 +87,7 @@ describe('literalIncludes', () => {
         '**/*',
         'src/**/*.ts',
         '.generated/types.d.ts',
-        '../packages/eslint-plugin-repo/src/types/*.d.ts',
+        '../packages/some-plugin/src/types/*.d.ts',
       ]),
     );
 

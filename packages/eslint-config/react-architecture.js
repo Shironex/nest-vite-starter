@@ -1,7 +1,7 @@
 import codeQuality from '@noctcore/eslint-plugin-code-quality';
 import noctcoreReact from '@noctcore/eslint-plugin-react';
 import architecture from '@noctcore/eslint-plugin-architecture';
-import repoPlugin from '@repo/eslint-plugin-repo';
+import query from '@noctcore/eslint-plugin-query';
 
 /*
  * Frontend component-architecture rules, sourced from the
@@ -144,28 +144,6 @@ export const config = [
     },
   },
   /*
-   * A native date input renders in the BROWSER's UI language, ignoring the
-   * element's `lang` and the page locale, so its date order follows whatever
-   * language the browser was installed in rather than the product locale, and
-   * 3 April cannot be told from 4 March. A date in a business product is often
-   * a deadline. The defect is
-   * invisible in review and invisible on the machine of anyone whose browser
-   * matches the product's language, which is exactly the shape a lint rule is
-   * for. Scoped to every `.tsx` rather than to `src/features/**`, because the
-   * next one would just as easily be added in a route file or a `@repo/ui`
-   * component; the rule's own `includeFiles` keeps it off packages that render
-   * no UI.
-   */
-  {
-    files: ['src/**/*.tsx'],
-    plugins: {
-      repo: repoPlugin,
-    },
-    rules: {
-      'repo/no-native-date-input': 'error',
-    },
-  },
-  /*
    * A mutation fired from an effect must carry its handlers on `useMutation`,
    * because TanStack Query delivers a per-call `mutate(vars, { onSuccess })`
    * handler only while the issuing observer still has listeners. Any remount
@@ -182,10 +160,10 @@ export const config = [
   {
     files: ['src/features/**/*.{ts,tsx}'],
     plugins: {
-      repo: repoPlugin,
+      'noctcore-query': query,
     },
     rules: {
-      'repo/effect-fired-mutation-must-bind-callbacks': 'error',
+      'noctcore-query/effect-fired-mutation-must-bind-callbacks': 'error',
     },
   },
   /*
@@ -193,7 +171,7 @@ export const config = [
    * procedure with no input must use `pathKey()`. A bare `queryKey()` is
    * `[path, { type: 'query' }]`, which prefix-matches no infinite query, so
    * the call dies silently the day the procedure moves to `useInfiniteQuery`
-   * (the compliance agenda shipped that bug). `pathKey()` is `[path]` and
+   * (a shipped bug that only e2e caught). `pathKey()` is `[path]` and
    * reaches every entry; for a plain query the two are equivalent. Autofixable.
    * Sidecars are included on purpose: a test that reproduces the bad shape is
    * teaching it.
@@ -201,10 +179,10 @@ export const config = [
   {
     files: ['src/**/*.{ts,tsx}'],
     plugins: {
-      repo: repoPlugin,
+      'noctcore-query': query,
     },
     rules: {
-      'repo/trpc-invalidate-with-path-key': 'error',
+      'noctcore-query/trpc-invalidate-with-path-key': 'error',
     },
   },
 ];

@@ -155,9 +155,7 @@ describe('lint-edited: formatProblems', () => {
 });
 
 describe('lint-edited: stdin/stdout protocol with the real eslint', { timeout: 240_000 }, () => {
-  const ready =
-    existsSync(join(REPO_ROOT, 'node_modules', 'eslint', 'bin', 'eslint.js')) &&
-    existsSync(join(REPO_ROOT, 'packages', 'eslint-plugin-repo', 'dist', 'index.js'));
+  const ready = existsSync(join(REPO_ROOT, 'node_modules', 'eslint', 'bin', 'eslint.js'));
 
   it(
     'blocks with decision:block and the problems, and stays silent on a clean file',

@@ -5,7 +5,7 @@ working in this repo, in the main checkout or in any git worktree. If this file 
 config disagree, the lint config wins.
 
 Stack: pnpm + turbo monorepo. `apps/api` (NestJS 11 + nestjs-trpc + Prisma 7), `apps/web` (Vite
-SPA, TanStack Router/Query), `packages/*` (shared, database, eslint-config, eslint-plugin-repo, ui, ...). Node `>=22.22.3`,
+SPA, TanStack Router/Query), `packages/*` (shared, database, eslint-config, ui, ...). Node `>=22.22.3`,
 pnpm `10.34.9`.
 
 ## Bootstrap a fresh worktree (do all four first)
@@ -78,8 +78,7 @@ pnpm --filter @repo/database db:migrate:status
 The hook exits **2 INCOMPLETE** when a gate did not run at all (no database reachable,
 `PRE_PUSH_SKIP_DB=1`, `PRE_PUSH_SKIP_GITLEAKS=1`), which aborts the push the same way a failure
 does. `PRE_PUSH_ALLOW_INCOMPLETE=1` pushes anyway and says so. Exit 1 still means a gate ran and
-failed. CI also runs `pnpm --filter @repo/eslint-plugin-repo test` and `pnpm audit`, which the hook
-does not; `verify feature` covers the former.
+failed. CI also runs `pnpm audit`, which the hook does not.
 
 Turbo `lint` and `check-types` alone are NOT the gate. Format with
 `pnpm exec prettier --check <files>` (prettier-tailwind config; `pnpm format` writes).

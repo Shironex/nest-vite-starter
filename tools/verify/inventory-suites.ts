@@ -101,14 +101,6 @@ export const INVENTORY_SUITES: readonly IInventorySuite[] = [
     required: true,
   },
   {
-    id: 'eslint-plugin-repo',
-    label: 'packages/eslint-plugin-repo (vitest)',
-    pathBase: 'packages/eslint-plugin-repo',
-    report: `${INVENTORY_REPORT_DIR}/eslint-plugin-repo.junit.xml`,
-    command: ['pnpm', '--filter', '@repo/eslint-plugin-repo', 'test'],
-    required: true,
-  },
-  {
     // Playwright's classname is relative to `testDir`, which is apps/web/e2e,
     // and the lane already writes this report for the `e2e` verify check, so
     // nothing new is emitted here.

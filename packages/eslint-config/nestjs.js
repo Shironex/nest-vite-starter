@@ -2,16 +2,42 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import repoPlugin, {
-  SOFT_DELETE_ALLOW_IN_FUNCTIONS,
-  SOFT_DELETE_MODELS,
-} from '@repo/eslint-plugin-repo';
 import architecture from '@noctcore/eslint-plugin-architecture';
 import codeQuality from '@noctcore/eslint-plugin-code-quality';
 import contracts from '@noctcore/eslint-plugin-contracts';
 import prisma from '@noctcore/eslint-plugin-prisma';
 import observability from '@noctcore/eslint-plugin-observability';
 import { config as baseConfig } from './base.js';
+
+/*
+ * The starter's soft-delete registry: this repo's decisions about its own
+ * models, passed to `noctcore-prisma/soft-deletable-tables-require-deleted-at`
+ * below. Registering a soft-deletable model is an edit here and nothing else on
+ * the lint side.
+ *
+ * A model is listed because its rows OUTLIVE their delete and nothing injects
+ * the filter that hides them. Sourced from the schema's `deletedAt` columns,
+ * starting with `User.deletedAt` (packages/database/prisma/schema/identity.prisma).
+ * Add a model when a migration gives another model a `deletedAt`.
+ */
+const SOFT_DELETE_MODELS = ['user'];
+
+/*
+ * Functions exempt from that rule ONLY, each in the one file its glob names.
+ *
+ *  - user-purge.service.ts `sweep`: reads the expired rows with an explicit
+ *    `deletedAt: { lte: cutoff }` filter and hard-deletes each one by primary
+ *    key. The purge is the one job whose SUBJECT is the soft-deleted rows.
+ *
+ * Functions, not files: a file-level `allowIn` would also stop policing the
+ * compliant calls beside these. An exemption list rather than an "already
+ * narrowed by a unique id" carve-out, because `where: { id }` is the most common
+ * shape in the repo and the lockout counters and the role change are exactly
+ * the sites the guard exists to catch. Exact files, never a directory glob.
+ */
+const SOFT_DELETE_ALLOW_IN_FUNCTIONS = [
+  { files: ['**/modules/user/user-purge.service.ts'], functions: ['sweep'] },
+];
 
 // The old repo/no-bare-date-now allowlist entries were already anchored with a
 // leading `**\/`, so they carry over unchanged to the noctcore `allowIn` option
@@ -193,26 +219,20 @@ const AUDIT_PII_OPTIONS = {
 export const config = [
   ...baseConfig,
   {
-    // NestJS queue + clock conventions. Enabled here (the NestJS app config)
-    // rather than base.js because they are backend-shaped and the `common/clock`
-    // util they require lives in apps/api. Scoped to non-spec source: the repo
-    // bans inline eslint-disable and made unused disables an error, so there
-    // is no per-line escape hatch: a test fixture that enqueues with a literal
-    // job name must not be policed by these production-code rules. The queue
-    // trio remains in @repo/eslint-plugin-repo (no published noctcore home yet);
-    // no-bare-date-now is now the portable @noctcore/eslint-plugin-code-quality
-    // rule.
+    // NestJS clock convention. Enabled here (the NestJS app config) rather
+    // than base.js because it is backend-shaped and the `common/clock` util it
+    // requires lives in apps/api. Scoped to non-spec source: the repo bans
+    // inline eslint-disable and made unused disables an error, so there is no
+    // per-line escape hatch for test fixtures.
     files: ['**/*.ts'],
     // Production-code rules: skip specs AND test-support dirs (fixtures, e2e
     // helpers). The repo bans inline eslint-disable, so there is no per-line
     // escape hatch and these must not police test scaffolding.
     ignores: ['**/*.{spec,test}.ts', '**/test/**'],
     plugins: {
-      repo: repoPlugin,
       'code-quality': codeQuality,
     },
     rules: {
-      'repo/job-name-must-be-constant': 'error',
       'code-quality/no-bare-date-now': ['error', { allowIn: NO_BARE_DATE_NOW_ALLOW_IN }],
     },
   },
@@ -285,7 +305,6 @@ export const config = [
     ignores: ['**/*.{spec,test}.ts', '**/test/**'],
     plugins: {
       'noctcore-prisma': prisma,
-      repo: repoPlugin,
     },
     rules: {
       'noctcore-prisma/prisma-write-in-transaction': [
