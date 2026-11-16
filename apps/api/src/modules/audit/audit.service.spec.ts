@@ -19,11 +19,6 @@ jest.mock('@sentry/nestjs', () => ({
   captureException: (...args: unknown[]) => captureExceptionMock(...args),
 }));
 
-const auditWriteFailuresIncMock = jest.fn();
-jest.mock('../metrics/metrics.registry', () => ({
-  auditWriteFailuresTotal: { inc: (...args: unknown[]) => auditWriteFailuresIncMock(...args) },
-}));
-
 import { AuditService } from './audit.service';
 
 describe('AuditService', () => {
@@ -32,7 +27,6 @@ describe('AuditService', () => {
 
   beforeEach(async () => {
     captureExceptionMock.mockReset();
-    auditWriteFailuresIncMock.mockReset();
     prisma = buildPrismaMock();
     const module = await Test.createTestingModule({
       providers: [AuditService, { provide: PrismaService, useValue: prisma }],
@@ -136,23 +130,21 @@ describe('AuditService', () => {
     await expect(service.log({ action: 'a', userId: 'ghost' })).resolves.toBeUndefined();
   });
 
-  it('makes a swallowed write failure observable: counter + Sentry capture', async () => {
+  it('makes a swallowed write failure observable: Sentry capture', async () => {
     const err = new Error('DB down');
     prisma.client.auditLog.create.mockRejectedValue(err);
 
     await service.log({ action: 'thing.updated' });
 
-    expect(auditWriteFailuresIncMock).toHaveBeenCalledTimes(1);
     expect(captureExceptionMock).toHaveBeenCalledTimes(1);
     expect(captureExceptionMock).toHaveBeenCalledWith(err, {
       extra: expect.objectContaining({ action: 'thing.updated' }),
     });
   });
 
-  it('does not touch the failure counter or Sentry on a successful write', async () => {
+  it('does not touch Sentry on a successful write', async () => {
     prisma.client.auditLog.create.mockResolvedValue({});
     await service.log({ action: 'a' });
-    expect(auditWriteFailuresIncMock).not.toHaveBeenCalled();
     expect(captureExceptionMock).not.toHaveBeenCalled();
   });
 

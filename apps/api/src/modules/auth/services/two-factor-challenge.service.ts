@@ -29,7 +29,7 @@ import type { SecondFactorMethod } from './step-up.service';
 import { TrustedDeviceService } from './trusted-device.service';
 import { SecondFactorRepository } from '../repositories/second-factor.repository';
 import {} from '../two-factor.util';
-import { recordAuthOutcome } from '../../metrics/auth-outcome.recorder';
+import { recordAuthOutcome } from '../auth-outcome.recorder';
 
 /** Snapshot of the just-authenticated user handed to the seam (transport-agnostic). */
 export interface IChallengeUser {

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import * as Sentry from '@sentry/nestjs';
 import { PrismaService } from '../../common/database/prisma.service';
 import { getRequestContext, getRequestId } from '../../common/context/request-context';
-import { auditWriteFailuresTotal } from '../metrics/metrics.registry';
 import { createAppLogger } from '../logger/logger.service';
 
 const logger = createAppLogger('AuditService');
@@ -54,9 +53,8 @@ export class AuditService {
       await this.write(params);
     } catch (error) {
       // Swallow by design (the business op must not block), but make the loss
-      // observable: a counter to alert on plus a Sentry event per failed write.
+      // observable: an error log plus a Sentry event per failed write.
       logger.error('Failed to write audit log', { action: params.action }, error);
-      auditWriteFailuresTotal.inc();
       Sentry.captureException(error, {
         extra: {
           action: params.action,

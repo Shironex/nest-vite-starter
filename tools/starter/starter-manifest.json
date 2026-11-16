@@ -152,15 +152,6 @@
       "prodRequired": [],
       "services": []
     },
-    "observability-stack": {
-      "kind": "core",
-      "description": "The /metrics endpoint credential.",
-      "keys": ["METRICS_BASIC_AUTH"],
-      "secrets": ["METRICS_BASIC_AUTH"],
-      "required": [],
-      "prodRequired": ["METRICS_BASIC_AUTH"],
-      "services": []
-    },
     "web-dev": {
       "kind": "core",
       "description": "Development-only web knobs, read by apps/web/vite.config.ts at config time and never bundled.",

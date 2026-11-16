@@ -2,7 +2,6 @@ import { Logger } from '@nestjs/common';
 import * as OTPAuth from 'otpauth';
 import { TotpService } from './totp.service';
 import { EncryptionService } from '../../../common/security/encryption.service';
-import { totpDecryptFailuresTotal } from '../../metrics/metrics.registry';
 import { createAuthTestModule } from '@test/test-module';
 import { TOTP_ALGORITHM, TOTP_DIGITS, TOTP_PERIOD_SECONDS } from '../auth.constants';
 
@@ -79,17 +78,14 @@ describe('TotpService', () => {
       decrypt: jest.fn().mockReturnValue(base32),
     });
     const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-    const incSpy = jest.spyOn(totpDecryptFailuresTotal, 'inc');
 
     await expect(service.verify('u-1', 'enc', 'not-a-code')).resolves.toBe(false);
     expect(mocks.redis.set).not.toHaveBeenCalled();
     // A decryptable-but-wrong code is an ordinary failure: it must stay silent
-    // and unmetered so the decrypt-failure counter isolates key rotations.
+    // so the decrypt-failure warning isolates key rotations.
     expect(warnSpy).not.toHaveBeenCalled();
-    expect(incSpy).not.toHaveBeenCalled();
 
     warnSpy.mockRestore();
-    incSpy.mockRestore();
   });
 
   it('verify fails closed and logs+counts when the secret cannot be decrypted', async () => {
@@ -98,11 +94,9 @@ describe('TotpService', () => {
     });
     const { service, mocks } = await build({ encrypt: jest.fn(), decrypt });
     const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-    const incSpy = jest.spyOn(totpDecryptFailuresTotal, 'inc');
 
     await expect(service.verify('u-1', 'ciphertext-blob', '998877')).resolves.toBe(false);
     expect(mocks.redis.set).not.toHaveBeenCalled();
-    expect(incSpy).toHaveBeenCalledTimes(1);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     // Operator context (userId) is allowed; the ciphertext, decrypted secret,
     // and submitted code must never appear in the log line.
@@ -112,6 +106,5 @@ describe('TotpService', () => {
     expect(warned).not.toContain('998877');
 
     warnSpy.mockRestore();
-    incSpy.mockRestore();
   });
 });

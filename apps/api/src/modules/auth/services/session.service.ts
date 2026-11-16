@@ -9,7 +9,7 @@ import { UnauthorizedError } from '../../../common/errors';
 import { sha256Hex } from '../../../common/utils/crypto';
 import { nowMs } from '../../../common/clock';
 import { TOKEN_ENTROPY_BYTES } from '../auth.constants';
-import { recordAuthOutcome } from '../../metrics/auth-outcome.recorder';
+import { recordAuthOutcome } from '../auth-outcome.recorder';
 
 const MAX_SESSIONS = 3;
 const DEFAULT_TTL_SECONDS = 24 * 60 * 60; // 24 hours
@@ -237,8 +237,8 @@ export class SessionService {
         .srem(RedisKeys.userSessions(userId), sessionId)
         .exec();
       this.logger.warn('Session mint lost the epoch fence; revoked mid-login', { userId });
-      // Counted so a fence refusal is distinguishable from a Redis outage in
-      // Prometheus: the audit trail records neither.
+      // Logged so a fence refusal is distinguishable from a Redis outage: the
+      // audit trail records neither.
       recordAuthOutcome({ flow: 'session_mint', outcome: 'fence', kind: 'refusal', userId });
       throw new UnauthorizedError(
         AppErrorCode.SESSION_EXPIRED,

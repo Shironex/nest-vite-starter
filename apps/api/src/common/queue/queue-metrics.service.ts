@@ -4,12 +4,6 @@ import { ModuleRef } from '@nestjs/core';
 import { Interval } from '@nestjs/schedule';
 import type { Queue } from 'bullmq';
 import { QUEUE_METRICS_INTERVAL_MS, QUEUE_NAMES } from './queue.constants';
-import {
-  queueJobsActive,
-  queueJobsDelayed,
-  queueJobsFailed,
-  queueJobsWaiting,
-} from './queue.metrics';
 import { InvariantError } from '../errors/invariant-error';
 
 export interface IQueueCounts {
@@ -20,16 +14,16 @@ export interface IQueueCounts {
 }
 
 /**
- * Periodically reads job counts for every registered queue and (a) sets the
- * prom-client gauges scraped on `/metrics`, (b) caches the latest counts so the
- * queue health indicator can read failed-depth without a live Redis round-trip
- * on every probe (which would make `/health` flap on a transient Redis blip).
+ * Periodically reads job counts for every registered queue and caches the
+ * latest counts so the queue health indicator can read failed-depth without a
+ * live Redis round-trip on every probe (which would make `/health` flap on a
+ * transient Redis blip).
  *
  * EVERY QUEUE MEANS EVERY QUEUE, and the set is read from `QUEUE_NAMES` rather
- * than written out here. A queue missing from this loop has no gauges AND sits
- * outside the DLQ alarm, since the health indicator reads `getSnapshots()`, so
- * its failures would go unnoticed until someone asks why a job never ran. Driving off the registry is what makes the sentence above
- * true and keeps it true: the next queue added to `QUEUE_NAMES` is metered
+ * than written out here. A queue missing from this loop sits outside the DLQ
+ * alarm, since the health indicator reads `getSnapshots()`, so its failures
+ * would go unnoticed until someone asks why a job never ran. Driving off the
+ * registry keeps that true: the next queue added to `QUEUE_NAMES` is watched
  * without anyone remembering this file exists.
  *
  * WHY ModuleRef AND NOT @InjectQueue. Constructor injection cannot iterate: a
@@ -65,7 +59,7 @@ export class QueueMetricsService implements OnModuleInit {
         this.queues.push(this.moduleRef.get<Queue>(getQueueToken(name), { strict: false }));
       } catch (error) {
         throw new InvariantError(
-          `Queue "${name}" is declared in QUEUE_NAMES but no module registered it, so it would be scraped by nothing and sit outside the DLQ alarm. Add registerQueueWithDefaults(name, defaults) in the module that owns it.`,
+          `Queue "${name}" is declared in QUEUE_NAMES but no module registered it, so it would sit outside the DLQ alarm. Add registerQueueWithDefaults(name, defaults) in the module that owns it.`,
           { cause: error },
         );
       }
@@ -84,14 +78,8 @@ export class QueueMetricsService implements OnModuleInit {
           delayed: counts.delayed ?? 0,
         };
         this.snapshots.set(queue.name, snapshot);
-
-        const labels = { queue: queue.name };
-        queueJobsWaiting.set(labels, snapshot.waiting);
-        queueJobsActive.set(labels, snapshot.active);
-        queueJobsFailed.set(labels, snapshot.failed);
-        queueJobsDelayed.set(labels, snapshot.delayed);
       } catch (error) {
-        // A metrics scrape must never take the app down.
+        // A count scrape must never take the app down.
         this.logger.warn(
           'Failed to collect job counts for queue',
           { queue: queue.name },

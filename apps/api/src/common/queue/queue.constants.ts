@@ -72,7 +72,7 @@ export interface IQueueDefaults {
   readonly concurrency: QueueConcurrency;
 }
 
-/** How often `QueueMetricsService` scrapes job counts into the gauges. */
+/** How often `QueueMetricsService` refreshes its cached job counts. */
 export const QUEUE_METRICS_INTERVAL_MS = 15_000;
 
 /**

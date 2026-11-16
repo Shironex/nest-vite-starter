@@ -1,19 +1,17 @@
 import { createAppLogger } from '../logger/logger.service';
-import { authOutcomesTotal } from './metrics.registry';
 
 const logger = createAppLogger('Auth');
 
 /**
- * The authentication flows worth counting separately. Closed set: these are
- * Prometheus labels, so they are written at the call site and never derived
+ * The authentication flows worth logging separately. Closed set: these are
+ * structured log fields, so they are written at the call site and never derived
  * from anything a caller controls.
  */
-export type AuthFlow =
-  'login' | 'twofa_challenge' | 'oauth_callback' | 'password_reset' | 'session_mint';
+export type AuthFlow = 'login' | 'twofa_challenge' | 'password_reset' | 'session_mint';
 
 /**
  * Whether an outcome is the flow succeeding or the flow refusing. Only the
- * log level depends on it: both are counted.
+ * log level depends on it.
  */
 export type AuthOutcomeKind = 'success' | 'refusal';
 
@@ -21,8 +19,8 @@ export interface IAuthOutcome {
   readonly flow: AuthFlow;
   /**
    * Why the flow ended the way it did (`unknown_email`, `bad_password`,
-   * `locked`, `membership_ended`, `fence`, `ok`, ...). Also a label, so it
-   * matches the audit row's reason rather than restating an error message.
+   * `locked`, `membership_ended`, `fence`, `ok`, ...). Matches the audit row's
+   * reason rather than restating an error message.
    */
   readonly outcome: string;
   readonly kind: AuthOutcomeKind;
@@ -34,14 +32,11 @@ export interface IAuthOutcome {
 }
 
 /**
- * One counter increment plus one structured line per authentication outcome,
- * beside the existing `auditService.log` call rather than instead of it.
- *
- * Auth outcomes used to be audit rows and nothing else, so neither Prometheus
- * nor Loki could answer "is the lockout rate climbing", "did 2FA start
- * failing", "is the epoch fence refusing mints" without SQL over a table whose
- * writes are best effort. The audit row stays the durable record; this is the
- * ops signal.
+ * One structured line per authentication outcome, beside the existing
+ * `auditService.log` call rather than instead of it. The audit row stays the
+ * durable record; this is the ops signal a log pipeline can alert on ("is the
+ * lockout rate climbing", "did 2FA start failing") without SQL over a table
+ * whose writes are best effort.
  *
  * NEVER pass the credential, the email, the token or the error message. The
  * flow, the outcome and the user id are the whole payload: `userId` is an
@@ -49,8 +44,6 @@ export interface IAuthOutcome {
  * is what answers "which account" during an incident.
  */
 export function recordAuthOutcome({ flow, outcome, kind, userId }: IAuthOutcome): void {
-  authOutcomesTotal.labels(flow, outcome).inc();
-
   const details = { op: `auth.${flow}`, outcome, ...(userId === undefined ? {} : { userId }) };
   if (kind === 'success') {
     logger.info('auth outcome', details);

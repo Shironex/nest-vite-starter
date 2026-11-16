@@ -8,7 +8,7 @@
  *
  * Every value is a CI-only stand-in. The API validates its config with Joi
  * under NODE_ENV=production and fails closed without them, which is why they
- * are listed at all: the specs never exercise Turnstile, CSRF, /metrics or the
+ * are listed at all: the specs never exercise Turnstile, CSRF or the
  * mail transport, but the process does not start without valid-shaped values.
  */
 export interface IE2eEnvInput {
@@ -46,7 +46,6 @@ export function e2eApiEnv(input: IE2eEnvInput): Record<string, string> {
     SMTP_PORT: String(input.smtpPort),
     TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',
     CSRF_SECRET: 'ci-e2e-csrf-secret-not-used-by-these-specs-0000',
-    METRICS_BASIC_AUTH: 'ci-metrics-user:ci-metrics-not-a-real-credential',
     ENCRYPTION_KEY: '6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81',
   };
 }

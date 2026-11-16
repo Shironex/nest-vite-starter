@@ -11,7 +11,6 @@ import {
 import { withJobContext } from '../../common/queue';
 import { getRequestContext } from '../../common/context/request-context';
 import { sha256Hex } from '../../common/utils/crypto';
-import { mailSendFailuresTotal } from '../metrics/metrics.registry';
 import {
   EMAIL_DELIVERY_JOB_NAMES,
   EMAIL_DELIVERY_NON_CRITICAL_PRIORITY,
@@ -61,28 +60,19 @@ export class MailService {
     // fresh id. Hashed so the raw token never appears as a Redis key or in a
     // queue UI. '-' separator: BullMQ rejects ':' in custom job ids.
     const jobId = `verification-${sha256Hex(verificationUrl)}`;
-    try {
-      await this.queue.add(
-        EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION,
-        withJobContext({
-          to,
-          props: {
-            verificationUrl,
-            appName: this.appName,
-            // Expiry prose follows the real TTL (shared constant).
-            expiresIn: formatTokenTtl(VERIFICATION_TOKEN_TTL_MS),
-          },
-        }),
-        { jobId },
-      );
-    } catch (error) {
-      // A failed CRITICAL enqueue means the mail never reached the retry/DLQ
-      // machinery: count it so the MailSendFailures alert fires, then rethrow
-      // for the caller to translate (register reports emailSent: false;
-      // forgot-password/resend log and stay silent).
-      mailSendFailuresTotal.inc({ template: EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION });
-      throw error;
-    }
+    await this.queue.add(
+      EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION,
+      withJobContext({
+        to,
+        props: {
+          verificationUrl,
+          appName: this.appName,
+          // Expiry prose follows the real TTL (shared constant).
+          expiresIn: formatTokenTtl(VERIFICATION_TOKEN_TTL_MS),
+        },
+      }),
+      { jobId },
+    );
     // Recipient is intentionally not logged.
     this.logger.log('Verification email enqueued');
   }
@@ -93,25 +83,20 @@ export class MailService {
     // (hashed out of the URL), so duplicates collapse and each new
     // forgot-password request (new token) still sends.
     const jobId = `password-reset-${sha256Hex(resetUrl)}`;
-    try {
-      await this.queue.add(
-        EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_RESET,
-        withJobContext({
-          to,
-          props: {
-            resetUrl,
-            ipAddress,
-            appName: this.appName,
-            // Expiry prose follows the real TTL (shared constant).
-            expiresIn: formatTokenTtl(PASSWORD_RESET_TOKEN_TTL_MS),
-          },
-        }),
-        { jobId },
-      );
-    } catch (error) {
-      mailSendFailuresTotal.inc({ template: EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_RESET });
-      throw error;
-    }
+    await this.queue.add(
+      EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_RESET,
+      withJobContext({
+        to,
+        props: {
+          resetUrl,
+          ipAddress,
+          appName: this.appName,
+          // Expiry prose follows the real TTL (shared constant).
+          expiresIn: formatTokenTtl(PASSWORD_RESET_TOKEN_TTL_MS),
+        },
+      }),
+      { jobId },
+    );
     this.logger.log('Password reset email enqueued');
   }
 
@@ -225,34 +210,27 @@ export class MailService {
   /**
    * Enqueue the email-change confirmation link, mailed to the NEW address
    *. QUEUED (critical class): like send-verification, the flow
-   * cannot complete without this mail, so an enqueue failure is counted,
-   * alerted and rethrown for the caller to translate.
+   * cannot complete without this mail, so an enqueue failure propagates for
+   * the caller to translate.
    */
   async sendEmailChangeVerificationEmail(to: string, confirmUrl: string): Promise<void> {
     // Same dedupe scheme as verification: the URL embeds the single-use raw
     // token, so hashing it yields one id per token; accidental producer
     // duplicates collapse while every new request (new token) sends.
     const jobId = `email-change-verification-${sha256Hex(confirmUrl)}`;
-    try {
-      await this.queue.add(
-        EMAIL_DELIVERY_JOB_NAMES.SEND_EMAIL_CHANGE_VERIFICATION,
-        withJobContext({
-          to,
-          props: {
-            confirmUrl,
-            appName: this.appName,
-            // Expiry prose follows the real TTL (shared constant).
-            expiresIn: formatTokenTtl(EMAIL_CHANGE_TOKEN_TTL_MS),
-          },
-        }),
-        { jobId },
-      );
-    } catch (error) {
-      mailSendFailuresTotal.inc({
-        template: EMAIL_DELIVERY_JOB_NAMES.SEND_EMAIL_CHANGE_VERIFICATION,
-      });
-      throw error;
-    }
+    await this.queue.add(
+      EMAIL_DELIVERY_JOB_NAMES.SEND_EMAIL_CHANGE_VERIFICATION,
+      withJobContext({
+        to,
+        props: {
+          confirmUrl,
+          appName: this.appName,
+          // Expiry prose follows the real TTL (shared constant).
+          expiresIn: formatTokenTtl(EMAIL_CHANGE_TOKEN_TTL_MS),
+        },
+      }),
+      { jobId },
+    );
     this.logger.log('Email change verification email enqueued');
   }
 

@@ -121,7 +121,7 @@ export class EmailVerificationService {
     const verificationUrl = `${this.shared.appUrl}/auth/verify-email?token=${verificationToken}`;
     // Await only the ENQUEUE (delivery is async, retried, DLQ-backed). Enqueue
     // failures are logged but not thrown, mirroring forgot-password's
-    // tolerance; the failure is observable via mail_send_failures_total.
+    // tolerance.
     try {
       await this.mailService.sendVerificationEmail(user.email, verificationUrl);
     } catch (error) {

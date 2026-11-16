@@ -10,27 +10,17 @@ jest.mock('../logger/logger.service', () => ({
   }),
 }));
 
-const incMock = jest.fn();
-const labelsMock = jest.fn(() => ({ inc: incMock }));
-jest.mock('./metrics.registry', () => ({
-  authOutcomesTotal: { labels: (...args: unknown[]) => labelsMock(...(args as [])) },
-}));
-
 import { recordAuthOutcome } from './auth-outcome.recorder';
 
 describe('recordAuthOutcome', () => {
   beforeEach(() => {
     loggerInfoMock.mockClear();
     loggerWarnMock.mockClear();
-    labelsMock.mockClear();
-    incMock.mockClear();
   });
 
-  it('counts a refusal and logs it at warn with the account that hit it', () => {
+  it('logs a refusal at warn with the account that hit it', () => {
     recordAuthOutcome({ flow: 'login', outcome: 'locked', kind: 'refusal', userId: 'u-1' });
 
-    expect(labelsMock).toHaveBeenCalledWith('login', 'locked');
-    expect(incMock).toHaveBeenCalledTimes(1);
     expect(loggerWarnMock).toHaveBeenCalledWith('auth outcome refused', {
       op: 'auth.login',
       outcome: 'locked',
@@ -39,7 +29,7 @@ describe('recordAuthOutcome', () => {
     expect(loggerInfoMock).not.toHaveBeenCalled();
   });
 
-  it('counts a success and logs it at info', () => {
+  it('logs a success at info', () => {
     recordAuthOutcome({
       flow: 'twofa_challenge',
       outcome: 'success',
@@ -47,7 +37,6 @@ describe('recordAuthOutcome', () => {
       userId: 'u-2',
     });
 
-    expect(labelsMock).toHaveBeenCalledWith('twofa_challenge', 'success');
     expect(loggerInfoMock).toHaveBeenCalledWith('auth outcome', {
       op: 'auth.twofa_challenge',
       outcome: 'success',
@@ -63,12 +52,5 @@ describe('recordAuthOutcome', () => {
 
     const [, details] = loggerWarnMock.mock.calls[0] as [string, Record<string, unknown>];
     expect(Object.keys(details)).toEqual(['op', 'outcome']);
-  });
-
-  it('still counts the outcome even when nothing else about it is known', () => {
-    recordAuthOutcome({ flow: 'session_mint', outcome: 'fence', kind: 'refusal', userId: 'u-3' });
-
-    expect(labelsMock).toHaveBeenCalledWith('session_mint', 'fence');
-    expect(incMock).toHaveBeenCalledTimes(1);
   });
 });

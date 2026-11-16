@@ -16,7 +16,6 @@ import { AppContext } from './trpc/trpc.context';
 import { AppErrorHandler, appErrorFormatter } from './trpc/trpc.error-handler';
 import { PingRouter } from './trpc/ping.router';
 import { HealthModule } from './modules/health/health.module';
-import { MetricsModule } from './modules/metrics/metrics.module';
 import { MailModule } from './modules/mail/mail.module';
 import { SessionModule } from './modules/auth/session.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -28,15 +27,13 @@ import { QueueObservabilityModule } from './common/queue/queue-observability.mod
 import { RequestContextModule } from './common/context/request-context.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { SecurityModule } from './common/security/security.module';
-import { TrpcTimingModule } from './common/trpc/trpc-timing.module';
-import { TrpcTimingMiddleware } from './common/trpc/trpc-timing.middleware';
 import { TrpcRequestContextModule } from './common/trpc/trpc-request-context.module';
 import { TrpcRequestContextMiddleware } from './common/trpc/trpc-request-context.middleware';
 
 const envFilePath = '.env';
 
 // Global fallback limit shared across replicas via Redis; sensitive surfaces
-// (auth, csrf-token, vitals) layer their own tighter per-route throttles.
+// (auth, csrf-token) layer their own tighter per-route throttles.
 const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
 
 @Module({
@@ -68,7 +65,6 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
     RequestContextModule,
     AuditModule,
     SecurityModule,
-    TrpcTimingModule,
     TrpcRequestContextModule,
     // nestjs-trpc instantiates its own `new ConsoleLogger()` for the framework
     // bootstrap lines (route mapping, server init). bufferLogs + app.useLogger()
@@ -96,10 +92,9 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
       // Prisma tenant-scope extension reads. nestjs-trpc mounts outside the
       // express pipeline RequestContextMiddleware runs in, so without this every
       // tenant-scoped query fails closed and no tRPC log carries a requestId.
-      globalMiddlewares: [TrpcRequestContextMiddleware, TrpcTimingMiddleware],
+      globalMiddlewares: [TrpcRequestContextMiddleware],
     }),
     HealthModule,
-    MetricsModule,
     MailModule,
     SessionModule,
     AuthModule,

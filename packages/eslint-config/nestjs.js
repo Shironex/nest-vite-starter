@@ -22,9 +22,7 @@ import { config as baseConfig } from './base.js';
 const NO_BARE_DATE_NOW_ALLOW_IN = [
   '**/common/clock/clock.ts',
   '**/otel.ts',
-  '**/common/trpc/trpc-timing.middleware.ts',
   '**/modules/logger/logger.middleware.ts',
-  '**/modules/metrics/http-metrics.interceptor.ts',
   '**/modules/health/indicators/database.health.ts',
   '**/modules/health/indicators/redis.health.ts',
 ];
@@ -99,13 +97,13 @@ const ERROR_TAXONOMY = [
   'TRPCError',
 ];
 
-// Plain-HTTP controllers (download and upload tickets, /metrics, /vitals) answer through `AllExceptionsFilter`, which maps
+// Plain-HTTP controllers (health, csrf-token) answer through `AllExceptionsFilter`, which maps
 // only `HttpException`. They sit OUTSIDE the tRPC boundary, so at that edge, and
-// only there, the Nest built-ins are the taxonomy. The list is the three the
-// controllers throw today; a fourth is a deliberate addition here. A service still throws a
-// DomainError; the controller translates it (`toHttpException` in the upload
-// and download controllers). Scoped to `*.controller.ts` so a service that
-// reaches for `NotFoundException` is still reported.
+// only there, the Nest built-ins are the taxonomy. The list is the three a
+// controller may throw; a fourth is a deliberate addition here. A service still
+// throws a DomainError and the controller translates it. Scoped to
+// `*.controller.ts` so a service that reaches for `NotFoundException` is still
+// reported.
 const HTTP_CONTROLLER_EXCEPTIONS = [
   'BadRequestException',
   'NotFoundException',

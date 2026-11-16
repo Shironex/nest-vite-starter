@@ -5,11 +5,6 @@ import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import { PrismaService } from '../../common/database/prisma.service';
 import { APP_TIME_ZONE, nowMs } from '../../common/clock';
 import * as Sentry from '@sentry/nestjs';
-import {
-  auditRetentionDeletedTotal,
-  cronSweepFailuresTotal,
-  cronSweepLastSuccessTimestampSeconds,
-} from '../metrics/metrics.registry';
 import { AuditService } from './audit.service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -40,12 +35,10 @@ export const AUDIT_RETENTION_MAX_BATCHES = 200;
  *   - Idempotent by predicate (createdAt < cutoff), so it races safely when
  *     @Cron fires on every replica.
  *   - Best-effort: `sweep()` NEVER throws; a failed tick logs and returns 0.
- *   - Emits audit_retention_deleted_total so the work is observable.
  *
- * AND leaves its own row. Metrics are the wrong medium for the question this
- * sweep raises at an inspection: `audit_retention_deleted_total` resets on every
- * restart, and a log line naming the retention DAY COUNT only implies the rule,
- * so "which rows went, on what date, under which cutoff" has nothing durable
+ * AND leaves its own row. A log line is the wrong medium for the question
+ * this sweep raises at an inspection: one naming the retention DAY COUNT only
+ * implies the rule, so "which rows went, on what date, under which cutoff" has nothing durable
  * behind it. One `audit.retention.sweep` row per run carries that, written AFTER
  * the deletes so the pass cannot erase its own evidence: the row's createdAt is
  * necessarily newer than the cutoff that chose the rows, so it survives until a
@@ -106,9 +99,6 @@ export class AuditRetentionService {
         }
       }
 
-      if (totalDeleted > 0) {
-        auditRetentionDeletedTotal.inc(totalDeleted);
-      }
       // Logged on EVERY tick, deletions or not, and naming the cutoff INSTANT
       // rather than the day count: "older than 365 days" is a rule, and the
       // question after the fact is which rows the rule actually selected.
@@ -134,16 +124,12 @@ export class AuditRetentionService {
         },
       });
 
-      cronSweepLastSuccessTimestampSeconds.set({ sweep: 'audit-retention' }, nowMs() / 1000);
       return totalDeleted;
     } catch (error) {
       this.logger.error(
         'audit-log-retention sweep failed (will retry next tick)',
         error instanceof Error ? error.stack : String(error),
       );
-      // Compliance path: without Sentry + a counter a daily failure here has
-      // no alertable signal and can run broken for months.
-      cronSweepFailuresTotal.inc({ sweep: 'audit-retention' });
       Sentry.captureException(error, { tags: { sweep: 'audit-retention' } });
       return 0;
     }

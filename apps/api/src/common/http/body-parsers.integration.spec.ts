@@ -28,7 +28,7 @@ import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppErrorCode } from '@repo/shared/errors';
 import { AllExceptionsFilter } from '../filters/all-exceptions.filter';
-import { JSON_BODY_LIMIT, TEXT_BODY_LIMIT, configureBodyParsers } from './body-parsers';
+import { JSON_BODY_LIMIT, configureBodyParsers } from './body-parsers';
 
 @Controller()
 class EchoController {
@@ -100,7 +100,6 @@ describe('configureBodyParsers', () => {
 
   it('states the caps rather than inheriting them', () => {
     expect(JSON_BODY_LIMIT).toBe('100kb');
-    expect(TEXT_BODY_LIMIT).toBe('100kb');
   });
 
   it('accepts an under-cap JSON body', async () => {
@@ -114,33 +113,12 @@ describe('configureBodyParsers', () => {
     await expect(response.json()).resolves.toEqual({ parsedAs: 'object' });
   });
 
-  it('accepts an under-cap text/plain body, the web-vitals beacon shape', async () => {
-    const response = await post(
-      `${baseUrl}/echo`,
-      'text/plain',
-      JSON.stringify({ name: 'LCP', value: 1200 }),
-    );
-
-    expect(response.status).toBe(201);
-    await expect(response.json()).resolves.toEqual({ parsedAs: 'string' });
-  });
-
   it('answers an over-cap VALID JSON body with 413 and PAYLOAD_TOO_LARGE', async () => {
     const response = await post(
       `${baseUrl}/echo`,
       'application/json',
       JSON.stringify({ value: 'a'.repeat(OVER_CAP_BYTES) }),
     );
-
-    expect(response.status).toBe(413);
-    const payload: unknown = await response.json();
-    expect(payload).toMatchObject({
-      error: { code: 413, appCode: AppErrorCode.PAYLOAD_TOO_LARGE },
-    });
-  });
-
-  it('answers an over-cap text/plain body with 413 and PAYLOAD_TOO_LARGE', async () => {
-    const response = await post(`${baseUrl}/echo`, 'text/plain', 'a'.repeat(OVER_CAP_BYTES));
 
     expect(response.status).toBe(413);
     const payload: unknown = await response.json();

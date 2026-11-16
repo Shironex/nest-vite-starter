@@ -117,15 +117,6 @@ export const validationSchema = Joi.object({
     .pattern(/^(?:[A-Za-z0-9+/]{43}=|[0-9a-fA-F]{64})$/, 'base64-32 or hex-64')
     .required(),
 
-  // Prometheus /metrics endpoint: format is `user:password` for basic auth.
-  // Empty disables auth (dev/test only). Required in production so the
-  // endpoint fails closed at boot instead of shipping an open scrape target.
-  METRICS_BASIC_AUTH: Joi.string().when('NODE_ENV', {
-    is: 'production',
-    then: Joi.string().min(3).required(),
-    otherwise: Joi.string().optional().allow(''),
-  }),
-
   // Admin seed credentials (optional)
   ADMIN_EMAIL: Joi.string().email().optional().allow(''),
   ADMIN_PASSWORD: Joi.string().optional().allow(''),

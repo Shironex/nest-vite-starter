@@ -6,7 +6,6 @@ import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 import { RedisKeys } from '../../../common/redis/redis-keys';
 import { nowMs } from '../../../common/clock';
 import { EncryptionService } from '../../../common/security/encryption.service';
-import { totpDecryptFailuresTotal } from '../../metrics/metrics.registry';
 import {
   TOTP_ALGORITHM,
   TOTP_DIGITS,
@@ -82,11 +81,8 @@ export class TotpService {
       secretBase32 = this.encryptionService.decrypt(totpSecretEnc);
     } catch {
       // A tampered or undecryptable secret must never validate: fail closed.
-      // Kept distinct from the wrong-but-decryptable path below because a run of
-      // these means the ENCRYPTION_KEY rotated and EVERY code is about to read
-      // as "Invalid" and feed lockouts. Count + warn so operators get a signal;
-      // never log the ciphertext, the decrypted secret, or the submitted code.
-      totpDecryptFailuresTotal.inc();
+      // Warned separately because a run of these means the ENCRYPTION_KEY
+      // rotated; never log the ciphertext, the secret, or the submitted code.
       this.logger.warn('TOTP secret decryption failed (possible ENCRYPTION_KEY rotation)', {
         userId,
       });

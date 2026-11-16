@@ -22,8 +22,7 @@ import type { IRequestContext } from '../context/request-context';
  *
  * Registered FIRST in `globalMiddlewares` (app.module.ts) so the scope is open
  * before any other middleware, notably AuthMiddleware, which populates
- * `userId`/`tenantId` into the store this opens, and TrpcTimingMiddleware, whose
- * slow-procedure warnings should carry the correlation id.
+ * `userId`/`tenantId` into the store this opens.
  *
  * Per PROCEDURE rather than per HTTP request: a batched call runs several
  * procedures over one request and each gets its own store. They are built from

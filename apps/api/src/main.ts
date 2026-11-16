@@ -205,21 +205,8 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // CSRF: ensure pre-session sid cookie, then double-submit protection.
-  // /api/vitals accepts sendBeacon POSTs from the browser before any session
-  // exists and cannot include a CSRF token, so we exempt it here.
   const csrfService = app.get(CsrfService);
-  const CSRF_EXEMPT = new Set(['/api/vitals']);
   app.use((req: Request, res: Response, next: () => void) => {
-    // Exempt paths (the /api/vitals sendBeacon POST, which cannot carry a CSRF
-    // token) skip BOTH sid-cookie creation AND CSRF protection. This ordering is
-    // load-bearing: if ensureSessionIdentifier ran for an exempt path, a
-    // cold-start vitals beacon (fired before the browser holds a csrf-sid) would
-    // mint and Set-Cookie its own sid, racing the sid that GET /api/csrf-token
-    // sets. The cached login token is hashed against the csrf-token endpoint's
-    // sid, so a beacon that clobbers the cookie makes the next login POST fail
-    // CSRF with no recoverable path. Gating both behind the exemption removes the
-    // race; an exempt path never needs a sid because it is never CSRF-validated.
-    if (CSRF_EXEMPT.has(req.path)) return next();
     csrfService.ensureSessionIdentifier(req, res, () => {
       csrfService.protect(req, res, next);
     });
@@ -231,9 +218,8 @@ async function bootstrap() {
 
   // Body parsers LAST, after CSRF, so nothing buffers the body of a request
   // CSRF is about to refuse. This is also where Nest's own json/urlencoded
-  // parsers effectively ran before `bodyParser: false`; the text parser used to
-  // run several middlewares earlier, which is how an anonymous oversized
-  // text/plain POST reached a parser without ever meeting CSRF.
+  // parsers effectively ran before `bodyParser: false`; a parser that ran
+  // earlier would buffer an anonymous oversized POST before it met CSRF.
   configureBodyParsers(app);
 
   app.enableShutdownHooks();

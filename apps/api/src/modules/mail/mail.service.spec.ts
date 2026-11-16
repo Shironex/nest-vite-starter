@@ -3,7 +3,6 @@ import type { Queue } from 'bullmq';
 import { MailService } from './mail.service';
 import { requestContext } from '../../common/context/request-context';
 import { sha256Hex } from '../../common/utils/crypto';
-import { mailSendFailuresTotal } from '../metrics/metrics.registry';
 import {
   EMAIL_DELIVERY_JOB_NAMES,
   EMAIL_DELIVERY_NON_CRITICAL_PRIORITY,
@@ -106,22 +105,14 @@ describe('MailService', () => {
       );
     });
 
-    it('increments mail_send_failures_total{template} when a critical enqueue throws', async () => {
-      const incSpy = jest.spyOn(mailSendFailuresTotal, 'inc');
+    it('rethrows when a critical enqueue throws', async () => {
       queue.add.mockRejectedValue(new Error('redis down'));
 
       await expect(service.sendVerificationEmail('a@b.c', 'https://x')).rejects.toThrow();
-      expect(incSpy).toHaveBeenCalledWith({
-        template: EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION,
-      });
 
       await expect(
         service.sendPasswordResetEmail('a@b.c', 'https://r', '1.2.3.4'),
       ).rejects.toThrow();
-      expect(incSpy).toHaveBeenCalledWith({
-        template: EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_RESET,
-      });
-      incSpy.mockRestore();
     });
   });
 
@@ -227,15 +218,9 @@ describe('MailService', () => {
       );
     });
 
-    it('does not count a non-critical enqueue failure at the producer', async () => {
-      // Producer-side counting is scoped to the CRITICAL class; non-critical
-      // mail is best-effort at every call site and worker-side final failures
-      // are still counted by the processor.
-      const incSpy = jest.spyOn(mailSendFailuresTotal, 'inc');
+    it('rethrows a non-critical enqueue failure to the caller', async () => {
       queue.add.mockRejectedValue(new Error('redis down'));
       await expect(service.sendWelcomeEmail('a@b.c', 'https://login', 'u-1')).rejects.toThrow();
-      expect(incSpy).not.toHaveBeenCalled();
-      incSpy.mockRestore();
     });
   });
 });

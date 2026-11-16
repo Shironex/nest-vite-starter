@@ -5,12 +5,6 @@ import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import { PrismaService } from '../../common/database/prisma.service';
 import { APP_TIME_ZONE, MS_PER_DAY, nowMs } from '../../common/clock';
 import * as Sentry from '@sentry/nestjs';
-import {
-  userPurgeDeletedTotal,
-  userPurgeFailuresTotal,
-  cronSweepFailuresTotal,
-  cronSweepLastSuccessTimestampSeconds,
-} from '../metrics/metrics.registry';
 import { AuditService } from '../audit/audit.service';
 import { AuditPiiScrubService } from '../audit/audit-pii-scrub.service';
 import { errorStack } from '../../common/utils/error';
@@ -44,12 +38,9 @@ export const USER_PURGE_MAX_PER_SWEEP = 500;
  * Follows the repo cron contract (see AuditRetentionService):
  *   - Idempotent by predicate (deletedAt < cutoff), so it races safely when
  *     @Cron fires on every replica; the guarded `deleteMany` on the row id
- *     makes the audit/metric side exactly-once across replicas.
- *   - Best-effort: `sweep()` NEVER throws; per-user failures are counted and
+ *     makes the audit side exactly-once across replicas.
+ *   - Best-effort: `sweep()` NEVER throws; per-user failures are logged and
  *     deferred, a failed tick logs and returns 0.
- *   - Emits user_purge_deleted_total / user_purge_failures_total so the work
- *     and a persistently failing purge are each observable and each
- *     distinguishable.
  *
  * Uses `prismaService.client` for the User reads and writes: User is not a
  * tenant-scoped model, so the tenant-scope extension passes it through
@@ -110,7 +101,7 @@ export class UserPurgeService {
 
           // Guarded delete: another replica's overlapping sweep may have
           // purged the row after the findMany; count 0 means nothing to
-          // audit or count here.
+          // audit here.
           //
           // No `deletedAt` filter, and `sweep` is named in
           // SOFT_DELETE_ALLOW_IN_FUNCTIONS for this call: the purge is the one job whose SUBJECT is the soft-deleted
@@ -125,7 +116,6 @@ export class UserPurgeService {
           }
 
           purged += 1;
-          userPurgeDeletedTotal.inc();
 
           // System sweep: no request context, so every field is explicit.
           // userId stays null (the actor is the scheduler, and the FK target
@@ -140,8 +130,6 @@ export class UserPurgeService {
             metadata: { deletedAt: row.deletedAt?.toISOString() ?? null, auditRowsScrubbed },
           });
         } catch (error) {
-          // Deferred, not lost: the row still matches the predicate next tick.
-          userPurgeFailuresTotal.inc();
           this.logger.error(
             'user-purge failed for a user (deferred to the next sweep)',
             { userId: row.id },
@@ -155,14 +143,9 @@ export class UserPurgeService {
           `user-purge hard-deleted ${purged} user(s) soft-deleted more than ${this.graceDays} day(s) ago`,
         );
       }
-      // Liveness, not work: this marks that a tick COMPLETED, which no other
-      // signal here can. A sweep that stops being scheduled leaves every
-      // counter flat, and a flat counter is also what a quiet day looks like.
-      cronSweepLastSuccessTimestampSeconds.set({ sweep: 'user-purge' }, nowMs() / 1000);
       return purged;
     } catch (error) {
       this.logger.error('user-purge sweep failed (will retry next tick)', errorStack(error));
-      cronSweepFailuresTotal.inc({ sweep: 'user-purge' });
       Sentry.captureException(error, { tags: { sweep: 'user-purge' } });
       return 0;
     }

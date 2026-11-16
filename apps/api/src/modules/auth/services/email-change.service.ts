@@ -162,7 +162,7 @@ export class EmailChangeService {
     await this.mailService.sendEmailChangeVerificationEmail(normalizedEmail, confirmUrl);
 
     // Tripwire to the OLD address: best-effort like the other security
-    // notices; observable via mail_send_failures_total on failure.
+    // notices; a failure is logged.
     try {
       await this.mailService.sendEmailChangeRequestedEmail(user.email, normalizedEmail);
     } catch (error) {

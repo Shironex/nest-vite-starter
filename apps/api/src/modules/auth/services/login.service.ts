@@ -11,7 +11,7 @@ import { UserService, type IUserProfile } from '../../user/user.service';
 import { CsrfService } from '../../../common/security/csrf.service';
 import { AuditService } from '../../audit/audit.service';
 import { TwoFactorChallengeService, type ILoginResult } from './two-factor-challenge.service';
-import { recordAuthOutcome } from '../../metrics/auth-outcome.recorder';
+import { recordAuthOutcome } from '../auth-outcome.recorder';
 
 // Re-exported for existing importers; the canonical definition (a discriminated
 // union on `status`) lives with the challenge seam that produces both arms.

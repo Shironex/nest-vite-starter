@@ -3,7 +3,6 @@ import type { ModuleRef } from '@nestjs/core';
 import type { Queue } from 'bullmq';
 import { QueueMetricsService } from './queue-metrics.service';
 import { QUEUE_NAMES } from './queue.constants';
-import { queueJobsFailed } from './queue.metrics';
 
 const makeQueue = (
   name: string,
@@ -46,8 +45,7 @@ const boot = (queues: readonly jest.Mocked<Pick<Queue, 'name' | 'getJobCounts'>>
 
 describe('QueueMetricsService resolution', () => {
   it('scrapes EVERY queue in QUEUE_NAMES, not a hand-written subset', async () => {
-    // A queue absent from the scrape has no gauges AND sits outside the DLQ
-    // alarm, because the health indicator reads these same snapshots, so its
+    // A queue absent from the scrape sits outside the DLQ alarm, because the health indicator reads these same snapshots, so its
     // jobs can stop moving with nothing anywhere saying so.
     const service = boot(allQueuesIdle());
 
@@ -71,15 +69,7 @@ describe('QueueMetricsService resolution', () => {
 });
 
 describe('QueueMetricsService.collect', () => {
-  let failedSetSpy: jest.SpyInstance;
-
-  beforeEach(() => {
-    failedSetSpy = jest.spyOn(queueJobsFailed, 'set').mockImplementation(() => undefined);
-  });
-
-  afterEach(() => failedSetSpy.mockRestore());
-
-  it('caches a snapshot and sets the failed gauge per queue', async () => {
+  it('caches a snapshot per queue', async () => {
     const service = boot([
       makeQueue(QUEUE_NAMES.EMAIL_DELIVERY, { waiting: 2, active: 1, failed: 3, delayed: 0 }),
     ]);
@@ -92,7 +82,6 @@ describe('QueueMetricsService.collect', () => {
       failed: 3,
       delayed: 0,
     });
-    expect(failedSetSpy).toHaveBeenCalledWith({ queue: QUEUE_NAMES.EMAIL_DELIVERY }, 3);
   });
 
   it('is best-effort: a getJobCounts failure does not throw and leaves no snapshot', async () => {

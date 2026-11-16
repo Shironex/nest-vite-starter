@@ -7,10 +7,6 @@ import {
   AUDIT_RETENTION_BATCH_SIZE,
   AUDIT_RETENTION_MAX_BATCHES,
 } from './audit-retention.service';
-import {
-  auditRetentionDeletedTotal,
-  cronSweepLastSuccessTimestampSeconds,
-} from '../metrics/metrics.registry';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -35,20 +31,11 @@ const buildSubject = (retentionDays = 365) => {
 };
 
 describe('AuditRetentionService.sweep', () => {
-  let incSpy: jest.SpyInstance;
-  let livenessSpy: jest.SpyInstance;
-
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date('2026-07-01T04:00:00Z'));
-    incSpy = jest.spyOn(auditRetentionDeletedTotal, 'inc').mockImplementation(() => undefined);
-    livenessSpy = jest
-      .spyOn(cronSweepLastSuccessTimestampSeconds, 'set')
-      .mockImplementation(() => undefined);
   });
 
   afterEach(() => {
-    incSpy.mockRestore();
-    livenessSpy.mockRestore();
     jest.useRealTimers();
   });
 
@@ -69,7 +56,6 @@ describe('AuditRetentionService.sweep', () => {
     // The delete keys on the ids just selected, never on a broad predicate.
     expect(deleteMany).toHaveBeenCalledWith({ where: { id: { in: ['a', 'b'] } } });
     expect(deleted).toBe(2);
-    expect(incSpy).toHaveBeenCalledWith(2);
   });
 
   it('honors a non-default retention window from config', async () => {
@@ -102,7 +88,6 @@ describe('AuditRetentionService.sweep', () => {
     expect(findMany).toHaveBeenCalledTimes(3);
     expect(deleteMany).toHaveBeenCalledTimes(3);
     expect(deleted).toBe(AUDIT_RETENTION_BATCH_SIZE * 2 + 1);
-    expect(incSpy).toHaveBeenCalledWith(AUDIT_RETENTION_BATCH_SIZE * 2 + 1);
   });
 
   it('terminates without deleting when nothing is expired (idempotent by predicate)', async () => {
@@ -113,7 +98,6 @@ describe('AuditRetentionService.sweep', () => {
 
     expect(deleted).toBe(0);
     expect(deleteMany).not.toHaveBeenCalled();
-    expect(incSpy).not.toHaveBeenCalled();
   });
 
   it('stops at the defensive batch cap even when full batches keep coming', async () => {
@@ -129,7 +113,7 @@ describe('AuditRetentionService.sweep', () => {
     expect(deleted).toBe(AUDIT_RETENTION_BATCH_SIZE * AUDIT_RETENTION_MAX_BATCHES);
   });
 
-  it('never throws (best-effort): a query failure logs, returns 0, and skips the metric', async () => {
+  it('never throws (best-effort): a query failure logs and returns 0', async () => {
     const { service, findMany } = buildSubject();
     findMany.mockRejectedValue(new Error('db down'));
     const errorSpy = jest
@@ -142,7 +126,6 @@ describe('AuditRetentionService.sweep', () => {
       expect.stringContaining('audit-log-retention sweep failed'),
       expect.any(String),
     );
-    expect(incSpy).not.toHaveBeenCalled();
   });
 
   it('never throws when the delete itself fails mid-loop', async () => {
@@ -154,25 +137,15 @@ describe('AuditRetentionService.sweep', () => {
       .mockImplementation(() => undefined);
 
     await expect(service.sweep()).resolves.toBe(0);
-    expect(incSpy).not.toHaveBeenCalled();
   });
 });
 
 describe('AuditRetentionService durable record', () => {
-  let incSpy: jest.SpyInstance;
-  let livenessSpy: jest.SpyInstance;
-
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date('2026-07-01T04:00:00Z'));
-    incSpy = jest.spyOn(auditRetentionDeletedTotal, 'inc').mockImplementation(() => undefined);
-    livenessSpy = jest
-      .spyOn(cronSweepLastSuccessTimestampSeconds, 'set')
-      .mockImplementation(() => undefined);
   });
 
   afterEach(() => {
-    incSpy.mockRestore();
-    livenessSpy.mockRestore();
     jest.useRealTimers();
   });
 
@@ -220,24 +193,6 @@ describe('AuditRetentionService durable record', () => {
     expect(audit.log).toHaveBeenCalledWith(
       expect.objectContaining({ metadata: expect.objectContaining({ deleted: 0 }) }),
     );
-  });
-
-  it('marks liveness on a completed tick and not on a failed one', async () => {
-    const { service, findMany } = buildSubject();
-    findMany.mockResolvedValue([]);
-    await service.sweep();
-    expect(livenessSpy).toHaveBeenCalledWith(
-      { sweep: 'audit-retention' },
-      new Date('2026-07-01T04:00:00Z').getTime() / 1000,
-    );
-
-    livenessSpy.mockClear();
-    findMany.mockRejectedValue(new Error('db down'));
-    jest
-      .spyOn((service as unknown as { logger: { error: jest.Mock } }).logger, 'error')
-      .mockImplementation(() => undefined);
-    await service.sweep();
-    expect(livenessSpy).not.toHaveBeenCalled();
   });
 
   it('does not write the row when the sweep threw', async () => {

@@ -2,9 +2,8 @@ import { Inject } from '@nestjs/common';
 import { Processor } from '@nestjs/bullmq';
 import { UnrecoverableError } from 'bullmq';
 import type { Job } from 'bullmq';
-import { TracedWorkerHost, isFinalJobAttempt } from '../../../common/queue/traced-worker.host';
+import { TracedWorkerHost } from '../../../common/queue/traced-worker.host';
 import { parseJobData } from '../../../common/queue/job-payload';
-import { mailSendFailuresTotal } from '../../metrics/metrics.registry';
 import { EmailRendererService } from '../email-renderer.service';
 import { EMAIL_PROVIDER, type IEmailProvider } from '../providers/email-provider.interface';
 import {
@@ -45,19 +44,7 @@ export class EmailDeliveryProcessor extends TracedWorkerHost {
   }
 
   async processJob(job: Job): Promise<void> {
-    try {
-      await this.deliver(job);
-    } catch (err) {
-      // Count only FINAL failures (retries exhausted, or a non-retryable
-      // UnrecoverableError): the email is lost to the DLQ at that point. The
-      // matching Sentry event is owned by TracedWorkerHost, which is gated on
-      // the same isFinalJobAttempt predicate; capturing here too would
-      // double-report.
-      if (isFinalJobAttempt(job, err)) {
-        mailSendFailuresTotal.inc({ template: job.name });
-      }
-      throw err;
-    }
+    await this.deliver(job);
   }
 
   // Each case runtime-validates the Redis-persisted payload (parseJobData

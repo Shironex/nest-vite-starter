@@ -15,8 +15,8 @@ export const EMAIL_DELIVERY_QUEUE_NAME = QUEUE_NAMES.EMAIL_DELIVERY;
  *     than the unknown-email one (an enumeration timing signal). It now
  *     enqueues at the highest priority; the enqueue failure is what surfaces
  *     to the caller (register reports it as `emailSent: false`), and a
- *     worker-side send failure is retried, alerted via
- *     `mail_send_failures_total`, and retained in the DLQ.
+ *     worker-side send failure is retried, reported to Sentry on the final
+ *     attempt, and retained in the DLQ.
  *   - NON-CRITICAL mail (welcome, password-changed) enqueues at a lower
  *     priority so a burst of it never delays auth mail. These were already
  *     best-effort at every call site.

@@ -94,7 +94,6 @@ describe('ISOLATION_CANARY_DISABLE_MODEL', () => {
     const { error } = validate({
       NODE_ENV: 'production',
       API_PUBLIC_URL: 'https://api.example.test',
-      METRICS_BASIC_AUTH: 'metrics:metrics',
       ISOLATION_CANARY_DISABLE_MODEL: '',
     });
     expect(error).toBeUndefined();
@@ -104,7 +103,6 @@ describe('ISOLATION_CANARY_DISABLE_MODEL', () => {
     const { error } = validate({
       NODE_ENV: 'production',
       API_PUBLIC_URL: 'https://api.example.test',
-      METRICS_BASIC_AUTH: 'metrics:metrics',
       ISOLATION_CANARY_DISABLE_MODEL: 'workspace',
     });
     expect(error?.message).toMatch(/ISOLATION_CANARY_DISABLE_MODEL/);

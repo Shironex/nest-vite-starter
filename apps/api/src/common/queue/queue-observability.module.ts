@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { QueueMetricsService } from './queue-metrics.service';
 
 /**
- * Cross-queue observability: the depth-metrics scrape that feeds `/metrics` and
- * the cached counts the queue health indicator reads.
+ * Cross-queue observability: the periodic job-count scrape whose cached counts
+ * the queue health indicator reads.
  *
  * NO FEATURE-MODULE IMPORTS, deliberately. Importing a feature module here just
  * to make its `@InjectQueue` token resolve would point a `common/` module at the

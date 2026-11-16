@@ -36,8 +36,7 @@ the docblock rather than generalizing from the name.
 ## Platform modules versus feature modules
 
 **Platform** modules carry no domain meaning and are imported everywhere:
-`logger` and `audit` (both `@Global()`, so no import line), `metrics` (de facto
-global through the prom-client singletons in `metrics.registry.ts`), and the
+`logger` and `audit` (both `@Global()`, so no import line), and the
 `auth` leaf modules - `session`, `auth-middleware`, `lockout`. `common/` adds `PrismaModule`, `RedisModule` and
 `QueueModule`, also `@Global()`.
 

@@ -160,8 +160,7 @@ export function initOtel(): void {
     traceExporter,
     metricReader: new PeriodicExportingMetricReader({
       exporter: metricExporter,
-      // 60s default keeps OTLP push volume modest; prom-client /metrics is
-      // still the primary metric surface for Prometheus pull.
+      // 60s default keeps OTLP push volume modest.
       exportIntervalMillis: 60_000,
     }),
     instrumentations: [

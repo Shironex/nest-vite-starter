@@ -13,25 +13,18 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
  */
 export const JSON_BODY_LIMIT = '100kb';
 export const URLENCODED_BODY_LIMIT = '100kb';
-export const TEXT_BODY_LIMIT = '100kb';
 
 /**
  * Register every body parser this api accepts, in one place and at one point
  * in the middleware chain.
  *
  * CALL SITE IS LOAD-BEARING. `main.ts` creates the app with
- * `bodyParser: false`, so these three are the only parsers that exist and they
+ * `bodyParser: false`, so these two are the only parsers that exist and they
  * sit exactly where this is called. It has to be called AFTER the cookie and
  * CSRF middleware: a parser placed in front of CSRF buffers (and rejects) the
  * body of a request that was never going to be allowed through, which is how
  * an anonymous 101 kB `text/plain` POST to any path used to produce a failure
  * before the request ever met CSRF or the ThrottlerGuard.
- *
- * `text` is here because the web-vitals beacon posts its JSON payload as a
- * text/plain Blob on purpose: text/plain keeps navigator.sendBeacon a
- * CORS-simple request, so the packaged Electron origin (app://) never needs a
- * preflight the beacon cannot perform. The vitals controller JSON-parses the
- * string itself, and /api/vitals is the one CSRF-exempt path.
  *
  * `urlencoded` keeps `extended: true`, which is what Nest's own default
  * registration passes and what express 5 does NOT default to.
@@ -43,5 +36,4 @@ export const TEXT_BODY_LIMIT = '100kb';
 export function configureBodyParsers(app: NestExpressApplication): void {
   app.useBodyParser('json', { limit: JSON_BODY_LIMIT });
   app.useBodyParser('urlencoded', { limit: URLENCODED_BODY_LIMIT, extended: true });
-  app.useBodyParser('text', { limit: TEXT_BODY_LIMIT });
 }

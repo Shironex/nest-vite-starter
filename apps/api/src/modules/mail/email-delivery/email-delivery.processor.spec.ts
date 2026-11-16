@@ -2,7 +2,6 @@ import { UnrecoverableError } from 'bullmq';
 import type { Job } from 'bullmq';
 import { EmailDeliveryProcessor } from './email-delivery.processor';
 import { EMAIL_DELIVERY_JOB_NAMES } from './email-delivery.constants';
-import { mailSendFailuresTotal } from '../../metrics/metrics.registry';
 import type { EmailRendererService } from '../email-renderer.service';
 import type { IEmailProvider } from '../providers/email-provider.interface';
 
@@ -166,8 +165,7 @@ describe('EmailDeliveryProcessor', () => {
     });
   });
 
-  it('rethrows a send failure so BullMQ retries, without counting a non-final attempt', async () => {
-    const incSpy = jest.spyOn(mailSendFailuresTotal, 'inc');
+  it('rethrows a send failure so BullMQ retries', async () => {
     provider.send.mockRejectedValue(new Error('smtp down'));
     await expect(
       processor.processJob(
@@ -178,29 +176,6 @@ describe('EmailDeliveryProcessor', () => {
         ),
       ),
     ).rejects.toThrow('smtp down');
-    // Attempt 1 of 5: a retry will absorb it, so the loss counter must not move.
-    expect(incSpy).not.toHaveBeenCalled();
-    incSpy.mockRestore();
-  });
-
-  it('counts mail_send_failures_total{template} on the FINAL attempt (retries exhausted)', async () => {
-    const incSpy = jest.spyOn(mailSendFailuresTotal, 'inc');
-    provider.send.mockRejectedValue(new Error('smtp down'));
-    await expect(
-      processor.processJob(
-        makeJob(
-          EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION,
-          { to: 'a@b.c', props: { verificationUrl: 'u', appName: 'SaaS Starter' } },
-          // attemptsMade increments after an attempt finishes, so made=4 of
-          // max=5 means the attempt running now is the 5th and last.
-          { made: 4, max: 5 },
-        ),
-      ),
-    ).rejects.toThrow('smtp down');
-    expect(incSpy).toHaveBeenCalledWith({
-      template: EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION,
-    });
-    incSpy.mockRestore();
   });
 
   it('throws a non-retryable UnrecoverableError on an unknown job name', async () => {
@@ -240,17 +215,12 @@ describe('EmailDeliveryProcessor', () => {
       expect(err?.message).toContain('props.loginUrl');
     });
 
-    it('counts the loss: a payload mismatch is final, so mail_send_failures_total moves even on attempt 1', async () => {
-      const incSpy = jest.spyOn(mailSendFailuresTotal, 'inc');
+    it('treats a payload mismatch as final (UnrecoverableError) even on attempt 1', async () => {
       await expect(
         processor.processJob(
           makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_CHANGED, { to: 'a@b.c' }, { made: 0 }),
         ),
       ).rejects.toBeInstanceOf(UnrecoverableError);
-      expect(incSpy).toHaveBeenCalledWith({
-        template: EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_CHANGED,
-      });
-      incSpy.mockRestore();
     });
 
     it('strips the withJobContext reserved keys via the schema before rendering', async () => {

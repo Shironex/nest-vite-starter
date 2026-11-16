@@ -4,7 +4,6 @@ import type { PrismaService } from '../../common/database/prisma.service';
 import type { AuditService } from '../audit/audit.service';
 import type { AuditPiiScrubService } from '../audit/audit-pii-scrub.service';
 import { UserPurgeService, USER_PURGE_MAX_PER_SWEEP } from './user-purge.service';
-import { userPurgeDeletedTotal, userPurgeFailuresTotal } from '../metrics/metrics.registry';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TENANT = 'tenant-1';
@@ -45,18 +44,11 @@ const buildSubject = (graceDays = 30) => {
 };
 
 describe('UserPurgeService.sweep', () => {
-  let deletedSpy: jest.SpyInstance;
-  let failuresSpy: jest.SpyInstance;
-
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date('2026-07-01T06:00:00Z'));
-    deletedSpy = jest.spyOn(userPurgeDeletedTotal, 'inc').mockImplementation(() => undefined);
-    failuresSpy = jest.spyOn(userPurgeFailuresTotal, 'inc').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
-    deletedSpy.mockRestore();
-    failuresSpy.mockRestore();
     jest.useRealTimers();
   });
 
@@ -96,7 +88,6 @@ describe('UserPurgeService.sweep', () => {
 
     expect(purged).toBe(1);
     expect(deleteMany).toHaveBeenCalledWith({ where: { id: 'u-1' } });
-    expect(deletedSpy).toHaveBeenCalledTimes(1);
     // System sweep: no request context, so every audit field is explicit.
     expect(audit.log).toHaveBeenCalledWith({
       action: AUDIT_ACTIONS.USER_ACCOUNT_PURGED,
@@ -134,12 +125,11 @@ describe('UserPurgeService.sweep', () => {
     expect(purged).toBe(1);
     expect(deleteMany).toHaveBeenCalledTimes(1);
     expect(deleteMany).toHaveBeenCalledWith({ where: { id: 'u-2' } });
-    expect(failuresSpy).toHaveBeenCalledTimes(1);
     expect(audit.log).toHaveBeenCalledTimes(1);
     expect(audit.log).toHaveBeenCalledWith(expect.objectContaining({ targetId: 'u-2' }));
   });
 
-  it('one failing row does not block the rest: a row-delete failure is counted and the sweep continues', async () => {
+  it('one failing row does not block the rest: a row-delete failure is logged and the sweep continues', async () => {
     const { service, findMany, deleteMany } = buildSubject();
     findMany.mockResolvedValue([expiredRow('u-1'), expiredRow('u-2')]);
     deleteMany.mockRejectedValueOnce(new Error('deadlock')).mockResolvedValueOnce({ count: 1 });
@@ -150,11 +140,9 @@ describe('UserPurgeService.sweep', () => {
     const purged = await service.sweep();
 
     expect(purged).toBe(1);
-    expect(failuresSpy).toHaveBeenCalledTimes(1);
-    expect(deletedSpy).toHaveBeenCalledTimes(1);
   });
 
-  it('skips metric + audit when another replica already purged the row (guarded delete count 0)', async () => {
+  it('skips the audit when another replica already purged the row (guarded delete count 0)', async () => {
     const { service, findMany, deleteMany, audit } = buildSubject();
     findMany.mockResolvedValue([expiredRow('u-1')]);
     deleteMany.mockResolvedValue({ count: 0 });
@@ -162,8 +150,6 @@ describe('UserPurgeService.sweep', () => {
     const purged = await service.sweep();
 
     expect(purged).toBe(0);
-    expect(deletedSpy).not.toHaveBeenCalled();
-    expect(failuresSpy).not.toHaveBeenCalled();
     expect(audit.log).not.toHaveBeenCalled();
   });
 
@@ -190,6 +176,5 @@ describe('UserPurgeService.sweep', () => {
       expect.stringContaining('user-purge sweep failed'),
       expect.any(String),
     );
-    expect(deletedSpy).not.toHaveBeenCalled();
   });
 });

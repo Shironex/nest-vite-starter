@@ -18,7 +18,7 @@ import {} from '../auth.constants';
 import {} from '../two-factor.util';
 import { sha256Hex } from '../../../common/utils/crypto';
 import { now } from '../../../common/clock';
-import { recordAuthOutcome } from '../../metrics/auth-outcome.recorder';
+import { recordAuthOutcome } from '../auth-outcome.recorder';
 
 @Injectable()
 export class PasswordResetService {
@@ -97,8 +97,7 @@ export class PasswordResetService {
 
     // Await only the ENQUEUE (delivery is async, retried, DLQ-backed). Never
     // throw here: the response must be indistinguishable from the
-    // unknown-email branch (anti-enumeration), and the failure is observable
-    // via mail_send_failures_total.
+    // unknown-email branch (anti-enumeration), and the failure is logged.
     try {
       await this.mailService.sendPasswordResetEmail(user.email, resetUrl, ip);
     } catch (error) {
