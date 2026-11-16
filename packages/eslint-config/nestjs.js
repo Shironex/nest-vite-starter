@@ -289,12 +289,13 @@ export const config = [
     },
   },
   {
-    // Tenancy + Prisma data-integrity rules, from
-    // @noctcore/eslint-plugin-prisma. Production-code only: specs and
+    // Prisma data-integrity rules, from @noctcore/eslint-plugin-prisma (its
+    // two tenancy rules are not adopted: there is no tenant column, see
+    // tests/preset-adoption.test.js). Production-code only: specs and
     // test-support dirs legitimately do multiple non-transactional writes
     // through the client in setup, so policing them would manufacture false
     // positives. Scoped to src/**/*.ts and ignoring specs/test, mirroring the
-    // queue/clock block above.
+    // clock block above.
     //
     // The published rules ship generic defaults, so every SaaS Starter convention is
     // passed here: the allowlists, the model registries, the soft-delete helper
