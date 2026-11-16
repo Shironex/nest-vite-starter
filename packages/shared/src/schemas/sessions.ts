@@ -5,7 +5,7 @@ import { z } from 'zod';
  * device. Timestamps are epoch milliseconds, matching the Redis
  * session blob. Deliberately carries ONLY what the self-service screen needs
  * to identify a session to a human plus an opaque revoke handle; identity
- * claims from the blob (email, role, epoch, tenantId) never cross the wire.
+ * claims from the blob (email, role, epoch) never cross the wire.
  *
  * `id` is an opaque public handle, NOT the server-side session id: the api
  * derives it by hashing the session id again, so a value seen in devtools,

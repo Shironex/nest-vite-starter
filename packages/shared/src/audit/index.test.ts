@@ -8,8 +8,8 @@ import { AUDIT_ACTIONS } from './index';
  * written under the old one.
  */
 describe('persisted audit action values', () => {
-  it('keeps the Workspace actions on their persisted strings', () => {
-    expect(AUDIT_ACTIONS.WORKSPACE_CREATED).toBe('workspace.created');
-    expect(AUDIT_ACTIONS.WORKSPACE_UPDATED).toBe('workspace.updated');
+  it('keeps the account disable actions on their persisted strings', () => {
+    expect(AUDIT_ACTIONS.USER_DISABLED).toBe('user.account.disabled');
+    expect(AUDIT_ACTIONS.USER_ENABLED).toBe('user.account.enabled');
   });
 });

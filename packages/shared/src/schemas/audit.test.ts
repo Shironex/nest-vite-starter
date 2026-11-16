@@ -34,12 +34,12 @@ describe('auditLogListInput', () => {
     const to = new Date('2026-01-31T00:00:00Z');
     const parsed = auditLogListInput.parse({
       actorId: 'u-1',
-      actions: [AUDIT_ACTIONS.USER_ROLE_CHANGED, AUDIT_ACTIONS.MEMBER_REMOVED],
+      actions: [AUDIT_ACTIONS.USER_ROLE_CHANGED, AUDIT_ACTIONS.USER_DISABLED],
       from,
       to,
     });
     expect(parsed.actorId).toBe('u-1');
-    expect(parsed.actions).toEqual(['user.role.changed', 'staff.member.removed']);
+    expect(parsed.actions).toEqual(['user.role.changed', 'user.account.disabled']);
     expect(parsed.from).toBe(from);
     expect(parsed.to).toBe(to);
   });

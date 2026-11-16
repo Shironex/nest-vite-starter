@@ -66,9 +66,8 @@ describe('paginated list contracts', () => {
   /**
    * The one refusal, pinned so it cannot be "fixed" by someone matching the
    * shape of its neighbors. `AuditLog` is the app's only unbounded
-   * cross-tenant table and its visibility predicate is an OR arm that joins
-   * `User` over every tenant's pre-auth rows. The page read escapes both
-   * because `take: limit + 1` stops
+   * table, and no single index serves every filter combination. The page read
+   * escapes that because `take: limit + 1` stops
    * early; a COUNT cannot. Adding a total here means adding indexes and a
    * measurement first - see the docblock on `auditLogListOutput`.
    */

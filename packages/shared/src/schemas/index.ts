@@ -76,28 +76,11 @@ export {
 export {
   userProfileOutput,
   adminUserListPageOutput,
-  userTenantOutput,
   memberActionSchema,
   type MemberActionInput,
   type UserProfileOutput,
   type AdminUserListPageOutput,
-  type UserTenantOutput,
 } from './user.js';
-
-// Workspace, the second tenancy tier (Organization -> Workspace).
-export {
-  workspaceListOutput,
-  workspaceCreateInput,
-  workspaceCreateOutput,
-  workspaceUpdateInput,
-  workspaceUpdateOutput,
-  type Workspace,
-  type WorkspaceListOutput,
-  type WorkspaceCreateInput,
-  type WorkspaceCreateOutput,
-  type WorkspaceUpdateInput,
-  type WorkspaceUpdateOutput,
-} from './workspace.js';
 
 export {
   AUDIT_LOG_LIST_DEFAULT_LIMIT,

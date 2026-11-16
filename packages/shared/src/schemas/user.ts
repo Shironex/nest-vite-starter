@@ -34,20 +34,14 @@ const adminUserListItemSchema = z.object({
   lockedUntil: z.date().nullable(),
   createdAt: z.date(),
   twoFactorEnabled: z.boolean(),
-  /** When their membership ended, or null while they are still a member. */
-  membershipEndedAt: z.date().nullable(),
+  /** When an admin disabled the account, or null while it is active. */
+  disabledAt: z.date().nullable(),
   /**
-   * The person the organization was provisioned around. Carried so the list can mark
-   * them and disable the actions that would be refused anyway: an owner cannot
-   * be demoted or removed, and a button that always errors is worse than none.
+   * DERIVED server-side, from `disabledAt`. It is the same distinction the
+   * disable and enable procedures branch on, so deriving it twice would
+   * eventually mean two answers.
    */
-  isOwner: z.boolean(),
-  /**
-   * DERIVED server-side, from `membershipEndedAt`. It is the same distinction
-   * the removal procedures branch on, so deriving it twice would eventually
-   * mean two answers.
-   */
-  status: z.enum(['active', 'removed']),
+  status: z.enum(['active', 'disabled']),
 });
 
 /**
@@ -59,8 +53,8 @@ export const adminUserListPageOutput = z.object({
   items: z.array(adminUserListItemSchema),
   nextCursor: z.string().nullable(),
   /**
-   * FIRST PAGE ONLY, and null on every cursored page. Staff accounts in the
-   * caller's tenant, ignoring `cursor` and `limit`: the same population the
+   * FIRST PAGE ONLY, and null on every cursored page. Every live account,
+   * ignoring `cursor` and `limit`: the same population the
    * page is cut from (non-deleted).
    *
    * A COUNT on the same predicate answers the same number for every page of one
@@ -83,24 +77,10 @@ export const adminUserListPageOutput = z.object({
 export type AdminUserListPageOutput = z.infer<typeof adminUserListPageOutput>;
 
 /**
- * `user.tenant` output: the caller's organization identity, for the sidebar footer
- * block. `name` is `Tenant.name`, resolved server-side from the session's
- * tenant, never a client-supplied id. Null only for a tenant-less
- * account (`User.tenantId` is nullable for pre-tenant seed data); self-signup
- * always provisions an organization, so this is the defensive branch, not the common
- * one, and the caller renders a sane fallback rather than crashing on it.
- */
-export const userTenantOutput = z.object({
-  name: z.string().nullable(),
-});
-
-export type UserTenantOutput = z.infer<typeof userTenantOutput>;
-
-/**
- * Remove a member from the organization, or put a removed one back.
+ * Disable an account, or enable a disabled one.
  *
- * Removal is NOT deletion and the two are separate procedures on purpose: this
- * one is reversible, stamps `membershipEndedAt`, and leaves the account and its
+ * Disabling is NOT deletion and the two are separate procedures on purpose:
+ * this one is reversible, stamps `disabledAt`, and leaves the account and its
  * audit trail standing. `adminDeleteUser` remains the destructive one.
  */
 export const memberActionSchema = z.object({

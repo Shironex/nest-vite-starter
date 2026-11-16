@@ -127,20 +127,11 @@ export type AuditLogItem = z.infer<typeof auditLogItemSchema>;
  * refuses one.
  *
  * Every other list surface gained a `total` so its footer can render numbered
- * pages. This one cannot afford the COUNT, for three compounding reasons that
- * live in `AuditReadRepository.listPage` and `audit.prisma`:
- *
- *   1. `AuditLog` is the app's only append-only, cross-tenant, unbounded table.
- *      It takes a row for every mutation, every login attempt and every cron
- *      tick of every organization, and the retention sweep only trims it at
- *      AUDIT_LOG_RETENTION_DAYS (365 by default).
- *   2. The visibility predicate is an OR whose second arm is
- *      `tenantId IS NULL AND user.tenantId = <caller>`. That arm spans EVERY
- *      tenant's pre-auth rows and joins `User` to attribute them, so no index on
- *      `AuditLog` can serve it. There is no `(tenantId, createdAt)` index
- *      either: the only tenantId-leading one is
- *      `(tenantId, workspaceId, targetType, targetId)`, which a date-range count
- *      cannot use.
+ * pages. This one cannot afford the COUNT: `AuditLog` is the app's only
+ * append-only, unbounded table. It takes a row for every mutation, every login
+ * attempt and every cron tick, and the retention sweep only trims it at
+ * AUDIT_LOG_RETENTION_DAYS (365 by default). With the actor, action and date
+ * filters ANDed on top, no single index serves every filter combination.
  *
  * The PAGE read escapes all of that because `take: limit + 1` on the
  * `createdAt desc, id desc` order stops as soon as it has enough rows. A COUNT

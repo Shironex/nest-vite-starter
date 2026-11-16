@@ -76,7 +76,7 @@ export const AUDIT_ACTIONS = {
   // metadata: { ticketRef, verificationMethod, operatorId }
   AUTH_2FA_SUPPORT_RESET: 'auth.2fa.support_reset',
 
-  // user.role. A privilege grant is the tenant's security posture changing, so
+  // user.role. A privilege grant is the app's security posture changing, so
   // "who made this account an admin, and when" has to be answerable years
   // later. before/after carry the role VALUES rather than field names: a role
   // is not PII, and a trail that says only
@@ -92,27 +92,19 @@ export const AUDIT_ACTIONS = {
   // data_export (GDPR Art. 20 data portability; access events, metadata only)
   DATA_EXPORT_DOWNLOADED: 'data_export.downloaded',
 
-  // workspace (the platform Organization -> Workspace tier, modules/workspace).
-  // The workspace every tenant-owned record below the organization hangs off.
-  // Created rarely and only by an ADMIN, but a wrong or duplicated Workspace
-  // silently splits one workspace's records across two lists.
+  // Account disabled without deleting it: reversible. Sessions are revoked
+  // with it. Distinct from user.account.admin_deleted, which is the one-way
+  // door.
   //
   // These strings are persisted in AuditLog.action, which is append-only
   // evidence: once rows exist, renaming a value would orphan every existing row
   // from its filter and its label, and rewriting the rows would edit the audit
   // trail itself. Rename the constant freely, never the value.
-  WORKSPACE_CREATED: 'workspace.created',
-  // metadata: { fields }: field NAMES only, never the values.
-  WORKSPACE_UPDATED: 'workspace.updated',
-
-  // Membership ended without deleting the account: reversible, and the account
-  // keeps its tenantId so the removal stays visible. Sessions are revoked with
-  // it. Distinct from user.account.admin_deleted, which is the one-way door.
-  MEMBER_REMOVED: 'staff.member.removed',
-  // A removed member put back. metadata names whether the restored member is an
+  USER_DISABLED: 'user.account.disabled',
+  // A disabled account put back. metadata names whether the account is an
   // ADMIN, because re-admitting one is a privilege grant that did not pass
   // through user.role.changed.
-  MEMBER_RESTORED: 'staff.member.restored',
+  USER_ENABLED: 'user.account.enabled',
 
   // audit. The retention cron is the ONLY sanctioned delete path for AuditLog
   // rows, so its own work needs a durable trace: a counter resets on restart and

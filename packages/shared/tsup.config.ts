@@ -13,15 +13,7 @@ import { defineConfig } from 'tsup';
  * union of everything all 22 importing chunks reference: it pulled 16 kB br of
  * schemas to read one constant. Split per domain, it pulls the domains it uses.
  */
-const SCHEMA_DOMAINS = [
-  'audit',
-  'auth',
-  'common',
-  'data-export',
-  'workspace',
-  'sessions',
-  'user',
-] as const;
+const SCHEMA_DOMAINS = ['audit', 'auth', 'common', 'data-export', 'sessions', 'user'] as const;
 
 export default defineConfig({
   entry: {

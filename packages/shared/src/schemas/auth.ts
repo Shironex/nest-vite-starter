@@ -274,7 +274,7 @@ export const twoFactorRegenerateSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-/** `twoFactor.resetMemberTwoFactor` input (tenant admin). */
+/** `twoFactor.resetMemberTwoFactor` input (admin). */
 export const resetMemberTwoFactorSchema = z.object({
   userId: z.string().min(1, 'User id is required'),
 });
