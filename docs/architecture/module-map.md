@@ -49,26 +49,24 @@ an edge you did not expect can be opened rather than argued about.
 
 ## `apps/web/src/features`
 
-| Directory    | Purpose                                                                    | Files | Fan-out | Fan-in |
-| ------------ | -------------------------------------------------------------------------- | ----- | ------- | ------ |
-| `admin`      | User management: roles, lockout, two-factor reset, disabling and deletion. | 29    | 1       | 0      |
-| `audit`      | Audit log browser with filters and per-entry detail.                       | 21    | 1       | 0      |
-| `auth`       | Sign in, register, verify, reset password and the Turnstile challenge.     | 63    | 1       | 0      |
-| `dashboard`  | The authenticated landing page and its widgets.                            | 6     | 0       | 0      |
-| `landing`    | The public marketing page.                                                 | 37    | 0       | 0      |
-| `layout`     | Authenticated app shell: sidebar, top bar and user menu.                   | 15    | 0       | 0      |
-| `settings`   | Profile, password, sessions, GDPR export, theme and account deletion.      | 31    | 1       | 0      |
-| `shared`     | Components used by more than one domain.                                   | 17    | 0       | 4      |
-| `two-factor` | TOTP enrollment, the challenge screen and recovery codes.                  | 27    | 0       | 0      |
+| Directory    | Purpose                                                                                                             | Files | Fan-out | Fan-in |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- | ----- | ------- | ------ |
+| `admin`      | The admin page: users (roles, sessions, lockout, two-factor reset, disabling, deletion) and a read-only audit list. | 38    | 1       | 0      |
+| `auth`       | Sign in, register, verify, reset password and the Turnstile challenge.                                              | 63    | 1       | 0      |
+| `dashboard`  | The authenticated home page: a greeting and a start-here card.                                                      | 6     | 0       | 0      |
+| `landing`    | The public landing page.                                                                                            | 6     | 0       | 0      |
+| `layout`     | Authenticated app shell: sidebar, top bar and user menu.                                                            | 15    | 0       | 0      |
+| `settings`   | Profile, password, sessions, GDPR export, theme and account deletion.                                               | 31    | 1       | 0      |
+| `shared`     | Components used by more than one domain.                                                                            | 9     | 0       | 3      |
+| `two-factor` | TOTP enrollment, the challenge screen and recovery codes.                                                           | 27    | 0       | 0      |
 
 ### Cross-directory edges in `apps/web/src/features`
 
 `Imports` counts every import line that creates the edge; `First witness` is the lowest one, so
 an edge you did not expect can be opened rather than argued about.
 
-| From       | To       | Imports | First witness                                                                     |
-| ---------- | -------- | ------- | --------------------------------------------------------------------------------- |
-| `admin`    | `shared` | 1       | `apps/web/src/features/admin/components/MembersSection/MembersSection.hooks.ts:4` |
-| `audit`    | `shared` | 3       | `apps/web/src/features/audit/components/AuditLogFilters/AuditLogFilters.tsx:3`    |
-| `auth`     | `shared` | 2       | `apps/web/src/features/auth/components/RegisterForm/RegisterForm.tsx:2`           |
-| `settings` | `shared` | 1       | `apps/web/src/features/settings/components/PasswordSection/PasswordSection.tsx:6` |
+| From       | To       | Imports | First witness                                                                       |
+| ---------- | -------- | ------- | ----------------------------------------------------------------------------------- |
+| `admin`    | `shared` | 2       | `apps/web/src/features/admin/components/AuditLogSection/AuditLogSection.hooks.ts:6` |
+| `auth`     | `shared` | 2       | `apps/web/src/features/auth/components/RegisterForm/RegisterForm.tsx:2`             |
+| `settings` | `shared` | 1       | `apps/web/src/features/settings/components/PasswordSection/PasswordSection.tsx:6`   |

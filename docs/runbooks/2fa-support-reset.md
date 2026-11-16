@@ -112,8 +112,8 @@ gets a chance to intervene before their second factor is removed.
 
 Once the contest window has elapsed with no objection, apply **admin-reset
 semantics PLUS a forced password reset**. The semantic template is
-`TwoFactorPolicyService.resetUserTwoFactor`
-(`apps/api/src/modules/auth/services/two-factor-policy.service.ts`), run by an
+`TwoFactorAdminResetService.resetUserTwoFactor`
+(`apps/api/src/modules/auth/services/two-factor-admin-reset.service.ts`), run by an
 operator rather than by an admin session.
 
 The admin-reset semantics, in order:
