@@ -102,8 +102,8 @@ export function withJobContext<T extends Record<string, unknown>>(
  * this envelope becomes the ALS scope the Prisma tenant-scope extension splices
  * into every `where`, and that extension is the sole tenancy boundary (there is
  * no RLS), so a non-string here would be a Prisma filter object rather than an
- * id. Every other Redis-sourced blob in the api (sessions, grants,
- * the permissions cache) is schema-parsed for the same reason.
+ * id. Every other Redis-sourced blob in the api (sessions, grants) is
+ * schema-parsed for the same reason.
  *
  * `.strict()` so a field the producer stopped writing cannot ride along
  * unnoticed, and the whole envelope is dropped rather than repaired: a partly

@@ -90,7 +90,6 @@ const buildSubject = () => {
     sessionService,
     audit as unknown as AuditService,
     prismaService,
-    redis,
   );
   const tokenService = new TokenService(new TokenRepository(prismaService), prismaService);
   const lockout = new LockoutService(

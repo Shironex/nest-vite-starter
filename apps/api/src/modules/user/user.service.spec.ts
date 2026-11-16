@@ -6,9 +6,7 @@ import { UserRepository } from './user.repository';
 import { SessionService } from '../auth/services/session.service';
 import { AuditService } from '../audit/audit.service';
 import { requestContext } from '../../common/context/request-context';
-import { REDIS_CLIENT } from '../../common/redis/redis.module';
 import { PrismaService } from '../../common/database/prisma.service';
-import { RedisKeys } from '../../common/redis/redis-keys';
 import { userFixture, userProfileFixture } from '@test/fixtures';
 
 const TENANT_A = 'tenant-a';
@@ -49,7 +47,6 @@ const buildSubject = async () => {
   };
   const sessionService = { deleteAllUserSessions: jest.fn().mockResolvedValue(undefined) };
   const audit = { log: jest.fn().mockResolvedValue(undefined) };
-  const redis = { del: jest.fn().mockResolvedValue(1) };
   // The demotion guard runs its count and its write on one transaction; the
   // callback is invoked with the same mocked repo, so assertions are unchanged.
   const prisma = { client: { $transaction: jest.fn((cb: (tx: unknown) => unknown) => cb({})) } };
@@ -60,7 +57,6 @@ const buildSubject = async () => {
       { provide: SessionService, useValue: sessionService },
       { provide: AuditService, useValue: audit },
       { provide: PrismaService, useValue: prisma },
-      { provide: REDIS_CLIENT, useValue: redis },
     ],
   }).compile();
   return {
@@ -68,7 +64,6 @@ const buildSubject = async () => {
     repo,
     sessionService,
     audit,
-    redis,
     prisma,
   };
 };
@@ -401,8 +396,8 @@ describe('UserService', () => {
     const existingStaffUser = (repo: { findRoleScoped: jest.Mock }, role = 'USER') =>
       repo.findRoleScoped.mockResolvedValue({ id: 'u-1', role });
 
-    it('updates the role (scoped to caller tenant), revokes sessions, then clears every role-keyed permission entry', async () => {
-      const { service, repo, sessionService, redis } = await buildSubject();
+    it('updates the role (scoped to caller tenant), then revokes sessions', async () => {
+      const { service, repo, sessionService } = await buildSubject();
       existingStaffUser(repo);
       repo.updateRoleScoped.mockResolvedValue(1);
 
@@ -411,22 +406,9 @@ describe('UserService', () => {
       expect(repo.updateRoleScoped).toHaveBeenCalledWith('u-1', TENANT_A, 'ADMIN');
       // The shared revocation step deletes the Redis sessions.
       expect(sessionService.deleteAllUserSessions).toHaveBeenCalledWith('u-1');
-      // The cache is keyed by userId:role, so clear EVERY role variant - no
-      // stale role's permission list may survive the change.
-      // Every role a User row can hold (ALL_ROLES): PermissionMiddleware caches
-      // under whatever role string the session carries.
-      expect(redis.del).toHaveBeenCalledWith(
-        RedisKeys.permissions('u-1', 'USER'),
-        RedisKeys.permissions('u-1', 'ADMIN'),
-      );
-      // Order matters and is the inverse of the obvious one: revoke sessions
-      // BEFORE clearing the cache so an old-role session cannot rebuild
-      // (repoison) the entry in the gap. The DB write lands first of all.
+      // The DB write lands before the sessions are dropped.
       expect(repo.updateRoleScoped.mock.invocationCallOrder[0]!).toBeLessThan(
         sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!,
-      );
-      expect(sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!).toBeLessThan(
-        redis.del.mock.invocationCallOrder[0]!,
       );
     });
 
@@ -594,7 +576,7 @@ describe('UserService', () => {
     });
 
     it('throws NOT_FOUND for a cross-tenant target and never writes, revokes or audits', async () => {
-      const { service, repo, sessionService, redis, audit } = await buildSubject();
+      const { service, repo, sessionService, audit } = await buildSubject();
       // Target lives in another organization: the scoped probe matches zero rows, so
       // the write is never attempted.
       repo.findRoleScoped.mockResolvedValue(null);
@@ -604,7 +586,6 @@ describe('UserService', () => {
       ).rejects.toMatchObject({ code: 'NOT_FOUND', message: AppErrorCode.NOT_FOUND });
       expect(repo.findRoleScoped).toHaveBeenCalledWith('other-tenant-user', TENANT_A);
       expect(repo.updateRoleScoped).not.toHaveBeenCalled();
-      expect(redis.del).not.toHaveBeenCalled();
       expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(audit.log).not.toHaveBeenCalled();
     });
@@ -648,8 +629,8 @@ describe('UserService', () => {
   describe('adminDeleteUser', () => {
     const target = { id: 'target-1', role: 'USER' };
 
-    it('soft-deletes the tenant-scoped target, revokes sessions + permission cache, then audits', async () => {
-      const { service, repo, sessionService, audit, redis } = await buildSubject();
+    it('soft-deletes the tenant-scoped target, revokes sessions, then audits', async () => {
+      const { service, repo, sessionService, audit } = await buildSubject();
       repo.findRoleScoped.mockResolvedValue(target);
       repo.softDeleteScopedNonAdmin.mockResolvedValue(1);
 
@@ -658,21 +639,14 @@ describe('UserService', () => {
       expect(repo.findRoleScoped).toHaveBeenCalledWith('target-1', TENANT_A);
       expect(repo.softDeleteScopedNonAdmin).toHaveBeenCalledWith('target-1', TENANT_A);
       expect(sessionService.deleteAllUserSessions).toHaveBeenCalledWith('target-1');
-      expect(redis.del).toHaveBeenCalledWith(
-        RedisKeys.permissions('target-1', 'USER'),
-        RedisKeys.permissions('target-1', 'ADMIN'),
-      );
       expect(audit.log).toHaveBeenCalledWith({
         action: AUDIT_ACTIONS.USER_ACCOUNT_ADMIN_DELETED,
         targetType: 'User',
         targetId: 'target-1',
       });
-      // DB write first, then revoke, then cache clear (same contract as updateRole).
+      // DB write first, then revoke (same contract as updateRole).
       expect(repo.softDeleteScopedNonAdmin.mock.invocationCallOrder[0]!).toBeLessThan(
         sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!,
-      );
-      expect(sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!).toBeLessThan(
-        redis.del.mock.invocationCallOrder[0]!,
       );
     });
 

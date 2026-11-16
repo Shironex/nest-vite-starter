@@ -1,15 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { isDisposableEmail } from 'disposable-email-domains-js';
-import Redis from 'ioredis';
 import { AppErrorCode } from '@repo/shared/errors';
 import { AUDIT_ACTIONS } from '@repo/shared/audit';
-import { ALL_ROLES, ROLES, type Role } from '@repo/shared/permissions';
+import { ROLES, type Role } from '@repo/shared/permissions';
 import type { Prisma } from '@repo/database' with { 'resolution-mode': 'import' };
 import { ForbiddenError, NotFoundError } from '../../common/errors';
 import { getTenantId } from '../../common/context/request-context';
 import { now } from '../../common/clock';
-import { REDIS_CLIENT } from '../../common/redis/redis.module';
-import { RedisKeys } from '../../common/redis/redis-keys';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '../../common/database/prisma.service';
 import { SessionService } from '../auth/services/session.service';
@@ -77,7 +74,6 @@ export class UserService {
     private readonly sessionService: SessionService,
     private readonly auditService: AuditService,
     private readonly prismaService: PrismaService,
-    @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
 
   /**
@@ -168,20 +164,10 @@ export class UserService {
    * Change a user's role, then revoke all of their sessions.
    *
    * The role is snapshotted into the Redis session at login and read from there
-   * by the auth/permission middleware, so a role change is otherwise frozen for
+   * by the auth and role middleware, so a role change is otherwise frozen for
    * up to the session TTL (30 days). Deleting the user's sessions forces a fresh
    * login that re-reads the new role, making the change take effect immediately.
    * Order matters: the DB write must land BEFORE the sessions are dropped.
-   *
-   * PermissionMiddleware also caches the effective-permission list under
-   * RedisKeys.permissions(userId, role) for 5 minutes. Order matters and is the
-   * inverse of the obvious one: revoke the sessions FIRST, then clear the cache.
-   * If we cleared the cache first, an in-flight request on the user's old,
-   * still-valid session could rebuild it from the OLD role between the clear and
-   * the revoke, repoisoning the entry and keeping the old privileges live for up
-   * to the TTL. Revoking first shrinks that window to requests already in flight
-   * (which cannot re-authenticate on a revoked session); keying the cache by role
-   * closes it entirely (a new lower-privilege session reads a different key).
    *
    * Tenant containment: the `User` model is platform-global, so an admin in
    * organization A must not be able to flip a role on a user in organization B. The update is
@@ -518,24 +504,11 @@ export class UserService {
 
   /**
    * Tear down every server-side authorization artifact for a user: all Redis
-   * sessions and every role-keyed permission-cache
-   * entry. Shared by role change (updateRole) and the account-deletion flows;
+   * sessions. Shared by role change (updateRole) and the account-deletion flows;
    * the DB write that motivates the teardown must land BEFORE this runs.
-   *
-   * Order matters and is the inverse of the obvious one: revoke the sessions
-   * FIRST, then clear the cache. If the cache were cleared first, an in-flight
-   * request on a still-valid session could rebuild it from the stale state
-   * between the clear and the revoke, repoisoning the entry for up to its TTL.
    */
   async revokeAuthState(userId: string): Promise<void> {
     await this.sessionService.deleteAllUserSessions(userId);
-
-    // Clear every role-keyed permission entry for the user (the cache is keyed
-    // by userId:role) so no stale role's permission list survives. ALL_ROLES,
-    // not a hand-picked subset: PermissionMiddleware caches under whatever role
-    // string the session carries, and a sweep that missed a role would leave
-    // that permission list live for its full TTL after a revocation.
-    await this.redis.del(...ALL_ROLES.map((r) => RedisKeys.permissions(userId, r)));
   }
 
   /**
@@ -566,7 +539,7 @@ export class UserService {
    *     cannot slip through between the probe and the write.
    *
    * Teardown order copies updateRole: DB write first, then revokeAuthState
-   * (sessions + permission cache). The audit row lands last; the
+   * (sessions). The audit row lands last; the
    * actor (admin) and request metadata come from the ALS context, the target
    * is explicit.
    */

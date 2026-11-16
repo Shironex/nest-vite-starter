@@ -70,21 +70,6 @@ describe('ProvisioningService', () => {
     expect(mocks.prisma.client.tenant.update).not.toHaveBeenCalled();
   });
 
-  it('never mints per-user RolePermission rows for the owner', async () => {
-    const { service, mocks } = await buildCtx();
-    const tx = mockPrismaTransaction(mocks.prisma, buildPrismaTx());
-    tx.tenant.create.mockResolvedValue({ id: 't-3', name: 'newuser', slug: 'newuser-x' });
-    tx.user.create.mockResolvedValue(userFixture({ id: 'u-3', role: 'ADMIN', tenantId: 't-3' }));
-    mocks.token.createVerificationToken.mockResolvedValue('b'.repeat(64));
-
-    await service.provisionOrganizationForPasswordSignup(baseArgs);
-
-    // ADMIN powers come from the global seeded role-level grant
-    // (role: ADMIN, userId: null). Per-user rows would SURVIVE a later
-    // downgrade to USER and leave a downgraded owner with live admin powers.
-    expect(tx.rolePermission.createMany).not.toHaveBeenCalled();
-  });
-
   it('derives a slug from the email local-part plus a random suffix', async () => {
     const { service, mocks } = await buildCtx();
     const tx = mockPrismaTransaction(mocks.prisma, buildPrismaTx());

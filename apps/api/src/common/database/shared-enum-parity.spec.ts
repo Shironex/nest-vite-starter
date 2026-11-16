@@ -54,10 +54,8 @@ const PRISMA_ENUMS = readPrismaEnums();
  * declares it; `prisma` names the enum in packages/database/prisma/schema.
  */
 const MIRRORS: readonly { label: string; shared: readonly string[]; prisma: string }[] = [
-  // permissions/index.ts. Not z.enum, but the same mirror with the same
-  // consequences: ALL_ROLES is what the session-revocation teardown walks to
-  // clear the permission cache, so a role missing from it leaves a live
-  // permission entry behind after a revocation.
+  // permissions/index.ts. Not z.enum, but the same mirror: ALL_ROLES is the
+  // role list the api validates against, so it must hold every Prisma value.
   { label: 'ALL_ROLES', shared: ALL_ROLES, prisma: 'Role' },
 ];
 
@@ -75,8 +73,7 @@ describe('shared z.enum mirrors match their Prisma enums', () => {
   });
 
   /**
-   * `Role` is the member vocabulary: it types `updateRole` and keys
-   * DEFAULT_ROLE_PERMISSIONS, so a role added to Prisma fails this until it is
+   * `Role` is the member vocabulary: it types `updateRole`, so a role added to Prisma fails this until it is
    * added to ROLES as well.
    */
   it('keeps Prisma Role equal to the staff roles', () => {

@@ -14,7 +14,6 @@ export const REDIS_KEY_PREFIXES = {
   SESSION: 'session',
   USER_SESSIONS: 'user_sessions',
   SESSION_EPOCH: 'session_epoch',
-  PERMISSIONS: 'permissions',
   RATE_LIMIT: 'ratelimit',
   // 2FA: all cookie-borne tokens are stored keyed by sha256(token), mirroring
   // `session`; the `*_USER` / `*_DEVICES` SETs index a user's records for
@@ -64,18 +63,6 @@ export const RedisKeys = {
    * fleet-wide logout).
    */
   sessionEpoch: (userId: string): string => `${REDIS_KEY_PREFIXES.SESSION_EPOCH}${SEP}${userId}`,
-
-  /**
-   * Cached effective-permission list for a user (role-derived + overrides),
-   * keyed by `<userId>:<role>`. Including the role is a security boundary, not
-   * just a cache nuance: a still-valid session on the user's PREVIOUS role can
-   * otherwise rebuild and repoison a single `<userId>` entry between a role
-   * downgrade and its session revoke, so the new lower-privilege session would
-   * read the old role's permissions until the 5-minute TTL expires. With the
-   * role in the key, a USER session can never read an ADMIN-snapshot rebuild.
-   */
-  permissions: (userId: string, role: string): string =>
-    `${REDIS_KEY_PREFIXES.PERMISSIONS}${SEP}${userId}${SEP}${role}`,
 
   /** Fixed-window rate-limit counter, e.g. `ratelimit:login:1.2.3.4`. */
   rateLimit: (scope: string): string => `${REDIS_KEY_PREFIXES.RATE_LIMIT}${SEP}${scope}`,

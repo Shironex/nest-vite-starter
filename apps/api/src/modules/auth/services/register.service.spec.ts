@@ -64,11 +64,6 @@ describe('RegisterService', () => {
         }),
       }),
     );
-    // The owner's ADMIN permissions come from the global seeded role-level grant
-    // (role: ADMIN, userId: null), NOT per-user rows - so a later downgrade to
-    // USER fully removes them. Registration must NOT mint per-user permission
-    // rows (regression guard for the survive-downgrade privilege bug).
-    expect(tx.rolePermission.createMany).not.toHaveBeenCalled();
     // Token creation goes through the ONE shared TokenService path (which
     // deletes previous tokens, hashes, and applies the TTL - covered by
     // token.service.spec) and runs on the SAME tx as the user create.
@@ -206,8 +201,6 @@ describe('RegisterService', () => {
     const tx = mockPrismaTransaction(mocks.prisma, buildPrismaTx());
     tx.tenant.create.mockResolvedValue({ id: 't-3', name: 'newuser', slug: 'newuser-x' });
     tx.user.create.mockResolvedValue(userFixture({ id: 'u-3', role: 'ADMIN', tenantId: 't-3' }));
-    tx.permission.findMany.mockResolvedValue([]);
-    tx.rolePermission.createMany.mockResolvedValue({ count: 0 });
     mocks.token.createVerificationToken.mockResolvedValue('b'.repeat(64));
     mocks.mail.sendVerificationEmail.mockRejectedValue(new Error('enqueue failed'));
 
@@ -231,8 +224,6 @@ describe('RegisterService', () => {
     const tx = mockPrismaTransaction(mocks.prisma, buildPrismaTx());
     tx.tenant.create.mockResolvedValue({ id: 't-1', name: 'newuser', slug: 'newuser-x' });
     tx.user.create.mockResolvedValue(userFixture({ role: 'ADMIN', tenantId: 't-1' }));
-    tx.permission.findMany.mockResolvedValue([]);
-    tx.rolePermission.createMany.mockResolvedValue({ count: 0 });
     mocks.token.createVerificationToken.mockResolvedValue('c'.repeat(64));
 
     await service.register({ ...baseInput, displayName: undefined }, '1.2.3.4', 'ua', req, res);
@@ -250,8 +241,6 @@ describe('RegisterService', () => {
     const tx = mockPrismaTransaction(mocks.prisma, buildPrismaTx());
     tx.tenant.create.mockResolvedValue({ id: 't-9', name: 'newuser', slug: 'newuser-x' });
     tx.user.create.mockResolvedValue(userFixture({ id: 'u-9', role: 'ADMIN', tenantId: 't-9' }));
-    tx.permission.findMany.mockResolvedValue([]);
-    tx.rolePermission.createMany.mockResolvedValue({ count: 0 });
     const rawToken = 'd'.repeat(64);
     mocks.token.createVerificationToken.mockResolvedValue(rawToken);
 

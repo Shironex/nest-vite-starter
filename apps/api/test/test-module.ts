@@ -210,8 +210,6 @@ export interface PrismaServiceMock {
     secondFactor: PrismaSecondFactorDelegateMock;
     auditLog: { create: jest.Mock };
     tenant: { create: jest.Mock; update: jest.Mock; findUnique: jest.Mock };
-    permission: { findMany: jest.Mock };
-    rolePermission: { findMany: jest.Mock; createMany: jest.Mock };
     // The platform Workspace module's model.
     workspace: PrismaHrDelegateMock;
   };
@@ -317,8 +315,6 @@ export const buildPrismaMock = (): PrismaServiceMock => {
     secondFactor: buildPrismaSecondFactorDelegate(),
     auditLog: { create: jest.fn() },
     tenant: { create: jest.fn(), update: jest.fn(), findUnique: jest.fn() },
-    permission: { findMany: jest.fn() },
-    rolePermission: { findMany: jest.fn(), createMany: jest.fn() },
     workspace: buildPrismaHrDelegate(),
   };
   // Default: $transaction(cb) → cb(client). Specs that need a separate tx
@@ -354,8 +350,6 @@ export const buildPrismaTx = () => ({
   token: buildPrismaTokenDelegate(),
   auditLog: { create: jest.fn() },
   tenant: { create: jest.fn(), update: jest.fn(), findUnique: jest.fn() },
-  permission: { findMany: jest.fn() },
-  rolePermission: { findMany: jest.fn(), createMany: jest.fn() },
 });
 
 /**
