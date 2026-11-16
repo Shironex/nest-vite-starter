@@ -78,23 +78,6 @@ export const AUDIT_ACTIONS = {
   // metadata: { ticketRef, verificationMethod, operatorId }
   AUTH_2FA_SUPPORT_RESET: 'auth.2fa.support_reset',
 
-  // oauth (Google sign-in SPEC sections 5-8). Every row carries the provider
-  // key and providerAccountId (sub) in metadata and an EXPLICIT tenantId;
-  // these flows run before AuthMiddleware seeds the ALS, so the context
-  // fallback would stamp null. Tokens, codes and state values never appear.
-  OAUTH_LOGIN: 'oauth.login',
-  OAUTH_SIGNUP: 'oauth.signup',
-  OAUTH_LINK: 'oauth.link',
-  OAUTH_UNLINK: 'oauth.unlink',
-  // metadata.reason: which gate rejected the flow (state_missing,
-  // browser_mismatch, exchange_failed, account_deleted, account_locked,
-  // email_unverified, link_blocked_second_factor,
-  // link_blocked_password_account, account_exists,
-  // signup_disabled, link_no_session, link_session_mismatch,
-  // sub_linked_elsewhere, link_unauthorized, rate_limited, epoch_fence,
-  // membership_ended, exception).
-  OAUTH_FAILURE: 'oauth.failure',
-
   // user.role. A privilege grant is the tenant's security posture changing, so
   // "who made this account an admin, and when" has to be answerable years
   // later. before/after carry the role VALUES rather than field names: a role

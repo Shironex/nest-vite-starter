@@ -183,28 +183,6 @@ describe('MailService', () => {
       expect(queue.add.mock.calls[0]![2]?.jobId).toBeUndefined();
     });
 
-    it('sendOAuthAccountLinkedEmail enqueues the tripwire with the provider name, settings and reset links', async () => {
-      await requestContext.run({ requestId: 'req-1', dedupeNonce: 'nonce-1' }, () =>
-        service.sendOAuthAccountLinkedEmail('a@b.c', 'Google'),
-      );
-      expect(queue.add).toHaveBeenCalledWith(
-        EMAIL_DELIVERY_JOB_NAMES.SEND_OAUTH_ACCOUNT_LINKED,
-        expect.objectContaining({
-          to: 'a@b.c',
-          props: {
-            appName: 'TestApp',
-            providerName: 'Google',
-            settingsUrl: 'https://app.example/settings',
-            resetPasswordUrl: 'https://app.example/auth/forgot-password',
-          },
-        }),
-        expect.objectContaining({
-          priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY,
-          jobId: `oauth-account-linked-${sha256Hex('nonce-1')}`,
-        }),
-      );
-    });
-
     it('sendEmailChangeRequestedEmail enqueues the tripwire to the old address with the new one named', async () => {
       await requestContext.run({ requestId: 'req-ec', dedupeNonce: 'nonce-ec' }, () =>
         service.sendEmailChangeRequestedEmail('old@example.com', 'new@example.com'),

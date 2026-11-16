@@ -78,17 +78,12 @@ class C { shared: any; go() { res.redirect(302, ${url}); } }`;
 
   it('flags the stored returnTo appended to the app origin unsanitized', async () => {
     const body = redirectingClass('`${this.shared.appUrl}${flow.returnTo}`');
-    expect(await check(base, 'src/oauth.controller.ts', body, REDIRECT)).toHaveLength(1);
+    expect(await check(base, 'src/thing.controller.ts', body, REDIRECT)).toHaveLength(1);
   });
 
-  it.each([
-    ['a sanitized returnTo', '`${this.shared.appUrl}${sanitizeReturnTo(flow.returnTo)}`'],
-    ['the 2FA challenge path', '`${this.shared.appUrl}${OAUTH_TWO_FACTOR_CHALLENGE_PATH}`'],
-    ['the auth error builder', 'buildAuthErrorRedirect(this.shared.appUrl, "x")'],
-    ['the provider authorization URL', '(await provider.buildAuthorizationUrl({})).toString()'],
-  ])('accepts %s', async (_label, url) => {
-    const body = redirectingClass(url).replace('go()', 'async go()');
-    expect(await check(base, 'src/oauth.controller.ts', body, REDIRECT)).toEqual([]);
+  it('accepts a fixed path on the app origin', async () => {
+    const body = redirectingClass('`${this.shared.appUrl}/auth/login`');
+    expect(await check(base, 'src/thing.controller.ts', body, REDIRECT)).toEqual([]);
   });
 });
 

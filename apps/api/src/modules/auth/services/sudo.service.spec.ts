@@ -51,7 +51,7 @@ describe('SudoService', () => {
       expect(mocks.lockout.recordFailedAttempt).not.toHaveBeenCalled();
     });
 
-    it('fails CLOSED with PASSWORD_NOT_SET for an OAuth-only account (null hash)', async () => {
+    it('fails CLOSED with PASSWORD_NOT_SET for an account with no password (null hash)', async () => {
       const { service, mocks } = await buildCtx();
       mocks.user.findCredentialById.mockResolvedValue(
         userFixture({ id: 'u-1', passwordHash: null }),

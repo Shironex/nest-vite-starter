@@ -71,9 +71,9 @@ export class PasswordChangeService {
       throw new NotFoundError();
     }
 
-    // An OAuth-only account has no current password to change. Fail closed with
-    // a dedicated appCode that points at password reset (which doubles as
-    // set-password for these users) instead of the misleading "current password
+    // An account with no password has nothing to change. Fail closed with a
+    // dedicated appCode that points at password reset (which doubles as
+    // set-password) instead of the misleading "current password
     // is incorrect". Safe to be specific here, unlike at login: this procedure
     // is authenticated and self-scoped, so it only tells callers how their OWN
     // account signs in. BAD_REQUEST rather than UNAUTHORIZED so the client does

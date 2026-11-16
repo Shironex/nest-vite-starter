@@ -119,9 +119,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     //
     // `request.path`, never `request.url`: the query string is a second
     // credential channel this filter sees on every refusal. The global
-    // ThrottlerGuard and the unknown-provider 404 both land here for
-    // `GET /api/auth/oauth/:provider/callback?code=...&state=...`, and the
-    // batched tRPC GET carries `?input=<JSON of every procedure input>`.
+    // ThrottlerGuard lands here for every route, and the batched tRPC GET
+    // carries `?input=<JSON of every procedure input>`.
     // `redactSensitive` is key-based, so a string called `path` is never
     // scrubbed on the way out.
     const path = redactCredentialPath(request.path);

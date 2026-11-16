@@ -244,11 +244,11 @@ describe('LoginService', () => {
       );
     });
 
-    it('rejects an OAuth-only account (null passwordHash) exactly like a wrong password', async () => {
+    it('rejects an account with no password (null passwordHash) exactly like a wrong password', async () => {
       const { service, mocks } = await buildCtx();
       const { req, res } = expressMocks();
       mocks.user.findCredentialByEmail.mockResolvedValue(
-        userFixture({ id: 'oauth-1', passwordHash: null }),
+        userFixture({ id: 'nopw-1', passwordHash: null }),
       );
       mocks.lockout.isLockedFromUser.mockReturnValue({ locked: false });
       // Deliberately "correct": a null hash must fail even if the verify mock
@@ -258,7 +258,7 @@ describe('LoginService', () => {
 
       await expect(service.login(baseInput, '1.2.3.4', 'ua', req, res)).rejects.toMatchObject({
         // Byte-identical to the wrong-password rejection: no appCode, no
-        // message and no HTTP code that could single out a Google-only account.
+        // message and no HTTP code that could single out an account with no password.
         code: 'UNAUTHORIZED',
         appCode: 'INVALID_CREDENTIALS',
         message: 'Invalid email or password',
@@ -267,21 +267,21 @@ describe('LoginService', () => {
       expect(mocks.shared.establishSession).not.toHaveBeenCalled();
       expect(mocks.twoFactorChallenge.beginOrEstablish).not.toHaveBeenCalled();
       // Burns the same argon2 cost a real credential check pays, against the
-      // dummy hash, so response time does not reveal the account is OAuth-only.
+      // dummy hash, so response time does not reveal the account has no password.
       expect(mocks.password.verify).toHaveBeenCalledWith(
         TIMING_EQUALIZATION_HASH,
         baseInput.password,
       );
       expect(mocks.password.verify).toHaveBeenCalledTimes(1);
-      // Same lockout accounting too: an OAuth-only account that never locked
+      // Same lockout accounting too: an account with no password that never locked
       // would itself be an oracle.
-      expect(mocks.lockout.recordFailedAttempt).toHaveBeenCalledWith('oauth-1');
+      expect(mocks.lockout.recordFailedAttempt).toHaveBeenCalledWith('nopw-1');
       // The audit row (server-side only) still distinguishes the two, so
-      // operators can tell a typo from a Google-only user at the password form.
+      // operators can tell a typo from an account with no password.
       expect(mocks.audit.log).toHaveBeenCalledWith(
         expect.objectContaining({
           action: AUDIT_ACTIONS.AUTH_LOGIN_FAILURE,
-          userId: 'oauth-1',
+          userId: 'nopw-1',
           success: false,
           metadata: { reason: 'no_password_set' },
         }),
@@ -382,11 +382,11 @@ describe('LoginService', () => {
       expect(mocks.lockout.reserveAttempt).not.toHaveBeenCalled();
     });
 
-    it('reserves for a Google-only account too, so a burst cannot tell it apart', async () => {
+    it('reserves for an account with no password too, so a burst cannot tell it apart', async () => {
       const { service, mocks } = await buildCtx();
       const { req, res } = expressMocks();
       mocks.user.findCredentialByEmail.mockResolvedValue(
-        userFixture({ id: 'oauth-1', passwordHash: null }),
+        userFixture({ id: 'nopw-1', passwordHash: null }),
       );
       mocks.lockout.isLockedFromUser.mockReturnValue({ locked: false });
       mocks.lockout.recordFailedAttempt.mockResolvedValue({ locked: false, attemptsRemaining: 4 });
@@ -396,7 +396,7 @@ describe('LoginService', () => {
       // The reservation happens before the passwordHash is even looked at, so a
       // passwordless account cannot be identified by being the one that never
       // hits the budget.
-      expect(mocks.lockout.reserveAttempt).toHaveBeenCalledWith('oauth-1');
+      expect(mocks.lockout.reserveAttempt).toHaveBeenCalledWith('nopw-1');
     });
 
     it('does not reserve on the unknown-email branch (no account to reserve against)', async () => {

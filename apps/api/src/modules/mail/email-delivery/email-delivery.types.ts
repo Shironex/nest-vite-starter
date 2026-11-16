@@ -10,7 +10,6 @@ import type {
   TwoFactorPolicyAnnouncementEmailProps,
   TwoFactorEnforcementReminderEmailProps,
   TwoFactorSupportResetContestEmailProps,
-  OAuthAccountLinkedEmailProps,
   EmailChangeVerificationEmailProps,
   EmailChangeRequestedEmailProps,
   StaffInviteEmailProps,
@@ -86,11 +85,6 @@ export interface ISendTwoFactorSupportResetContestJobData {
   readonly props: TwoFactorSupportResetContestEmailProps;
 }
 
-export interface ISendOAuthAccountLinkedJobData {
-  readonly to: string;
-  readonly props: OAuthAccountLinkedEmailProps;
-}
-
 export interface ISendEmailChangeVerificationJobData {
   readonly to: string;
   readonly props: EmailChangeVerificationEmailProps;
@@ -123,7 +117,6 @@ export type EmailDeliveryJobData =
   | ISendTwoFactorPolicyAnnouncementJobData
   | ISendTwoFactorEnforcementReminderJobData
   | ISendTwoFactorSupportResetContestJobData
-  | ISendOAuthAccountLinkedJobData
   | ISendEmailChangeVerificationJobData
   | ISendEmailChangeRequestedJobData
   | ISendStaffInviteJobData

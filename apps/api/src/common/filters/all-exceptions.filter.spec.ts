@@ -273,21 +273,20 @@ describe('AllExceptionsFilter', () => {
     });
 
     it('logs the path without its query string', () => {
-      // The throttler and the unknown-provider 404 reach this filter for
-      // `GET /api/auth/oauth/google/callback?code=...&state=...`, and the
-      // batched tRPC GET carries `?input=<JSON of every procedure input>`.
+      // The throttler reaches this filter for every route, and the batched
+      // tRPC GET carries `?input=<JSON of every procedure input>`.
       // `redactSensitive` is key-based, so a string called `path` would be
       // emitted verbatim.
       const { host, mockRequest } = createMockHost();
       Object.assign(mockRequest, {
-        path: '/api/auth/oauth/google/callback',
-        url: '/api/auth/oauth/google/callback?code=4/0AbCdEf&state=deadbeef',
+        path: '/api/export/download',
+        url: '/api/export/download?code=4/0AbCdEf&state=deadbeef',
       });
 
       filter.catch(new Error('boom'), host);
 
       const data = loggerErrorMock.mock.calls[0][1] as Record<string, unknown>;
-      expect(data.path).toBe('/api/auth/oauth/google/callback');
+      expect(data.path).toBe('/api/export/download');
       expect(JSON.stringify(data)).not.toContain('4/0AbCdEf');
       expect(JSON.stringify(data)).not.toContain('deadbeef');
     });

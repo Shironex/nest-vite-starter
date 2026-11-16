@@ -371,8 +371,8 @@ export class UserService {
 
     // The removal is enforced wherever a NEW credential or session is handed
     // out: every session mint re-reads it in TwoFactorChallengeService (password
-    // login and Google sign-in both pass through there, and each also refuses
-    // it at its own door for the audit reason), plus the DB-token side
+    // login passes through there, and also refuses it at its own door for the
+    // audit reason), plus the DB-token side
     // door, password reset. Never in auth.middleware, which
     // reads the session blob and never touches the database, so this call is
     // what closes the sessions they already hold.

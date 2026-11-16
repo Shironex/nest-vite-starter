@@ -24,7 +24,6 @@ import {
   sendTwoFactorPolicyAnnouncementJobSchema,
   sendTwoFactorEnforcementReminderJobSchema,
   sendTwoFactorSupportResetContestJobSchema,
-  sendOAuthAccountLinkedJobSchema,
   sendEmailChangeVerificationJobSchema,
   sendEmailChangeRequestedJobSchema,
   sendStaffInviteJobSchema,
@@ -150,16 +149,6 @@ export class EmailDeliveryProcessor extends TracedWorkerHost {
         await this.provider.send({
           to,
           subject: 'Confirm your two-factor authentication reset request',
-          html,
-        });
-        return;
-      }
-      case EMAIL_DELIVERY_JOB_NAMES.SEND_OAUTH_ACCOUNT_LINKED: {
-        const { to, props } = parseJobData(sendOAuthAccountLinkedJobSchema, job);
-        const html = await this.renderer.renderOAuthAccountLinkedEmail(props);
-        await this.provider.send({
-          to,
-          subject: `A ${props.providerName} account was linked to your account`,
           html,
         });
         return;

@@ -14,28 +14,6 @@ jest.mock('superjson', () => ({
   },
 }));
 
-// openid-client is ESM-only too, and OAuthModule is the one file that imports
-// it. Node's `require(esm)` interop loads it fine at runtime; only jest's CJS
-// runtime cannot, hence the same stub treatment. The functions are never called
-// during `.compile()` (GoogleProvider discovers lazily, on the first flow), so
-// the stub only has to match the token's shape.
-//
-// The stub has a NULL PROTOTYPE on purpose, because that is what `import * as`
-// of an ESM package actually yields under CJS and it is the property the
-// null-prototype-provider test below depends on. A plain object literal here
-// would make that test vacuous: it would pass whether or not OAuthModule
-// normalizes the namespace, which is exactly how a bootstrap-killing defect
-// stayed invisible to this suite.
-jest.mock('openid-client', () =>
-  Object.assign(Object.create(null), {
-    __esModule: true,
-    [Symbol.toStringTag]: 'Module',
-    discovery: jest.fn(),
-    buildAuthorizationUrl: jest.fn(),
-    authorizationCodeGrant: jest.fn(),
-  }),
-);
-
 import { Test, type TestingModule } from '@nestjs/testing';
 import RedisMock from 'ioredis-mock';
 import { getQueueToken, getQueueOptionsToken } from '@nestjs/bullmq';
@@ -150,9 +128,8 @@ describe('AppModule (DI compile-smoke)', () => {
   });
 
   it('binds no provider to a value the tRPC router factory cannot read', () => {
-    // THE BOOTSTRAP INVARIANT, and the reason this test is here rather than in
-    // the oauth module's own spec: it holds for every provider in the app, not
-    // for one library.
+    // THE BOOTSTRAP INVARIANT: it holds for every provider in the app, not for
+    // one library.
     //
     // `nestjs-trpc`'s RouterFactory walks EVERY provider in the container and
     // reads `Reflect.getMetadata(ROUTER_METADATA_KEY, instance.constructor)`.

@@ -75,7 +75,6 @@ const SKIPPED_TESTS_MARKERS = ['https?://\\S+', 'TODO\\([^\\s)]+\\)'];
 // longer breaks the rule. Paths are repo-relative, so the test can read them.
 export const SINGLE_SEMANTIC_CONSTANTS_BACKLOG = [
   'apps/api/src/modules/auth/auth.constants.ts',
-  'apps/api/src/modules/auth/oauth/oauth.constants.ts',
   'apps/web/src/features/audit/Audit.constants.ts',
   'apps/web/src/features/auth/Auth.constants.ts',
 ];
@@ -199,40 +198,26 @@ export const config = [
       // its name. Measured 0 hits when wired.
       'noctcore-security/no-timing-unsafe-compare': 'error',
       // Web client: `getApiBaseUrl()` is the configured api origin ('' in the
-      // browser, the Electron api URL on desktop). `CSRF_TOKEN_PATH` and
-      // `OAUTH_PROVIDERS_PATH` are imported path constants the rule cannot read
-      // across files. `toApiPath` (apps/web/src/lib/api-path.ts) validates a
-      // server-issued ticket URL as a same-origin path before it is appended.
+      // browser). `CSRF_TOKEN_PATH` is an imported path constant the rule
+      // cannot read across files. `toApiPath` (apps/web/src/lib/api-path.ts)
+      // validates a server-issued ticket URL as a same-origin path before it is
+      // appended.
       'noctcore-security/no-user-controlled-fetch-url': [
         'error',
         {
           trustedOrigins: ['getApiBaseUrl()'],
-          trustedPaths: ['CSRF_TOKEN_PATH', 'OAUTH_PROVIDERS_PATH'],
+          trustedPaths: ['CSRF_TOKEN_PATH'],
           sanitizers: ['toApiPath'],
         },
       ],
       // The plugin's default callees already read Express `res.redirect(status,
       // url)` by its LAST argument, so no callee override is needed (setting
-      // one would REPLACE the defaults). The vocabulary is the OAuth
-      // controller's: `this.shared.appUrl` is config,
-      // `buildAuthErrorRedirect(appUrl, code)` returns a URL on it,
-      // `provider.buildAuthorizationUrl()` is the identity provider's
-      // authorization endpoint from its discovery document,
-      // `OAUTH_TWO_FACTOR_CHALLENGE_PATH` is an imported path constant, and
-      // `sanitizeReturnTo` (oauth-flow.service.ts) is the same-origin path
-      // validator. A redirect built on the stored `flow.returnTo` passes only
-      // when that call sits AT the redirect, which is where the controller
-      // makes it.
+      // one would REPLACE the defaults). No controller redirects today; the
+      // rule stays wired so the first one starts from the app's own origin.
       'noctcore-security/no-user-controlled-redirect': [
         'error',
         {
-          trustedOrigins: [
-            'this.shared.appUrl',
-            'buildAuthErrorRedirect()',
-            'provider.buildAuthorizationUrl()',
-          ],
-          sanitizers: ['sanitizeReturnTo'],
-          trustedPaths: ['OAUTH_TWO_FACTOR_CHALLENGE_PATH'],
+          trustedOrigins: ['this.shared.appUrl'],
         },
       ],
     },

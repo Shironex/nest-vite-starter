@@ -593,7 +593,6 @@ describe('UserRepository password-reset eligibility', () => {
     passwordHash: null,
     emailVerified: false,
     tokens: [],
-    oauthAccounts: [],
     ...over,
   });
 
@@ -632,31 +631,6 @@ describe('UserRepository password-reset eligibility', () => {
 
     await expect(repo.findPasswordResetEligibility('u-1')).resolves.toMatchObject({
       pendingInvite: true,
-    });
-  });
-
-  it('keeps an OAuth-only account eligible to set its first password', async () => {
-    // The other account with no password. The provider asserted the address, so
-    // it carries emailVerified true and an OAuthAccount row.
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.findFirst.mockResolvedValue(
-      row({ emailVerified: true, oauthAccounts: [{ id: 'oauth-1' }] }),
-    );
-
-    await expect(repo.findPasswordResetEligibility('u-1')).resolves.toMatchObject({
-      pendingInvite: false,
-    });
-  });
-
-  it('keeps an OAuth account eligible even if it somehow never verified', async () => {
-    // The OAuthAccount row is the discriminator that matters: an account a
-    // provider vouched for was never an unaccepted invitation, whatever the
-    // verified flag says.
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.findFirst.mockResolvedValue(row({ oauthAccounts: [{ id: 'oauth-1' }] }));
-
-    await expect(repo.findPasswordResetEligibility('u-1')).resolves.toMatchObject({
-      pendingInvite: false,
     });
   });
 

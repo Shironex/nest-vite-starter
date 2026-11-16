@@ -81,7 +81,7 @@ export class TwoFactorService {
     if (!user) {
       throw new UnauthorizedError(AppErrorCode.UNAUTHORIZED, 'Session is no longer valid');
     }
-    // An OAuth-only account cannot clear this gate: there is no password to
+    // An account with no password cannot clear this gate: there is nothing to
     // prove. Fail CLOSED rather than waving the sudo check through, since that
     // would let a hijacked session enroll or disable a second factor with no
     // proof at all. The dedicated appCode points at password reset, which

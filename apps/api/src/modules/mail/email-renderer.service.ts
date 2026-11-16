@@ -11,7 +11,6 @@ import type {
   TwoFactorPolicyAnnouncementEmailProps,
   TwoFactorEnforcementReminderEmailProps,
   TwoFactorSupportResetContestEmailProps,
-  OAuthAccountLinkedEmailProps,
   EmailChangeVerificationEmailProps,
   EmailChangeRequestedEmailProps,
   StaffInviteEmailProps,
@@ -37,7 +36,6 @@ interface IEmailRenderModule {
   renderTwoFactorSupportResetContestEmail(
     props: TwoFactorSupportResetContestEmailProps,
   ): Promise<string>;
-  renderOAuthAccountLinkedEmail(props: OAuthAccountLinkedEmailProps): Promise<string>;
   renderEmailChangeVerificationEmail(props: EmailChangeVerificationEmailProps): Promise<string>;
   renderEmailChangeRequestedEmail(props: EmailChangeRequestedEmailProps): Promise<string>;
   renderStaffInviteEmail(props: StaffInviteEmailProps): Promise<string>;
@@ -111,10 +109,6 @@ export class EmailRendererService {
     props: TwoFactorSupportResetContestEmailProps,
   ): Promise<string> {
     return (await this.getModule()).renderTwoFactorSupportResetContestEmail(props);
-  }
-
-  async renderOAuthAccountLinkedEmail(props: OAuthAccountLinkedEmailProps): Promise<string> {
-    return (await this.getModule()).renderOAuthAccountLinkedEmail(props);
   }
 
   async renderEmailChangeVerificationEmail(

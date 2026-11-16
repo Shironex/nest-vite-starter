@@ -20,9 +20,9 @@ export interface UserFixture {
   id: string;
   email: string;
   /**
-   * Null models an OAuth-only account (no password ever set). Every
-   * credential-verifying path must treat that as a FAILED verification, so
-   * specs build one with `userFixture({ passwordHash: null })`.
+   * Null models an account with no password set. Every credential-verifying
+   * path must treat that as a FAILED verification, so specs build one with
+   * `userFixture({ passwordHash: null })`.
    */
   passwordHash: string | null;
   displayName: string | null;
@@ -93,8 +93,6 @@ export interface ExpressMocks {
   req: Request;
   res: Response;
   cookieMock: jest.Mock;
-  /** `res.redirect` spy for the redirect-contract surfaces (OAuth controller). */
-  redirectMock: jest.Mock;
 }
 
 export const expressMocks = (
@@ -102,23 +100,13 @@ export const expressMocks = (
     cookies?: Record<string, string>;
     headers?: Record<string, string>;
     method?: string;
-    /** Parsed query params, as express would hand them to a GET handler. */
-    query?: Record<string, unknown>;
-    /** Path + query as express reports it (the OAuth callback rebuilds its URL from this). */
-    originalUrl?: string;
-    /** `req.path` as express reports it (no query string). */
-    path?: string;
   } = {},
 ): ExpressMocks => {
   const cookieMock = jest.fn();
-  const redirectMock = jest.fn();
   const req = {
     cookies: { ...(init.cookies ?? {}) },
     headers: { ...(init.headers ?? {}) },
     method: init.method ?? 'POST',
-    query: { ...(init.query ?? {}) },
-    originalUrl: init.originalUrl ?? '/',
-    path: init.path ?? '/',
     // getClientIp reads req.ip with a req.socket fallback; give the mocks the
     // shape express guarantees so controller handlers can attribute requests.
     ip: '203.0.113.9',
@@ -126,12 +114,11 @@ export const expressMocks = (
   } as unknown as Request;
   const res = {
     cookie: cookieMock,
-    redirect: redirectMock,
     setHeader: jest.fn(),
     getHeader: jest.fn(),
     status: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
     send: jest.fn().mockReturnThis(),
   } as unknown as Response;
-  return { req, res, cookieMock, redirectMock };
+  return { req, res, cookieMock };
 };

@@ -9,8 +9,8 @@ import { InvariantError } from '../errors/invariant-error';
  *
  * The template otherwise has only one-way primitives (argon2 for passwords,
  * sha256 for opaque tokens). Some secrets must be decryptable to be used again,
- * for example a third-party API key or an OAuth token that has to be handed
- * back to the provider verbatim. This service is the generic reversible-secret
+ * for example a TOTP secret or a third-party API key that has to be handed
+ * back verbatim. This service is the generic reversible-secret
  * primitive for that: encrypt/decrypt arbitrary strings. It is deliberately
  * not coupled to any one feature; a consumer injects it and stores the
  * resulting wire-format string in a column.

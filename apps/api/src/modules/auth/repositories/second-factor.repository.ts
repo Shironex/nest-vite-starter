@@ -50,19 +50,6 @@ export class SecondFactorRepository extends BaseRepository {
     });
   }
 
-  /**
-   * The user's ACTIVE factor of ANY type, recovery codes included. Backs the
-   * OAuth auto-link zero-factors gate: auto-linking is refused while
-   * anything ACTIVE exists, and that gate is stricter than the challenge
-   * decision (findActiveNonRecovery) on purpose: a recovery-only account is
-   * still a 2FA-protected account for linking purposes.
-   */
-  findAnyActive(userId: string): Promise<SecondFactor | null> {
-    return this.client.secondFactor.findFirst({
-      where: { userId, status: SecondFactorStatus.ACTIVE },
-    });
-  }
-
   /** The user's ACTIVE TOTP factor, if any (verify/decrypt + enroll refusal). */
   findActiveTotp(userId: string): Promise<SecondFactor | null> {
     return this.client.secondFactor.findFirst({

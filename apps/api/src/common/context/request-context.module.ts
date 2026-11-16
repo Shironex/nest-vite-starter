@@ -118,7 +118,7 @@ function resolveRequestIdentity(
  *
  * For every other entrypoint the same reasoning applies one level down:
  * `req.path`, not `req.originalUrl`. The query string is a credential channel
- * of its own (the OAuth callback's `code=`/`state=`, a hand-built `?input=`),
+ * of its own (a hand-built `?input=`, a mailed token),
  * and `path` exists to be logged, so nothing that rides a query string may
  * enter the store.
  *

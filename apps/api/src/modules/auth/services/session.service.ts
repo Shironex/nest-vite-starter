@@ -144,8 +144,8 @@ export class SessionService {
   /**
    * Read the user's current session epoch. A missing counter is epoch 0.
    *
-   * Callers that authenticate a user against stored state (a password hash, an
-   * OAuth identity) must capture this BEFORE reading that state and pass it to
+   * Callers that authenticate a user against stored state (a password hash)
+   * must capture this BEFORE reading that state and pass it to
    * `createSession`, so the fence covers the whole authentication, not just the
    * Redis write. See the `epoch` param on `createSession` for why.
    */

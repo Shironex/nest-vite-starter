@@ -5,7 +5,6 @@ import {
   renderWelcomeEmail,
   renderPasswordChangedEmail,
   renderTwoFactorEnabledEmail,
-  renderOAuthAccountLinkedEmail,
   renderEmailChangeVerificationEmail,
   renderEmailChangeRequestedEmail,
   renderStaffInviteEmail,
@@ -83,33 +82,6 @@ describe('email templates render', () => {
     expect(html.length).toBeGreaterThan(0);
     expect(html).toContain(appName);
     expect(html).toContain('https://x/settings');
-  });
-
-  it('oauth account linked (tripwire)', async () => {
-    const html = await renderOAuthAccountLinkedEmail({
-      appName,
-      providerName: 'Google',
-      settingsUrl: 'https://x/settings',
-      resetPasswordUrl: 'https://x/auth/forgot-password',
-    });
-    expect(html.length).toBeGreaterThan(0);
-    expect(html).toContain(appName);
-    expect(html).toContain('Google');
-    expect(html).toContain('https://x/settings');
-    // "Wasn't you?" offers a password reset, the step that ends every
-    // session and replaces the password.
-    expect(html).toContain('href="https://x/auth/forgot-password"');
-    expect(html).toContain('Reset your password');
-  });
-
-  it('oauth account linked (tripwire) still renders a job enqueued without the reset link', async () => {
-    const html = await renderOAuthAccountLinkedEmail({
-      appName,
-      providerName: 'Google',
-      settingsUrl: 'https://x/settings',
-    });
-    expect(html).toContain('https://x/settings');
-    expect(html).not.toContain('Reset your password');
   });
 
   it('email change verification (to the new address)', async () => {

@@ -47,7 +47,7 @@ export interface IChallengeOptions {
   userAgent: string;
   /**
    * Session epoch captured by the caller BEFORE it read the state that
-   * authenticated this user (the password hash, the linked OAuth identity);
+   * authenticated this user (the password hash);
    * see `SessionService.readEpoch`. It rides through to `createSession`, and
    * through the pending record when a second factor is required, so a
    * revocation anywhere between "we read the credential" and "we hand out a
@@ -55,8 +55,7 @@ export interface IChallengeOptions {
    *
    * A caller that omits it still gets the fence, but only from the moment
    * `createSession` runs, which leaves its own credential read unfenced. Every
-   * password-verifying entry point passes it, and any new one (OAuth callback)
-   * must too.
+   * password-verifying entry point passes it, and any new one must too.
    */
   epoch?: number | undefined;
 }
@@ -106,8 +105,7 @@ const pendingChallengeSchema = z.object({
 type PendingChallenge = z.infer<typeof pendingChallengeSchema>;
 
 /**
- * The single post-credential chokepoint for BOTH password and (future) OAuth
- * logins. `beginOrEstablish` either establishes a session directly (no active
+ * The single post-credential chokepoint for every login. `beginOrEstablish` either establishes a session directly (no active
  * factor, or a valid trusted device) or mints a short-lived pending record and
  * returns a challenge; `verifyChallenge` consumes that record. No session ever
  * exists until a factor is satisfied, and `establishSession` is only ever
@@ -121,8 +119,7 @@ type PendingChallenge = z.infer<typeof pendingChallengeSchema>;
  *
  * It is also where live account state is re-checked. Every entry point runs its
  * own deleted / locked / removed-member checks for an accurate audit reason,
- * but those read a snapshot and each door has to remember the whole list (the
- * Google door once forgot `membershipEndedAt`). `findIneligibleReason` re-reads
+ * but those read a snapshot and each door has to remember the whole list. `findIneligibleReason` re-reads
  * the three fields right before anything is minted, here and again before the
  * post-challenge mint, so a door that forgets one, or a state change that lands
  * mid-login, still ends without a session.
@@ -178,8 +175,7 @@ export class TwoFactorChallengeService {
         opts.userAgent,
       );
       // The password door's own refusal, so a state change racing the login
-      // is indistinguishable from a wrong password. The OAuth callback maps
-      // any throw from here to its generic failure redirect.
+      // is indistinguishable from a wrong password.
       throw new UnauthorizedError(AppErrorCode.INVALID_CREDENTIALS, 'Invalid email or password');
     }
 
@@ -429,7 +425,7 @@ export class TwoFactorChallengeService {
    * refused the same way: there is nobody to mint a session for.
    *
    * Runs before AuthMiddleware seeds the ALS, keyed by the userId the caller
-   * authenticated, exactly like the OAuth resolution reads: `User` is
+   * authenticated: `User` is
    * platform-global, so the tenant extension does not filter it and the
    * request client answers without a tenant in context.
    */

@@ -63,7 +63,7 @@ export class AccountDeletionService {
       throw new NotFoundError();
     }
 
-    // An OAuth-only account has no password to confirm with, so this
+    // An account with no password has nothing to confirm with, so this
     // destructive action cannot be authorized here. Fail CLOSED (never treat a
     // missing hash as "confirmed") with the dedicated appCode pointing at
     // password reset, which doubles as set-password. Authenticated and

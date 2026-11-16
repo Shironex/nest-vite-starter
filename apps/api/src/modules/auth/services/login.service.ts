@@ -127,18 +127,18 @@ export class LoginService {
     // Reserved AFTER the lock check, so an account that is already locked never
     // inflates its own counter, and refused through the SAME ACCOUNT_LOCKED
     // path, so an over-budget attempt is indistinguishable from a real lockout
-    // on the wire. It also runs before the passwordHash is looked at, so a
-    // Google-only account reserves exactly like a password account and the
-    // burst cannot be used to tell the two apart.
+    // on the wire. It also runs before the passwordHash is looked at, so an
+    // account with no password reserves exactly like a password account and
+    // the burst cannot be used to tell the two apart.
     const reservation = await this.lockoutService.reserveAttempt(user.id);
     if (!reservation.withinBudget) {
       await this.refuseLocked(user, ip, userAgent, 'attempt_budget');
     }
 
-    // Verify password. An OAuth-only account (passwordHash null) has no
-    // password to verify: it can never authenticate here, and it must be
-    // INDISTINGUISHABLE from a wrong password, or this endpoint becomes an
-    // oracle for which accounts sign in with Google. So the null branch burns
+    // Verify password. An account with no password (passwordHash null) can
+    // never authenticate here, and it must be INDISTINGUISHABLE from a wrong
+    // password, or this endpoint becomes an oracle for which accounts have
+    // none. So the null branch burns
     // the same argon2 cost, then falls into the identical failure path below:
     // same error, same lockout accounting, same response time. The dummy
     // verify's result is DISCARDED rather than assigned, so even a preimage of
@@ -149,8 +149,8 @@ export class LoginService {
       await this.passwordService.verify(TIMING_EQUALIZATION_HASH, input.password);
       passwordValid = false;
       // Server-side only (audit rows are never returned to the client), so
-      // operators can tell a real typo from a Google-only user at the password
-      // form without the client learning anything.
+      // operators can tell a real typo from an account with no password
+      // without the client learning anything.
       failureReason = 'no_password_set';
     } else {
       passwordValid = await this.passwordService.verify(user.passwordHash, input.password);

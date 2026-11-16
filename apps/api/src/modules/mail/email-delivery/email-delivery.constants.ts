@@ -35,10 +35,6 @@ export const EMAIL_DELIVERY_JOB_NAMES = {
   SEND_TWO_FACTOR_POLICY_ANNOUNCEMENT: 'send-two-factor-policy-announcement',
   SEND_TWO_FACTOR_ENFORCEMENT_REMINDER: 'send-two-factor-enforcement-reminder',
   SEND_TWO_FACTOR_SUPPORT_RESET_CONTEST: 'send-two-factor-support-reset-contest',
-  // OAuth account-linked tripwire (non-critical class): the security
-  // notification sent on every new sign-in-method link. Best-effort like the other security notices: the link
-  // itself must not fail on a mail outage.
-  SEND_OAUTH_ACCOUNT_LINKED: 'send-oauth-account-linked',
   // Email change. The verification link to the NEW address is
   // critical like send-verification: the flow cannot complete without it. The
   // tripwire to the OLD address is non-critical like the other security

@@ -241,11 +241,10 @@ export class AuthRouter {
   }
 
   /**
-   * Sudo gate (Google sign-in SPEC section 8): re-verify the current password
-   * and mark THIS session recently-confirmed for 5 minutes. The OAuth link
-   * start and `oauth.unlink` require the mark. An OAuth-only account (null
-   * passwordHash) gets PASSWORD_NOT_SET, whose copy points at password reset
-   * (which doubles as set-password).
+   * Sudo gate: re-verify the current password and mark THIS session
+   * recently-confirmed for 5 minutes. `requestEmailChange` requires the mark.
+   * An account with no password (null passwordHash) gets PASSWORD_NOT_SET,
+   * whose copy points at password reset (which doubles as set-password).
    */
   @Mutation({ input: confirmPasswordSchema, output: authAckOutput })
   @UseMiddlewares(AuthMiddleware)
@@ -279,9 +278,8 @@ export class AuthRouter {
 
   /**
    * Start an email change for the signed-in user. Requires the sudo flag
-   * minted by `auth.confirmPassword` (same gate and same FORBIDDEN re-prompt
-   * contract as `oauth.unlink`: a stolen session cookie alone must not be
-   * able to move the login identity), plus a second-factor code inside the
+   * minted by `auth.confirmPassword` (a FORBIDDEN answer re-prompts: a stolen
+   * session cookie alone must not be able to move the login identity), plus a second-factor code inside the
    * service when 2FA is active. The change only takes effect once the NEW
    * address consumes the mailed link (`confirmEmailChange`).
    */

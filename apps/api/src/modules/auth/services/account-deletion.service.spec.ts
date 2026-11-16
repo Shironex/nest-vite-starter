@@ -102,7 +102,7 @@ describe('AccountDeletionService', () => {
     expect(mocks.shared.clearSessionCookie).not.toHaveBeenCalled();
   });
 
-  it('throws PASSWORD_NOT_SET for an OAuth-only account; nothing is deleted or revoked', async () => {
+  it('throws PASSWORD_NOT_SET for an account with no password; nothing is deleted or revoked', async () => {
     const { service, mocks } = await buildCtx();
     const { req, res } = expressMocks();
     mocks.user.findCredentialById.mockResolvedValue(userFixture({ passwordHash: null }));

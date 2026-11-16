@@ -1,8 +1,7 @@
 /**
- * Duck-typed helpers for Prisma P2002 unique-constraint violations, shared by
- * the two signup entry points (RegisterService and the OAuth callback's
- * account resolution), which both race their own pre-checks against the
- * User.email unique constraint inside the provisioning transaction.
+ * Duck-typed helpers for Prisma P2002 unique-constraint violations: signup
+ * (RegisterService) races its own pre-check against the User.email unique
+ * constraint inside the provisioning transaction.
  *
  * Duck-typed (never `instanceof Prisma.PrismaClientKnownRequestError`) because
  * a value import of the ESM-only Prisma client into a CJS service would drag

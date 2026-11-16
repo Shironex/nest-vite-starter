@@ -26,7 +26,6 @@ describe('EmailDeliveryProcessor', () => {
       | 'renderPasswordResetEmail'
       | 'renderWelcomeEmail'
       | 'renderPasswordChangedEmail'
-      | 'renderOAuthAccountLinkedEmail'
       | 'renderEmailChangeVerificationEmail'
       | 'renderEmailChangeRequestedEmail'
     >
@@ -40,7 +39,6 @@ describe('EmailDeliveryProcessor', () => {
       renderPasswordResetEmail: jest.fn().mockResolvedValue('<reset/>'),
       renderWelcomeEmail: jest.fn().mockResolvedValue('<welcome/>'),
       renderPasswordChangedEmail: jest.fn().mockResolvedValue('<changed/>'),
-      renderOAuthAccountLinkedEmail: jest.fn().mockResolvedValue('<linked/>'),
       renderEmailChangeVerificationEmail: jest.fn().mockResolvedValue('<email-change-verify/>'),
       renderEmailChangeRequestedEmail: jest.fn().mockResolvedValue('<email-change-tripwire/>'),
     };
@@ -120,31 +118,6 @@ describe('EmailDeliveryProcessor', () => {
     expect(provider.send).toHaveBeenCalledWith(
       expect.objectContaining({ to: 'a@b.c', subject: 'Your password has been changed' }),
     );
-  });
-
-  it('renders the oauth-account-linked tripwire and names the provider in the subject', async () => {
-    await processor.processJob(
-      makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_OAUTH_ACCOUNT_LINKED, {
-        to: 'a@b.c',
-        props: {
-          appName: 'SaaS Starter',
-          providerName: 'Google',
-          settingsUrl: 'https://x/settings',
-        },
-        _ctx: { requestId: 'r1' },
-      }),
-    );
-
-    expect(renderer.renderOAuthAccountLinkedEmail).toHaveBeenCalledWith({
-      appName: 'SaaS Starter',
-      providerName: 'Google',
-      settingsUrl: 'https://x/settings',
-    });
-    expect(provider.send).toHaveBeenCalledWith({
-      to: 'a@b.c',
-      subject: 'A Google account was linked to your account',
-      html: '<linked/>',
-    });
   });
 
   it('renders the email-change verification link for the new address and sends', async () => {

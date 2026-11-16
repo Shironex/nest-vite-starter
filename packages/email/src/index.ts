@@ -35,10 +35,6 @@ import {
   type TwoFactorSupportResetContestEmailProps,
 } from './templates/two-factor-support-reset-contest.js';
 import {
-  OAuthAccountLinkedEmail,
-  type OAuthAccountLinkedEmailProps,
-} from './templates/oauth-account-linked.js';
-import {
   EmailChangeVerificationEmail,
   type EmailChangeVerificationEmailProps,
 } from './templates/email-change-verification.js';
@@ -53,7 +49,6 @@ import {
 } from './templates/staff-invite-join-and-close.js';
 
 export type {
-  OAuthAccountLinkedEmailProps,
   EmailChangeVerificationEmailProps,
   EmailChangeRequestedEmailProps,
   StaffInviteEmailProps,
@@ -129,12 +124,6 @@ export async function renderTwoFactorSupportResetContestEmail(
   props: TwoFactorSupportResetContestEmailProps,
 ): Promise<string> {
   return await render(TwoFactorSupportResetContestEmail(props));
-}
-
-export async function renderOAuthAccountLinkedEmail(
-  props: OAuthAccountLinkedEmailProps,
-): Promise<string> {
-  return await render(OAuthAccountLinkedEmail(props));
 }
 
 export async function renderEmailChangeVerificationEmail(

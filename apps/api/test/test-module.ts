@@ -115,7 +115,6 @@ export interface AuthMocks {
     sendTwoFactorPolicyAnnouncementEmail: jest.Mock;
     sendTwoFactorEnforcementReminderEmail: jest.Mock;
     sendTwoFactorSupportResetContestEmail: jest.Mock;
-    sendOAuthAccountLinkedEmail: jest.Mock;
     sendEmailChangeVerificationEmail: jest.Mock;
     sendEmailChangeRequestedEmail: jest.Mock;
   };
@@ -179,7 +178,6 @@ export interface AuthMocks {
   };
   secondFactor: {
     findActiveNonRecovery: jest.Mock;
-    findAnyActive: jest.Mock;
     findActiveTotp: jest.Mock;
     findPendingTotp: jest.Mock;
     deletePendingTotp: jest.Mock;
@@ -229,9 +227,6 @@ export interface PrismaServiceMock {
     user: PrismaUserDelegateMock;
     token: PrismaTokenDelegateMock;
     secondFactor: PrismaSecondFactorDelegateMock;
-    // OAuthAccount (Google sign-in): pre-auth model outside the tenant scope,
-    // read/written directly through the client by the OAuth services.
-    oAuthAccount: PrismaOAuthAccountDelegateMock;
     auditLog: { create: jest.Mock };
     tenant: { create: jest.Mock; update: jest.Mock; findUnique: jest.Mock };
     permission: { findMany: jest.Mock };
@@ -283,17 +278,6 @@ export interface PrismaHrDelegateMock {
   count: jest.Mock;
 }
 
-export interface PrismaOAuthAccountDelegateMock {
-  findFirst: jest.Mock;
-  findMany: jest.Mock;
-  findUnique: jest.Mock;
-  create: jest.Mock;
-  update: jest.Mock;
-  delete: jest.Mock;
-  deleteMany: jest.Mock;
-  count: jest.Mock;
-}
-
 export interface PrismaSecondFactorDelegateMock {
   findFirst: jest.Mock;
   findMany: jest.Mock;
@@ -326,17 +310,6 @@ const buildPrismaUserDelegate = (): PrismaUserDelegateMock => ({
 const buildPrismaTokenDelegate = (): PrismaTokenDelegateMock => ({
   findFirst: jest.fn(),
   create: jest.fn(),
-  delete: jest.fn(),
-  deleteMany: jest.fn(),
-  count: jest.fn(),
-});
-
-const buildPrismaOAuthAccountDelegate = (): PrismaOAuthAccountDelegateMock => ({
-  findFirst: jest.fn(),
-  findMany: jest.fn(),
-  findUnique: jest.fn(),
-  create: jest.fn(),
-  update: jest.fn(),
   delete: jest.fn(),
   deleteMany: jest.fn(),
   count: jest.fn(),
@@ -375,7 +348,6 @@ export const buildPrismaMock = (): PrismaServiceMock => {
     user: buildPrismaUserDelegate(),
     token: buildPrismaTokenDelegate(),
     secondFactor: buildPrismaSecondFactorDelegate(),
-    oAuthAccount: buildPrismaOAuthAccountDelegate(),
     auditLog: { create: jest.fn() },
     tenant: { create: jest.fn(), update: jest.fn(), findUnique: jest.fn() },
     permission: { findMany: jest.fn() },
@@ -414,7 +386,6 @@ export const mockPrismaTransaction = <T extends object>(prisma: PrismaServiceMoc
 export const buildPrismaTx = () => ({
   user: buildPrismaUserDelegate(),
   token: buildPrismaTokenDelegate(),
-  oAuthAccount: buildPrismaOAuthAccountDelegate(),
   auditLog: { create: jest.fn() },
   tenant: { create: jest.fn(), update: jest.fn(), findUnique: jest.fn() },
   permission: { findMany: jest.fn() },
@@ -612,7 +583,6 @@ const buildAuthMocks = (
       sendTwoFactorPolicyAnnouncementEmail: jest.fn().mockResolvedValue(undefined),
       sendTwoFactorEnforcementReminderEmail: jest.fn().mockResolvedValue(undefined),
       sendTwoFactorSupportResetContestEmail: jest.fn().mockResolvedValue(undefined),
-      sendOAuthAccountLinkedEmail: jest.fn().mockResolvedValue(undefined),
       sendEmailChangeVerificationEmail: jest.fn().mockResolvedValue(undefined),
       sendEmailChangeRequestedEmail: jest.fn().mockResolvedValue(undefined),
     },
@@ -694,7 +664,6 @@ const buildAuthMocks = (
     secondFactor: {
       // Default: no factors, so the 2FA gates are inert unless a spec opts in.
       findActiveNonRecovery: jest.fn().mockResolvedValue(null),
-      findAnyActive: jest.fn().mockResolvedValue(null),
       findActiveTotp: jest.fn().mockResolvedValue(null),
       findPendingTotp: jest.fn().mockResolvedValue(null),
       deletePendingTotp: jest.fn().mockResolvedValue(undefined),

@@ -185,7 +185,7 @@ describe('TwoFactorChallengeService', () => {
       });
     });
 
-    // The per-door checks (password login, the Google resolution) each refuse
+    // The per-door checks (password login) each refuse
     // these states for their own audit reason. These cases hand the seam a
     // snapshot from a caller that checked NOTHING, which is what a new entry
     // point that forgets the list looks like: the seam alone must refuse it.

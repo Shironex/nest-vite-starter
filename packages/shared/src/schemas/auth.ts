@@ -220,12 +220,12 @@ export const registerOutput = z.object({
 });
 
 /* -------------------------------------------------------------------------- */
-/* Sudo + Connected Accounts (Google sign-in SPEC section 8)                  */
+/* Sudo (step-up for sensitive account changes)                               */
 /* -------------------------------------------------------------------------- */
 
 /**
  * `auth.confirmPassword` input: re-prove the current password to grant this
- * SESSION a 300 s sudo window (required by OAuth link start and unlink). A
+ * SESSION a 300 s sudo window (required by email change). A
  * bare non-empty string like loginSchema.password: complexity rules never
  * apply to an existing credential.
  */
@@ -233,33 +233,7 @@ export const confirmPasswordSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-/** `oauth.unlink` input: the OAuthAccount row id, from `oauth.listAccounts`. */
-export const unlinkOAuthAccountSchema = z.object({
-  accountId: z.string().min(1, 'Account id is required'),
-});
-
-/**
- * `oauth.listAccounts` output: the session user's linked sign-in methods.
- * `id` feeds `oauth.unlink` (a user CAN link two accounts of one provider, so
- * the provider key alone is ambiguous); `email` is the provider-side snapshot
- * shown so the user can tell which Google account a row is; timestamps back
- * the "added / last used" columns of the settings panel.
- */
-export const oauthAccountsOutput = z.object({
-  accounts: z.array(
-    z.object({
-      id: z.string(),
-      provider: z.string(),
-      email: z.string(),
-      createdAt: z.date(),
-      lastUsedAt: z.date(),
-    }),
-  ),
-});
-
 export type ConfirmPasswordInput = z.infer<typeof confirmPasswordSchema>;
-export type UnlinkOAuthAccountInput = z.infer<typeof unlinkOAuthAccountSchema>;
-export type OAuthAccountsOutput = z.infer<typeof oauthAccountsOutput>;
 
 /* -------------------------------------------------------------------------- */
 /* Two-factor authentication (protected `twoFactor` router)                   */

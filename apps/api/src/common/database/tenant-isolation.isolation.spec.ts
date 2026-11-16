@@ -15,11 +15,6 @@ import type { PrismaClient } from '@repo/database' with { 'resolution-mode': 'im
 import { esmImport } from '../utils/esm-import';
 import { requestContext } from '../context/request-context';
 import { buildCanaryTenantScopeExtension } from '@test/tenant-scope-canary';
-import { ProvisioningService } from '../../modules/auth/services/provisioning.service';
-import { AuditService } from '../../modules/audit/audit.service';
-import type { PrismaService } from './prisma.service';
-import type { TokenService } from '../../modules/auth/services/token.service';
-import { AUDIT_ACTIONS } from '@repo/shared/audit';
 
 // `@repo/database` is ESM-only and Prisma 7 lazy-loads a WASM query compiler via
 // native `import()`. Static-importing it under jest drags Prisma's runtime
@@ -406,91 +401,6 @@ describe('tenant isolation (live DB, app-layer extension is the only boundary)',
 
     it('P2 fail-closed: a policy query with no tenant in context throws', async () => {
       await expect(client.twoFactorPolicy.findMany()).rejects.toThrow('Tenant context required');
-    });
-  });
-
-  // The 11th case: an OAuth signup provisions a
-  // brand-new Organization BEFORE any tenant context exists, and everything it creates
-  // must stay invisible from another tenant's vantage point. Runs the REAL
-  // ProvisioningService and AuditService against the scoped client, exactly as
-  // the callback does in production.
-  describe('T14 OAuth signup provisioning isolation', () => {
-    let oauthUserId: string | undefined;
-    let oauthTenantId: string | undefined;
-
-    afterAll(async () => {
-      // Unscoped teardown; audit rows first (no cascade), then the user (the
-      // OAuthAccount row cascades with it), then the tenant.
-      if (oauthTenantId) {
-        await unscoped.auditLog.deleteMany({ where: { tenantId: oauthTenantId } });
-      }
-      if (oauthUserId) {
-        await unscoped.user.delete({ where: { id: oauthUserId } }).catch(() => undefined);
-      }
-      if (oauthTenantId) {
-        await unscoped.tenant.delete({ where: { id: oauthTenantId } }).catch(() => undefined);
-      }
-    });
-
-    it('provisions pre-ALS, stamps the audit row explicitly, and stays invisible cross-tenant', async () => {
-      const uid = randomUUID();
-      const email = `iso-oauth-${uid}@example.com`;
-      const scopedPrismaService = { client } as unknown as PrismaService;
-      // The OAuth path never mints a verification token, so the TokenService
-      // collaborator is a stub that would throw if it were ever reached.
-      const provisioning = new ProvisioningService({} as TokenService, scopedPrismaService);
-      const audit = new AuditService(scopedPrismaService);
-
-      // Deliberately NO requestContext.run: the callback runs before
-      // AuthMiddleware seeds the ALS. The extension must pass Tenant, User and
-      // OAuthAccount through untouched instead of failing closed.
-      const user = await provisioning.provisionOrganizationForOAuthSignup({
-        normalizedEmail: email,
-        displayName: 'Iso OAuth',
-        avatarUrl: null,
-        provider: 'google',
-        providerAccountId: `iso-sub-${uid}`,
-      });
-      oauthUserId = user.id;
-      oauthTenantId = user.tenantId ?? undefined;
-      expect(user.passwordHash).toBeNull();
-      expect(user.emailVerified).toBe(true);
-      expect(user.tenantId).toBeTruthy();
-
-      // The signup audit write, as the account service performs it: pre-ALS,
-      // so the tenantId MUST be explicit or the row would stamp null and leak
-      // into "no tenant" admin views.
-      await audit.logOrThrow({
-        action: AUDIT_ACTIONS.OAUTH_SIGNUP,
-        userId: user.id,
-        tenantId: user.tenantId,
-        targetType: 'User',
-        targetId: user.id,
-        metadata: { provider: 'google', providerAccountId: `iso-sub-${uid}` },
-      });
-      const auditRow = await unscoped.auditLog.findFirst({
-        where: { action: AUDIT_ACTIONS.OAUTH_SIGNUP, userId: user.id },
-      });
-      expect(auditRow?.tenantId).toBe(user.tenantId);
-
-      // The link row exists and cascades from the user (checked by presence here,
-      // by the purge-cron spec for the cascade itself).
-      const link = await unscoped.oAuthAccount.findUnique({
-        where: {
-          provider_providerAccountId: { provider: 'google', providerAccountId: `iso-sub-${uid}` },
-        },
-      });
-      expect(link?.userId).toBe(user.id);
-
-      // Cross-tenant invisibility, asserted through the SHAPES the app reads
-      // with (tenant-filtered queries): from tenant B's context, none of the
-      // provisioned rows surface.
-      await run(tenantB.id, async () => {
-        const users = await client.user.findMany({ where: { tenantId: tenantB.id } });
-        expect(users.map((u) => u.id)).not.toContain(user.id);
-        const audits = await client.auditLog.findMany({ where: { tenantId: tenantB.id } });
-        expect(audits.map((a) => a.id)).not.toContain(auditRow?.id);
-      });
     });
   });
 });

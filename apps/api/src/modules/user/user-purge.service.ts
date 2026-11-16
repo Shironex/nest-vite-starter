@@ -27,11 +27,8 @@ export const USER_PURGE_MAX_PER_SWEEP = 500;
 /**
  * Hard-delete sweep for soft-deleted users: rows whose `deletedAt` is older
  * than USER_PURGE_GRACE_DAYS are erased for good (GDPR Art. 17). The DB layer
- * makes the row delete complete on its own: Token, RolePermission,
- * Notification and OAuthAccount cascade; AuditLog keeps its rows with `userId`
- * set null. OAuthAccount cascading matters for erasure: it holds the Google
- * subject id and an email snapshot, so a purge that left it behind would keep
- * identifying data after the user row is gone.
+ * makes the row delete complete on its own: Token and SecondFactor cascade;
+ * AuditLog keeps its rows with `userId` set null.
  *
  * AuditLog rows are KEPT but SCRUBBED (the owner's SCRUB ON PURGE policy): every
  * key in the audit PII registry (AUDIT_PII_FIELDS, @repo/shared/audit) is

@@ -132,7 +132,7 @@ describe('PasswordChangeService', () => {
     expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
   });
 
-  it('throws PASSWORD_NOT_SET for an OAuth-only account; never verifies, never writes', async () => {
+  it('throws PASSWORD_NOT_SET for an account with no password; never verifies, never writes', async () => {
     const { service, mocks } = await buildCtx();
     const { req, res } = expressMocks();
     mocks.user.findCredentialById.mockResolvedValue(userFixture({ passwordHash: null }));

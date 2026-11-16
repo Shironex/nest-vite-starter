@@ -109,8 +109,8 @@ async function bootstrap() {
   // process over 127.0.0.1. Behind a reverse proxy on a Docker bridge
   // network it does not: express then refuses to trust the hop, `req.ip`
   // becomes the proxy's bridge address for every request, and every per-IP
-  // limiter (login, register, forgot-password, 2FA at 10/60 s, OAuth start and
-  // callback, invites, download) collapses into ONE shared bucket. A
+  // limiter (login, register, forgot-password, 2FA at 10/60 s, download)
+  // collapses into ONE shared bucket. A
   // single unauthenticated client sending ten login attempts a minute then
   // locks login, registration and password reset for the whole deployment, and
   // every audit row records the proxy IP instead of the caller's. Set

@@ -7,11 +7,6 @@ import { IdempotencyModule } from '../../common/idempotency/idempotency.module';
 import { SessionModule } from './session.module';
 import { AuthMiddlewareModule } from './auth-middleware.module';
 import { LockoutModule } from './lockout.module';
-import { OAuthModule } from './oauth/oauth.module';
-import { OAuthController } from './oauth/oauth.controller';
-import { OAuthFlowService } from './oauth/oauth-flow.service';
-import { OAuthAccountService } from './oauth/oauth-account.service';
-import { OAuthAccountsRouter } from './oauth/oauth-accounts.router';
 import { AuthSharedService } from './services/auth-shared.service';
 import { SudoService } from './services/sudo.service';
 import { ProvisioningService } from './services/provisioning.service';
@@ -58,13 +53,6 @@ import { TwoFactorEnforcementScheduler } from './two-factor-enforcement/two-fact
  *
  * IdempotencyModule provides the IdempotencyMiddleware that AuthRouter wires
  * method-level after auth on changePassword.
- *
- * OAuthModule carries the OAuth/OIDC provider registry and is the one place
- * that imports `openid-client`. The OAuth CONTROLLER and the flow/account
- * services are declared here instead: the start/callback flow must funnel into
- * TwoFactorChallengeService (the post-credential seam) and ProvisioningService,
- * which live in this injector; registering the controller in OAuthModule
- * would either duplicate those providers or force a forwardRef cycle.
  */
 @Module({
   imports: [
@@ -76,7 +64,6 @@ import { TwoFactorEnforcementScheduler } from './two-factor-enforcement/two-fact
     AuthMiddlewareModule,
     LockoutModule,
     IdempotencyModule,
-    OAuthModule,
     // Two-factor enforcement (SPEC 6.4, T07). The queue registration lives in
     // this leaf so the scheduler (producer) and processor (consumer) below share
     // one queue instance; the processor's collaborators (TrustedDeviceService
@@ -84,11 +71,7 @@ import { TwoFactorEnforcementScheduler } from './two-factor-enforcement/two-fact
     // MailModule, AuditService global) all resolve inside this injector.
     TwoFactorEnforcementQueueModule,
   ],
-  controllers: [OAuthController],
   providers: [
-    OAuthFlowService,
-    OAuthAccountService,
-    OAuthAccountsRouter,
     SudoService,
     TokenRepository,
     SecondFactorRepository,

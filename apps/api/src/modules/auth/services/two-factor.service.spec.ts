@@ -76,7 +76,7 @@ describe('TwoFactorService', () => {
       expect(repo.createPendingTotp).not.toHaveBeenCalled();
     });
 
-    it('refuses the sudo gate for an OAuth-only account (null passwordHash)', async () => {
+    it('refuses the sudo gate for an account with no password (null passwordHash)', async () => {
       const { service, mocks, repo } = await buildCtx();
       mocks.user.findCredentialById.mockResolvedValue(
         userFixture({ id: 'u-1', passwordHash: null }),

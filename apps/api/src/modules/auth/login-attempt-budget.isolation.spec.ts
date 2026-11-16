@@ -153,8 +153,8 @@ const buildSubject = () => {
   return { login, lockout, attempt, verify, auditRows };
 };
 
-/** A live staff account with a real argon2 hash, or a Google-only one. */
-const makeAccount = async (password: string | null) => {
+/** A live staff account with a real argon2 hash. */
+const makeAccount = async (password: string) => {
   const uid = randomUUID();
   const tenant = await unscoped.tenant.create({ data: { name: `lab-${uid}`, slug: `lab-${uid}` } });
   createdTenantIds.add(tenant.id);
@@ -163,7 +163,7 @@ const makeAccount = async (password: string | null) => {
       email: `lab-${uid}@example.test`,
       tenantId: tenant.id,
       role: 'ADMIN',
-      passwordHash: password === null ? null : await passwordService.hash(password),
+      passwordHash: await passwordService.hash(password),
       emailVerified: true,
     },
     select: { id: true, email: true },
@@ -291,44 +291,5 @@ describe('password lockout under a parallel burst', () => {
 
     expect(first).toBeGreaterThan(30);
     expect(await redis.ttl(key)).toBeLessThanOrEqual(30);
-  });
-
-  it('a Google-only account is answered exactly like a password account', async () => {
-    const passworded = await makeAccount(REAL_PASSWORD);
-    const google = await makeAccount(null);
-    const { attempt } = buildSubject();
-
-    // The deterministic half: one wrong password each, same code, same message.
-    const refusalOf = async (email: string) => {
-      try {
-        await attempt(email, WRONG_PASSWORD);
-      } catch (error) {
-        const refusal = error as { code?: string; message?: string };
-        return { code: refusal.code, message: refusal.message };
-      }
-      throw new Error(`expected ${email} to be refused`);
-    };
-
-    expect(await refusalOf(google.email)).toEqual(await refusalOf(passworded.email));
-  });
-
-  it('a Google-only account reserves too, so a burst cannot single it out', async () => {
-    const google = await makeAccount(null);
-    const { attempt, verify, auditRows } = buildSubject();
-
-    const results = await raceAll(BURST, () => attempt(google.email, WRONG_PASSWORD));
-
-    // The null-password branch burns the same argon2 cost on a throwaway hash,
-    // and the reservation happens before the stored hash is even looked at. So
-    // the account that can never sign in here is bounded by the same budget:
-    // an attacker cannot find the Google accounts by looking for the ones that
-    // never run out of guesses.
-    const evaluated = verify.mock.calls.length;
-    expect(evaluated).toBeGreaterThan(0);
-    expect(evaluated).toBeLessThanOrEqual(BUDGET);
-    expect(lockedRefusals(results) + evaluated).toBe(BURST);
-    expect(results.every((result) => result.status === 'rejected')).toBe(true);
-    // Told apart only server-side, where audit rows never reach the client.
-    expect(auditRows(AUDIT_ACTIONS.AUTH_LOGIN_FAILURE, 'no_password_set')).toHaveLength(evaluated);
   });
 });

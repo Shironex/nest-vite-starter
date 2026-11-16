@@ -103,8 +103,7 @@ const ERROR_TAXONOMY = [
   'TRPCError',
 ];
 
-// Plain-HTTP controllers (download and upload tickets, OAuth
-// redirects, /metrics, /vitals) answer through `AllExceptionsFilter`, which maps
+// Plain-HTTP controllers (download and upload tickets, /metrics, /vitals) answer through `AllExceptionsFilter`, which maps
 // only `HttpException`. They sit OUTSIDE the tRPC boundary, so at that edge, and
 // only there, the Nest built-ins are the taxonomy. The list is the three the
 // controllers throw today; a fourth is a deliberate addition here. A service still throws a
@@ -493,8 +492,8 @@ export const config = [
     //
     // `require-path-containment` reports request-shaped input (`req.*`) passed
     // straight into `path.join` / `path.resolve`. Nest hands most input over
-    // through decorators, so this is a tripwire for the raw-request handlers
-    // (the OAuth callback reads `req.query`), not a sweep.
+    // through decorators, so this is a tripwire for raw-request handlers, not
+    // a sweep.
     //
     // Both measured 0 hits when wired.
     files: ['src/**/*.ts'],

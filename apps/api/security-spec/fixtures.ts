@@ -109,7 +109,7 @@ export async function openWorld(prefix: string): Promise<ISecurityWorld> {
     async cleanup() {
       // Audit rows first (nothing cascades them), then the owner pointer
       // (Tenant.ownerId blocks the user delete), then users (User.tenantId is
-      // Restrict, and tokens plus OAuth links cascade with them), then tenants.
+      // Restrict, and tokens cascade with them), then tenants.
       if (tenantIds.size > 0) {
         await unscoped.auditLog.deleteMany({ where: { tenantId: { in: [...tenantIds] } } });
         await unscoped.tenant.updateMany({

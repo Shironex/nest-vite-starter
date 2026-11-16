@@ -17,11 +17,11 @@ const SUDO_RATE_LIMIT = 5;
 const SUDO_RATE_WINDOW_SECONDS = 300;
 
 /**
- * Per-session sudo flag (Google sign-in SPEC section 8).
+ * Per-session sudo flag.
  *
  * `auth.confirmPassword` verifies the caller's password and marks THIS session
- * as recently-confirmed for {@link SUDO_TTL_SECONDS}; the OAuth link start and
- * the unlink mutation require the mark. Keyed by sessionId, not userId, so a
+ * as recently-confirmed for {@link SUDO_TTL_SECONDS}; `auth.requestEmailChange`
+ * requires the mark. Keyed by sessionId, not userId, so a
  * confirmation on one device never elevates a session on another.
  *
  * When the 2FA effort lands its step-up (2FA T03: password + factor challenge
@@ -43,7 +43,7 @@ export class SudoService {
    *
    * Mirrors TwoFactorService.requireSudo exactly: per-USER rate limit (a
    * hijacked session can rotate IPs, so per-IP would not slow it down), fail
-   * closed with PASSWORD_NOT_SET for an OAuth-only account (null hash; the
+   * closed with PASSWORD_NOT_SET for an account with no password (null hash; the
    * web copy points at password reset, which doubles as set-password), and the
    * generic INVALID_CREDENTIALS on a wrong password. Lockout counters are NOT
    * fed: this endpoint is authenticated and self-scoped, and locking the

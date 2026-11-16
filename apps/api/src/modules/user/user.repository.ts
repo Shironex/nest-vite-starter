@@ -114,7 +114,6 @@ export class UserRepository extends BaseRepository implements AvatarOwnerPort {
           select: { id: true },
           take: 1,
         },
-        oauthAccounts: { select: { id: true }, take: 1 },
       },
     });
     if (!user) return null;
@@ -125,17 +124,9 @@ export class UserRepository extends BaseRepository implements AvatarOwnerPort {
     // signs in with emailVerified permanently false and no acceptance row.
     // "No password AND never verified" is what pending MEANS on this row, and
     // nothing deletes it.
-    //
-    // The one other account with no password is the OAuth-only user, who must
-    // keep being able to set one. Those carry emailVerified true (the provider
-    // asserted the address) and an OAuthAccount row, so either column tells them
-    // apart; both are checked because the pair is the definition and a single
-    // column would be a coincidence.
-    const hasOAuth = user.oauthAccounts.length > 0;
     return {
       membershipEnded: user.membershipEndedAt !== null,
-      pendingInvite:
-        user.passwordHash === null && !hasOAuth && (!user.emailVerified || user.tokens.length > 0),
+      pendingInvite: user.passwordHash === null && (!user.emailVerified || user.tokens.length > 0),
     };
   }
 

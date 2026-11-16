@@ -135,23 +135,23 @@ export function getTrustedDeviceCookieName(isProduction: boolean): string {
 /* -------------------------------------------------------------------------- */
 /* Sudo (recent password re-confirmation)                                     */
 /*                                                                            */
-/* Google sign-in SPEC section 8: sensitive account-surgery actions (OAuth    */
-/* link start, unlink) require the session to have re-proved the password     */
-/* within the last 5 minutes. The flag lives in Redis keyed by the SESSION    */
-/* (not the user), so confirming on one device never elevates another.       */
+/* Sensitive account-surgery actions (email change) require the session to    */
+/* have re-proved the password within the last 5 minutes. The flag lives in   */
+/* Redis keyed by the SESSION (not the user), so confirming on one device     */
+/* never elevates another.                                                    */
 /* -------------------------------------------------------------------------- */
 
 /**
  * Lifetime of the sudo flag minted by `auth.confirmPassword`. 300 s matches
- * the pending-2FA window: long enough to complete a link or unlink flow
- * (including the round-trip through Google's consent screen), short enough
+ * the pending-2FA window: long enough to complete the protected action,
+ * short enough
  * that a walked-away session does not stay elevated.
  */
 export const SUDO_TTL_SECONDS = 300;
 
 /**
- * Redis key for the sudo flag. Deliberately NOT routed through `RedisKeys`
- * (mirroring `oauthStateKey` in oauth/oauth.constants.ts): that helper is the
+ * Redis key for the sudo flag. Deliberately NOT routed through `RedisKeys`:
+ * that helper is the
  * tenant-prefix retrofit surface for request-scoped tenant DATA, while this is
  * a session-lifetime marker keyed by the already-tenantless sessionId, exactly
  * like `session:<id>` itself. The 2FA step-up (2FA T03) extends this same key.

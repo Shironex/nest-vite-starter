@@ -187,31 +187,6 @@ export class MailService {
     this.logger.log('Recovery code used email enqueued');
   }
 
-  /** Enqueue the OAuth account-linked tripwire. QUEUED (non-critical class). */
-  async sendOAuthAccountLinkedEmail(to: string, providerName: string): Promise<void> {
-    // Same request-scoped dedupe as the other security notifications: one
-    // tripwire per link action, keyed on the originating request so a producer
-    // retry inside one request collapses while a later distinct link (new
-    // request) still notifies.
-    const jobId = this.requestScopedJobId('oauth-account-linked');
-    await this.queue.add(
-      EMAIL_DELIVERY_JOB_NAMES.SEND_OAUTH_ACCOUNT_LINKED,
-      withJobContext({
-        to,
-        props: {
-          appName: this.appName,
-          providerName,
-          settingsUrl: this.settingsUrl(),
-          // "Wasn't you?" starts at a password reset: it replaces the
-          // password and ends every session, which unlinking alone does not.
-          resetPasswordUrl: this.forgotPasswordUrl(),
-        },
-      }),
-      { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, ...(jobId ? { jobId } : {}) },
-    );
-    this.logger.log('OAuth account linked email enqueued');
-  }
-
   /** Enqueue the admin-initiated 2FA reset notification. QUEUED (non-critical class). */
   async sendTwoFactorAdminResetEmail(to: string): Promise<void> {
     const jobId = this.requestScopedJobId('two-factor-admin-reset');

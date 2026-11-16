@@ -11,7 +11,6 @@ import type {
   ISendTwoFactorPolicyAnnouncementJobData,
   ISendTwoFactorEnforcementReminderJobData,
   ISendTwoFactorSupportResetContestJobData,
-  ISendOAuthAccountLinkedJobData,
   ISendEmailChangeVerificationJobData,
   ISendEmailChangeRequestedJobData,
   ISendStaffInviteJobData,
@@ -122,17 +121,6 @@ export const sendTwoFactorSupportResetContestJobSchema = z.object({
     contestDeadline: z.string().min(1),
   }),
 }) satisfies z.ZodType<ISendTwoFactorSupportResetContestJobData>;
-
-export const sendOAuthAccountLinkedJobSchema = z.object({
-  to: z.string().min(1),
-  props: z.object({
-    appName: z.string().min(1),
-    providerName: z.string().min(1),
-    settingsUrl: z.string().min(1),
-    // Optional: see sendVerificationJobSchema (the template renders without it).
-    resetPasswordUrl: z.string().min(1).optional(),
-  }),
-}) satisfies z.ZodType<ISendOAuthAccountLinkedJobData>;
 
 export const sendEmailChangeVerificationJobSchema = z.object({
   to: z.string().min(1),

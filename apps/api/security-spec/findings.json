@@ -2,48 +2,6 @@
   "version": 1,
   "findings": [
     {
-      "id": "SEC-001",
-      "title": "A removed staff member signs back into their old organization with Google: the OAuth path never checks membershipEndedAt",
-      "status": "fixed",
-      "spec": "security-spec/oauth-removed-member.security-spec.ts",
-      "alsoCoveredBy": ["apps/api/src/modules/auth/oauth/oauth-removed-member.isolation.spec.ts"],
-      "cases": [
-        {
-          "name": "SEC-001 the Google door refuses a removed member > control: an active member with a linked Google account is authenticated",
-          "expect": "pass"
-        },
-        {
-          "name": "SEC-001 the Google door refuses a removed member > refuses the removed member on the linked path and audits membership_ended",
-          "expect": "pass"
-        },
-        {
-          "name": "SEC-001 the Google door refuses a removed member > refuses the removed member on the auto-link path and writes no link row",
-          "expect": "pass"
-        }
-      ]
-    },
-    {
-      "id": "SEC-002",
-      "title": "Account pre-hijack: an attacker's password and session survive the victim verifying the address and linking Google",
-      "status": "fixed",
-      "spec": "security-spec/account-pre-hijack.security-spec.ts",
-      "alsoCoveredBy": ["apps/api/src/modules/auth/account-pre-hijack.isolation.spec.ts"],
-      "cases": [
-        {
-          "name": "SEC-002 a password account never gains a Google link from a login > control: a passwordless, factorless, double-verified account is auto-linked",
-          "expect": "pass"
-        },
-        {
-          "name": "SEC-002 a password account never gains a Google link from a login > refuses the pre-hijacked account: LINK_BLOCKED, no link row, no session",
-          "expect": "pass"
-        },
-        {
-          "name": "SEC-002 a password account never gains a Google link from a login > refuses while the address is still unverified on our side, without an oracle",
-          "expect": "pass"
-        }
-      ]
-    },
-    {
       "id": "SEC-003",
       "title": "A Google-signup owner is listed as a pending invite, and 'withdraw invitation' would hard-delete the account, and countLiveAdmins counted pending invitees",
       "status": "fixed",

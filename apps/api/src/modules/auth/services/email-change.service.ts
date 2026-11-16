@@ -36,7 +36,7 @@ const EMAIL_CHANGE_TOKEN_TTL_SECONDS = EMAIL_CHANGE_TOKEN_TTL_MS / 1000;
 
 /**
  * Runtime shape of the Redis-persisted pending change. Parsed (never cast) on
- * consume, mirroring the OAuth flow-state discipline: Redis is a process
+ * consume: Redis is a process
  * boundary, and a corrupt blob must read as "no pending change", not throw.
  */
 const pendingEmailChangeSchema = z.object({
@@ -48,8 +48,7 @@ const pendingEmailChangeSchema = z.object({
  * The verified email-change flow. The security shape, in order:
  *
  *   1. `requestEmailChange` runs behind AuthMiddleware plus the sudo flag
- *      minted by `auth.confirmPassword` (checked in the router, mirroring
- *      `oauth.unlink`), and demands a current TOTP/recovery code when the
+ *      minted by `auth.confirmPassword` (checked in the router), and demands a current TOTP/recovery code when the
  *      account has an active second factor, so a stolen session cookie alone
  *      can neither start nor complete a change.
  *   2. The NEW address must prove itself by consuming a single-use link
@@ -196,8 +195,7 @@ export class EmailChangeService {
 
     const tokenHash = sha256Hex(token);
     // GETDEL: destroyed on first touch, so two racing confirmations cannot
-    // both pass, and a failed confirm burns the link (matching the OAuth
-    // state discipline: retry means re-request).
+    // both pass, and a failed confirm burns the link (retry means re-request).
     const raw = await this.redis.getdel(RedisKeys.emailChange(tokenHash));
     const pending = this.parsePending(raw);
     if (!pending) {
