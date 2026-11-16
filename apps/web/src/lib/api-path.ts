@@ -1,12 +1,9 @@
 /**
- * Validate a server-supplied, api-relative URL before it is appended to
- * `getApiBaseUrl()`.
+ * Validate a server-supplied, api-relative URL before the client fetches it.
  *
  * Download and upload tickets come back as a path (`/api/...`) that the client
- * prefixes with the api origin. Concatenation only keeps that origin when the
- * path starts with exactly one `/`: in web mode the base is `''`, so a
- * `//host/x` path is scheme-relative and leaves the origin, and in Electron an
- * `@host/x` path turns the base into userinfo. A backslash is read as `/` by
+ * fetches same-origin. That only holds when the path starts with exactly one
+ * `/`: a `//host/x` path is scheme-relative and leaves the origin. A backslash is read as `/` by
  * browsers, and a control or whitespace character is parser-confusion fodder,
  * so both are refused as well.
  *

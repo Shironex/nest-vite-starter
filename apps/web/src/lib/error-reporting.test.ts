@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 /**
- * The facade is off by default and gates on VITE_SENTRY_DSN + not-Electron,
+ * The facade is off by default and gates on VITE_SENTRY_DSN,
  * so these tests are the only proof that (a) the SDK is never loaded or
  * called when disabled, (b) the enabled path wires the conservative init
  * config and the scrubbers, and (c) the scrub functions redact sensitive
@@ -26,16 +26,11 @@ async function importFacade(): Promise<ErrorReportingModule> {
   return import('./error-reporting');
 }
 
-function setElectronApi(value: unknown): void {
-  (window as unknown as Record<string, unknown>).electronAPI = value;
-}
-
 describe('error-reporting facade', () => {
   beforeEach(() => {
     vi.resetModules();
     sentryMock.init.mockClear();
     sentryMock.captureException.mockClear();
-    setElectronApi(undefined);
   });
 
   afterEach(() => {
@@ -49,19 +44,6 @@ describe('error-reporting facade', () => {
     await initErrorReporting();
     captureException(new Error('boom'));
     // Flush the microtask queue so a queued capture (if any) would have fired.
-    await Promise.resolve();
-
-    expect(sentryMock.init).not.toHaveBeenCalled();
-    expect(sentryMock.captureException).not.toHaveBeenCalled();
-  });
-
-  it('stays disabled in the Electron renderer even with a DSN', async () => {
-    vi.stubEnv('VITE_SENTRY_DSN', 'https://key@o0.ingest.sentry.io/0');
-    setElectronApi({});
-    const { initErrorReporting, captureException } = await importFacade();
-
-    await initErrorReporting();
-    captureException(new Error('boom'));
     await Promise.resolve();
 
     expect(sentryMock.init).not.toHaveBeenCalled();

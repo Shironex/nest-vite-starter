@@ -22,7 +22,7 @@ vi.mock('@tanstack/react-router', () => ({
   ),
 }));
 
-// Stub @/lib/trpc so no network or Electron bootstrap is needed in tests.
+// Stub @/lib/trpc so no network is needed in tests.
 vi.mock('@/lib/trpc', () => ({
   trpc: {
     auth: {

@@ -11,8 +11,8 @@ import type { ISettingsShellProps, ISettingsShellView } from './SettingsShell.ty
  *
  * The selection is resolved by LOOKUP rather than stored as an index, and falls
  * back to the first row when the id is not in the list. That matters because
- * the rail is not static: `Users` only exists for an admin and
- * `Updates` only inside Electron, so a row can appear or disappear after
+ * the rail is not static: `Users` only exists for an admin, so a row can
+ * appear or disappear after
  * the first render once `useAuth` resolves. A stale id then resolves to the
  * first row instead of an empty panel, with no effect needed to repair it.
  *

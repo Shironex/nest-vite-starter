@@ -4,11 +4,7 @@ import { SENTRY_DSN } from './env';
 /**
  * Frontend error-reporting facade over @sentry/react, off by default.
  *
- * Enabled only when VITE_SENTRY_DSN is a non-empty string AND the app is NOT
- * running inside the Electron renderer. The packaged desktop renderer loads
- * this same bundle over app:// and its CSP connect-src is built from API_URL
- * only, so Sentry ingest would be blocked there; desktop crash reporting is a
- * separate future workstream.
+ * Enabled only when VITE_SENTRY_DSN is a non-empty string.
  *
  * The SDK is loaded via dynamic import inside initErrorReporting() so it never
  * lands in the entry chunk (see error-reporting.sentry.ts for why the import
@@ -263,13 +259,10 @@ export function scrubBreadcrumb<T extends IScrubbableBreadcrumb>(breadcrumb: T):
   return out as T;
 }
 
-/** True when a DSN is configured and we are not inside the Electron renderer. */
+/** True when a DSN is configured. */
 function isErrorReportingEnabled(): boolean {
   const dsn = SENTRY_DSN;
-  if (typeof dsn !== 'string' || dsn === '') return false;
-  // Desktop renderer: CSP blocks Sentry ingest (see module comment above).
-  if (typeof window !== 'undefined' && window.electronAPI !== undefined) return false;
-  return true;
+  return typeof dsn === 'string' && dsn !== '';
 }
 
 let sdk: SentrySdk | null = null;

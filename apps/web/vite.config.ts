@@ -7,7 +7,7 @@ import { parseEnv } from 'node:util';
 import { resolve } from 'path';
 
 // The web app talks to the API same-origin via relative `/trpc` (see
-// src/lib/electron.ts getTrpcUrl). Both the dev server and `vite preview`
+// src/lib/trpc.ts TRPC_URL). Both the dev server and `vite preview`
 // (used by the CI e2e job to serve the built app) proxy those paths to the
 // API so the SPA reaches it without a CORS hop.
 //

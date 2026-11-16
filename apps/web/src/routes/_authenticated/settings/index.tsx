@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Download, Palette, Shield, User, Users } from 'lucide-react';
+import { Palette, Shield, User, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ROLES } from '@repo/shared/permissions';
 import { pageTitle } from '@/lib/page-title';
@@ -21,8 +21,6 @@ import { EmailChangeSection } from '@/features/auth/components/EmailChangeSectio
 import { SETTINGS_SECTION } from '@/features/settings/Settings.constants';
 import { isSettingsSectionId } from '@/features/settings/Settings.util';
 import type { SettingsSectionId } from '@/features/settings/Settings.constants';
-import { IS_ELECTRON } from '@/lib/electron';
-import { UpdatesSection } from '@/features/settings/components/UpdatesSection';
 
 export const Route = createFileRoute('/_authenticated/settings/')({
   head: () => pageTitle('pageTitle.settings'),
@@ -47,9 +45,8 @@ export const Route = createFileRoute('/_authenticated/settings/')({
  * code behind them, so they are absent rather than present-and-empty. A rail
  * row that opens onto a placeholder is a promise the app cannot keep.
  *
- * TWO ROWS THE DESIGN DOES NOT DRAW ARE HERE ANYWAY. `Appearance` and
- * `Updates` are real shipped functionality the mockup never covered, the
- * mirror of the case `Layout.nav.ts` documents for the compliance calendar:
+ * ONE ROW THE DESIGN DOES NOT DRAW IS HERE ANYWAY. `Appearance` is real
+ * shipped functionality the mockup never covered, the mirror of the case `Layout.nav.ts` documents for the compliance calendar:
  * absent from the design, present in the product, so it gets an entry.
  *
  * The composition lives in the route and not in `SettingsShell` because the
@@ -122,17 +119,6 @@ function SettingsPage() {
           <MembersSection />
         </>
       ),
-    });
-  }
-
-  // The updater only exists in the desktop shell; in the browser there is
-  // nothing for this row to manage.
-  if (IS_ELECTRON) {
-    sections.push({
-      id: SETTINGS_SECTION.updates,
-      label: t('settings.sections.updates'),
-      icon: Download,
-      panel: <UpdatesSection />,
     });
   }
 

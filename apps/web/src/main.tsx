@@ -8,7 +8,6 @@ import { routeTree } from './routeTree.gen';
 import { queryClient, UNAUTHORIZED_EVENT } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import { loginPathForExpiredSession, pendingSkeletonForPath } from '@/lib/shell-routes';
-import { initElectron } from '@/lib/electron';
 import { initI18n, i18n } from '@/lib/i18n';
 import { initErrorReporting, captureException } from '@/lib/error-reporting';
 import './index.css';
@@ -131,10 +130,9 @@ window.addEventListener(UNAUTHORIZED_EVENT, () => {
 // is configured (see lib/error-reporting.ts); never blocks or breaks render.
 void initErrorReporting();
 
-// Initialize Electron helpers (resolves backend port) and i18next before
-// rendering, so no screen ever paints untranslated keys. initElectron is a
-// no-op in web mode; initI18n resolves synchronously (bundled resources).
-void Promise.all([initElectron(), initI18n()])
+// Initialize i18next before rendering, so no screen ever paints untranslated
+// keys. initI18n resolves synchronously (bundled resources).
+void initI18n()
   .then(() => {
     const rootEl = document.getElementById('root');
     if (!rootEl) throw new Error('Root element not found');
@@ -146,7 +144,7 @@ void Promise.all([initElectron(), initI18n()])
     );
   })
   .catch((error: unknown) => {
-    // Without this, a rejected init leaves the Electron window blank forever.
+    // Without this, a rejected init leaves the page blank forever.
     console.error('App initialization failed', error);
     captureException(error);
     const rootEl = document.getElementById('root');

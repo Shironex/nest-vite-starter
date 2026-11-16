@@ -15,9 +15,6 @@ import { captureException } from '@/lib/error-reporting';
 import { applyTheme, applyColorTheme } from '@/lib/theme';
 import { useUIStore } from '@/stores/ui-store';
 import { useResolvedTheme } from '@/hooks/use-resolved-theme';
-import { initUpdateListener } from '@/stores/update-store';
-import { TitleBar } from '@/features/desktop/components/TitleBar';
-import { UpdateBanner } from '@/features/desktop/components/UpdateBanner';
 
 export interface IRouterContext {
   queryClient: QueryClient;
@@ -79,9 +76,6 @@ function RootLayout() {
 
   useEffect(() => {
     applyColorTheme(useUIStore.getState().colorTheme);
-
-    // Initialize update listener for Electron mode (no-op in web)
-    initUpdateListener();
   }, []);
 
   useEffect(() => {
@@ -128,8 +122,6 @@ function RootLayout() {
             >
               {t('fallback.skipToContent')}
             </a>
-            <TitleBar />
-            <UpdateBanner />
             <div className="flex flex-1 flex-col">
               <ErrorBoundary
                 title={t('fallback.errorTitle')}

@@ -80,8 +80,8 @@ export default [
   },
   {
     // `fetchWithCsrfRetry` is a forwarding wrapper: it receives a URL its
-    // caller built (the tRPC links from `getTrpcUrl()`, an upload from
-    // `getApiBaseUrl()` + `toApiPath`) and cannot see where it came from. The
+    // caller built (the tRPC links from `TRPC_URL`) and cannot see where it
+    // came from. The
     // rule is purely syntactic, so every forward reads as a runtime URL.
     files: ['src/lib/csrf.ts'],
     rules: {

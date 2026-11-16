@@ -8,8 +8,8 @@ declare global {
   interface ImportMetaEnv {
     /**
      * Sentry DSN for web error reporting (public value, error events only).
-     * Empty or unset disables reporting entirely; the Electron renderer
-     * ignores it (see src/lib/error-reporting.ts).
+     * Empty or unset disables reporting entirely (see
+     * src/lib/error-reporting.ts).
      */
     readonly VITE_SENTRY_DSN?: string;
     /**

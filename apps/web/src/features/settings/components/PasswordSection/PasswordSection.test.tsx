@@ -6,7 +6,7 @@ import { changePasswordSchema } from '@repo/shared/schemas';
 import type { ChangePasswordInput } from '@repo/shared/schemas';
 import type { IPasswordSectionView } from './PasswordSection.types';
 
-// Mock the hook so the shell renders offline with no network or Electron bootstrap.
+// Mock the hook so the shell renders offline with no network.
 vi.mock('./PasswordSection.hooks', () => ({
   usePasswordSection: (): IPasswordSectionView => {
     const form = useForm<ChangePasswordInput>({

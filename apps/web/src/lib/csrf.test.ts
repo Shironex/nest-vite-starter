@@ -14,7 +14,7 @@ import { SMALL_FETCH_TIMEOUT_MS } from '@/lib/fetch-timeouts';
  *    once the sid race is fixed in main.ts), so these are its sole proof.
  *
  * Each test re-imports the module after resetModules so the module-level CSRF
- * token cache starts empty (mirrors electron.test.ts).
+ * token cache starts empty.
  */
 
 // Minimal Response-like stub: fetchWithCsrfRetry only touches status/clone/json,
@@ -42,8 +42,6 @@ const csrfHeaderOn = (fetchMock: ReturnType<typeof vi.fn>, index: number): strin
 beforeEach(() => {
   vi.resetModules();
   vi.unstubAllGlobals();
-  // Force web mode (IS_ELECTRON=false -> same-origin, relative /api base).
-  (window as unknown as Record<string, unknown>).electronAPI = undefined;
 });
 
 describe('lazy CSRF token fetching', () => {

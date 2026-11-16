@@ -1,5 +1,4 @@
 import { CSRF_HEADER, CSRF_TOKEN_PATH } from '@repo/shared/constants';
-import { IS_ELECTRON, getApiBaseUrl } from './electron';
 import { SMALL_FETCH_TIMEOUT_MS } from './fetch-timeouts';
 
 // Cache the in-flight promise (not the resolved string) so parallel first
@@ -36,8 +35,8 @@ function requiresCsrfToken(init?: RequestInit): boolean {
 export function getCsrfToken(): Promise<string> {
   if (csrfTokenPromise) return csrfTokenPromise;
 
-  const pending = fetch(getApiBaseUrl() + CSRF_TOKEN_PATH, {
-    credentials: IS_ELECTRON ? 'include' : 'same-origin',
+  const pending = fetch(CSRF_TOKEN_PATH, {
+    credentials: 'same-origin',
     // The promise is cached: without a bound, a hung token fetch would block
     // every mutation until reload. A timeout rejects, which clears the cache
     // below, so the next mutation retries.
@@ -115,7 +114,7 @@ export async function fetchWithCsrfRetry(
   const opts: RequestInit = {
     ...init,
     headers,
-    credentials: IS_ELECTRON ? 'include' : 'same-origin',
+    credentials: 'same-origin',
   };
 
   const response = await fetch(url, opts);
@@ -142,7 +141,7 @@ export async function fetchWithCsrfRetry(
         return fetch(url, {
           ...init,
           headers: retryHeaders,
-          credentials: IS_ELECTRON ? 'include' : 'same-origin',
+          credentials: 'same-origin',
         });
       }
     } catch {

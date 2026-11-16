@@ -28,7 +28,6 @@ export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '';
 /**
  * Sentry DSN for web error reporting (a public value, error events only).
  *
- * Empty disables reporting entirely. The Electron renderer ignores it either
- * way, because its CSP blocks the ingest endpoint.
+ * Empty disables reporting entirely.
  */
 export const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN ?? '';

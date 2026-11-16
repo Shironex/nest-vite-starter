@@ -10,8 +10,7 @@ vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => vi.fn(),
 }));
 
-// Stub the tRPC proxy so useMutation gets a plain mutationFn (no Electron
-// bootstrap, no network).
+// Stub the tRPC proxy so useMutation gets a plain mutationFn (no network).
 vi.mock('@/lib/trpc', () => ({
   trpc: {
     auth: { verifyTwoFactor: { mutationOptions: () => ({ mutationFn: vi.fn() }) } },

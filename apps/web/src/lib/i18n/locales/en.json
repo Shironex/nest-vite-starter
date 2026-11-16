@@ -192,8 +192,7 @@
         "profile": "Profile",
         "members": "Members",
         "security": "Security",
-        "appearance": "Appearance",
-        "updates": "Updates"
+        "appearance": "Appearance"
       },
       "profile": {
         "title": "Profile",
@@ -245,29 +244,6 @@
         "darkDescription": "A darker theme for nighttime use",
         "system": "System",
         "systemDescription": "Follow your OS preference"
-      },
-      "updates": {
-        "title": "Updates",
-        "description": "Manage application updates and release channel preferences.",
-        "currentVersion": "Current version",
-        "versionUnknown": "Unknown",
-        "releaseChannel": "Release channel",
-        "channels": {
-          "stable": "Stable",
-          "beta": "Beta"
-        },
-        "stableHint": "Receive only stable, tested releases.",
-        "betaHint": "Receive early access to new features (may be less stable).",
-        "check": "Check for updates",
-        "upToDate": "You are up to date.",
-        "available": "Update{{version}} available.",
-        "download": "Download",
-        "downloading": "Downloading update...",
-        "ready": "Update{{version}} ready to install.",
-        "restart": "Restart now",
-        "checkFailed": "Update check failed. Try again later.",
-        "checkError": "Update check failed",
-        "downloadError": "Download failed"
       }
     },
     "twoFactor": {
@@ -404,28 +380,6 @@
       "currentAvatar": "Current avatar",
       "postFailed": "Failed to upload file to storage service",
       "failed": "Upload failed"
-    },
-    "desktop": {
-      "titleBar": {
-        "logIn": "Log in",
-        "signUp": "Sign up",
-        "minimize": "Minimize",
-        "maximize": "Maximize",
-        "restore": "Restore"
-      },
-      "updateBanner": {
-        "available": "Update{{version}} available",
-        "download": "Download",
-        "downloading": "Downloading update{{version}}...",
-        "ready": "Update{{version}} ready",
-        "restart": "Restart now",
-        "failed": "Update failed: {{error}}",
-        "dismiss": "Dismiss",
-        "downloadFailed": "Download failed",
-        "unknownError": "Unknown error"
-      },
-      "channelChangeFailed": "Could not change update channel",
-      "channelChangeFailedDescription": "Still on the {{channel}} channel. Please try again."
     },
     "time": {
       "justNow": "just now",
@@ -580,8 +534,7 @@
       "revokeOthersFailed": "Could not sign out other sessions",
       "loadFailed": "Could not load the session list",
       "empty": "No active sessions",
-      "unknownDevice": "Unknown device",
-      "desktopApp": "SaaS Starter desktop app"
+      "unknownDevice": "Unknown device"
     }
   },
   "errors": {

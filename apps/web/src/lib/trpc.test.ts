@@ -44,7 +44,6 @@ vi.mock('@trpc/tanstack-react-query', () => ({
   })),
 }));
 
-vi.mock('./electron', () => ({ getTrpcUrl: () => '/trpc' }));
 vi.mock('./csrf', () => ({
   getCsrfToken: vi.fn().mockResolvedValue('csrf-token'),
   fetchWithCsrfRetry: fetchWithCsrfRetrySpy,

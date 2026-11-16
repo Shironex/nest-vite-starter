@@ -44,13 +44,8 @@ function matchFirst(patterns: readonly (readonly [RegExp, string])[], value: str
 function describeUserAgent(
   userAgent: string,
   unknownDevice: string,
-  desktopApp: string,
 ): { label: string; isMobile: boolean } {
   const isMobile = MOBILE_PATTERN.test(userAgent);
-  // The packaged shell brands itself; it also carries Chrome/, so it must win.
-  if (userAgent.includes('Electron/')) {
-    return { label: desktopApp, isMobile: false };
-  }
   const browser = matchFirst(BROWSER_PATTERNS, userAgent);
   const os = matchFirst(OS_PATTERNS, userAgent);
   if (browser !== undefined && os !== undefined) {
@@ -101,11 +96,7 @@ export function useSessionsSection(): ISessionsSectionView {
   });
 
   const rows: ISessionRow[] = (sessionsQuery.data ?? []).map((session) => {
-    const device = describeUserAgent(
-      session.userAgent,
-      t('sessions.unknownDevice'),
-      t('sessions.desktopApp'),
-    );
+    const device = describeUserAgent(session.userAgent, t('sessions.unknownDevice'));
     return {
       id: session.id,
       deviceLabel: device.label,

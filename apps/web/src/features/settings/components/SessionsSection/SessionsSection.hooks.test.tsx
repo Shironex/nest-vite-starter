@@ -45,8 +45,6 @@ const IPHONE_SAFARI_UA =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
 const EDGE_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0';
-const ELECTRON_UA =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) saas-starter/1.0.0 Chrome/126.0.0.0 Electron/31.0.0 Safari/537.36';
 
 const sessionItem = (id: string, overrides: Partial<Record<string, unknown>> = {}) => ({
   id,
@@ -96,19 +94,17 @@ describe('useSessionsSection', () => {
     expect(result.current.hasOtherSessions).toBe(true);
   });
 
-  it('names Edge over Chrome, the desktop shell over its embedded Chrome, and unknowns safely', async () => {
+  it('names Edge over Chrome, and unknowns safely', async () => {
     listFn.mockResolvedValue([
       sessionItem('s-edge', { userAgent: EDGE_UA }),
-      sessionItem('s-desktop', { userAgent: ELECTRON_UA }),
       sessionItem('s-weird', { userAgent: 'totally-custom-client/9.1' }),
     ]);
     const { result } = renderHook(() => useSessionsSection(), { wrapper });
 
-    await waitFor(() => expect(result.current.rows).toHaveLength(3));
+    await waitFor(() => expect(result.current.rows).toHaveLength(2));
 
     expect(result.current.rows.map((row) => row.deviceLabel)).toEqual([
       'Edge · Windows',
-      'SaaS Starter desktop app',
       'Unknown device',
     ]);
   });

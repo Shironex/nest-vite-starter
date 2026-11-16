@@ -88,7 +88,7 @@ describe('SettingsShell', () => {
   });
 
   /*
-   * The admin-only and Electron-only rows arrive after the first render, so a
+   * The admin-only row arrives after the first render, so a
    * selection can outlive the row that produced it. Falling back to the first
    * row is what keeps the panel area from going blank.
    */

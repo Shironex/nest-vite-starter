@@ -3,7 +3,6 @@
   "include": ["files", "dependencies", "unlisted"],
   "entry": [
     "eslint.config.js",
-    "src/types/*.d.ts",
     "e2e/**/*.spec.ts",
     "e2e/**/*.setup.ts",
     "src/**/*.{test,spec}.{ts,tsx}"

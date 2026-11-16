@@ -11,7 +11,6 @@ import superjson from 'superjson';
 import { toast } from '@repo/ui/sonner';
 import { AppErrorCode } from '@repo/shared/errors';
 import type { AppRouter } from '@api/@generated/server';
-import { getTrpcUrl } from './electron';
 import { fetchWithCsrfRetry } from './csrf';
 import { getAppErrorCode, translateAppError } from './trpc-errors';
 import { captureException } from './error-reporting';
@@ -154,8 +153,11 @@ const IDEMPOTENCY_HEADER = 'idempotency-key';
  * of GET /api/csrf-token's 30-per-60s-per-IP slots on every SPA boot. See
  * lib/csrf.ts.
  */
+/** Same-origin: the dev server and the platform router forward `/trpc` to the api. */
+const TRPC_URL = '/trpc';
+
 const sharedLinkOptions = () => ({
-  url: getTrpcUrl(),
+  url: TRPC_URL,
   // Must match TRPCModule.forRoot transformer (apps/api/src/app.module.ts)
   transformer: superjson,
   fetch(url: unknown, options: unknown) {
@@ -163,8 +165,7 @@ const sharedLinkOptions = () => ({
   },
 });
 
-// Lazy-init: the tRPC client is created on first access so that
-// Electron's dynamic backend port is resolved before the URL is read.
+// Lazy-init: the tRPC client is created on first access.
 let _trpcClient: ReturnType<typeof createTRPCClient<AppRouter>> | null = null;
 
 function getTrpcClient() {
@@ -214,7 +215,6 @@ export function getTrpc() {
 }
 
 // Re-export as `trpc` via getter for existing consumers.
-// Accessed after initElectron() resolves in main.tsx, so the port is ready.
 export const trpc = new Proxy({} as ReturnType<typeof createTRPCOptionsProxy<AppRouter>>, {
   get(_target, prop, receiver) {
     return Reflect.get(getTrpc(), prop, receiver);
