@@ -10,6 +10,23 @@ vi.mock('./DashboardPage.hooks', () => ({
   }),
 }));
 
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({
+    to,
+    search,
+    children,
+    ...props
+  }: {
+    to: string;
+    search?: { section?: string };
+    children: React.ReactNode;
+  }) => (
+    <a href={search?.section ? `${to}?section=${search.section}` : to} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 const { setTopbarSubtitle } = vi.hoisted(() => ({ setTopbarSubtitle: vi.fn() }));
 vi.mock('@/stores/topbar-store', () => ({ useSetTopbarSubtitle: setTopbarSubtitle }));
 
@@ -33,5 +50,15 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
     expect(setTopbarSubtitle).toHaveBeenCalledWith('Tuesday, July 14, 2026');
     expect(screen.queryByText('Tuesday, July 14, 2026')).not.toBeInTheDocument();
+  });
+
+  it('shows a start-here card in place of invented tiles', () => {
+    render(<DashboardPage />);
+    expect(screen.getByText('Start here')).toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    expect(screen.getByRole('link', { name: 'Turn on two-factor sign-in' })).toHaveAttribute(
+      'href',
+      '/settings?section=security',
+    );
   });
 });
