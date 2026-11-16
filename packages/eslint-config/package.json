@@ -28,7 +28,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-turbo": "^2.10.13",
+    "eslint-plugin-turbo": "^2.11.11",
     "typescript-eslint": "^8.70.0"
   },
   "peerDependencies": {
@@ -36,8 +36,8 @@
     "typescript": ">=5.0.0"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^8.70.0",
-    "@typescript-eslint/rule-tester": "^8.70.0",
-    "vitest": "^5.0.1"
+    "@typescript-eslint/parser": "^8.72.2",
+    "@typescript-eslint/rule-tester": "^8.72.2",
+    "vitest": "^5.1.0"
   }
 }
