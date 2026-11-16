@@ -32,13 +32,13 @@ export const AppErrorCode = {
   CSRF_FAILED: 'CSRF_FAILED',
   SESSION_EXPIRED: 'SESSION_EXPIRED',
   EMAIL_IN_USE: 'EMAIL_IN_USE',
-  // The account has no password at all (OAuth-only sign-in), so a flow that
+  // The account has no password at all (a row created without one), so a flow that
   // re-verifies the current password cannot proceed. Points the caller at
   // password reset, which doubles as set-password. Only ever returned from
   // AUTHENTICATED, self-scoped procedures, where the caller already knows how
   // their own account signs in - the unauthenticated login path deliberately
   // returns the generic invalid-credentials error instead, so this code can
-  // never be used to enumerate which accounts are OAuth-only.
+  // never be used to enumerate which accounts have no password.
   PASSWORD_NOT_SET: 'PASSWORD_NOT_SET',
   // Two-factor authentication
   // Generic wrong/invalid second-factor code (never distinguishes wrong-code

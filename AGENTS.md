@@ -103,7 +103,7 @@ pnpm sandbox:down      # remove ONLY this worktree's labeled containers; safe to
 Three lanes, each with its own database, Redis index and bucket: `isolation`, `e2e` and
 `prisma_gates`. `sandbox:up` migrates once into `saas_starter_template` and creates each lane with
 `CREATE DATABASE ... TEMPLATE`, which is under a second per lane, so a lane is recreated fresh on
-every run instead of drifting. Nothing here binds 5432, 6379, 4569, 1025 or 8025, and `sandbox:down`
+every run instead of drifting. Nothing here binds 5432, 6379, 1025 or 8025, and `sandbox:down`
 selects containers by label and never prunes, so the dev compose project is untouched.
 
 ### Isolation lane and e2e (need Postgres)
@@ -131,7 +131,7 @@ sandbox. To run them by hand:
   even on failure. It never falls back to an ambient server: no sandbox, no run. Pass Playwright
   arguments after `--`:
   ```bash
-  pnpm sandbox:up && pnpm e2e:lane -- staff-invite.spec.ts
+  pnpm sandbox:up && pnpm e2e:lane -- two-factor.spec.ts
   ```
   `playwright.config.ts` has no `webServer` on purpose. A data-volume-sensitive test must pass on
   both shapes, so check a suspicious failure against `db:seed:dev` too.

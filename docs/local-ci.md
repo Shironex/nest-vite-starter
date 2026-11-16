@@ -100,7 +100,7 @@ or `-j test-api|test-e2e`):
    act may still be releasing the ports as it tears its own services down).
 
 Service-free runs (`ci:local`, `ci:local:build`, `ci:local:web`) go through the same wrapper but leave your dev stack untouched.
-Containers on other ports (e.g. s3 on 4569, mailpit on 1025) are always left
+Containers on other ports (e.g. mailpit on 1025) are always left
 running, so the e2e API boot can still reach them. After the run the wrapper
 restores your dev stack with `docker compose up -d`, which reliably re-binds the
 host ports.

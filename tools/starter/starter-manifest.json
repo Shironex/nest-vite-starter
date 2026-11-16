@@ -59,7 +59,7 @@
     },
     "redis": {
       "kind": "core",
-      "description": "Redis: sessions, cache, BullMQ, the throttler and the socket.io adapter.",
+      "description": "Redis: sessions, cache, BullMQ and the throttler.",
       "keys": ["REDIS_URL", "REDIS_PASSWORD"],
       "secrets": ["REDIS_PASSWORD"],
       "required": ["REDIS_URL"],

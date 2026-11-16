@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-/* SaaS Starter typefaces, self hosted through fontsource so the Electron shell and any
-   air gapped deployment render correctly with no request to fonts.googleapis.com.
+/* SaaS Starter typefaces, self hosted through fontsource so an air gapped
+   deployment renders correctly with no request to fonts.googleapis.com.
    All three ship latin + latin-ext, which covers the accented Latin alphabets. */
 @import '@fontsource-variable/instrument-sans'; /* UI / body, wght 400-700 */
 @import '@fontsource-variable/bricolage-grotesque'; /* display / wordmark, wght 200-800 */

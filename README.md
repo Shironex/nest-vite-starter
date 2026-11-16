@@ -60,7 +60,7 @@ git clone https://github.com/Shironex/nest-vite-saas-starter.git
 cd nest-vite-saas-starter
 pnpm install
 
-# Start infrastructure (Postgres, Redis, Mailpit, S3)
+# Start infrastructure (Postgres, Redis, Mailpit)
 docker compose up -d
 
 # Set up environment (one file at the repo root feeds every app)
@@ -109,12 +109,11 @@ packages/
 
 ## Docker Services
 
-| Service       | Port                   | Purpose                     |
-| ------------- | ---------------------- | --------------------------- |
-| PostgreSQL 17 | 5432                   | Primary database            |
-| Redis 7       | 6379                   | Sessions, cache, BullMQ     |
-| Mailpit       | 8025 (UI), 1025 (SMTP) | Email testing               |
-| S3rver        | 4569                   | Local S3-compatible storage |
+| Service       | Port                   | Purpose                 |
+| ------------- | ---------------------- | ----------------------- |
+| PostgreSQL 17 | 5432                   | Primary database        |
+| Redis 7       | 6379                   | Sessions, cache, BullMQ |
+| Mailpit       | 8025 (UI), 1025 (SMTP) | Email testing           |
 
 ```bash
 docker compose up -d      # Start services
@@ -138,7 +137,7 @@ See `apps/api/Dockerfile`, `apps/web/Dockerfile`, and `docker-compose.prod.yml`.
 ```
 Browser
      |
-     | tRPC (HTTP + WebSocket)
+     | tRPC (HTTP)
      v
   NestJS API
      |

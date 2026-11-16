@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
  *
  * Host ports are always published as `127.0.0.1::<container port>`: loopback
  * only, and the host side left to the kernel. Nothing here may bind a fixed
- * port, because the dev stack already owns 5432, 6379, 4569, 1025 and 8025.
+ * port, because the dev stack already owns 5432, 6379, 1025 and 8025.
  */
 export interface IExecResult {
   readonly status: number;

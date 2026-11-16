@@ -33,9 +33,9 @@ set -uo pipefail
 
 # Every host port a CI service job binds. The dev stack publishes the same
 # ones, so a container holding any of them is stopped for the run and the
-# stack is restored afterwards. 4569/1025/8025 joined the list when test-e2e
-# gained the s3 and mailpit services the upload and mail journeys need.
-CI_PORTS="5432 6379 4569 1025 8025"
+# stack is restored afterwards. 1025/8025 are the mailpit service the mail
+# journeys of test-e2e need.
+CI_PORTS="5432 6379 1025 8025"
 SERVICE_JOBS="test-api test-e2e"
 ALL_JOBS_DEFAULT="quality build test-web test-api test-e2e"
 LOCK_DIR="${TMPDIR:-/tmp}/nest-vite-saas-starter-act-ci-local.lock"

@@ -16,7 +16,7 @@
  * payload shapes are the ones production writes: `metadata.newEmail` and
  * `before.email` / `after.email`. The real UserPurgeService then runs its real
  * sweep with the real AuditPiiScrubService. Only outbound and unrelated
- * collaborators are stubbed: mail, S3, Redis (ioredis-mock), rate limits, step
+ * collaborators are stubbed: mail, Redis (ioredis-mock), rate limits, step
  * up and session revocation.
  */
 import { randomUUID } from 'node:crypto';

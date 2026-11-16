@@ -76,7 +76,7 @@ const PLATFORM_ENTRY_POINTS: readonly IEntryPoint[] = [
   {
     path: 'auth/middleware',
     reason:
-      'AuthMiddleware and RoleMiddleware: the guards every router wires. Importing AuthModule to get them pulls in login, 2FA, oauth and the account flows and reopens a cycle.',
+      'AuthMiddleware and RoleMiddleware: the guards every router wires. Importing AuthModule to get them pulls in login, 2FA and the account flows and reopens a cycle.',
   },
   {
     path: 'auth/services',

@@ -54,7 +54,7 @@ import from any of them.
 
 `modules/auth` is both at once, and that is the load-bearing fact here. A router
 needing `AuthMiddleware` imports `AuthMiddlewareModule`, never `AuthModule` -
-AuthModule pulls in login, 2FA and oauth flows and reopens a cycle. Every import
+AuthModule pulls in the login and 2FA flows and reopens a cycle. Every import
 of the platform half looks like an edge to the feature half, which is why those
 import lines carry a justification.
 

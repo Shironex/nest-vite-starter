@@ -12,7 +12,7 @@ import { errorStack } from '../../common/utils/error';
 /**
  * Defensive cap on rows per sweep, mirroring the retention services: a
  * backlog beyond it drains across consecutive daily ticks instead of holding
- * one long-running sweep (and its S3 round trips) open.
+ * one long-running sweep open.
  */
 export const USER_PURGE_MAX_PER_SWEEP = 500;
 

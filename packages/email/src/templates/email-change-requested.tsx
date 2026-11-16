@@ -11,8 +11,8 @@ export interface EmailChangeRequestedEmailProps {
 /**
  * The email-change tripwire, sent to the OLD address the moment a change is
  * requested: the one mailbox guaranteed to still belong to the legitimate
- * owner. Same shape as the OAuth-linked notice: what happened, and one red box
- * saying what to do if it wasn't you. Deliberately sent at REQUEST time, not
+ * owner. Same shape as the other security notices: what happened, and one red
+ * box saying what to do if it wasn't you. Deliberately sent at REQUEST time, not
  * after confirmation, so the owner gets the whole confirmation-link window to
  * react.
  */

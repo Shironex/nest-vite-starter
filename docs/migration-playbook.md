@@ -148,8 +148,7 @@ That gives a reliable pattern:
 
 Rules of thumb:
 
-- Tables that are small by construction (this template's `Token`,
-  `RolePermission`) do not need this; plain `CREATE INDEX` inside a normal
+- Tables that are small by construction (this template's `Token`) do not need this; plain `CREATE INDEX` inside a normal
   migration is fine and keeps history simpler.
 - Anything expected to grow without bound (`AuditLog`, and any
   event, invoice or ledger tables a product adds) should get new indexes via the single-statement

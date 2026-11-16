@@ -77,8 +77,8 @@ this tree, of which 3 or 4 were real, the rest being helpers whose callers all a
 sweeps, and deliberate exemptions. A check that cries wolf 20 times gets exemptions bolted on
 until it means nothing.
 
-Deliberate exemptions carry their reason next to them in `packages/eslint-config/nestjs.js`:
-tour progress, and notification read state, which `Notification.readAt` already records.
+There are no deliberate exemptions today. One added later carries its reason next to it in
+`packages/eslint-config/nestjs.js`.
 
 ### A refused authentication attempt audits its reason
 

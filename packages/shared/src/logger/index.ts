@@ -13,7 +13,6 @@ declare const process: { env?: Record<string, string | undefined> } | undefined;
  * Works across all environments:
  * - NestJS API (ANSI colored terminal output)
  * - React frontend (browser console with CSS badges)
- * - Electron main process (with optional file transport)
  *
  * Environment Variables:
  * - LOG_LEVEL: error, warn, info, debug (default: info)

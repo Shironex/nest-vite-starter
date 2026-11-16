@@ -37,8 +37,8 @@ import { QUEUE_NAMES } from './common/queue/queue.constants';
  *
  * It deliberately tests WIRING, not runtime: no `moduleRef.init()`, no
  * `createNestApplication()`, no `listen()`. Lifecycle hooks (onModuleInit,
- * @Cron / @Interval scheduling, the S3 bucket-CORS bootstrap, the BullMQ worker
- * loop) never fire, so no real DB / Redis / S3 / socket is ever opened.
+ * @Cron / @Interval scheduling, the BullMQ worker loop) never fire, so no real
+ * DB or Redis connection is ever opened.
  *
  * Infra seams overridden so `.compile()` constructs every singleton without
  * dialing live infra:

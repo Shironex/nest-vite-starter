@@ -35,7 +35,7 @@ export class AccountDeletionService {
    * Soft-deletes the row (every notDeleted-guarded read and write excludes it
    * from now on, so the user cannot log in, reset their password, or verify
    * their email), then tears the session state down. The user-purge cron
-   * hard-deletes the row and its S3 objects after USER_PURGE_GRACE_DAYS.
+   * hard-deletes the row after USER_PURGE_GRACE_DAYS.
    *
    * Order: verify password -> soft delete -> audit (while the request context
    * still carries the actor) -> revoke sessions ->
