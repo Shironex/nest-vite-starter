@@ -1,7 +1,7 @@
 {
   "@nestjs/common": {
     "kind": "unify",
-    "reason": "One Nest runtime across apps/api, packages/shared and the Electron main process. Two copies of @nestjs/common give two DI metadata registries, so a provider registered by one is invisible to the other. Kept as a single-version policy by the 2026-07-31 override audit even though it is currently inert.",
+    "reason": "One Nest runtime across apps/api and packages/shared. Two copies of @nestjs/common give two DI metadata registries, so a provider registered by one is invisible to the other. Kept as a single-version policy by the 2026-07-31 override audit even though it is currently inert.",
     "reviewBy": "2027-03-01"
   },
   "@nestjs/core": {
@@ -18,20 +18,13 @@
   },
   "react": {
     "kind": "unify",
-    "reason": "One React across apps/web, packages/ui and apps/desktop. Two copies break hooks at runtime in a way no advisory feed would ever report, which is why the 2026-07-31 audit kept this pin despite it being inert.",
+    "reason": "One React across apps/web and packages/ui. Two copies break hooks at runtime in a way no advisory feed would ever report, which is why the 2026-07-31 audit kept this pin despite it being inert.",
     "reviewBy": "2027-03-01"
   },
   "react-dom": {
     "kind": "unify",
     "reason": "Moves with `react`. A react-dom on a different major than react fails at render time, not at install time.",
     "reviewBy": "2027-03-01"
-  },
-  "brace-expansion@>=2.0.0 <2.1.4": {
-    "kind": "security",
-    "advisories": ["GHSA-rgw5-rvv9-x895"],
-    "firstPatched": "2.1.4",
-    "reason": "ReDoS, reached through the electron-builder chain (dmg-builder > app-builder-lib > minimatch). Added at <2.1.3 in d40e3f3c and corrected to <2.1.4 in 09efc11d, which is the 2026-08-27 recurrence of the pin-into-range failure. The 2.x line needs its own entry because brace-expansion 5.x has no default export and a 2.x consumer forced onto it throws `expand is not a function`.",
-    "reviewBy": "2026-12-01"
   },
   "brace-expansion@>=5.0.0 <5.0.9": {
     "kind": "security",
@@ -75,13 +68,6 @@
     "reason": "Reached through @commitlint/cli > cosmiconfig. The floor has been raised three times as the advisory line moved (4.3.0, then 4.3.1 in 09efc11d, then 4.3.2 in 2223d3fa), which is what this ledger exists to make visible. Trap recorded by the 2026-07-31 audit: @lhci/utils calls the removed `yaml.safeLoad` on a config file matching /\\.ya?ml$/, so apps/web/lighthouserc.json must stay JSON or the CI lighthouse step breaks.",
     "reviewBy": "2026-12-01"
   },
-  "tar@<7.5.21": {
-    "kind": "security",
-    "advisories": ["GHSA-r292-9mhp-454m"],
-    "firstPatched": "7.5.21",
-    "reason": "This is the entry the 2026-07-31 audit caught pinning INTO its own vulnerable range: it read `\"tar@<7.5.22\": \"7.5.20\"` while the advisory range was <=7.5.20, so the override applied and still landed on a vulnerable version. Selector and target now both track the advisory exactly.",
-    "reviewBy": "2026-12-01"
-  },
   "tmp@<0.2.6": {
     "kind": "security",
     "advisories": ["GHSA-ph9p-34f9-6g65"],
@@ -103,13 +89,6 @@
     "reason": "Load-bearing floor: the 2026-07-31 audit proved 1.2.0 reappears without it.",
     "reviewBy": "2026-12-01"
   },
-  "ws@>=8.0.0 <8.21.0": {
-    "kind": "security",
-    "advisories": ["GHSA-96hv-2xvq-fx4p"],
-    "firstPatched": "8.21.0",
-    "reason": "Load-bearing floor: the 2026-07-31 audit proved 8.20.1 reappears without it. The lower bound keeps the 7.x copy the tree still resolves out of the selector, because the advisory patches each major line separately.",
-    "reviewBy": "2026-12-01"
-  },
   "fast-uri@<3.1.6": {
     "kind": "security",
     "advisories": [
@@ -119,7 +98,7 @@
       "GHSA-jqff-g426-hqxp"
     ],
     "firstPatched": "3.1.6",
-    "reason": "Four high advisories reached through electron-store and @commitlint/cli > ajv. CI's dependency audit went red on them, and 87e71bfa pinned the range forward.",
+    "reason": "Four high advisories reached through @commitlint/cli > ajv. CI's dependency audit went red on them, and 87e71bfa pinned the range forward.",
     "reviewBy": "2026-12-01"
   },
   "mysql2@<3.23.1": {
@@ -127,13 +106,6 @@
     "advisories": ["GHSA-rgwj-5xj2-c3m3"],
     "firstPatched": "3.23.1",
     "reason": "Reached through prisma's driver adapters. SaaS Starter only ever connects to Postgres, so this is a transitive surface we do not execute, but it is what CI's `pnpm audit --prod --audit-level=high` sees (87e71bfa).",
-    "reviewBy": "2026-12-01"
-  },
-  "@xmldom/xmldom@<0.8.15": {
-    "kind": "security",
-    "advisories": ["GHSA-6gmq-8vp8-gcm6"],
-    "firstPatched": "0.8.15",
-    "reason": "Reached through the XSD export chain. Added in 87e71bfa when the advisory range widened past the previous <0.8.13 floor.",
     "reviewBy": "2026-12-01"
   },
   "multer@<2.3.0": {
@@ -150,25 +122,11 @@
     "reason": "Two moderate DoS advisories reached through web > @lhci/cli@0.15.1 > express@4.22.2 > qs. Devtooling only, but CI's dependency audit sees it. qs@6.16.0 cleared the 7-day min-release-age gate on 2026-09-05, so this is the 2026-09-22 dependency audit's long-planned fix.",
     "reviewBy": "2026-12-01"
   },
-  "lodash-es@<4.18.0": {
+  "ws@>=8.0.0 <8.21.0": {
     "kind": "security",
-    "advisories": ["GHSA-r5fr-rjxr-66jc", "GHSA-f23m-r3pf-42rh"],
-    "firstPatched": "4.18.0",
-    "reason": "A high code-injection advisory (_.template imports key names) and a moderate one, reached through docs > mermaid@12 > chevrotain@11 > lodash-es@4.17.23 after the 2026-09-22 mermaid 12 bump. CI's `pnpm audit --prod --audit-level=high` fails on it. chevrotain 13 drops lodash-es, but mermaid still pins 11. lodash-es@4.18.1 (2026-04-01) is long past the min-release-age gate.",
-    "reviewBy": "2026-12-01"
-  },
-  "vite@>=8.3.0 <8.3.3": {
-    "kind": "security",
-    "advisories": [
-      "GHSA-698v-4r3x-3vcv",
-      "GHSA-r825-w8mm-5pxw",
-      "GHSA-587h-7wmj-h5pm",
-      "GHSA-9jrq-w75r-8gcw",
-      "GHSA-rq7h-c2jc-7f22",
-      "GHSA-vfpm-58rq-9qcg"
-    ],
-    "firstPatched": "8.3.3",
-    "reason": "Reached through docs > astro, which resolves vite 8.3.0 outside the workspace ranges. CI runs `pnpm audit --prod --audit-level=high`. Drop it with apps/docs.",
+    "advisories": ["GHSA-96hv-2xvq-fx4p"],
+    "firstPatched": "8.21.0",
+    "reason": "Load-bearing floor: the 2026-07-31 audit proved 8.20.1 reappears without it. The lower bound keeps the 7.x copy the tree still resolves out of the selector, because the advisory patches each major line separately.",
     "reviewBy": "2026-12-01"
   }
 }
