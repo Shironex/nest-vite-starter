@@ -324,7 +324,7 @@ function printSummary(adminEmail: string): void {
   console.log(`  playground users   ${PLAYGROUND_EMAIL_PREFIX}*@example.com / ${DEV_PASSWORD}`);
   console.log('');
   console.log('  worth clicking:');
-  console.log('    /settings -> Members   user list, roles, two-factor column (ADMIN)');
+  console.log('    /admin               users table and audit list (ADMIN)');
   console.log('');
 }
 

@@ -82,6 +82,9 @@ const E2E_FIXTURE_USERS = [
   'e2e-2fa-totp@example.com',
   'e2e-2fa-recovery@example.com',
   'e2e-2fa-trust@example.com',
+  // admin.spec.ts. The admin acts on it: role change, disable and enable,
+  // sign out everywhere.
+  'e2e-admin-target@example.com',
 ] as const;
 
 /**
@@ -137,7 +140,7 @@ async function main() {
   }
 
   // Dev/e2e fixture: a second user with 2FA enabled, so
-  // the admin members UI (and its "reset two-factor" e2e) has a real member to act on.
+  // the admin users table (and its "reset two-factor" e2e) has a real user to act on.
   // Never seeded in production. A placeholder TOTP secret is enough because the
   // reset flow only deletes the factor row; it is never decrypted for this user
   // (nothing logs in as the member in the e2e).
@@ -207,9 +210,10 @@ async function main() {
           displayName: null,
           role: 'USER',
           emailVerified: true,
-          failedAttempts: 0,
-          lockoutCount: 0,
-          lockedUntil: null,
+          // Lockout cleared and not disabled: admin.spec.ts disables its
+          // fixture mid-run, and a run killed before it enables it again must
+          // not leave a dead account behind for the next one.
+          ...FRESH_ACCOUNT_STATE,
         },
         create: {
           email: fixtureEmail,
@@ -221,7 +225,7 @@ async function main() {
 
       // Hand back a 2FA-free account. The two-factor journeys enroll their own
       // fixture and leave it enrolled; the spec's first test resets them all
-      // through the admin members tab, but a run killed mid-journey cannot, so
+      // through the admin users table, but a run killed mid-journey cannot, so
       // a re-seed is the other way back to a clean fixture.
       await prisma.secondFactor.deleteMany({ where: { userId: fixtureUser.id } });
     }
