@@ -1,10 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import type { UserDataExport } from '@repo/shared/schemas';
 import { trpc } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import type { IDataExportSectionView } from './DataExportSection.types';
+import { settingsStrings } from '@/features/settings/Settings.strings';
 
 /**
  * Filename stem for the downloaded file; the export's own `exportedAt` date is
@@ -38,7 +38,6 @@ function saveExportFile(data: UserDataExport): void {
  * keeps the personal-data payload out of the shared query cache afterwards.
  */
 export function useDataExportSection(): IDataExportSectionView {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const downloadMutation = useMutation({
@@ -50,7 +49,7 @@ export function useDataExportSection(): IDataExportSectionView {
       }),
     onSuccess: (data) => {
       saveExportFile(data);
-      toast.success(t('dataExport.success'));
+      toast.success(settingsStrings.dataExport.success);
     },
   });
 
@@ -59,7 +58,7 @@ export function useDataExportSection(): IDataExportSectionView {
   // back to this section's own generic line. Rendered inline, not toasted: the
   // button the user just pressed is right below it.
   const errorMessage = downloadMutation.isError
-    ? (translateAppError(downloadMutation.error) ?? t('dataExport.error'))
+    ? (translateAppError(downloadMutation.error) ?? settingsStrings.dataExport.error)
     : undefined;
 
   return {

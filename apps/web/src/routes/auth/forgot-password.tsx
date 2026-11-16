@@ -1,20 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { pageTitle } from '@/lib/page-title';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { ForgotPasswordForm } from '@/features/auth/components/ForgotPasswordForm';
+import { authStrings } from '@/features/auth/Auth.strings';
+import { commonStrings } from '@/lib/strings';
 
 export const Route = createFileRoute('/auth/forgot-password')({
-  head: () => pageTitle('pageTitle.forgotPassword'),
+  head: () => pageTitle(commonStrings.pageTitle.forgotPassword),
   component: ForgotPasswordPage,
 });
 
 function ForgotPasswordPage() {
-  const { t } = useTranslation();
   return (
     <AuthLayout
-      title={t('auth.pages.forgotPassword.title')}
-      description={t('auth.pages.forgotPassword.description')}
+      title={authStrings.pages.forgotPassword.title}
+      description={authStrings.pages.forgotPassword.description}
     >
       <ForgotPasswordForm />
     </AuthLayout>

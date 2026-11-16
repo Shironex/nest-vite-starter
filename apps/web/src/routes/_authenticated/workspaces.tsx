@@ -1,10 +1,10 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { PageSkeleton } from '@repo/ui/page-skeleton';
 import { pageTitle } from '@/lib/page-title';
-import { i18n } from '@/lib/i18n';
 import { WorkspaceListPage } from '@/features/workspace/components/WorkspaceListPage';
+import { commonStrings } from '@/lib/strings';
+import { workspaceStrings } from '@/features/workspace/Workspace.strings';
 
 /**
  * The workspaces of the caller's organization.
@@ -15,7 +15,7 @@ import { WorkspaceListPage } from '@/features/workspace/components/WorkspaceList
  * USER; `AdminMiddleware` on `workspaces.create` and `workspaces.update` is the control.
  */
 export const Route = createFileRoute('/_authenticated/workspaces')({
-  head: () => pageTitle('pageTitle.workspaces'),
+  head: () => pageTitle(commonStrings.pageTitle.workspaces),
   component: WorkspacesRoute,
   pendingComponent: WorkspacesPending,
   errorComponent: WorkspacesError,
@@ -30,16 +30,15 @@ function WorkspacesRoute() {
  * screen's own list placeholder hands over to (see `/audit`).
  */
 function WorkspacesPending() {
-  return <PageSkeleton variant="list" label={i18n.t('states.loading')} />;
+  return <PageSkeleton variant="list" label={commonStrings.states.loading} />;
 }
 
 function WorkspacesError({ reset }: { reset: () => void }) {
   const router = useRouter();
-  const { t } = useTranslation('workspace');
 
   return (
     <div className="space-y-3" role="alert">
-      <p className="type-body-regular text-danger">{t('list.loadError')}</p>
+      <p className="type-body-regular text-danger">{workspaceStrings.list.loadError}</p>
       <Button
         variant="outline"
         size="sm"
@@ -52,7 +51,7 @@ function WorkspacesError({ reset }: { reset: () => void }) {
           void router.invalidate();
         }}
       >
-        {t('actions.retry', { ns: 'common' })}
+        {commonStrings.actions.retry}
       </Button>
     </div>
   );

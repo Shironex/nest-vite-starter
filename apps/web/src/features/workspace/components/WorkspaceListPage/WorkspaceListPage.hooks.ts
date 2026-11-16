@@ -1,17 +1,14 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import { ROLES } from '@repo/shared/permissions';
 import type { Workspace } from '@repo/shared/schemas';
 import { useAuth } from '@/hooks/use-auth';
-import { APP_LOCALE } from '@/lib/i18n/format';
+import { APP_LOCALE } from '@/lib/format';
 import { useSetTopbarSubtitle } from '@/stores/topbar-store';
-// Side effect: attaches this feature's catalogs before the first t() call, so
-// a hook rendered in isolation (a *.hooks.test.tsx) has the copy too.
-import { WORKSPACE_NS } from '../../Workspace.i18n';
 import { useWorkspaceList } from '../../Workspaces.queries';
 import type { WorkspaceFormMode } from '../WorkspaceFormDialog';
 import type { IWorkspaceListPageView, IWorkspaceRowView } from './WorkspaceListPage.types';
+import { workspaceStrings } from '@/features/workspace/Workspace.strings';
+import { commonStrings } from '@/lib/strings';
 
 /** What an empty registration cell shows: the column is optional, not missing. */
 const EMPTY_VALUE = '-';
@@ -38,7 +35,7 @@ function matches(workspace: Workspace, needle: string): boolean {
   return haystack.some((value) => value.includes(needle));
 }
 
-function toRow(workspace: Workspace, t: TFunction<'workspace'>): IWorkspaceRowView {
+function toRow(workspace: Workspace): IWorkspaceRowView {
   return {
     id: workspace.id,
     name: workspace.name,
@@ -47,7 +44,7 @@ function toRow(workspace: Workspace, t: TFunction<'workspace'>): IWorkspaceRowVi
         ? workspace.legalName
         : null,
     address: addressOf(workspace),
-    editLabel: t('list.editFor', { name: workspace.name }),
+    editLabel: workspaceStrings.list.editFor({ name: workspace.name }),
     workspace,
   };
 }
@@ -67,13 +64,12 @@ function toRow(workspace: Workspace, t: TFunction<'workspace'>): IWorkspaceRowVi
  * Workspace write path already has.
  */
 export function useWorkspaceListPage(): IWorkspaceListPageView {
-  const { t } = useTranslation(WORKSPACE_NS);
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [dialogMode, setDialogMode] = useState<WorkspaceFormMode | null>(null);
   const [editing, setEditing] = useState<Workspace | undefined>(undefined);
 
-  useSetTopbarSubtitle(t('list.subtitle'));
+  useSetTopbarSubtitle(workspaceStrings.list.subtitle);
 
   const list = useWorkspaceList();
   const workspaces = list.data?.workspaces ?? [];
@@ -91,13 +87,13 @@ export function useWorkspaceListPage(): IWorkspaceListPageView {
         : 'ready';
 
   const emptyHint = isFiltered
-    ? t('list.noMatchHint')
+    ? workspaceStrings.list.noMatchHint
     : canManage
-      ? t('list.emptyHintAdmin')
-      : t('list.emptyHintMember');
+      ? workspaceStrings.list.emptyHintAdmin
+      : workspaceStrings.list.emptyHintMember;
 
   return {
-    rows: visible.map((workspace) => toRow(workspace, t)),
+    rows: visible.map((workspace) => toRow(workspace)),
     state,
     search,
     onSearchChange: setSearch,
@@ -123,21 +119,23 @@ export function useWorkspaceListPage(): IWorkspaceListPageView {
     onRetry: () => void list.refetch(),
     summary:
       state === 'ready'
-        ? t('list.summary', { shown: visible.length, total: workspaces.length })
+        ? workspaceStrings.list.summary({ shown: visible.length, total: workspaces.length })
         : null,
     labels: {
-      add: t('add'),
-      searchLabel: t('list.searchLabel'),
-      searchPlaceholder: t('list.searchPlaceholder'),
-      columnName: t('list.columnName'),
-      columnAddress: t('list.columnAddress'),
-      columnActions: t('list.columnActions'),
-      edit: t('edit'),
-      loading: t('list.loading'),
-      emptyTitle: isFiltered ? t('list.noMatchTitle') : t('list.emptyTitle'),
+      add: workspaceStrings.add,
+      searchLabel: workspaceStrings.list.searchLabel,
+      searchPlaceholder: workspaceStrings.list.searchPlaceholder,
+      columnName: workspaceStrings.list.columnName,
+      columnAddress: workspaceStrings.list.columnAddress,
+      columnActions: workspaceStrings.list.columnActions,
+      edit: workspaceStrings.edit,
+      loading: workspaceStrings.list.loading,
+      emptyTitle: isFiltered
+        ? workspaceStrings.list.noMatchTitle
+        : workspaceStrings.list.emptyTitle,
       emptyHint,
-      loadError: t('list.loadError'),
-      retry: t('actions.retry', { ns: 'common' }),
+      loadError: workspaceStrings.list.loadError,
+      retry: commonStrings.actions.retry,
     },
   };
 }

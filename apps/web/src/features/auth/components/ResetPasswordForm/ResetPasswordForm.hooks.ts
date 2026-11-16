@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { toast } from '@repo/ui/sonner';
 import { resetPasswordSchema, type ResetPasswordInput } from '@repo/shared/schemas';
@@ -9,6 +8,7 @@ import { trpc } from '@/lib/trpc';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import { useAuthForm } from '@/features/auth/AuthForm.hooks';
 import type { IResetPasswordFormView } from './ResetPasswordForm.types';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 // The reset token is route state, not a prop: read it from the URL search here
 // so the component never receives a secret as a prop (props-must-be-visual).
@@ -18,7 +18,6 @@ const routeApi = getRouteApi('/auth/reset-password');
 const REDIRECT_AFTER_RESET_MS = 1500;
 
 export function useResetPasswordForm(): IResetPasswordFormView {
-  const { t } = useTranslation();
   // Optional in the route search (see routes/auth/reset-password.tsx); the
   // empty string is what the schema and the probe below both see when the link
   // arrived without one, and `isTokenMissing` is what the form renders instead.
@@ -63,7 +62,7 @@ export function useResetPasswordForm(): IResetPasswordFormView {
   const resetPasswordMutation = useMutation({
     ...trpc.auth.resetPassword.mutationOptions(),
     onSuccess: () => {
-      toast.success(t('auth.resetPassword.success'));
+      toast.success(authStrings.resetPassword.success);
       setTimeout(() => {
         void navigate({ to: '/auth/login' });
       }, REDIRECT_AFTER_RESET_MS);
@@ -71,13 +70,13 @@ export function useResetPasswordForm(): IResetPasswordFormView {
     onError: (error) => {
       const code = getAppErrorCode(error);
       if (code === AppErrorCode.INVALID_TOKEN || code === AppErrorCode.TOKEN_EXPIRED) {
-        setServerError(t('auth.resetPassword.invalidLink'));
+        setServerError(authStrings.resetPassword.invalidLink);
         setShowRequestNewLink(true);
       } else if (code === AppErrorCode.TWO_FACTOR_INVALID_CODE) {
         // Reveal the field (in case the load probe raced or was skipped) and
         // mark the code wrong, matching the disable-dialog pattern.
         setRequiresTwoFactor(true);
-        form.setError('factorCode', { message: t('auth.resetPassword.codeIncorrect') });
+        form.setError('factorCode', { message: authStrings.resetPassword.codeIncorrect });
       } else {
         handleServerError(error);
         setShowRequestNewLink(false);

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { trpc } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
-import { formatDate } from '@/lib/i18n';
+import { formatDate } from '@/lib/format';
 import type { ISessionRow, ISessionsSectionView } from './SessionsSection.types';
+import { settingsStrings } from '@/features/settings/Settings.strings';
 
 /**
  * User agents are matched most-specific first: Chromium-family browsers all
@@ -54,7 +54,6 @@ function describeUserAgent(
 }
 
 export function useSessionsSection(): ISessionsSectionView {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const sessionsQuery = useQuery(trpc.sessions.list.queryOptions());
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -66,11 +65,11 @@ export function useSessionsSection(): ISessionsSectionView {
   const revokeMutation = useMutation({
     ...trpc.sessions.revoke.mutationOptions(),
     onSuccess: () => {
-      toast.success(t('sessions.revokedToast'));
+      toast.success(settingsStrings.sessions.revokedToast);
       invalidateList();
     },
     onError: (error) => {
-      toast.error(translateAppError(error) ?? t('sessions.revokeFailed'));
+      toast.error(translateAppError(error) ?? settingsStrings.sessions.revokeFailed);
       // The likeliest failure is a list gone stale (revoked in another tab,
       // expired); refetch so the panel and the toast tell one story.
       invalidateList();
@@ -80,28 +79,28 @@ export function useSessionsSection(): ISessionsSectionView {
   const revokeOthersMutation = useMutation({
     ...trpc.sessions.revokeOthers.mutationOptions(),
     onSuccess: () => {
-      toast.success(t('sessions.revokedOthersToast'));
+      toast.success(settingsStrings.sessions.revokedOthersToast);
       setIsConfirmOpen(false);
       invalidateList();
     },
     onError: (error) => {
-      toast.error(translateAppError(error) ?? t('sessions.revokeOthersFailed'));
+      toast.error(translateAppError(error) ?? settingsStrings.sessions.revokeOthersFailed);
       setIsConfirmOpen(false);
       invalidateList();
     },
   });
 
   const rows: ISessionRow[] = (sessionsQuery.data ?? []).map((session) => {
-    const device = describeUserAgent(session.userAgent, t('sessions.unknownDevice'));
+    const device = describeUserAgent(session.userAgent, settingsStrings.sessions.unknownDevice);
     return {
       id: session.id,
       deviceLabel: device.label,
       ip: session.ip,
-      signedIn: t('sessions.signedIn', { date: formatDate(session.createdAt) }),
-      lastActive: t('sessions.lastActive', { date: formatDate(session.lastActive) }),
+      signedIn: settingsStrings.sessions.signedIn({ date: formatDate(session.createdAt) }),
+      lastActive: settingsStrings.sessions.lastActive({ date: formatDate(session.lastActive) }),
       isCurrent: session.isCurrent,
       isMobile: device.isMobile,
-      revokeAccessibleLabel: t('sessions.revokeAccessible', {
+      revokeAccessibleLabel: settingsStrings.sessions.revokeAccessible({
         device: device.label,
         ip: session.ip,
       }),

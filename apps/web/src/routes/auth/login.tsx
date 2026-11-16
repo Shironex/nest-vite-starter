@@ -2,11 +2,12 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 // zod/mini: route config (validateSearch) is bundled into the entry chunk by
 // the router codegen, and the mini build keeps classic zod out of it.
 import * as z from 'zod/mini';
-import { useTranslation } from 'react-i18next';
 import { pageTitle } from '@/lib/page-title';
 import { AUTH_LINK_CLASS } from '@/features/auth/Auth.constants';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { LoginForm } from '@/features/auth/components/LoginForm';
+import { authStrings } from '@/features/auth/Auth.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * Open-redirect guard for the post-login redirect target. The producer
@@ -26,7 +27,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute('/auth/login')({
-  head: () => pageTitle('pageTitle.signIn'),
+  head: () => pageTitle(commonStrings.pageTitle.signIn),
   // The explicit `{ redirect?: string }` return keeps the key OPTIONAL in the
   // route's search type (a zod .transform would make it a required
   // `string | undefined` key and force `search` on every Link to this route).
@@ -38,15 +39,14 @@ export const Route = createFileRoute('/auth/login')({
 });
 
 function LoginPage() {
-  const { t } = useTranslation();
   return (
     <AuthLayout
-      title={t('auth.pages.login.title')}
+      title={authStrings.pages.login.title}
       description={
         <>
-          {t('auth.pages.login.noAccount')}{' '}
+          {authStrings.pages.login.noAccount}{' '}
           <Link to="/auth/register" className={AUTH_LINK_CLASS}>
-            {t('auth.pages.login.register')}
+            {authStrings.pages.login.register}
           </Link>
         </>
       }

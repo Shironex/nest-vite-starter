@@ -5,7 +5,6 @@ import { Route } from './workspaces';
 // In the browser it arrives with the screen component the route's split chunk
 // imports; this suite MOCKS that component away, so the registration has to be
 // stated here instead of silently rendering bare keys.
-import '@/features/workspace/Workspace.i18n';
 
 const { invalidate } = vi.hoisted(() => ({ invalidate: vi.fn() }));
 

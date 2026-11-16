@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { getRouteApi } from '@tanstack/react-router';
 import { resendVerificationSchema, type ResendVerificationInput } from '@repo/shared/schemas';
 import { AppErrorCode } from '@repo/shared/errors';
@@ -8,6 +7,8 @@ import { trpc } from '@/lib/trpc';
 import { getAppErrorCode, translateAppError } from '@/lib/trpc-errors';
 import { useAuthForm } from '@/features/auth/AuthForm.hooks';
 import type { ICheckYourEmailView, IVerifyWithTokenView, VerifyStatus } from './VerifyEmail.types';
+import { authStrings } from '@/features/auth/Auth.strings';
+import { commonStrings } from '@/lib/strings';
 
 // The verification token is route state, not a prop: read it from the URL
 // search here so the component never receives a secret as a prop.
@@ -23,7 +24,6 @@ export function useVerifyEmail(): {
 
 // Mode 1: auto-verify exactly once when arriving from the email link.
 export function useVerifyWithToken(token: string): IVerifyWithTokenView {
-  const { t } = useTranslation();
   const [status, setStatus] = useState<VerifyStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // Keyed by token (not a boolean) so a token change while mounted re-verifies,
@@ -41,9 +41,9 @@ export function useVerifyWithToken(token: string): IVerifyWithTokenView {
       setStatus('error');
       const code = getAppErrorCode(error);
       if (code === AppErrorCode.INVALID_TOKEN || code === AppErrorCode.TOKEN_EXPIRED) {
-        setErrorMessage(t('auth.verifyEmail.invalidLink'));
+        setErrorMessage(authStrings.verifyEmail.invalidLink);
       } else {
-        setErrorMessage(translateAppError(error) ?? t('errors.unexpected'));
+        setErrorMessage(translateAppError(error) ?? commonStrings.errors.unexpected);
       }
     },
   });

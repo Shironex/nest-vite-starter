@@ -1,10 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { AUTH_NS } from '@/features/auth/Auth.i18n';
 import { BrandPanel } from '@/features/auth/components/BrandPanel';
 import { useAuthLayout } from './AuthLayout.hooks';
 import type { IAuthLayoutProps } from './AuthLayout.types';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 /**
  * Two-column shell shared by every auth screen: the blue brand panel on the
@@ -21,7 +20,6 @@ export default function AuthLayout({
   align = 'start',
   children,
 }: IAuthLayoutProps) {
-  const { t } = useTranslation(AUTH_NS);
   const { hasHeader, headerClass, badgeClass } = useAuthLayout({
     title,
     description,
@@ -40,7 +38,7 @@ export default function AuthLayout({
             className="inline-flex items-center gap-2 rounded-sm type-body-small text-text-muted transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
-            {t('layout.backToHome')}
+            {authStrings.layout.backToHome}
           </Link>
         </header>
 

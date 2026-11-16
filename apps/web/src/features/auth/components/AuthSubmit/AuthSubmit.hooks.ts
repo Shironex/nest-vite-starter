@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { CaptchaStatus } from '@/features/auth/AuthForm.hooks';
 import type { IAuthSubmitView } from './AuthSubmit.types';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 /**
  * Turns the captcha's lifecycle into something the button can actually say.
@@ -16,8 +16,6 @@ export function useAuthSubmit(
   isPending: boolean,
   captchaStatus: CaptchaStatus = 'ready',
 ): IAuthSubmitView {
-  const { t } = useTranslation();
-
   const isVerifying = captchaStatus === 'pending';
   const hasFailed = captchaStatus === 'error' || captchaStatus === 'expired';
 
@@ -26,15 +24,15 @@ export function useAuthSubmit(
     // action's own name and explains itself underneath, because the user's
     // intent has not changed and a button that renames itself on an error
     // reads as a different action appearing.
-    label: isVerifying && !isPending ? t('auth.captcha.verifying') : children,
+    label: isVerifying && !isPending ? authStrings.captcha.verifying : children,
     isDisabled: isPending || isVerifying || hasFailed,
     isBusy: isPending || isVerifying,
     hint: isVerifying
-      ? t('auth.captcha.pendingHint')
+      ? authStrings.captcha.pendingHint
       : captchaStatus === 'error'
-        ? t('auth.captcha.failed')
+        ? authStrings.captcha.failed
         : captchaStatus === 'expired'
-          ? t('auth.captcha.expired')
+          ? authStrings.captcha.expired
           : null,
     hintTone: hasFailed ? 'assertive' : 'polite',
   };

@@ -12,9 +12,9 @@ import type { UseFormReturn, DefaultValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import type { TurnstileInstance } from '@marsidev/react-turnstile';
-import { useTranslation } from 'react-i18next';
 import type { AppErrorCode } from '@repo/shared/errors';
 import { getAppErrorCode, translateAppError } from '@/lib/trpc-errors';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * Where the captcha is in its lifecycle, as far as the FORM can tell.
@@ -78,7 +78,6 @@ export function useAuthForm<TFieldValues extends FieldValues>(
   options: IUseAuthFormOptions<TFieldValues>,
 ): IUseAuthFormResult<TFieldValues> {
   const { schema, defaultValues, mode = 'onBlur', errorMessages } = options;
-  const { t } = useTranslation();
   const [serverError, setServerError] = useState<string | null>(null);
   const [captchaStatus, setCaptchaStatus] = useState<CaptchaStatus>('ready');
 
@@ -115,9 +114,9 @@ export function useAuthForm<TFieldValues extends FieldValues>(
       // RATE_LIMITED and INTERNAL_ERROR used to reach the sign-in screen as
       // the api's own sentence. The shared catalog has reviewed copy for
       // every AppErrorCode, so it is the second choice, not the message.
-      setServerError(mapped ?? translateAppError(error) ?? t('errors.unexpected'));
+      setServerError(mapped ?? translateAppError(error) ?? commonStrings.errors.unexpected);
     },
-    [errorMessages, form, t],
+    [errorMessages, form],
   );
 
   return {

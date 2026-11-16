@@ -7,7 +7,6 @@ import {
   UserMinus,
   UserPlus,
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Badge } from '@repo/ui/badge';
 import { Button } from '@repo/ui/button';
 import {
@@ -30,6 +29,8 @@ import { RestoreMemberDialog } from '../RestoreMemberDialog';
 import { UnlockMemberDialog } from '../UnlockMemberDialog';
 import { useMembersSection } from './MembersSection.hooks';
 import type { Member, MemberDialogKind } from './MembersSection.types';
+import { adminStrings } from '@/features/admin/Admin.strings';
+import { commonStrings, labelFor } from '@/lib/strings';
 
 /** Supporting copy under the heading. */
 const MUTED_LINE_CLASS = 'type-body-small text-text-muted';
@@ -45,12 +46,11 @@ function MemberRow({
   now: number;
   onOpenDialog: (kind: MemberDialogKind, member: Member) => void;
 }) {
-  const { t } = useTranslation();
   const name = member.displayName ?? '-';
-  const roleLabel = t(`admin.roles.${member.role}`, { defaultValue: member.role });
+  const roleLabel = labelFor(adminStrings.roles, member.role);
   const twoFactorLabel = member.twoFactorEnabled
-    ? t('admin.members.twoFactorEnabled')
-    : t('admin.members.twoFactorDisabled');
+    ? adminStrings.members.twoFactorEnabled
+    : adminStrings.members.twoFactorDisabled;
   // Same tinted-pill language as the 2FA cards above this table.
   const twoFactorClass = member.twoFactorEnabled ? 'bg-success-bg text-success' : undefined;
   const isLocked = member.lockedUntil !== null && new Date(member.lockedUntil).getTime() > now;
@@ -62,7 +62,7 @@ function MemberRow({
   // removeMember refuses ADMIN targets too, and routes them through demotion.
   const canRemove = member.status === 'active' && member.role !== ROLES.ADMIN && !member.isOwner;
   const isRemoved = member.status === 'removed';
-  const statusLabel = t(`admin.members.status.${member.status}`);
+  const statusLabel = adminStrings.members.status[member.status];
   const statusClass =
     member.status === 'active' ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger';
 
@@ -72,7 +72,7 @@ function MemberRow({
         {member.email}
         {isLocked && (
           <Badge variant="secondary" className="ml-2 bg-danger-bg text-danger">
-            {t('admin.members.locked')}
+            {adminStrings.members.locked}
           </Badge>
         )}
       </TableCell>
@@ -80,7 +80,7 @@ function MemberRow({
         {name}
         {member.isOwner && (
           <Badge variant="secondary" className="ml-2">
-            {t('admin.members.owner')}
+            {adminStrings.members.owner}
           </Badge>
         )}
       </TableCell>
@@ -101,7 +101,7 @@ function MemberRow({
             <Button
               variant="ghost"
               size="icon-sm"
-              aria-label={t('admin.members.menu.trigger', { email: member.email })}
+              aria-label={adminStrings.members.menu.trigger({ email: member.email })}
             >
               <MoreHorizontal />
             </Button>
@@ -109,28 +109,28 @@ function MemberRow({
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onOpenDialog('changeRole', member)}>
               <UserCog className="size-4" />
-              {t('admin.members.menu.changeRole')}
+              {adminStrings.members.menu.changeRole}
             </DropdownMenuItem>
             {isLocked && (
               <DropdownMenuItem onClick={() => onOpenDialog('unlock', member)}>
                 <LockOpen className="size-4" />
-                {t('admin.members.menu.unlock')}
+                {adminStrings.members.menu.unlock}
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => onOpenDialog('resetTwoFactor', member)}>
               <ShieldOff className="size-4" />
-              {t('admin.members.menu.resetTwoFactor')}
+              {adminStrings.members.menu.resetTwoFactor}
             </DropdownMenuItem>
             {isRemoved && (
               <DropdownMenuItem onClick={() => onOpenDialog('restore', member)}>
                 <UserPlus className="size-4" />
-                {t('admin.members.menu.restore')}
+                {adminStrings.members.menu.restore}
               </DropdownMenuItem>
             )}
             {canRemove && (
               <DropdownMenuItem onClick={() => onOpenDialog('remove', member)}>
                 <UserMinus className="size-4" />
-                {t('admin.members.menu.remove')}
+                {adminStrings.members.menu.remove}
               </DropdownMenuItem>
             )}
             {canDelete && (
@@ -141,7 +141,7 @@ function MemberRow({
                   onClick={() => onOpenDialog('delete', member)}
                 >
                   <Trash2 className="size-4" />
-                  {t('admin.members.menu.delete')}
+                  {adminStrings.members.menu.delete}
                 </DropdownMenuItem>
               </>
             )}
@@ -153,7 +153,6 @@ function MemberRow({
 }
 
 export default function MembersSection() {
-  const { t } = useTranslation();
   const v = useMembersSection();
 
   const target = v.dialogTarget;
@@ -179,8 +178,8 @@ export default function MembersSection() {
           labels={{
             summary: v.pagination.summary,
             label: v.pagination.label,
-            previous: t('pagination.previous'),
-            next: t('pagination.next'),
+            previous: commonStrings.pagination.previous,
+            next: commonStrings.pagination.next,
           }}
         />
       </ListSurfaceFooter>
@@ -189,21 +188,21 @@ export default function MembersSection() {
   return (
     <section data-slot="admin-members-section" className="space-y-4">
       <div className="space-y-1">
-        <h2 className="type-heading-h3 text-text">{t('admin.members.title')}</h2>
-        <p className={MUTED_LINE_CLASS}>{t('admin.members.description')}</p>
+        <h2 className="type-heading-h3 text-text">{adminStrings.members.title}</h2>
+        <p className={MUTED_LINE_CLASS}>{adminStrings.members.description}</p>
       </div>
 
       <ListSurface
         state={v.state}
         loading={<div className="w-full space-y-3">{skeletons}</div>}
-        empty={<p className={MUTED_LINE_CLASS}>{t('admin.members.empty')}</p>}
+        empty={<p className={MUTED_LINE_CLASS}>{adminStrings.members.empty}</p>}
         error={
           // role="alert" inside: ListSurface wraps its placeholders in a status
           // region and a failed read is not a status.
           <div role="alert" className="space-y-3">
-            <p className={MUTED_LINE_CLASS}>{t('admin.members.loadError')}</p>
+            <p className={MUTED_LINE_CLASS}>{adminStrings.members.loadError}</p>
             <Button variant="outline" size="sm" onClick={v.onRetry}>
-              {t('actions.retry')}
+              {commonStrings.actions.retry}
             </Button>
           </div>
         }
@@ -212,12 +211,12 @@ export default function MembersSection() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('admin.members.headers.email')}</TableHead>
-              <TableHead>{t('admin.members.headers.name')}</TableHead>
-              <TableHead>{t('admin.members.headers.role')}</TableHead>
-              <TableHead>{t('admin.members.headers.status')}</TableHead>
-              <TableHead>{t('admin.members.headers.twoFactor')}</TableHead>
-              <TableHead className="text-right">{t('admin.members.headers.actions')}</TableHead>
+              <TableHead>{adminStrings.members.headers.email}</TableHead>
+              <TableHead>{adminStrings.members.headers.name}</TableHead>
+              <TableHead>{adminStrings.members.headers.role}</TableHead>
+              <TableHead>{adminStrings.members.headers.status}</TableHead>
+              <TableHead>{adminStrings.members.headers.twoFactor}</TableHead>
+              <TableHead className="text-right">{adminStrings.members.headers.actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>{rows}</TableBody>

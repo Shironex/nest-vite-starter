@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { commonStrings } from '@/lib/strings';
 import { NAV_GROUPS, findNavItemForPath, isActivePath } from './Layout.nav';
 
 describe('isActivePath', () => {
@@ -33,10 +34,10 @@ describe('findNavItemForPath', () => {
   it('prefers the deepest match when two entries overlap', () => {
     const groups = [
       {
-        labelKey: 'g',
+        label: 'g',
         items: [
-          { titleKey: 'a', pageTitleKey: 'a', href: '/x', icon: () => null },
-          { titleKey: 'b', pageTitleKey: 'b', href: '/x/y', icon: () => null },
+          { title: 'a', pageTitle: 'a', href: '/x', icon: () => null },
+          { title: 'b', pageTitle: 'b', href: '/x/y', icon: () => null },
         ],
       },
     ];
@@ -66,33 +67,28 @@ describe('NAV_GROUPS', () => {
   });
 
   /**
-   * Every `pageTitle.*` in the catalog is reached from exactly two places: a
-   * `pageTitleKey` here (the topbar heading) and a route's `head()` (the
-   * document title). An entry added without its key renders a bare key in the
-   * topbar; a key reached from neither is dead on arrival. This is the
-   * assertion that keeps all three in step.
+   * Every `pageTitle.*` entry is reached from exactly two places: a nav item's
+   * `pageTitle` here (the topbar heading) and a route's `head()` (the document
+   * title). An entry reached from neither is dead on arrival, which is what this
+   * assertion catches.
    */
-  it('keys every entry to a title the catalog actually carries', async () => {
-    const { default: en } = await import('@/lib/i18n/locales/en.json');
+  it('reaches every page title from the nav or a route', () => {
     const items = NAV_GROUPS.flatMap((group) => group.items);
-    const used = new Set(items.map((item) => item.pageTitleKey.replace('pageTitle.', '')));
-
-    for (const item of items) {
-      const key = item.titleKey.replace('nav.', '');
-      const title = item.pageTitleKey.replace('pageTitle.', '');
-      expect(en.common.nav).toHaveProperty(key);
-      expect(en.common.pageTitle).toHaveProperty(title);
-    }
+    const used = new Set(
+      Object.entries(commonStrings.pageTitle)
+        .filter(([, text]) => items.some((item) => item.pageTitle === text))
+        .map(([key]) => key),
+    );
 
     // Routes outside the nav (every /auth screen) still need
     // a document title, so the second reader is scanned from source.
     for (const key of routeHeadKeys()) used.add(key);
 
-    expect(Object.keys(en.common.pageTitle).sort()).toEqual([...used].sort());
+    expect(Object.keys(commonStrings.pageTitle).sort()).toEqual([...used].sort());
   });
 });
 
-/** Every `pageTitle.<key>` a route hands to `pageTitle()` in its `head()`. */
+/** Every `commonStrings.pageTitle.<key>` a route hands to `pageTitle()` in its `head()`. */
 function routeHeadKeys(): string[] {
   const routesDir = join(import.meta.dirname, '..', '..', 'routes');
   const keys: string[] = [];
@@ -104,7 +100,7 @@ function routeHeadKeys(): string[] {
         walk(path);
       } else if (entry.name.endsWith('.tsx') && !entry.name.includes('.test.')) {
         for (const match of readFileSync(path, 'utf8').matchAll(
-          /pageTitle\('pageTitle\.(\w+)'\)/gu,
+          /pageTitle\(commonStrings\.pageTitle\.(\w+)\)/gu,
         )) {
           keys.push(match[1] as string);
         }

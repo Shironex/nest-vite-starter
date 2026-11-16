@@ -1,11 +1,13 @@
-import { useTranslation } from 'react-i18next';
 import type { IComboboxOption } from '@repo/ui/combobox';
-// Side effect: attaches this feature's catalogs before the first t() call, so
-// a hook rendered in isolation (a *.hooks.test.tsx) has the copy too.
-import '../../Audit.i18n';
-import { AUDIT_ACTION_GROUPS, auditActionLabelKey } from '../../Audit.constants';
+import {
+  AUDIT_ACTION_GROUPS,
+  auditActionGroupLabel,
+  auditActionLabel,
+} from '../../Audit.constants';
 import { useAuditActorOptions } from '../../Audit.queries';
 import type { IAuditLogFiltersProps, IAuditLogFiltersView } from './AuditLogFilters.types';
+import { commonStrings } from '@/lib/strings';
+import { auditStrings } from '@/features/audit/Audit.strings';
 
 /**
  * The audit trail's narrowing, behind the toolbar's "Filtry" control.
@@ -23,7 +25,6 @@ import type { IAuditLogFiltersProps, IAuditLogFiltersView } from './AuditLogFilt
  * page's filter state is unchanged.
  */
 export function useAuditLogFilters(props: IAuditLogFiltersProps): IAuditLogFiltersView {
-  const { t } = useTranslation('audit');
   const actorsQuery = useAuditActorOptions();
 
   const actorOptions: IComboboxOption[] = (actorsQuery.data?.items ?? []).map((user) => ({
@@ -34,8 +35,8 @@ export function useAuditLogFilters(props: IAuditLogFiltersProps): IAuditLogFilte
   const actionOptions: IComboboxOption[] = AUDIT_ACTION_GROUPS.flatMap((group) =>
     group.actions.map((action) => ({
       value: action,
-      label: t(auditActionLabelKey(action), { defaultValue: action }),
-      group: t(`actionGroups.${group.key}`, { defaultValue: group.key }),
+      label: auditActionLabel(action),
+      group: auditActionGroupLabel(group.key),
     })),
   );
 
@@ -52,19 +53,19 @@ export function useAuditLogFilters(props: IAuditLogFiltersProps): IAuditLogFilte
     onFromInput: props.onFromChange,
     onToInput: props.onToChange,
     labels: {
-      trigger: t('list.filters', { ns: 'common' }),
-      heading: t('list.filtersHeading', { ns: 'common' }),
-      activeCount: t('list.filtersActive', { ns: 'common', count: props.activeFilters }),
-      actor: t('filters.actor'),
-      actorAll: t('filters.actorAll'),
-      eventType: t('filters.eventType'),
-      eventTypeAll: t('filters.eventTypeAll'),
-      search: t('actions.search', { ns: 'common' }),
-      noMatch: t('filters.noMatch'),
-      loading: t('states.loading', { ns: 'common' }),
-      from: t('filters.from'),
-      to: t('filters.to'),
-      clear: t('filters.clear'),
+      trigger: commonStrings.list.filters,
+      heading: commonStrings.list.filtersHeading,
+      activeCount: commonStrings.list.filtersActive(props.activeFilters),
+      actor: auditStrings.filters.actor,
+      actorAll: auditStrings.filters.actorAll,
+      eventType: auditStrings.filters.eventType,
+      eventTypeAll: auditStrings.filters.eventTypeAll,
+      search: commonStrings.actions.search,
+      noMatch: auditStrings.filters.noMatch,
+      loading: commonStrings.states.loading,
+      from: auditStrings.filters.from,
+      to: auditStrings.filters.to,
+      clear: auditStrings.filters.clear,
     },
   };
 }

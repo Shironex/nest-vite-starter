@@ -1,11 +1,11 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { Input } from '@repo/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@repo/ui/form';
 import { RecoveryCodesPanel } from '../RecoveryCodesPanel';
 import { useEnrollWizard } from './EnrollWizard.hooks';
 import type { IEnrollWizardProps } from './EnrollWizard.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 /** The instruction line that opens each step. */
 const STEP_HINT_CLASS = 'type-body-small text-text-muted';
@@ -22,7 +22,6 @@ const STEP_HINT_CLASS = 'type-body-small text-text-muted';
 const QR_CLASS = 'mx-auto size-48 rounded-lg bg-white p-2';
 
 export default function EnrollWizard(props: IEnrollWizardProps) {
-  const { t } = useTranslation();
   const {
     step,
     passwordForm,
@@ -42,18 +41,18 @@ export default function EnrollWizard(props: IEnrollWizardProps) {
       {step === 'password' && (
         <Form {...passwordForm}>
           <form onSubmit={passwordForm.handleSubmit(onBeginEnrollment)} className="space-y-4">
-            <p className={STEP_HINT_CLASS}>{t('twoFactor.enroll.passwordHint')}</p>
+            <p className={STEP_HINT_CLASS}>{twoFactorStrings.enroll.passwordHint}</p>
             <FormField
               control={passwordForm.control}
               name="password"
               render={({ field }) => (
                 <FormItem required>
-                  <FormLabel>{t('twoFactor.enroll.passwordLabel')}</FormLabel>
+                  <FormLabel>{twoFactorStrings.enroll.passwordLabel}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
                       autoComplete="current-password"
-                      placeholder={t('twoFactor.enroll.passwordPlaceholder')}
+                      placeholder={twoFactorStrings.enroll.passwordPlaceholder}
                       {...field}
                     />
                   </FormControl>
@@ -72,7 +71,7 @@ export default function EnrollWizard(props: IEnrollWizardProps) {
             />
             <Button type="submit" disabled={isBeginning}>
               {isBeginning && <Loader2 className="animate-spin" />}
-              {t('twoFactor.enroll.continue')}
+              {twoFactorStrings.enroll.continue}
             </Button>
           </form>
         </Form>
@@ -81,14 +80,14 @@ export default function EnrollWizard(props: IEnrollWizardProps) {
       {step === 'confirm' && (
         <Form {...confirmForm}>
           <form onSubmit={confirmForm.handleSubmit(onActivate)} className="space-y-4">
-            <p className={STEP_HINT_CLASS}>{t('twoFactor.enroll.scanHint')}</p>
+            <p className={STEP_HINT_CLASS}>{twoFactorStrings.enroll.scanHint}</p>
             {qrDataUri && (
-              <img src={qrDataUri} alt={t('twoFactor.enroll.qrAlt')} className={QR_CLASS} />
+              <img src={qrDataUri} alt={twoFactorStrings.enroll.qrAlt} className={QR_CLASS} />
             )}
             {secretBase32 && (
               <div className="space-y-1 text-center">
                 <p className="type-body-small text-text-muted">
-                  {t('twoFactor.enroll.manualHint')}
+                  {twoFactorStrings.enroll.manualHint}
                 </p>
                 <code className="type-mono-small tracking-widest text-text">{secretBase32}</code>
               </div>
@@ -98,7 +97,7 @@ export default function EnrollWizard(props: IEnrollWizardProps) {
               name="code"
               render={({ field }) => (
                 <FormItem required>
-                  <FormLabel>{t('twoFactor.enroll.codeLabel')}</FormLabel>
+                  <FormLabel>{twoFactorStrings.enroll.codeLabel}</FormLabel>
                   <FormControl>
                     <Input
                       autoComplete="one-time-code"
@@ -117,7 +116,7 @@ export default function EnrollWizard(props: IEnrollWizardProps) {
             />
             <Button type="submit" disabled={isActivating}>
               {isActivating && <Loader2 className="animate-spin" />}
-              {t('twoFactor.enroll.verifyCta')}
+              {twoFactorStrings.enroll.verifyCta}
             </Button>
           </form>
         </Form>
@@ -126,12 +125,12 @@ export default function EnrollWizard(props: IEnrollWizardProps) {
       {step === 'codes' && (
         <div className="space-y-4">
           <div className="space-y-1">
-            <p className="type-body-strong text-text">{t('twoFactor.enroll.codesTitle')}</p>
-            <p className={STEP_HINT_CLASS}>{t('twoFactor.enroll.codesHint')}</p>
+            <p className="type-body-strong text-text">{twoFactorStrings.enroll.codesTitle}</p>
+            <p className={STEP_HINT_CLASS}>{twoFactorStrings.enroll.codesHint}</p>
           </div>
           <RecoveryCodesPanel codes={recoveryCodes ?? []} />
           <Button type="button" onClick={onFinish}>
-            {t('twoFactor.enroll.done')}
+            {twoFactorStrings.enroll.done}
           </Button>
         </div>
       )}

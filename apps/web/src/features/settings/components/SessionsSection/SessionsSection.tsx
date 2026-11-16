@@ -1,5 +1,4 @@
 import { Loader2, Monitor, Smartphone } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -15,6 +14,8 @@ import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { ListSurface } from '@repo/ui/list-surface';
 import { useSessionsSection } from './SessionsSection.hooks';
+import { settingsStrings } from '@/features/settings/Settings.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * The active-sessions settings panel: every device signed in to the account,
@@ -47,7 +48,6 @@ const CURRENT_BADGE_CLASS = 'bg-brand-50 text-brand-ink';
 const BARE_SURFACE_CLASS = 'overflow-visible rounded-none border-0 bg-transparent';
 
 export default function SessionsSection() {
-  const { t } = useTranslation();
   const v = useSessionsSection();
 
   const showRevokeOthers = v.state === 'ready' && v.hasOtherSessions;
@@ -63,7 +63,7 @@ export default function SessionsSection() {
             <p className="type-body-strong text-text">{row.deviceLabel}</p>
             {row.isCurrent && (
               <Badge variant="secondary" className={CURRENT_BADGE_CLASS}>
-                {t('sessions.thisDevice')}
+                {settingsStrings.sessions.thisDevice}
               </Badge>
             )}
           </div>
@@ -83,7 +83,7 @@ export default function SessionsSection() {
           onClick={() => v.onRevoke(row.id)}
         >
           {v.revokingId === row.id && <Loader2 className="animate-spin" />}
-          {t('sessions.revoke')}
+          {settingsStrings.sessions.revoke}
         </Button>
       )}
     </div>
@@ -92,16 +92,22 @@ export default function SessionsSection() {
   return (
     <Card data-slot="sessions-section">
       <CardHeader>
-        <CardTitle>{t('sessions.title')}</CardTitle>
-        <CardDescription>{t('sessions.description')}</CardDescription>
+        <CardTitle>{settingsStrings.sessions.title}</CardTitle>
+        <CardDescription>{settingsStrings.sessions.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <ListSurface
           className={BARE_SURFACE_CLASS}
           state={v.state}
-          loading={<p className="type-body-small text-text-muted">{t('states.loading')}</p>}
-          empty={<p className="type-body-small text-text-muted">{t('sessions.empty')}</p>}
-          error={<p className="type-body-small text-danger">{t('sessions.loadFailed')}</p>}
+          loading={
+            <p className="type-body-small text-text-muted">{commonStrings.states.loading}</p>
+          }
+          empty={
+            <p className="type-body-small text-text-muted">{settingsStrings.sessions.empty}</p>
+          }
+          error={
+            <p className="type-body-small text-danger">{settingsStrings.sessions.loadFailed}</p>
+          }
         >
           <div className="divide-y divide-border">{rowItems}</div>
         </ListSurface>
@@ -109,18 +115,18 @@ export default function SessionsSection() {
         {showRevokeOthers && (
           <AlertDialog open={v.isConfirmOpen} onOpenChange={v.onConfirmOpenChange}>
             <AlertDialogTrigger asChild>
-              <Button variant="outline">{t('sessions.revokeOthers')}</Button>
+              <Button variant="outline">{settingsStrings.sessions.revokeOthers}</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>{t('sessions.revokeOthersTitle')}</AlertDialogTitle>
+                <AlertDialogTitle>{settingsStrings.sessions.revokeOthersTitle}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {t('sessions.revokeOthersDescription')}
+                  {settingsStrings.sessions.revokeOthersDescription}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel type="button" disabled={v.isRevokeOthersPending}>
-                  {t('actions.cancel')}
+                  {commonStrings.actions.cancel}
                 </AlertDialogCancel>
                 <Button
                   variant="destructive"
@@ -128,7 +134,7 @@ export default function SessionsSection() {
                   onClick={v.onRevokeOthers}
                 >
                   {v.isRevokeOthersPending && <Loader2 className="animate-spin" />}
-                  {t('sessions.revokeOthersConfirm')}
+                  {settingsStrings.sessions.revokeOthersConfirm}
                 </Button>
               </AlertDialogFooter>
             </AlertDialogContent>

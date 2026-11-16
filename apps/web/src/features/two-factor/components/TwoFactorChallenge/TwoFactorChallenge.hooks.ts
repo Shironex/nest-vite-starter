@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +10,7 @@ import { trpc, resetCsrfToken } from '@/lib/trpc';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import { STAFF_HOME_PATH } from '@/lib/shell-routes';
 import type { ITwoFactorChallengeView } from './TwoFactorChallenge.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 // The redirect target is route state, read here so the component never takes it
 // as a prop. The `__Host-2fa` pending cookie is already set by login, so this
@@ -18,7 +18,6 @@ import type { ITwoFactorChallengeView } from './TwoFactorChallenge.types';
 const routeApi = getRouteApi('/auth/two-factor');
 
 export function useTwoFactorChallenge(): ITwoFactorChallengeView {
-  const { t } = useTranslation();
   const { redirect } = routeApi.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -47,11 +46,11 @@ export function useTwoFactorChallenge(): ITwoFactorChallengeView {
       // Expiry or attempt-exhaustion both arrive as CHALLENGE_EXPIRED (the
       // pending record is gone); restart from the password step.
       if (code === AppErrorCode.TWO_FACTOR_CHALLENGE_EXPIRED) {
-        toast.error(t('twoFactor.challenge.sessionExpired'));
+        toast.error(twoFactorStrings.challenge.sessionExpired);
         void navigate({ to: '/auth/login' });
         return;
       }
-      setServerError(t('twoFactor.challenge.codeIncorrect'));
+      setServerError(twoFactorStrings.challenge.codeIncorrect);
     },
   });
 

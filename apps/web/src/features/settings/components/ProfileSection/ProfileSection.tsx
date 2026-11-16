@@ -1,16 +1,15 @@
-import { useTranslation } from 'react-i18next';
 import { cn } from '@repo/ui/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
 import { Avatar, AvatarFallback } from '@repo/ui/avatar';
 import { useProfileSection } from './ProfileSection.hooks';
+import { settingsStrings } from '@/features/settings/Settings.strings';
 
 /** Field label above each read-only value, per the design's 64px field rhythm. */
 const FIELD_LABEL_CLASS = 'type-label-caption text-text-muted';
 const FIELD_VALUE_CLASS = 'type-body-regular text-text';
 
 export default function ProfileSection() {
-  const { t } = useTranslation();
   const view = useProfileSection();
 
   if (!view) return null;
@@ -29,34 +28,36 @@ export default function ProfileSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('settings.profile.title')}</CardTitle>
-        <CardDescription>{t('settings.profile.description')}</CardDescription>
+        <CardTitle>{settingsStrings.profile.title}</CardTitle>
+        <CardDescription>{settingsStrings.profile.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid gap-2">
-          <span className={FIELD_LABEL_CLASS}>{t('settings.profile.avatar')}</span>
+          <span className={FIELD_LABEL_CLASS}>{settingsStrings.profile.avatar}</span>
           <Avatar size="lg" className="size-16">
             <AvatarFallback className="type-heading-h3">{initials}</AvatarFallback>
           </Avatar>
         </div>
 
         <div className="grid gap-1">
-          <span className={FIELD_LABEL_CLASS}>{t('settings.profile.email')}</span>
+          <span className={FIELD_LABEL_CLASS}>{settingsStrings.profile.email}</span>
           <div className="flex items-center gap-2">
             <span className={FIELD_VALUE_CLASS}>{email}</span>
             <Badge variant="secondary" className={verificationClass}>
-              {emailVerified ? t('settings.profile.verified') : t('settings.profile.unverified')}
+              {emailVerified
+                ? settingsStrings.profile.verified
+                : settingsStrings.profile.unverified}
             </Badge>
           </div>
         </div>
 
         <div className="grid gap-1">
-          <span className={FIELD_LABEL_CLASS}>{t('settings.profile.displayName')}</span>
+          <span className={FIELD_LABEL_CLASS}>{settingsStrings.profile.displayName}</span>
           <span className={FIELD_VALUE_CLASS}>{displayName}</span>
         </div>
 
         <div className="grid gap-1">
-          <span className={FIELD_LABEL_CLASS}>{t('settings.profile.role')}</span>
+          <span className={FIELD_LABEL_CLASS}>{settingsStrings.profile.role}</span>
           <span className={cn(FIELD_VALUE_CLASS, 'capitalize')}>{role}</span>
         </div>
       </CardContent>

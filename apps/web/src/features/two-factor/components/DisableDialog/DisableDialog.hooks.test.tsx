@@ -3,8 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { AppErrorCode } from '@repo/shared/errors';
-import { i18n } from '@/lib/i18n';
 import { useDisableDialog } from './DisableDialog.hooks';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 const { disableFn, toastSuccess } = vi.hoisted(() => ({
   disableFn: vi.fn(),
@@ -52,7 +52,7 @@ describe('useDisableDialog', () => {
 
     await waitFor(() =>
       expect(result.current.form.formState.errors.password?.message).toBe(
-        i18n.t('twoFactor.disable.passwordIncorrect'),
+        twoFactorStrings.disable.passwordIncorrect,
       ),
     );
   });

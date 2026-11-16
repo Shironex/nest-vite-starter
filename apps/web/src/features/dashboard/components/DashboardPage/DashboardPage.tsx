@@ -1,7 +1,6 @@
 import { useSetTopbarSubtitle } from '@/stores/topbar-store';
 // Side effect: registers this feature's catalogs. Needed HERE and not only in
 // the hook file, because a component test mocks the hook module away.
-import '../../Dashboard.i18n';
 import { useDashboardPage } from './DashboardPage.hooks';
 
 /**

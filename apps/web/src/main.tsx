@@ -8,9 +8,9 @@ import { routeTree } from './routeTree.gen';
 import { queryClient, UNAUTHORIZED_EVENT } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import { loginPathForExpiredSession, pendingSkeletonForPath } from '@/lib/shell-routes';
-import { initI18n, i18n } from '@/lib/i18n';
 import { initErrorReporting, captureException } from '@/lib/error-reporting';
 import './index.css';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * What a route shows while it loads, unless it names its own.
@@ -21,18 +21,13 @@ import './index.css';
  * spinner on a blank page. Declaring a default here means the pending state is
  * satisfied AT the child, so the already-mounted shell above it stays exactly
  * where it is and only the content region waits.
- *
- * It reads `i18n.t` rather than the hook: a default pending component can be
- * asked to render at any point in the tree, including above the root layout's
- * `I18nextProvider`, and the catalogs are bundled and initialized before the
- * first render anyway (see `initI18n`).
  */
 function RoutePendingSkeleton() {
   return (
     <div className="w-full p-6">
       <PageSkeleton
         variant={pendingSkeletonForPath(window.location.pathname)}
-        label={i18n.t('states.loading')}
+        label={commonStrings.states.loading}
       />
     </div>
   );
@@ -49,19 +44,15 @@ function RoutePendingSkeleton() {
  * state, so a load-phase failure re-throws instantly and the button does
  * nothing. Declaring a default means the failure is caught AT the route, with a
  * retry that re-runs the load.
- *
- * `i18n.t` rather than the hook, for the same reason RoutePendingSkeleton uses
- * it: a default error component can be asked to render anywhere in the tree,
- * including above the root layout's I18nextProvider.
  */
 function RouteErrorComponent({ error, reset }: ErrorComponentProps) {
   const rawMessage = import.meta.env.DEV && error instanceof Error ? error.message : undefined;
 
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-4" role="alert">
-      <h2 className="type-heading-h2">{i18n.t('fallback.errorTitle')}</h2>
+      <h2 className="type-heading-h2">{commonStrings.fallback.errorTitle}</h2>
       <p className="type-body-regular text-text-muted">
-        {translateAppError(error) ?? i18n.t('errors.unexpected')}
+        {translateAppError(error) ?? commonStrings.errors.unexpected}
       </p>
       {rawMessage !== undefined && <p className="type-mono-small text-text-muted">{rawMessage}</p>}
       <Button
@@ -74,7 +65,7 @@ function RouteErrorComponent({ error, reset }: ErrorComponentProps) {
           void router.invalidate();
         }}
       >
-        {i18n.t('actions.retry')}
+        {commonStrings.actions.retry}
       </Button>
     </div>
   );
@@ -130,29 +121,25 @@ window.addEventListener(UNAUTHORIZED_EVENT, () => {
 // is configured (see lib/error-reporting.ts); never blocks or breaks render.
 void initErrorReporting();
 
-// Initialize i18next before rendering, so no screen ever paints untranslated
-// keys. initI18n resolves synchronously (bundled resources).
-void initI18n()
-  .then(() => {
-    const rootEl = document.getElementById('root');
-    if (!rootEl) throw new Error('Root element not found');
+try {
+  const rootEl = document.getElementById('root');
+  if (!rootEl) throw new Error('Root element not found');
 
-    createRoot(rootEl).render(
-      <StrictMode>
-        <RouterProvider router={router} />
-      </StrictMode>,
-    );
-  })
-  .catch((error: unknown) => {
-    // Without this, a rejected init leaves the page blank forever.
-    console.error('App initialization failed', error);
-    captureException(error);
-    const rootEl = document.getElementById('root');
-    if (rootEl) {
-      // Pre-i18n boot path: init itself failed, so the catalog may not be
-      // loaded, and the literal is the English copy the catalog would hold.
-      rootEl.innerHTML =
-        '<p style="font-family: sans-serif; padding: 2rem; text-align: center;">' +
-        'The app could not start. Please restart it.</p>';
-    }
-  });
+  createRoot(rootEl).render(
+    <StrictMode>
+      <RouterProvider router={router} />
+    </StrictMode>,
+  );
+} catch (error: unknown) {
+  // Without this, a failed boot leaves the page blank forever.
+  console.error('App initialization failed', error);
+  captureException(error);
+  const rootEl = document.getElementById('root');
+  if (rootEl) {
+    // Pre-render boot path: nothing from the app is available, so this is a
+    // literal.
+    rootEl.innerHTML =
+      '<p style="font-family: sans-serif; padding: 2rem; text-align: center;">' +
+      'The app could not start. Please restart it.</p>';
+  }
+}

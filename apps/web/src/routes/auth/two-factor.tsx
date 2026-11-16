@@ -3,6 +3,7 @@ import * as z from 'zod/mini';
 import { pageTitle } from '@/lib/page-title';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { TwoFactorChallenge } from '@/features/two-factor/components/TwoFactorChallenge';
+import { commonStrings } from '@/lib/strings';
 
 // Same open-redirect guard as the login route: legitimate targets are
 // origin-stripped and start with a single '/'.
@@ -14,7 +15,7 @@ const safeRedirect = (val: string | undefined): string | undefined =>
 const searchSchema = z.object({ redirect: z.optional(z.string()) });
 
 export const Route = createFileRoute('/auth/two-factor')({
-  head: () => pageTitle('pageTitle.twoFactor'),
+  head: () => pageTitle(commonStrings.pageTitle.twoFactor),
   validateSearch: (search): { redirect?: string } => {
     const redirect = safeRedirect(searchSchema.parse(search).redirect);
     return redirect === undefined ? {} : { redirect };

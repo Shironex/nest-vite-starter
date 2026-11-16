@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { trpc } from '@/lib/trpc';
 import { useCarriedTotal, useCursorPages } from '@/features/shared/CursorPages.hooks';
@@ -10,6 +9,7 @@ import type {
   MemberDialogKind,
   Member,
 } from './MembersSection.types';
+import { adminStrings } from '@/features/admin/Admin.strings';
 
 const PAGE_SIZE = 50;
 
@@ -22,7 +22,6 @@ const PAGE_SIZE = 50;
  * the one move a bare keyset cursor cannot make on its own.
  */
 export function useMembersSection(): IMembersSectionView {
-  const { t } = useTranslation();
   const [dialogTarget, setDialogTarget] = useState<IMemberDialogTarget | null>(null);
   // A bare Date.now() in render scope is impure (react-hooks/purity), so the
   // lock-badge comparison point is captured once per mount. Unlocking
@@ -61,12 +60,12 @@ export function useMembersSection(): IMembersSectionView {
     state !== 'ready' || total === undefined
       ? null
       : {
-          summary: t('admin.members.pagination.summary', {
+          summary: adminStrings.members.pagination.summary({
             from,
             to: from + members.length - 1,
             total,
           }),
-          label: t('admin.members.pagination.label'),
+          label: adminStrings.members.pagination.label,
           hasPrevious: pages.hasPrevious,
           hasNext: (data?.nextCursor ?? null) !== null,
           onPrevious: pages.onPrevious,

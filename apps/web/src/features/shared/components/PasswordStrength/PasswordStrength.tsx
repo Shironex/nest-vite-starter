@@ -1,10 +1,9 @@
 import { Check, X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { usePasswordStrength } from './PasswordStrength.hooks';
 import type { IPasswordStrengthProps } from './PasswordStrength.types';
+import { commonStrings } from '@/lib/strings';
 
 export default function PasswordStrength({ password }: IPasswordStrengthProps) {
-  const { t } = useTranslation();
   const { requirements } = usePasswordStrength(password);
   const items = requirements.map((req) => (
     <li key={req.label} className="flex items-center gap-2">
@@ -14,7 +13,7 @@ export default function PasswordStrength({ password }: IPasswordStrengthProps) {
         <X className="size-4 text-text-muted" />
       )}
       <span className="sr-only">
-        {req.met ? t('passwordStrength.met') : t('passwordStrength.notMet')}
+        {req.met ? commonStrings.passwordStrength.met : commonStrings.passwordStrength.notMet}
       </span>
       {/* The semantic success token carries its own dark value, so the met
           state needs no hand-paired `dark:` class. */}

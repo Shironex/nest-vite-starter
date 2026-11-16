@@ -2,10 +2,11 @@ import { createFileRoute } from '@tanstack/react-router';
 // zod/mini: route config (validateSearch) is bundled into the entry chunk by
 // the router codegen, and the mini build keeps classic zod out of it.
 import * as z from 'zod/mini';
-import { useTranslation } from 'react-i18next';
 import { pageTitle } from '@/lib/page-title';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { ResetPasswordForm } from '@/features/auth/components/ResetPasswordForm';
+import { authStrings } from '@/features/auth/Auth.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * `token` is OPTIONAL:
@@ -20,17 +21,16 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute('/auth/reset-password')({
-  head: () => pageTitle('pageTitle.resetPassword'),
+  head: () => pageTitle(commonStrings.pageTitle.resetPassword),
   validateSearch: (search) => searchSchema.parse(search),
   component: ResetPasswordPage,
 });
 
 function ResetPasswordPage() {
-  const { t } = useTranslation();
   return (
     <AuthLayout
-      title={t('auth.pages.resetPassword.title')}
-      description={t('auth.pages.resetPassword.description')}
+      title={authStrings.pages.resetPassword.title}
+      description={authStrings.pages.resetPassword.description}
     >
       <ResetPasswordForm />
     </AuthLayout>

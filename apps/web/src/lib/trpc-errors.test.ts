@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AppErrorCode } from '@repo/shared/errors';
 import { getAppErrorCode, translateAppError } from './trpc-errors';
-import enLocale from './i18n/locales/en.json';
+import { commonStrings, errorStrings } from './strings';
 
 describe('getAppErrorCode', () => {
   it('returns the AppErrorCode carried on error.data.appCode', () => {
@@ -40,14 +40,13 @@ describe('getAppErrorCode', () => {
 });
 
 describe('translateAppError', () => {
-  // src/test/setup.ts calls initI18n(), so the singleton is ready here: the
-  // same standalone `i18n.t` path queryCache.onError uses outside React.
+  // The plain-function path queryCache.onError uses outside React.
   it('maps a known appCode to its translated sentence', () => {
     const error = {
       message: 'Account locked',
       data: { code: 'FORBIDDEN', httpStatus: 403, appCode: 'ACCOUNT_LOCKED' },
     };
-    expect(translateAppError(error)).toBe(enLocale.errors.ACCOUNT_LOCKED);
+    expect(translateAppError(error)).toBe(errorStrings.ACCOUNT_LOCKED);
   });
 
   // `data` present means the api answered; the message on that path is the
@@ -68,12 +67,12 @@ describe('translateAppError', () => {
     const transport = Object.assign(new Error('Failed to fetch'), {
       name: 'TRPCClientError',
     });
-    expect(translateAppError(transport)).toBe(enLocale.common.errors.network);
+    expect(translateAppError(transport)).toBe(commonStrings.errors.network);
 
     const proxyHtml = Object.assign(new Error("Unexpected token '<'"), {
       name: 'TRPCClientError',
     });
-    expect(translateAppError(proxyHtml)).toBe(enLocale.common.errors.network);
+    expect(translateAppError(proxyHtml)).toBe(commonStrings.errors.network);
   });
 
   it('never returns a browser-internal transport message', () => {

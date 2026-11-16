@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { trpc } from '@/lib/trpc';
 import { getInitials } from '@/lib/avatar';
 import { USER_ME_STALE_TIME } from '@/hooks/use-auth';
 import type { OrganizationIdentityState } from './OrganizationIdentity.types';
+import { layoutStrings } from '@/features/layout/Layout.strings';
 
 /**
  * The signed-in staff member's organization (tenant), for the sidebar footer.
@@ -15,7 +15,6 @@ import type { OrganizationIdentityState } from './OrganizationIdentity.types';
  * same fallback, so the footer is never missing once the query settles.
  */
 export function useOrganizationIdentity(): OrganizationIdentityState {
-  const { t } = useTranslation();
   const { data, isPending } = useQuery({
     ...trpc.user.tenant.queryOptions(),
     staleTime: USER_ME_STALE_TIME,
@@ -25,7 +24,7 @@ export function useOrganizationIdentity(): OrganizationIdentityState {
 
   // Not pending and no data means the query errored. A failed background
   // refetch keeps the last good `data`, so that case stays `ready`.
-  const name = data?.name ?? t('organizationIdentity.fallbackName');
+  const name = data?.name ?? layoutStrings.organizationIdentity.fallbackName;
 
   return {
     status: data ? 'ready' : 'error',

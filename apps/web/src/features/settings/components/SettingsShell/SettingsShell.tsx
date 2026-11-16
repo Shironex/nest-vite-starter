@@ -1,7 +1,7 @@
-import { useTranslation } from 'react-i18next';
 import { cn } from '@repo/ui/lib/utils';
 import { useSettingsShell } from './SettingsShell.hooks';
 import type { ISettingsSection, ISettingsShellProps } from './SettingsShell.types';
+import { settingsStrings } from '@/features/settings/Settings.strings';
 
 /**
  * The two-column settings shell from the design: a fixed rail on the left, the selected panel on the right.
@@ -60,7 +60,6 @@ function NavRow({
 }
 
 export default function SettingsShell({ sections, initialSectionId }: ISettingsShellProps) {
-  const { t } = useTranslation();
   const { active, onSelect } = useSettingsShell({ sections, initialSectionId });
 
   // Mapped here rather than in the returned markup: `no-jsx-computation` gates
@@ -78,8 +77,10 @@ export default function SettingsShell({ sections, initialSectionId }: ISettingsS
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:gap-8" data-slot="settings-shell">
-      <nav aria-label={t('settings.nav')} className={RAIL_CLASS}>
-        <p className="px-2.5 pb-1.5 type-label-overline text-text-tertiary">{t('settings.nav')}</p>
+      <nav aria-label={settingsStrings.nav} className={RAIL_CLASS}>
+        <p className="px-2.5 pb-1.5 type-label-overline text-text-tertiary">
+          {settingsStrings.nav}
+        </p>
         <ul className="flex flex-col gap-1">{rows}</ul>
       </nav>
 

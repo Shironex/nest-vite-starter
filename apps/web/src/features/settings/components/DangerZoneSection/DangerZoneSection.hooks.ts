@@ -3,7 +3,6 @@ import { useNavigate } from '@tanstack/react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { deleteAccountSchema } from '@repo/shared/schemas';
 import type { DeleteAccountInput } from '@repo/shared/schemas';
@@ -12,9 +11,9 @@ import { trpc, resetCsrfToken } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import type { IDangerZoneSectionView } from './DangerZoneSection.types';
+import { settingsStrings } from '@/features/settings/Settings.strings';
 
 export function useDangerZoneSection(): IDangerZoneSectionView {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -28,7 +27,7 @@ export function useDangerZoneSection(): IDangerZoneSectionView {
   const deleteAccountMutation = useMutation({
     ...trpc.auth.deleteAccount.mutationOptions(),
     onSuccess: () => {
-      toast.success(t('settings.dangerZone.success'));
+      toast.success(settingsStrings.dangerZone.success);
       // Same client teardown as logout (SidebarUserNav): the server already
       // revoked every session and cleared the cookie, so drop the CSRF token
       // and the query cache before landing on the login route.
@@ -41,9 +40,9 @@ export function useDangerZoneSection(): IDangerZoneSectionView {
       // the confirmation password fails (account-deletion.service.ts), so the
       // error attaches to the password field like PasswordSection does.
       if (getAppErrorCode(error) === AppErrorCode.INVALID_CREDENTIALS) {
-        form.setError('password', { message: t('settings.dangerZone.passwordIncorrect') });
+        form.setError('password', { message: settingsStrings.dangerZone.passwordIncorrect });
       } else {
-        toast.error(translateAppError(error) ?? t('settings.dangerZone.failed'));
+        toast.error(translateAppError(error) ?? settingsStrings.dangerZone.failed);
       }
     },
   });

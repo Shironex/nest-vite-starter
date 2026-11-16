@@ -1,21 +1,20 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@repo/ui/form';
 import { Input } from '@repo/ui/input';
 import { PasswordStrength } from '@/features/shared/components/PasswordStrength';
 import { usePasswordSection } from './PasswordSection.hooks';
+import { settingsStrings } from '@/features/settings/Settings.strings';
 
 export default function PasswordSection() {
-  const { t } = useTranslation();
   const { form, onSubmit, isPending, newPassword } = usePasswordSection();
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('settings.password.title')}</CardTitle>
-        <CardDescription>{t('settings.password.description')}</CardDescription>
+        <CardTitle>{settingsStrings.password.title}</CardTitle>
+        <CardDescription>{settingsStrings.password.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -25,11 +24,11 @@ export default function PasswordSection() {
               name="currentPassword"
               render={({ field }) => (
                 <FormItem required>
-                  <FormLabel>{t('settings.password.currentLabel')}</FormLabel>
+                  <FormLabel>{settingsStrings.password.currentLabel}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder={t('settings.password.currentPlaceholder')}
+                      placeholder={settingsStrings.password.currentPlaceholder}
                       {...field}
                     />
                   </FormControl>
@@ -52,11 +51,11 @@ export default function PasswordSection() {
               name="newPassword"
               render={({ field }) => (
                 <FormItem required>
-                  <FormLabel>{t('settings.password.newLabel')}</FormLabel>
+                  <FormLabel>{settingsStrings.password.newLabel}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder={t('settings.password.newPlaceholder')}
+                      placeholder={settingsStrings.password.newPlaceholder}
                       {...field}
                     />
                   </FormControl>
@@ -71,7 +70,7 @@ export default function PasswordSection() {
 
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              {t('settings.password.submit')}
+              {settingsStrings.password.submit}
             </Button>
           </form>
         </Form>

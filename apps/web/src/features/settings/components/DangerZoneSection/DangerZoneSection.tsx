@@ -1,5 +1,4 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -15,27 +14,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@repo/ui/form';
 import { Input } from '@repo/ui/input';
 import { useDangerZoneSection } from './DangerZoneSection.hooks';
+import { settingsStrings } from '@/features/settings/Settings.strings';
+import { commonStrings } from '@/lib/strings';
 
 export default function DangerZoneSection() {
-  const { t } = useTranslation();
   const { form, onSubmit, isPending, isDialogOpen, onDialogOpenChange } = useDangerZoneSection();
 
   return (
     <Card className="border-destructive/50" data-slot="danger-zone-section">
       <CardHeader>
-        <CardTitle className="text-destructive">{t('settings.dangerZone.title')}</CardTitle>
-        <CardDescription>{t('settings.dangerZone.description')}</CardDescription>
+        <CardTitle className="text-destructive">{settingsStrings.dangerZone.title}</CardTitle>
+        <CardDescription>{settingsStrings.dangerZone.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <AlertDialog open={isDialogOpen} onOpenChange={onDialogOpenChange}>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive">{t('settings.dangerZone.cta')}</Button>
+            <Button variant="destructive">{settingsStrings.dangerZone.cta}</Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{t('settings.dangerZone.dialogTitle')}</AlertDialogTitle>
+              <AlertDialogTitle>{settingsStrings.dangerZone.dialogTitle}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t('settings.dangerZone.dialogDescription')}
+                {settingsStrings.dangerZone.dialogDescription}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <Form {...form}>
@@ -45,12 +45,12 @@ export default function DangerZoneSection() {
                   name="password"
                   render={({ field }) => (
                     <FormItem required>
-                      <FormLabel>{t('settings.dangerZone.passwordLabel')}</FormLabel>
+                      <FormLabel>{settingsStrings.dangerZone.passwordLabel}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"
                           autoComplete="current-password"
-                          placeholder={t('settings.dangerZone.passwordPlaceholder')}
+                          placeholder={settingsStrings.dangerZone.passwordPlaceholder}
                           {...field}
                         />
                       </FormControl>
@@ -71,11 +71,11 @@ export default function DangerZoneSection() {
                   {/* Explicit type="button": inside a form the browser default
                       is "submit", which would fire the deletion on Cancel. */}
                   <AlertDialogCancel type="button" disabled={isPending}>
-                    {t('actions.cancel')}
+                    {commonStrings.actions.cancel}
                   </AlertDialogCancel>
                   <Button type="submit" variant="destructive" disabled={isPending}>
                     {isPending && <Loader2 className="animate-spin" />}
-                    {t('settings.dangerZone.confirm')}
+                    {settingsStrings.dangerZone.confirm}
                   </Button>
                 </AlertDialogFooter>
               </form>

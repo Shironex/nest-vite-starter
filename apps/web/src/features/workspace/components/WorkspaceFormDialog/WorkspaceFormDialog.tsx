@@ -9,7 +9,6 @@ import {
 import { Button } from '@repo/ui/button';
 import { Input } from '@repo/ui/input';
 import { Label } from '@repo/ui/label';
-import '../../Workspace.i18n';
 import { useWorkspaceFormDialog } from './WorkspaceFormDialog.hooks';
 import type { IWorkspaceFormDialogProps, IWorkspaceFormFields } from './WorkspaceFormDialog.types';
 

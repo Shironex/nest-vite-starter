@@ -1,8 +1,7 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { createRootRouteWithContext, HeadContent, Outlet } from '@tanstack/react-router';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { I18nextProvider, useTranslation } from 'react-i18next';
 import { Toaster } from '@repo/ui/sonner';
 import { ErrorBoundary } from '@repo/ui/error-boundary';
 import { UiLabelsProvider } from '@repo/ui/ui-labels';
@@ -10,11 +9,11 @@ import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { translateAppError } from '@/lib/trpc-errors';
 import { queryClient } from '@/lib/trpc';
-import { i18n } from '@/lib/i18n';
 import { captureException } from '@/lib/error-reporting';
 import { applyTheme, applyColorTheme } from '@/lib/theme';
 import { useUIStore } from '@/stores/ui-store';
 import { useResolvedTheme } from '@/hooks/use-resolved-theme';
+import { commonStrings } from '@/lib/strings';
 
 export interface IRouterContext {
   queryClient: QueryClient;
@@ -26,12 +25,11 @@ export const Route = createRootRouteWithContext<IRouterContext>()({
 });
 
 function RootErrorComponent({ error }: ErrorComponentProps) {
-  const { t } = useTranslation();
   // The errors that actually reach a route boundary are a failed beforeLoad
   // ("Internal server error"), a transport failure, or a lazy-chunk 404 whose
   // message is an asset URL. None of those is copy: translate what can be
   // translated and keep the raw text for DEV only.
-  const message = translateAppError(error) ?? t('errors.unexpected');
+  const message = translateAppError(error) ?? commonStrings.errors.unexpected;
   const rawMessage = import.meta.env.DEV && error instanceof Error ? error.message : undefined;
 
   useEffect(() => {
@@ -44,8 +42,8 @@ function RootErrorComponent({ error }: ErrorComponentProps) {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{t('fallback.errorTitle')}</CardTitle>
-          <CardDescription>{t('fallback.rootErrorDescription')}</CardDescription>
+          <CardTitle>{commonStrings.fallback.errorTitle}</CardTitle>
+          <CardDescription>{commonStrings.fallback.rootErrorDescription}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="type-body-regular text-muted-foreground">{message}</p>
@@ -57,15 +55,32 @@ function RootErrorComponent({ error }: ErrorComponentProps) {
               {error.stack}
             </pre>
           )}
-          <Button onClick={() => window.location.reload()}>{t('fallback.reload')}</Button>
+          <Button onClick={() => window.location.reload()}>{commonStrings.fallback.reload}</Button>
         </CardContent>
       </Card>
     </div>
   );
 }
 
+/**
+ * The sr-only strings `@repo/ui` primitives render for themselves.
+ *
+ * The package carries no copy by design, so these arrive from the app. Mounted
+ * ONCE in the root layout rather than passed as props because `DialogContent`
+ * alone renders "Close" at 23 call sites and the mobile sidebar renders three of
+ * them from inside `Sidebar`, which no caller passes through: as props they would
+ * be the same literal in two dozen files.
+ */
+const UI_LABELS = {
+  close: commonStrings.actions.close,
+  loading: commonStrings.states.loading,
+  toggleSidebar: commonStrings.uiLabels.toggleSidebar,
+  sidebarTitle: commonStrings.uiLabels.sidebarTitle,
+  sidebarDescription: commonStrings.uiLabels.sidebarDescription,
+  notifications: commonStrings.uiLabels.notifications,
+};
+
 function RootLayout() {
-  const { t } = useTranslation();
   /*
    * One resolved value drives both halves of theming: the `.dark` class the app
    * paints from, and the `theme` prop sonner needs because it renders in its own
@@ -82,37 +97,15 @@ function RootLayout() {
     applyTheme(resolvedTheme);
   }, [resolvedTheme]);
 
-  /**
-   * The sr-only strings `@repo/ui` primitives render for themselves.
-   *
-   * The package has no catalog by design, so these arrive from the app. Mounted
-   * ONCE here rather than passed as props because `DialogContent` alone renders
-   * "Close" at 23 call sites and the mobile sidebar renders three of them from
-   * inside `Sidebar`, which no caller passes through: as props they would be
-   * the same literal in two dozen files, each one drift away from the
-   * catalog copy.
-   */
-  const uiLabels = useMemo(
-    () => ({
-      close: t('actions.close'),
-      loading: t('states.loading'),
-      toggleSidebar: t('uiLabels.toggleSidebar'),
-      sidebarTitle: t('uiLabels.sidebarTitle'),
-      sidebarDescription: t('uiLabels.sidebarDescription'),
-      notifications: t('uiLabels.notifications'),
-    }),
-    [t],
-  );
-
   return (
-    <I18nextProvider i18n={i18n}>
+    <>
       {/*
        * Writes the per-route `head()` title into <head>. Without it every route
        * is index.html's "SaaS Starter": nothing announces a navigation to assistive
        * tech, and a user with several tabs cannot tell one from another.
        */}
       <HeadContent />
-      <UiLabelsProvider labels={uiLabels}>
+      <UiLabelsProvider labels={UI_LABELS}>
         <QueryClientProvider client={queryClient}>
           <div className="flex min-h-screen flex-col bg-background font-sans antialiased">
             {/* Keyboard users can jump past the chrome; visible only while focused. */}
@@ -120,13 +113,13 @@ function RootLayout() {
               href="#main-content"
               className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:type-body-medium focus:ring-2 focus:ring-ring"
             >
-              {t('fallback.skipToContent')}
+              {commonStrings.fallback.skipToContent}
             </a>
             <div className="flex flex-1 flex-col">
               <ErrorBoundary
-                title={t('fallback.errorTitle')}
-                description={t('fallback.rootErrorDescription')}
-                retryLabel={t('actions.retry')}
+                title={commonStrings.fallback.errorTitle}
+                description={commonStrings.fallback.rootErrorDescription}
+                retryLabel={commonStrings.actions.retry}
                 showErrorDetail={import.meta.env.DEV}
                 onError={(error, info) => {
                   console.error('[ErrorBoundary]', error, info);
@@ -140,6 +133,6 @@ function RootLayout() {
           <Toaster theme={resolvedTheme} />
         </QueryClientProvider>
       </UiLabelsProvider>
-    </I18nextProvider>
+    </>
   );
 }

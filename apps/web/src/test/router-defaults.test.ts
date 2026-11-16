@@ -34,12 +34,12 @@ describe('router defaults', () => {
   });
 
   // The shells' ErrorBoundary fallback is a hardcoded default; anything a route
-  // boundary renders has to come from the catalog instead.
-  it('renders translated copy rather than the raw error message', () => {
+  // boundary renders has to come from the strings tables instead.
+  it('renders app copy rather than the raw error message', () => {
     const body = /function RouteErrorComponent\([\s\S]*?\n\}/u.exec(MAIN)?.[0] ?? '';
 
     expect(body).toContain('translateAppError(error)');
-    expect(body).toContain("i18n.t('errors.unexpected')");
+    expect(body).toContain('commonStrings.errors.unexpected');
     // The raw message is a beforeLoad internal or an asset URL; DEV only.
     expect(body).toMatch(/import\.meta\.env\.DEV && error instanceof Error/u);
   });

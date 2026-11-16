@@ -1,10 +1,10 @@
 import { useId, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { Workspace } from '@repo/shared/schemas';
 import { useWorkspaceList } from '../../Workspaces.queries';
-import { WORKSPACE_NS } from '../../Workspace.i18n';
 import type { WorkspaceFormMode } from '../WorkspaceFormDialog';
 import type { IWorkspaceSelectProps, IWorkspaceSelectView } from './WorkspaceSelect.types';
+import { workspaceStrings } from '@/features/workspace/Workspace.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * The workspace picker, shared by every screen that filters or files by
@@ -26,7 +26,6 @@ export function useWorkspaceSelect({
   onChange,
   id,
 }: IWorkspaceSelectProps): IWorkspaceSelectView {
-  const { t } = useTranslation(WORKSPACE_NS);
   const [dialogMode, setDialogMode] = useState<WorkspaceFormMode | null>(null);
   /*
    * Generated rather than a literal: this picker renders on several list screens
@@ -62,18 +61,18 @@ export function useWorkspaceSelect({
     dialogMode,
     selectedWorkspace,
     labels: {
-      select: t('select'),
-      placeholder: t('placeholder'),
-      all: t('all'),
-      empty: t('empty'),
-      emptyHint: t('emptyHint'),
-      add: t('add'),
-      edit: t('edit'),
-      loadError: t('loadError'),
-      retry: t('actions.retry', { ns: 'common' }),
-      search: t('search'),
-      noMatch: t('noMatch'),
-      loading: t('states.loading', { ns: 'common' }),
+      select: workspaceStrings.select,
+      placeholder: workspaceStrings.placeholder,
+      all: workspaceStrings.all,
+      empty: workspaceStrings.empty,
+      emptyHint: workspaceStrings.emptyHint,
+      add: workspaceStrings.add,
+      edit: workspaceStrings.edit,
+      loadError: workspaceStrings.loadError,
+      retry: commonStrings.actions.retry,
+      search: workspaceStrings.search,
+      noMatch: workspaceStrings.noMatch,
+      loading: commonStrings.states.loading,
     },
     onOpenCreate: () => setDialogMode('create'),
     onOpenEdit: () => setDialogMode('edit'),

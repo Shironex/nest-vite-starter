@@ -23,10 +23,6 @@ vi.mock('@tanstack/react-router', () => ({
   useSearch: () => search.current,
 }));
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-}));
-
 vi.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({ invalidateQueries: invalidate }),
   useMutation: (options: { onSuccess: (data: unknown) => void }) => {

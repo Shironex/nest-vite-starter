@@ -1,5 +1,4 @@
 import type { CSSProperties } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   createFileRoute,
   isRedirect,
@@ -21,23 +20,23 @@ import { USER_ME_STALE_TIME } from '@/hooks/use-auth';
 import { pendingSkeletonForPath } from '@/lib/shell-routes';
 import { AppSidebar } from '@/features/layout/components/AppSidebar';
 import { AppTopbar } from '@/features/layout/components/AppTopbar';
+import { commonStrings } from '@/lib/strings';
 
 /** 240px, matching the design's sidebar. The primitive defaults to 256px. */
 const SHELL_STYLE = { '--sidebar-width': '15rem' } as CSSProperties;
 
 function AuthenticatedErrorComponent({ error, reset }: ErrorComponentProps) {
-  const { t } = useTranslation();
   const router = useRouter();
   // The errors that actually reach a route boundary are a failed beforeLoad
   // ("Internal server error"), a transport failure, or a lazy-chunk 404 whose
   // message is an asset URL. None of those is copy: translate what can be
   // translated and keep the raw text for DEV only.
-  const message = translateAppError(error) ?? t('errors.unexpected');
+  const message = translateAppError(error) ?? commonStrings.errors.unexpected;
   const rawMessage = import.meta.env.DEV && error instanceof Error ? error.message : undefined;
 
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-4">
-      <h2 className="type-heading-h2">{t('fallback.errorTitle')}</h2>
+      <h2 className="type-heading-h2">{commonStrings.fallback.errorTitle}</h2>
       <p className="type-body-regular text-text-muted">{message}</p>
       {rawMessage !== undefined && <p className="type-mono-small text-text-muted">{rawMessage}</p>}
       <Button
@@ -49,7 +48,7 @@ function AuthenticatedErrorComponent({ error, reset }: ErrorComponentProps) {
           void router.invalidate();
         }}
       >
-        {t('actions.retry')}
+        {commonStrings.actions.retry}
       </Button>
     </div>
   );
@@ -71,7 +70,6 @@ function AuthenticatedErrorComponent({ error, reset }: ErrorComponentProps) {
  * and the whole layout is pending.
  */
 function AuthenticatedPendingComponent() {
-  const { t } = useTranslation();
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
@@ -84,7 +82,10 @@ function AuthenticatedPendingComponent() {
       <div className="relative flex w-full min-w-0 flex-1 flex-col bg-bg">
         <AppTopbar />
         <main className="flex-1 p-6">
-          <PageSkeleton variant={pendingSkeletonForPath(pathname)} label={t('states.loading')} />
+          <PageSkeleton
+            variant={pendingSkeletonForPath(pathname)}
+            label={commonStrings.states.loading}
+          />
         </main>
       </div>
     </SidebarProvider>
@@ -92,13 +93,14 @@ function AuthenticatedPendingComponent() {
 }
 
 function AuthenticatedNotFoundComponent() {
-  const { t } = useTranslation();
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-4">
-      <h2 className="type-heading-h2">{t('fallback.notFoundTitle')}</h2>
-      <p className="type-body-regular text-text-muted">{t('fallback.notFoundDescription')}</p>
+      <h2 className="type-heading-h2">{commonStrings.fallback.notFoundTitle}</h2>
+      <p className="type-body-regular text-text-muted">
+        {commonStrings.fallback.notFoundDescription}
+      </p>
       <Button asChild>
-        <Link to="/dashboard">{t('fallback.goToDashboard')}</Link>
+        <Link to="/dashboard">{commonStrings.fallback.goToDashboard}</Link>
       </Button>
     </div>
   );
@@ -134,7 +136,6 @@ export const Route = createFileRoute('/_authenticated')({
 });
 
 function AuthenticatedLayout() {
-  const { t } = useTranslation();
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
 
   /*
@@ -164,9 +165,9 @@ function AuthenticatedLayout() {
         <AppTopbar />
         <main id="main-content" className="flex-1 p-6">
           <ErrorBoundary
-            title={t('fallback.errorTitle')}
-            description={t('errors.unexpected')}
-            retryLabel={t('actions.retry')}
+            title={commonStrings.fallback.errorTitle}
+            description={commonStrings.errors.unexpected}
+            retryLabel={commonStrings.actions.retry}
             showErrorDetail={import.meta.env.DEV}
           >
             <Outlet />

@@ -1,9 +1,5 @@
 import { ArrowRight } from 'lucide-react';
 import { StatusPill } from '@repo/ui/status-pill';
-// Side effect: registers this feature's catalogs. Needed HERE and not only in
-// the hook file, because a component test mocks the hook module away, and
-// without this import the screen would render bare i18n keys under test.
-import '../../Audit.i18n';
 import { useAuditLogDetails } from './AuditLogDetails.hooks';
 import type { IAuditLogDetailsProps } from './AuditLogDetails.types';
 

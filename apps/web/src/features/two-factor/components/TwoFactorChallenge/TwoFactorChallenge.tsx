@@ -1,11 +1,11 @@
 import { KeyRound, Loader2, ShieldCheck } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { Input } from '@repo/ui/input';
 import { Checkbox } from '@repo/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@repo/ui/form';
 import { useTwoFactorChallenge } from './TwoFactorChallenge.hooks';
 import type { ICodeSegmentsProps } from './TwoFactorChallenge.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 /**
  * The two-factor challenge: authenticator code and backup code modes.
@@ -45,27 +45,26 @@ const SUBMIT_CLASS =
 const SEGMENT_BASE = `flex ${FIELD_HEIGHT_CLASS} flex-1 items-center justify-center rounded-lg border bg-surface type-display-large text-text`;
 
 export default function TwoFactorChallenge() {
-  const { t } = useTranslation();
   const { form, onSubmit, serverError, isPending, isRecoveryMode, onToggleRecoveryMode } =
     useTwoFactorChallenge();
 
   const codeLabel = isRecoveryMode
-    ? t('twoFactor.challenge.codeLabelRecovery')
-    : t('twoFactor.challenge.codeLabelTotp');
+    ? twoFactorStrings.challenge.codeLabelRecovery
+    : twoFactorStrings.challenge.codeLabelTotp;
   const codeHint = isRecoveryMode
-    ? t('twoFactor.challenge.hintRecovery')
-    : t('twoFactor.challenge.hintTotp');
+    ? twoFactorStrings.challenge.hintRecovery
+    : twoFactorStrings.challenge.hintTotp;
   const codePlaceholder = isRecoveryMode ? 'XXXX-XXXX-XXXX-XXXX' : '';
   const inputMode = isRecoveryMode ? 'text' : 'numeric';
   const description = isRecoveryMode
-    ? t('twoFactor.challenge.descriptionRecovery')
-    : t('twoFactor.challenge.descriptionTotp');
+    ? twoFactorStrings.challenge.descriptionRecovery
+    : twoFactorStrings.challenge.descriptionTotp;
   const toggleQuestion = isRecoveryMode
-    ? t('twoFactor.challenge.toggleQuestionRecovery')
-    : t('twoFactor.challenge.toggleQuestionTotp');
+    ? twoFactorStrings.challenge.toggleQuestionRecovery
+    : twoFactorStrings.challenge.toggleQuestionTotp;
   const toggleLabel = isRecoveryMode
-    ? t('twoFactor.challenge.toggleToTotp')
-    : t('twoFactor.challenge.toggleToRecovery');
+    ? twoFactorStrings.challenge.toggleToTotp
+    : twoFactorStrings.challenge.toggleToRecovery;
   const badgeIcon = isRecoveryMode ? (
     <KeyRound aria-hidden="true" />
   ) : (
@@ -85,7 +84,7 @@ export default function TwoFactorChallenge() {
         <span className="mb-5 flex size-12 items-center justify-center rounded-xl bg-brand-tint text-brand-ink [&_svg]:size-5">
           {badgeIcon}
         </span>
-        <h1 className="type-heading-h1 text-text">{t('twoFactor.challenge.heading')}</h1>
+        <h1 className="type-heading-h1 text-text">{twoFactorStrings.challenge.heading}</h1>
         <p className={`mt-2 ${DESCRIPTION_HEIGHT_CLASS} type-body-regular text-text-muted`}>
           {description}
         </p>
@@ -146,7 +145,7 @@ export default function TwoFactorChallenge() {
                 <Checkbox checked={field.value ?? false} onCheckedChange={field.onChange} />
               </FormControl>
               <FormLabel className="mt-0! cursor-pointer type-body-small text-text-secondary">
-                {t('twoFactor.challenge.trustDevice')}
+                {twoFactorStrings.challenge.trustDevice}
               </FormLabel>
             </FormItem>
           )}
@@ -154,7 +153,7 @@ export default function TwoFactorChallenge() {
 
         <Button type="submit" className={SUBMIT_CLASS} disabled={isPending}>
           {isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
-          {t('twoFactor.challenge.submit')}
+          {twoFactorStrings.challenge.submit}
         </Button>
 
         <p className="text-center type-body-small text-text-muted">

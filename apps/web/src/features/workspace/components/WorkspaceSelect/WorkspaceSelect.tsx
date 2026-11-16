@@ -4,7 +4,6 @@ import { Button } from '@repo/ui/button';
 import { Combobox } from '@repo/ui/combobox';
 import { Label } from '@repo/ui/label';
 import { WorkspaceFormDialog } from '../WorkspaceFormDialog';
-import '../../Workspace.i18n';
 import { useWorkspaceSelect } from './WorkspaceSelect.hooks';
 import type { IWorkspaceSelectProps } from './WorkspaceSelect.types';
 

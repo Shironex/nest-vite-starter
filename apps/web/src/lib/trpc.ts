@@ -7,7 +7,7 @@ import type { AppRouter } from '@api/@generated/server';
 import { fetchWithCsrfRetry } from './csrf';
 import { translateAppError } from './trpc-errors';
 import { captureException } from './error-reporting';
-import { i18n } from './i18n';
+import { commonStrings } from '@/lib/strings';
 
 /** True when the error is a tRPC UNAUTHORIZED (HTTP 401) rejection. */
 export function isUnauthorizedError(error: unknown): boolean {
@@ -95,8 +95,8 @@ export const queryClient = new QueryClient({
       // Toast only background refetch failures (data already on screen).
       // Initial-load errors are rendered by route/component error states.
       if (query.state.data !== undefined) {
-        toast.error(i18n.t('common:errors.refreshFailed'), {
-          description: translateAppError(error) ?? i18n.t('common:errors.unexpected'),
+        toast.error(commonStrings.errors.refreshFailed, {
+          description: translateAppError(error) ?? commonStrings.errors.unexpected,
         });
       }
     },

@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { loginSchema } from '@repo/shared/schemas';
 import type { LoginInput } from '@repo/shared/schemas';
 import { AppErrorCode } from '@repo/shared/errors';
@@ -8,12 +7,12 @@ import { trpc, resetCsrfToken } from '@/lib/trpc';
 import { STAFF_HOME_PATH } from '@/lib/shell-routes';
 import { useAuthForm } from '@/features/auth/AuthForm.hooks';
 import type { ILoginFormView } from './LoginForm.types';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 export function useLoginForm(): ILoginFormView {
-  const { t } = useTranslation();
   const loginErrorMessages = {
-    [AppErrorCode.ACCOUNT_LOCKED]: t('auth.login.accountLocked'),
-    [AppErrorCode.TURNSTILE_FAILED]: t('auth.login.captchaFailed'),
+    [AppErrorCode.ACCOUNT_LOCKED]: authStrings.login.accountLocked,
+    [AppErrorCode.TURNSTILE_FAILED]: authStrings.login.captchaFailed,
   };
   const navigate = useNavigate();
   const queryClient = useQueryClient();

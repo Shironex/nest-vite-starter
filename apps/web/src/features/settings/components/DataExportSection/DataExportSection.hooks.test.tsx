@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import enLocale from '@/lib/i18n/locales/en.json';
+import { settingsStrings } from '@/features/settings/Settings.strings';
 import { useDataExportSection } from './DataExportSection.hooks';
 
 // The component test renders the shell; this suite drives the REAL hook so the
@@ -92,7 +92,7 @@ describe('useDataExportSection', () => {
 
     // Not a tRPC error response, so translateAppError returns undefined and
     // the panel's own catalog copy renders instead of the raw message.
-    await waitFor(() => expect(result.current.errorMessage).toBe(enLocale.common.dataExport.error));
+    await waitFor(() => expect(result.current.errorMessage).toBe(settingsStrings.dataExport.error));
     expect(result.current.errorMessage).not.toBe('boom');
     expect(result.current.isPending).toBe(false);
   });

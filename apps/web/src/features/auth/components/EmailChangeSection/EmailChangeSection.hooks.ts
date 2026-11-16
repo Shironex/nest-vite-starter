@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { requestEmailChangeSchema } from '@repo/shared/schemas';
 import type { RequestEmailChangeInput } from '@repo/shared/schemas';
@@ -11,6 +10,8 @@ import { trpc } from '@/lib/trpc';
 import { getAppErrorCode, translateAppError } from '@/lib/trpc-errors';
 import { useAuth } from '@/hooks/use-auth';
 import type { IEmailChangeSectionView } from './EmailChangeSection.types';
+import { authStrings } from '@/features/auth/Auth.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * The email-change form state. Sudo gates the request: the mutation attempts
@@ -26,7 +27,6 @@ import type { IEmailChangeSectionView } from './EmailChangeSection.types';
  * feature off (`trpc` in lib is shared surface).
  */
 export function useEmailChangeSection(): IEmailChangeSectionView {
-  const { t } = useTranslation();
   const { user } = useAuth();
 
   const twoFactorQuery = useQuery({ ...trpc.twoFactor.status.queryOptions() });
@@ -47,7 +47,7 @@ export function useEmailChangeSection(): IEmailChangeSectionView {
   const requestMutation = useMutation({
     ...trpc.auth.requestEmailChange.mutationOptions(),
     onSuccess: (_data, variables) => {
-      toast.success(t('auth.emailChange.requestedToast'));
+      toast.success(authStrings.emailChange.requestedToast);
       setPendingSentTo(variables.newEmail);
       form.reset();
     },
@@ -61,14 +61,14 @@ export function useEmailChangeSection(): IEmailChangeSectionView {
         setIsDialogOpen(true);
       } else if (code === AppErrorCode.EMAIL_IN_USE || code === AppErrorCode.DISPOSABLE_EMAIL) {
         form.setError('newEmail', {
-          message: translateAppError(error) ?? t('errors.unexpected'),
+          message: translateAppError(error) ?? commonStrings.errors.unexpected,
         });
       } else if (code === AppErrorCode.TWO_FACTOR_INVALID_CODE) {
         form.setError('factorCode', {
-          message: translateAppError(error) ?? t('errors.unexpected'),
+          message: translateAppError(error) ?? commonStrings.errors.unexpected,
         });
       } else {
-        toast.error(translateAppError(error) ?? t('errors.unexpected'));
+        toast.error(translateAppError(error) ?? commonStrings.errors.unexpected);
       }
     },
   });

@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { Form } from '@repo/ui/form';
 import { PasswordStrength } from '@/features/shared/components/PasswordStrength';
@@ -9,10 +8,10 @@ import {
   AUTH_MUTED_LINK_CLASS,
   AUTH_SUBMIT_CLASS,
 } from '@/features/auth/Auth.constants';
-import { AUTH_NS } from '@/features/auth/Auth.i18n';
 import { AuthField } from '@/features/auth/components/AuthField';
 import { FormError } from '@/features/auth/components/FormError';
 import { useResetPasswordForm } from './ResetPasswordForm.hooks';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 /**
  * The new-password screen. The design shows a "repeat password"
@@ -21,7 +20,6 @@ import { useResetPasswordForm } from './ResetPasswordForm.hooks';
  * requirements live, so both are covered by what is here rather than duplicated.
  */
 export default function ResetPasswordForm() {
-  const { t } = useTranslation(AUTH_NS);
   const {
     form,
     onSubmit,
@@ -40,7 +38,7 @@ export default function ResetPasswordForm() {
         className={`inline-flex items-center gap-1.5 ${AUTH_MUTED_LINK_CLASS}`}
       >
         <ArrowLeft className="size-3.5" aria-hidden="true" />
-        {t('backToSignIn')}
+        {authStrings.backToSignIn}
       </Link>
     </div>
   );
@@ -56,11 +54,11 @@ export default function ResetPasswordForm() {
     return (
       <div className="grid gap-4">
         <p role="alert" className="type-body-regular text-danger">
-          {t('resetPassword.tokenMissing')}
+          {authStrings.resetPassword.tokenMissing}
         </p>
         <div className="text-center">
           <Link to="/auth/forgot-password" className={`type-body-small ${AUTH_LINK_CLASS}`}>
-            {t('resetPassword.requestNewLink')}
+            {authStrings.resetPassword.requestNewLink}
           </Link>
         </div>
         {backToLogin}
@@ -79,7 +77,7 @@ export default function ResetPasswordForm() {
                 to="/auth/forgot-password"
                 className={`mt-2 block type-body-small ${AUTH_LINK_CLASS}`}
               >
-                {t('resetPassword.requestNewLink')}
+                {authStrings.resetPassword.requestNewLink}
               </Link>
             )}
           </FormError>
@@ -89,9 +87,9 @@ export default function ResetPasswordForm() {
           form={form}
           name="password"
           required
-          label={t('resetPassword.newPassword')}
+          label={authStrings.resetPassword.newPassword}
           type="password"
-          placeholder={t('fields.newPasswordPlaceholder')}
+          placeholder={authStrings.fields.newPasswordPlaceholder}
           autoComplete="new-password"
         >
           <PasswordStrength password={password} />
@@ -101,16 +99,16 @@ export default function ResetPasswordForm() {
           <AuthField
             form={form}
             name="factorCode"
-            label={t('resetPassword.factorCode')}
+            label={authStrings.resetPassword.factorCode}
             inputMode="text"
-            placeholder={t('resetPassword.factorCodePlaceholder')}
+            placeholder={authStrings.resetPassword.factorCodePlaceholder}
             autoComplete="one-time-code"
           />
         )}
 
         <Button type="submit" className={AUTH_SUBMIT_CLASS} disabled={isPending}>
           {isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
-          {t('resetPassword.submit')}
+          {authStrings.resetPassword.submit}
         </Button>
 
         {backToLogin}

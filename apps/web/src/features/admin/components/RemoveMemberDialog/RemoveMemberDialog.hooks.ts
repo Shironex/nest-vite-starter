@@ -1,27 +1,26 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { trpc } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import type { IRemoveMemberDialogProps, IRemoveMemberDialogView } from './RemoveMemberDialog.types';
+import { adminStrings } from '@/features/admin/Admin.strings';
 
 export function useRemoveMemberDialog({
   memberId,
   onOpenChange,
 }: IRemoveMemberDialogProps): IRemoveMemberDialogView {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const removeMutation = useMutation({
     ...trpc.user.removeMember.mutationOptions(),
     onSuccess: () => {
-      toast.success(t('admin.removeDialog.success'));
+      toast.success(adminStrings.removeDialog.success);
       // Every cursor page carries a distinct query key, so invalidate the whole
       // listUsers family: the row stays, with its status changed to `removed`.
       void queryClient.invalidateQueries(trpc.user.listUsers.pathFilter());
       onOpenChange(false);
     },
-    onError: (error) => toast.error(translateAppError(error) ?? t('admin.removeDialog.error')),
+    onError: (error) => toast.error(translateAppError(error) ?? adminStrings.removeDialog.error),
   });
 
   function onConfirm() {

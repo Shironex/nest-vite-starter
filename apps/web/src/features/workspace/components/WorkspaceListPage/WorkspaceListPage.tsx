@@ -11,7 +11,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ListSearchField } from '@/features/shared/components/ListSearchField';
 // Side effect: registers this feature's catalogs. Needed HERE and not only in
 // the hook file, because a component test mocks the hook module away.
-import '../../Workspace.i18n';
 import { WorkspaceFormDialog } from '../WorkspaceFormDialog';
 import { useWorkspaceListPage } from './WorkspaceListPage.hooks';
 

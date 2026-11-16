@@ -1,5 +1,5 @@
 import { DateField as DateFieldPrimitive } from '@repo/ui/date-field';
-import { APP_LOCALE } from '@/lib/i18n/format';
+import { APP_LOCALE } from '@/lib/format';
 import { useDateField } from './DateField.hooks';
 import type { IDateFieldProps } from './DateField.types';
 

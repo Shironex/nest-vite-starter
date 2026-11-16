@@ -1,5 +1,4 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@repo/ui/form';
@@ -7,6 +6,7 @@ import { Input } from '@repo/ui/input';
 import { ConfirmPasswordDialog } from '../ConfirmPasswordDialog';
 import { FormSuccess } from '../FormSuccess';
 import { useEmailChangeSection } from './EmailChangeSection.hooks';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 /**
  * The settings card that starts a verified email change. Chrome follows
@@ -19,7 +19,6 @@ import { useEmailChangeSection } from './EmailChangeSection.hooks';
  * spells out so nobody expects an instant switch.
  */
 export default function EmailChangeSection() {
-  const { t } = useTranslation();
   const {
     currentEmail,
     form,
@@ -35,17 +34,17 @@ export default function EmailChangeSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('auth.emailChange.title')}</CardTitle>
-        <CardDescription>{t('auth.emailChange.description')}</CardDescription>
+        <CardTitle>{authStrings.emailChange.title}</CardTitle>
+        <CardDescription>{authStrings.emailChange.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <p className="type-body-small text-text-muted">{t('auth.emailChange.currentLabel')}</p>
+          <p className="type-body-small text-text-muted">{authStrings.emailChange.currentLabel}</p>
           <p className="type-body-medium text-text">{currentEmail}</p>
         </div>
 
         {pendingSentTo !== null && (
-          <FormSuccess>{t('auth.emailChange.pendingSent', { email: pendingSentTo })}</FormSuccess>
+          <FormSuccess>{authStrings.emailChange.pendingSent({ email: pendingSentTo })}</FormSuccess>
         )}
 
         <Form {...form}>
@@ -55,12 +54,12 @@ export default function EmailChangeSection() {
               name="newEmail"
               render={({ field }) => (
                 <FormItem required>
-                  <FormLabel>{t('auth.emailChange.newLabel')}</FormLabel>
+                  <FormLabel>{authStrings.emailChange.newLabel}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
                       autoComplete="email"
-                      placeholder={t('auth.emailChange.newPlaceholder')}
+                      placeholder={authStrings.emailChange.newPlaceholder}
                       {...field}
                     />
                   </FormControl>
@@ -84,16 +83,16 @@ export default function EmailChangeSection() {
                 name="factorCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('auth.emailChange.factorLabel')}</FormLabel>
+                    <FormLabel>{authStrings.emailChange.factorLabel}</FormLabel>
                     <FormControl>
                       <Input
                         autoComplete="one-time-code"
-                        placeholder={t('auth.emailChange.factorPlaceholder')}
+                        placeholder={authStrings.emailChange.factorPlaceholder}
                         {...field}
                       />
                     </FormControl>
                     <p className="type-body-small text-text-muted">
-                      {t('auth.emailChange.factorHint')}
+                      {authStrings.emailChange.factorHint}
                     </p>
                     {/* Reserved row, same reason as the address field above. */}
                     <div className="min-h-5">
@@ -106,7 +105,7 @@ export default function EmailChangeSection() {
 
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              {t('auth.emailChange.submit')}
+              {authStrings.emailChange.submit}
             </Button>
           </form>
         </Form>

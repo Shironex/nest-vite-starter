@@ -1,8 +1,7 @@
 import { Check, ShieldCheck } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { PRODUCT_NAME } from '@repo/shared/constants';
-import { AUTH_NS } from '@/features/auth/Auth.i18n';
 import { useBrandPanel } from './BrandPanel.hooks';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 /**
  * The gradient brand column shared by every auth screen. Hidden below `lg`
@@ -72,7 +71,6 @@ export default function BrandPanel() {
  * affordances.
  */
 function ProductScene() {
-  const { t } = useTranslation(AUTH_NS);
   return (
     <div aria-hidden="true" className="relative h-50 w-full">
       <svg
@@ -94,21 +92,23 @@ function ProductScene() {
 
       <div className="absolute top-0 left-30 w-38 rounded-xl bg-surface p-3 shadow-lg">
         <p className="type-label-overline text-text-tertiary">
-          {t('brandPanel.scene.summaryTitle')}
+          {authStrings.brandPanel.scene.summaryTitle}
         </p>
         <dl className="mt-3 space-y-1">
           <div className="flex justify-between">
             <dt className="type-body-small text-text-muted">
-              {t('brandPanel.scene.summaryFirstLabel')}
+              {authStrings.brandPanel.scene.summaryFirstLabel}
             </dt>
-            <dd className="type-mono-small text-text">{t('brandPanel.scene.summaryFirstValue')}</dd>
+            <dd className="type-mono-small text-text">
+              {authStrings.brandPanel.scene.summaryFirstValue}
+            </dd>
           </div>
           <div className="flex justify-between">
             <dt className="type-body-small text-text-muted">
-              {t('brandPanel.scene.summarySecondLabel')}
+              {authStrings.brandPanel.scene.summarySecondLabel}
             </dt>
             <dd className="type-mono-small font-medium text-text">
-              {t('brandPanel.scene.summarySecondValue')}
+              {authStrings.brandPanel.scene.summarySecondValue}
             </dd>
           </div>
         </dl>
@@ -116,13 +116,13 @@ function ProductScene() {
 
       <div className="absolute top-24 left-0 w-38 rounded-xl bg-surface p-3 shadow-lg">
         <p className="type-label-overline text-text-tertiary">
-          {t('brandPanel.scene.personTitle')}
+          {authStrings.brandPanel.scene.personTitle}
         </p>
         <div className="mt-2 flex items-center gap-2">
           <span className="flex size-5 items-center justify-center rounded-full bg-brand-100 type-label-overline text-brand-ink-hover">
-            {t('brandPanel.scene.personInitials')}
+            {authStrings.brandPanel.scene.personInitials}
           </span>
-          <p className="type-body-small text-text">{t('brandPanel.scene.personName')}</p>
+          <p className="type-body-small text-text">{authStrings.brandPanel.scene.personName}</p>
         </div>
         <div className="mt-3 h-1 rounded-full bg-subtle">
           <div className="h-1 w-8/12 rounded-full bg-brand" />
@@ -133,7 +133,7 @@ function ProductScene() {
         <span className="flex size-4 items-center justify-center rounded-full bg-success">
           <Check className="size-2.5 text-white" strokeWidth={3} />
         </span>
-        <p className="type-body-small text-text">{t('brandPanel.scene.status')}</p>
+        <p className="type-body-small text-text">{authStrings.brandPanel.scene.status}</p>
       </div>
     </div>
   );

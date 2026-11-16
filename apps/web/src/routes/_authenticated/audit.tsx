@@ -1,13 +1,13 @@
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { ROLES } from '@repo/shared/permissions';
 import { Button } from '@repo/ui/button';
 import { PageSkeleton } from '@repo/ui/page-skeleton';
 import { pageTitle } from '@/lib/page-title';
-import { i18n } from '@/lib/i18n';
 import { trpc } from '@/lib/trpc';
 import { USER_ME_STALE_TIME } from '@/hooks/use-auth';
 import { AuditLogPage } from '@/features/audit/components/AuditLogPage';
+import { commonStrings } from '@/lib/strings';
+import { auditStrings } from '@/features/audit/Audit.strings';
 
 /**
  * ADMIN-only audit trail ("Audit log").
@@ -21,7 +21,7 @@ import { AuditLogPage } from '@/features/audit/components/AuditLogPage';
  * here is a cache hit rather than a second request.
  */
 export const Route = createFileRoute('/_authenticated/audit')({
-  head: () => pageTitle('pageTitle.audit'),
+  head: () => pageTitle(commonStrings.pageTitle.audit),
   beforeLoad: async ({ context }) => {
     const user = await context.queryClient.ensureQueryData({
       ...trpc.user.me.queryOptions(),
@@ -52,16 +52,15 @@ function AuditRoute() {
  * three gray bars handing over to a tab row and a table.
  */
 function AuditPending() {
-  return <PageSkeleton variant="list" label={i18n.t('states.loading')} />;
+  return <PageSkeleton variant="list" label={commonStrings.states.loading} />;
 }
 
 function AuditError({ reset }: { reset: () => void }) {
   const router = useRouter();
-  const { t } = useTranslation('audit');
 
   return (
     <div className="space-y-3" role="alert">
-      <p className="type-body-regular text-danger">{t('list.loadError')}</p>
+      <p className="type-body-regular text-danger">{auditStrings.list.loadError}</p>
       <Button
         variant="outline"
         size="sm"
@@ -75,7 +74,7 @@ function AuditError({ reset }: { reset: () => void }) {
           void router.invalidate();
         }}
       >
-        {t('actions.retry', { ns: 'common' })}
+        {commonStrings.actions.retry}
       </Button>
     </div>
   );

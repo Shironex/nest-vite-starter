@@ -1,6 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { registerSchema } from '@repo/shared/schemas';
 import type { RegisterInput } from '@repo/shared/schemas';
 import { AppErrorCode } from '@repo/shared/errors';
@@ -8,9 +7,9 @@ import { trpc, resetCsrfToken } from '@/lib/trpc';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import { useAuthForm } from '@/features/auth/AuthForm.hooks';
 import type { IRegisterFormView } from './RegisterForm.types';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 export function useRegisterForm(): IRegisterFormView {
-  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const {
@@ -50,7 +49,7 @@ export function useRegisterForm(): IRegisterFormView {
       // EMAIL_IN_USE belongs on the email field, not the form-level banner.
       if (getAppErrorCode(error) === AppErrorCode.EMAIL_IN_USE) {
         form.setError('email', {
-          message: t('auth.register.emailExists'),
+          message: authStrings.register.emailExists,
         });
       } else {
         handleServerError(error);

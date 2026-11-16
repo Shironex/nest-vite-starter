@@ -1,18 +1,16 @@
 import { Link } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { Switch } from '@repo/ui/switch';
 import { Form, FormField, FormItem, FormLabel, FormControl } from '@repo/ui/form';
 import { AUTH_LINK_CLASS } from '@/features/auth/Auth.constants';
-import { AUTH_NS } from '@/features/auth/Auth.i18n';
 import { AuthField } from '@/features/auth/components/AuthField';
 import { TurnstileField } from '@/features/auth/components/TurnstileField';
 import { AuthSubmit } from '@/features/auth/components/AuthSubmit';
 import { FormError } from '@/features/auth/components/FormError';
 import { useLoginForm } from './LoginForm.hooks';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 /** The sign-in screen: email and password, with an optional remember-me. */
 export default function LoginForm() {
-  const { t } = useTranslation(AUTH_NS);
   const {
     form,
     onSubmit,
@@ -25,7 +23,7 @@ export default function LoginForm() {
 
   const forgotPasswordLink = (
     <Link to="/auth/forgot-password" className={`type-label-caption! ${AUTH_LINK_CLASS}`}>
-      {t('login.forgotPassword')}
+      {authStrings.login.forgotPassword}
     </Link>
   );
 
@@ -38,9 +36,9 @@ export default function LoginForm() {
           form={form}
           name="email"
           required
-          label={t('fields.email')}
+          label={authStrings.fields.email}
           type="email"
-          placeholder={t('fields.emailPlaceholder')}
+          placeholder={authStrings.fields.emailPlaceholder}
           autoComplete="email"
         />
 
@@ -48,7 +46,7 @@ export default function LoginForm() {
           form={form}
           name="password"
           required
-          label={t('fields.password')}
+          label={authStrings.fields.password}
           type="password"
           placeholder="••••••••"
           autoComplete="current-password"
@@ -64,7 +62,7 @@ export default function LoginForm() {
                 <Switch checked={field.value ?? false} onCheckedChange={field.onChange} />
               </FormControl>
               <FormLabel className="mt-0! cursor-pointer type-body-small text-text-secondary">
-                {t('login.rememberMe')}
+                {authStrings.login.rememberMe}
               </FormLabel>
             </FormItem>
           )}
@@ -77,7 +75,7 @@ export default function LoginForm() {
         />
 
         <AuthSubmit isPending={isPending} captchaStatus={captchaStatus}>
-          {t('login.submit')}
+          {authStrings.login.submit}
         </AuthSubmit>
       </form>
     </Form>

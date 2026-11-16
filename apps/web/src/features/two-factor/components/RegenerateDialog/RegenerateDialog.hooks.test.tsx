@@ -3,8 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { AppErrorCode } from '@repo/shared/errors';
-import { i18n } from '@/lib/i18n';
 import { useRegenerateDialog } from './RegenerateDialog.hooks';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 const { regenerateFn } = vi.hoisted(() => ({ regenerateFn: vi.fn() }));
 
@@ -51,7 +51,7 @@ describe('useRegenerateDialog', () => {
     act(() => result.current.onSubmit({ password: 'bad' }));
     await waitFor(() =>
       expect(result.current.form.formState.errors.password?.message).toBe(
-        i18n.t('twoFactor.regenerate.passwordIncorrect'),
+        twoFactorStrings.regenerate.passwordIncorrect,
       ),
     );
   });

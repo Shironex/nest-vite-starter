@@ -1,5 +1,5 @@
 import { AppErrorCode } from '@repo/shared/errors';
-import { i18n } from './i18n';
+import { commonStrings, errorStrings } from './strings';
 
 const APP_ERROR_CODES = new Set<string>(Object.values(AppErrorCode));
 
@@ -60,16 +60,14 @@ function readErrorMessage(error: unknown): string | undefined {
 }
 
 /**
- * Turn a tRPC client error into a user-facing sentence in the active language.
+ * Turn a tRPC client error into a user-facing sentence.
  *
- * Uses the standalone `i18n.t`, not `useTranslation()`, because the first
- * consumer is `queryCache.onError` in ./trpc.ts: that callback runs outside
- * React and cannot call hooks. Inside components prefer `useTranslation()` so
- * the copy re-renders on a language switch.
+ * A plain function rather than a hook, because the first consumer is
+ * `queryCache.onError` in ./trpc.ts: that callback runs outside React.
  *
  * Fallback contract, in order:
  *
- * 1. a mapped `appCode` wins, translated from the exhaustive catalog;
+ * 1. a mapped `appCode` wins, taken from the exhaustive `errorStrings` table;
  * 2. an error that carries `data` (a real tRPC error RESPONSE) but no mapped
  *    code falls back to `error.message`, which on that path is the api's own
  *    sentence for the failure;
@@ -80,27 +78,19 @@ function readErrorMessage(error: unknown): string | undefined {
  * Rule 3 and 4 replace an older "always fall back to `error.message`" rule.
  * The api's errorFormatter stamps `appCode` on EVERY tRPC error response, so
  * the raw message only ever surfaced for transport failures, which means
- * every `translateAppError(e) ?? t('errors.unexpected')` site in the app was
+ * every `translateAppError(e) ?? <fallback>` site in the app was
  * showing "Failed to fetch" / "Unexpected token '<'" on a network blip and
  * the translated fallback beside it was dead code.
  */
 export function translateAppError(error: unknown): string | undefined {
   const code = getAppErrorCode(error);
-  // `i18n.t` before init would return the bare key, which is worse copy than
-  // the server's own message.
-  if (code !== undefined && i18n.isInitialized) {
-    // The `errors` namespace is flat and keyed by AppErrorCode; the catalog is
-    // exhaustiveness-checked at compile time in ./i18n/error-catalog.ts.
-    const translated = i18n.t(`errors:${code}`, { defaultValue: '' });
-    if (translated !== '') return translated;
-  }
+  // `errorStrings` is keyed by AppErrorCode and exhaustiveness-checked at
+  // compile time in ./strings.ts.
+  if (code !== undefined) return errorStrings[code];
 
   if (hasErrorResponseData(error)) return readErrorMessage(error);
 
-  if (isTrpcClientError(error) && i18n.isInitialized) {
-    const network = i18n.t('common:errors.network', { defaultValue: '' });
-    if (network !== '') return network;
-  }
+  if (isTrpcClientError(error)) return commonStrings.errors.network;
 
   return undefined;
 }

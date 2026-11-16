@@ -1,7 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { changePasswordSchema } from '@repo/shared/schemas';
 import type { ChangePasswordInput } from '@repo/shared/schemas';
@@ -10,9 +9,9 @@ import { trpc } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import type { IPasswordSectionView } from './PasswordSection.types';
+import { settingsStrings } from '@/features/settings/Settings.strings';
 
 export function usePasswordSection(): IPasswordSectionView {
-  const { t } = useTranslation();
   const form = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),
     mode: 'onBlur',
@@ -27,7 +26,7 @@ export function usePasswordSection(): IPasswordSectionView {
   const changePasswordMutation = useMutation({
     ...trpc.auth.changePassword.mutationOptions(),
     onSuccess: () => {
-      toast.success(t('settings.password.success'));
+      toast.success(settingsStrings.password.success);
       form.reset();
     },
     onError: (error) => {
@@ -35,10 +34,10 @@ export function usePasswordSection(): IPasswordSectionView {
       // the current password fails verification (password-change.service.ts).
       if (getAppErrorCode(error) === AppErrorCode.INVALID_CREDENTIALS) {
         form.setError('currentPassword', {
-          message: t('settings.password.currentIncorrect'),
+          message: settingsStrings.password.currentIncorrect,
         });
       } else {
-        toast.error(translateAppError(error) ?? t('settings.password.failed'));
+        toast.error(translateAppError(error) ?? settingsStrings.password.failed);
       }
     },
   });

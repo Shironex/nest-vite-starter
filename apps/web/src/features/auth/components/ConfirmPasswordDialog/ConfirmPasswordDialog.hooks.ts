@@ -1,7 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { confirmPasswordSchema } from '@repo/shared/schemas';
 import type { ConfirmPasswordInput } from '@repo/shared/schemas';
@@ -12,6 +11,8 @@ import type {
   IConfirmPasswordDialogProps,
   IConfirmPasswordDialogView,
 } from './ConfirmPasswordDialog.types';
+import { authStrings } from '@/features/auth/Auth.strings';
+import { commonStrings, errorStrings } from '@/lib/strings';
 
 /**
  * The sudo prompt (SPEC section 8): re-prove the password to grant this
@@ -23,8 +24,6 @@ export function useConfirmPasswordDialog({
   onOpenChange,
   onConfirmed,
 }: IConfirmPasswordDialogProps): IConfirmPasswordDialogView {
-  const { t } = useTranslation();
-
   const form = useForm<ConfirmPasswordInput>({
     resolver: zodResolver(confirmPasswordSchema),
     mode: 'onBlur',
@@ -46,12 +45,12 @@ export function useConfirmPasswordDialog({
         // Field-level copy like DisableDialog: the catalog sentence for this
         // code mentions the e-mail address, which is wrong under a lone
         // password field.
-        form.setError('password', { message: t('auth.sudo.invalidPassword') });
+        form.setError('password', { message: authStrings.sudo.invalidPassword });
       } else if (code === AppErrorCode.RATE_LIMITED) {
         // 5 attempts per 300 s per user; the catalog copy fits verbatim.
-        form.setError('password', { message: t('errors:RATE_LIMITED') });
+        form.setError('password', { message: errorStrings.RATE_LIMITED });
       } else {
-        toast.error(translateAppError(error) ?? t('errors.unexpected'));
+        toast.error(translateAppError(error) ?? commonStrings.errors.unexpected);
       }
     },
   });

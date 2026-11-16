@@ -5,6 +5,7 @@ import * as z from 'zod/mini';
 import { pageTitle } from '@/lib/page-title';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { VerifyEmail } from '@/features/auth/components/VerifyEmail';
+import { commonStrings } from '@/lib/strings';
 
 const searchSchema = z.object({
   token: z.optional(z.string()),
@@ -14,7 +15,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute('/auth/verify-email')({
-  head: () => pageTitle('pageTitle.verifyEmail'),
+  head: () => pageTitle(commonStrings.pageTitle.verifyEmail),
   validateSearch: (search) => searchSchema.parse(search),
   component: VerifyEmailPage,
 });

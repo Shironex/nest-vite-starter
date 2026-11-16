@@ -1,16 +1,15 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeft, AlertTriangle, CheckCircle, Loader2, Mail, XCircle } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { Form } from '@repo/ui/form';
 import { AUTH_MUTED_LINK_CLASS, AUTH_SUBMIT_CLASS } from '@/features/auth/Auth.constants';
-import { AUTH_NS } from '@/features/auth/Auth.i18n';
 import { TurnstileField } from '@/features/auth/components/TurnstileField';
 import { AuthSubmit } from '@/features/auth/components/AuthSubmit';
 import { FormError } from '@/features/auth/components/FormError';
 import { FormSuccess } from '@/features/auth/components/FormSuccess';
 import { useCheckYourEmail, useVerifyEmail, useVerifyWithToken } from './VerifyEmail.hooks';
 import type { ICheckYourEmailProps, IVerifyEmailStateProps } from './VerifyEmail.types';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 /**
  * This screen has NO design of its own. The closest one, the one-time-code
@@ -52,18 +51,16 @@ function VerifyEmailState({
 }
 
 function BackToSignIn() {
-  const { t } = useTranslation(AUTH_NS);
   return (
     <Link to="/auth/login" className={`inline-flex items-center gap-1.5 ${AUTH_MUTED_LINK_CLASS}`}>
       <ArrowLeft className="size-3.5" aria-hidden="true" />
-      {t('backToSignIn')}
+      {authStrings.backToSignIn}
     </Link>
   );
 }
 
 // Mode 1: auto-verify when arriving from the email link.
 function VerifyWithToken({ token }: { token: string }) {
-  const { t } = useTranslation(AUTH_NS);
   const { status, errorMessage, retry } = useVerifyWithToken(token);
 
   if (status === 'loading') {
@@ -71,8 +68,8 @@ function VerifyWithToken({ token }: { token: string }) {
       <VerifyEmailState
         badgeClass="bg-brand-tint text-brand-ink"
         icon={<Loader2 className="animate-spin" aria-hidden="true" />}
-        title={t('verifyEmail.verifyingTitle')}
-        description={t('verifyEmail.verifyingDescription')}
+        title={authStrings.verifyEmail.verifyingTitle}
+        description={authStrings.verifyEmail.verifyingDescription}
       />
     );
   }
@@ -85,12 +82,12 @@ function VerifyWithToken({ token }: { token: string }) {
       <VerifyEmailState
         badgeClass="bg-success-bg text-success"
         icon={<CheckCircle aria-hidden="true" />}
-        title={t('verifyEmail.verifiedTitle')}
-        description={t('verifyEmail.verifiedDescription')}
+        title={authStrings.verifyEmail.verifiedTitle}
+        description={authStrings.verifyEmail.verifiedDescription}
       >
         <div className="mt-7 grid w-full gap-2.5">
           <Button asChild className={AUTH_SUBMIT_CLASS}>
-            <Link to="/auth/login">{t('verifyEmail.signIn')}</Link>
+            <Link to="/auth/login">{authStrings.verifyEmail.signIn}</Link>
           </Button>
         </div>
       </VerifyEmailState>
@@ -101,16 +98,16 @@ function VerifyWithToken({ token }: { token: string }) {
     <VerifyEmailState
       badgeClass="bg-danger-bg text-danger"
       icon={<XCircle aria-hidden="true" />}
-      title={t('verifyEmail.failedTitle')}
+      title={authStrings.verifyEmail.failedTitle}
       description={errorMessage}
     >
       <div className="mt-7 grid w-full gap-2.5">
         <Button onClick={retry} className={AUTH_SUBMIT_CLASS}>
-          {t('verifyEmail.retry')}
+          {authStrings.verifyEmail.retry}
         </Button>
         <Button variant="outline" asChild className="h-10.5 w-full rounded-lg">
           <Link to="/auth/verify-email" search={{}}>
-            {t('verifyEmail.resend')}
+            {authStrings.verifyEmail.resend}
           </Link>
         </Button>
       </div>
@@ -123,7 +120,6 @@ function VerifyWithToken({ token }: { token: string }) {
 
 // Mode 2: "check your email" message with a resend option (no token).
 function CheckYourEmail({ emailSendFailed }: ICheckYourEmailProps) {
-  const { t } = useTranslation(AUTH_NS);
   const {
     form,
     onResend,
@@ -138,7 +134,7 @@ function CheckYourEmail({ emailSendFailed }: ICheckYourEmailProps) {
   const resendBlock = (
     <>
       {resendSuccess && (
-        <FormSuccess className="mt-7 w-full">{t('verifyEmail.resent')}</FormSuccess>
+        <FormSuccess className="mt-7 w-full">{authStrings.verifyEmail.resent}</FormSuccess>
       )}
 
       {serverError && <FormError className="mt-7 w-full">{serverError}</FormError>}
@@ -157,7 +153,7 @@ function CheckYourEmail({ emailSendFailed }: ICheckYourEmailProps) {
             variant="outline"
             className="h-10.5 w-full rounded-lg"
           >
-            {t('verifyEmail.resend')}
+            {authStrings.verifyEmail.resend}
           </AuthSubmit>
         </form>
       </Form>
@@ -173,8 +169,8 @@ function CheckYourEmail({ emailSendFailed }: ICheckYourEmailProps) {
       <VerifyEmailState
         badgeClass="bg-warning-bg text-warning"
         icon={<AlertTriangle aria-hidden="true" />}
-        title={t('verifyEmail.sendFailedTitle')}
-        description={t('verifyEmail.sendFailedDescription')}
+        title={authStrings.verifyEmail.sendFailedTitle}
+        description={authStrings.verifyEmail.sendFailedDescription}
       >
         {resendBlock}
       </VerifyEmailState>
@@ -185,8 +181,8 @@ function CheckYourEmail({ emailSendFailed }: ICheckYourEmailProps) {
     <VerifyEmailState
       badgeClass="bg-brand-tint text-brand-ink"
       icon={<Mail aria-hidden="true" />}
-      title={t('verifyEmail.checkInboxTitle')}
-      description={t('verifyEmail.checkInboxDescription')}
+      title={authStrings.verifyEmail.checkInboxTitle}
+      description={authStrings.verifyEmail.checkInboxDescription}
     >
       {resendBlock}
     </VerifyEmailState>

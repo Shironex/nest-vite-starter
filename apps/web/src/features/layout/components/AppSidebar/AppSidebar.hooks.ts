@@ -1,21 +1,20 @@
 import { useRouterState } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/use-auth';
 import { NAV_GROUPS, isActivePath } from '@/features/layout/Layout.nav';
 import type { IAppSidebarView, INavGroup } from './AppSidebar.types';
+import { layoutStrings } from '@/features/layout/Layout.strings';
 
 export function useAppSidebar(): IAppSidebarView {
   const routerState = useRouterState();
-  const { t } = useTranslation();
   const { user } = useAuth();
   const currentPath = routerState.location.pathname;
 
   const groups: INavGroup[] = NAV_GROUPS.map((group) => ({
-    label: t(group.labelKey),
+    label: group.label,
     items: group.items
       .filter((item) => !item.role || item.role === user?.role)
       .map((item) => ({
-        title: t(item.titleKey),
+        title: item.title,
         href: item.href,
         icon: item.icon,
         isActive: isActivePath(currentPath, item.href),
@@ -26,6 +25,6 @@ export function useAppSidebar(): IAppSidebarView {
 
   return {
     groups,
-    navLabel: t('nav.primary'),
+    navLabel: layoutStrings.nav.primary,
   };
 }

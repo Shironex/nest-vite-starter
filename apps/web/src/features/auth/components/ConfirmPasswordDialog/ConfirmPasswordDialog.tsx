@@ -1,5 +1,4 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import {
   Dialog,
@@ -13,6 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@repo/ui/input';
 import { useConfirmPasswordDialog } from './ConfirmPasswordDialog.hooks';
 import type { IConfirmPasswordDialogProps } from './ConfirmPasswordDialog.types';
+import { authStrings } from '@/features/auth/Auth.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * The sudo prompt (SPEC section 8): a password re-entry dialog wired to
@@ -21,7 +22,6 @@ import type { IConfirmPasswordDialogProps } from './ConfirmPasswordDialog.types'
  * dialog.
  */
 export default function ConfirmPasswordDialog(props: IConfirmPasswordDialogProps) {
-  const { t } = useTranslation();
   const { form, onSubmit, isPending } = useConfirmPasswordDialog(props);
 
   const passwordForm = (
@@ -32,12 +32,12 @@ export default function ConfirmPasswordDialog(props: IConfirmPasswordDialogProps
           name="password"
           render={({ field }) => (
             <FormItem required>
-              <FormLabel>{t('auth.sudo.passwordLabel')}</FormLabel>
+              <FormLabel>{authStrings.sudo.passwordLabel}</FormLabel>
               <FormControl>
                 <Input
                   type="password"
                   autoComplete="current-password"
-                  placeholder={t('auth.sudo.passwordPlaceholder')}
+                  placeholder={authStrings.sudo.passwordPlaceholder}
                   {...field}
                 />
               </FormControl>
@@ -61,11 +61,11 @@ export default function ConfirmPasswordDialog(props: IConfirmPasswordDialogProps
             disabled={isPending}
             onClick={() => props.onOpenChange(false)}
           >
-            {t('actions.cancel')}
+            {commonStrings.actions.cancel}
           </Button>
           <Button type="submit" disabled={isPending}>
             {isPending && <Loader2 className="animate-spin" />}
-            {t('actions.confirm')}
+            {commonStrings.actions.confirm}
           </Button>
         </DialogFooter>
       </form>
@@ -76,8 +76,8 @@ export default function ConfirmPasswordDialog(props: IConfirmPasswordDialogProps
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent data-slot="confirm-password-dialog">
         <DialogHeader>
-          <DialogTitle>{t('auth.sudo.title')}</DialogTitle>
-          <DialogDescription>{t('auth.sudo.description')}</DialogDescription>
+          <DialogTitle>{authStrings.sudo.title}</DialogTitle>
+          <DialogDescription>{authStrings.sudo.description}</DialogDescription>
         </DialogHeader>
         {passwordForm}
       </DialogContent>

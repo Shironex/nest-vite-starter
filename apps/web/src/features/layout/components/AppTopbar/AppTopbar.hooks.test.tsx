@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PRODUCT_NAME } from '@repo/shared/constants';
+import { commonStrings } from '@/lib/strings';
 import { useTopbarStore } from '@/stores/topbar-store';
 import { useAppTopbar } from './AppTopbar.hooks';
 
@@ -8,10 +9,6 @@ const { pathname } = vi.hoisted(() => ({ pathname: { current: '/dashboard' } }))
 
 vi.mock('@tanstack/react-router', () => ({
   useRouterState: () => ({ location: { pathname: pathname.current } }),
-}));
-
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
 }));
 
 function titleFor(path: string) {
@@ -25,15 +22,15 @@ beforeEach(() => {
 
 describe('useAppTopbar', () => {
   it('uses the route page title, which can differ from the sidebar label', () => {
-    expect(titleFor('/dashboard')).toBe('pageTitle.dashboard');
+    expect(titleFor('/dashboard')).toBe(commonStrings.pageTitle.dashboard);
   });
 
   it('resolves a nested route to its parent entry', () => {
-    expect(titleFor('/workspaces/f-1')).toBe('pageTitle.workspaces');
+    expect(titleFor('/workspaces/f-1')).toBe(commonStrings.pageTitle.workspaces);
   });
 
   it('prefers the deepest matching entry', () => {
-    expect(titleFor('/settings/security')).toBe('pageTitle.settings');
+    expect(titleFor('/settings/security')).toBe(commonStrings.pageTitle.settings);
   });
 
   it('falls back to the product name outside the nav', () => {

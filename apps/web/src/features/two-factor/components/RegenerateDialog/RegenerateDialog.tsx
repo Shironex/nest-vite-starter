@@ -1,5 +1,4 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { Input } from '@repo/ui/input';
 import {
@@ -14,19 +13,20 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { RecoveryCodesPanel } from '../RecoveryCodesPanel';
 import { useRegenerateDialog } from './RegenerateDialog.hooks';
 import type { IRegenerateDialogProps } from './RegenerateDialog.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
+import { commonStrings } from '@/lib/strings';
 
 export default function RegenerateDialog(props: IRegenerateDialogProps) {
-  const { t } = useTranslation();
   const { form, onSubmit, isPending, codes, onDone } = useRegenerateDialog(props);
   const description = codes
-    ? t('twoFactor.regenerate.descriptionCodes')
-    : t('twoFactor.regenerate.descriptionForm');
+    ? twoFactorStrings.regenerate.descriptionCodes
+    : twoFactorStrings.regenerate.descriptionForm;
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('twoFactor.regenerate.title')}</DialogTitle>
+          <DialogTitle>{twoFactorStrings.regenerate.title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         {codes ? (
@@ -34,7 +34,7 @@ export default function RegenerateDialog(props: IRegenerateDialogProps) {
             <RecoveryCodesPanel codes={codes} />
             <DialogFooter>
               <Button type="button" onClick={onDone}>
-                {t('twoFactor.regenerate.done')}
+                {twoFactorStrings.regenerate.done}
               </Button>
             </DialogFooter>
           </div>
@@ -46,12 +46,12 @@ export default function RegenerateDialog(props: IRegenerateDialogProps) {
                 name="password"
                 render={({ field }) => (
                   <FormItem required>
-                    <FormLabel>{t('twoFactor.regenerate.passwordLabel')}</FormLabel>
+                    <FormLabel>{twoFactorStrings.regenerate.passwordLabel}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
                         autoComplete="current-password"
-                        placeholder={t('twoFactor.regenerate.passwordPlaceholder')}
+                        placeholder={twoFactorStrings.regenerate.passwordPlaceholder}
                         {...field}
                       />
                     </FormControl>
@@ -75,11 +75,11 @@ export default function RegenerateDialog(props: IRegenerateDialogProps) {
                   disabled={isPending}
                   onClick={() => props.onOpenChange(false)}
                 >
-                  {t('actions.cancel')}
+                  {commonStrings.actions.cancel}
                 </Button>
                 <Button type="submit" disabled={isPending}>
                   {isPending && <Loader2 className="animate-spin" />}
-                  {t('twoFactor.regenerate.confirm')}
+                  {twoFactorStrings.regenerate.confirm}
                 </Button>
               </DialogFooter>
             </form>

@@ -5,13 +5,14 @@ import * as z from 'zod/mini';
 import { pageTitle } from '@/lib/page-title';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { ConfirmEmailChange } from '@/features/auth/components/ConfirmEmailChange';
+import { commonStrings } from '@/lib/strings';
 
 const searchSchema = z.object({
   token: z.optional(z.string()),
 });
 
 export const Route = createFileRoute('/auth/confirm-email-change')({
-  head: () => pageTitle('pageTitle.confirmEmailChange'),
+  head: () => pageTitle(commonStrings.pageTitle.confirmEmailChange),
   validateSearch: (search) => searchSchema.parse(search),
   component: ConfirmEmailChangePage,
 });

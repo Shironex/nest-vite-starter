@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { AppErrorCode } from '@repo/shared/errors';
 import type { Workspace } from '@repo/shared/schemas';
 import { getAppErrorCode, translateAppError } from '@/lib/trpc-errors';
 import { useCreateWorkspace, useUpdateWorkspace } from '../../Workspaces.mutations';
-import { WORKSPACE_NS } from '../../Workspace.i18n';
 import type {
   IWorkspaceFormDialogProps,
   IWorkspaceFormDialogView,
   IWorkspaceFormErrors,
   IWorkspaceFormFields,
 } from './WorkspaceFormDialog.types';
+import { workspaceStrings } from '@/features/workspace/Workspace.strings';
+import { commonStrings } from '@/lib/strings';
 
 /** Blank form state for a brand-new workspace. */
 function emptyFields(): IWorkspaceFormFields {
@@ -55,7 +55,6 @@ export function useWorkspaceFormDialog({
   workspace,
   onSaved,
 }: IWorkspaceFormDialogProps): IWorkspaceFormDialogView {
-  const { t } = useTranslation(WORKSPACE_NS);
   const [fields, setFields] = useState<IWorkspaceFormFields>(emptyFields);
   const [errors, setErrors] = useState<IWorkspaceFormErrors>({});
   // Re-seed when the dialog opens, or when it is pointed at a different
@@ -84,7 +83,7 @@ export function useWorkspaceFormDialog({
 
   function validate(): IWorkspaceFormErrors {
     const next: IWorkspaceFormErrors = {};
-    if (fields.name.trim() === '') next.name = t('validation.required');
+    if (fields.name.trim() === '') next.name = workspaceStrings.validation.required;
     return next;
   }
 
@@ -92,10 +91,10 @@ export function useWorkspaceFormDialog({
   function onServerError(error: unknown) {
     const code = getAppErrorCode(error);
     if (code === AppErrorCode.ALREADY_EXISTS) {
-      setErrors({ name: t('duplicate') });
+      setErrors({ name: workspaceStrings.duplicate });
       return;
     }
-    toast.error(translateAppError(error) ?? t('errors.unexpected', { ns: 'common' }));
+    toast.error(translateAppError(error) ?? commonStrings.errors.unexpected);
   }
 
   function onSubmit() {
@@ -131,7 +130,7 @@ export function useWorkspaceFormDialog({
           city: trimmed.city === '' ? null : trimmed.city,
         },
         {
-          onSuccess: (saved) => onSuccess(saved, t('updated')),
+          onSuccess: (saved) => onSuccess(saved, workspaceStrings.updated),
           onError: onServerError,
         },
       );
@@ -147,28 +146,28 @@ export function useWorkspaceFormDialog({
         ...(trimmed.city === '' ? {} : { city: trimmed.city }),
       },
       {
-        onSuccess: (saved) => onSuccess(saved, t('success')),
+        onSuccess: (saved) => onSuccess(saved, workspaceStrings.success),
         onError: onServerError,
       },
     );
   }
 
   return {
-    title: isEdit ? t('editTitle') : t('addTitle'),
-    description: isEdit ? t('editHint') : t('emptyHint'),
+    title: isEdit ? workspaceStrings.editTitle : workspaceStrings.addTitle,
+    description: isEdit ? workspaceStrings.editHint : workspaceStrings.emptyHint,
     values: fields,
     errors,
     isSubmitting,
     isEdit,
     labels: {
-      name: t('name'),
-      legalName: t('legalName'),
-      street: t('street'),
-      postalCode: t('postalCode'),
-      city: t('city'),
-      registrationHint: t('registrationHint'),
-      submit: isEdit ? t('submitEdit') : t('submit'),
-      cancel: t('actions.cancel', { ns: 'common' }),
+      name: workspaceStrings.name,
+      legalName: workspaceStrings.legalName,
+      street: workspaceStrings.street,
+      postalCode: workspaceStrings.postalCode,
+      city: workspaceStrings.city,
+      registrationHint: workspaceStrings.registrationHint,
+      submit: isEdit ? workspaceStrings.submitEdit : workspaceStrings.submit,
+      cancel: commonStrings.actions.cancel,
     },
     onFieldChange,
     onSubmit,

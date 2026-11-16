@@ -1,7 +1,7 @@
-import { useTranslation } from 'react-i18next';
 import { dateEntryPattern } from '@repo/ui/lib/calendar';
-import { APP_LOCALE } from '@/lib/i18n/format';
+import { APP_LOCALE } from '@/lib/format';
 import type { IDateFieldView } from './DateField.types';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * Resolves the picker's own copy from the shared `common` catalog.
@@ -11,7 +11,6 @@ import type { IDateFieldView } from './DateField.types';
  * feature for the copy to drift.
  */
 export function useDateField(): IDateFieldView {
-  const { t } = useTranslation('common');
   // The written pattern comes from the locale, not the catalog, so the
   // placeholder and the hint always describe what the field actually accepts.
   const pattern = dateEntryPattern(APP_LOCALE).placeholder;
@@ -19,10 +18,10 @@ export function useDateField(): IDateFieldView {
   return {
     labels: {
       placeholder: pattern,
-      openCalendar: t('dateField.openCalendar'),
-      previousMonth: t('dateField.previousMonth'),
-      nextMonth: t('dateField.nextMonth'),
-      formatHint: t('dateField.formatHint', { pattern }),
+      openCalendar: commonStrings.dateField.openCalendar,
+      previousMonth: commonStrings.dateField.previousMonth,
+      nextMonth: commonStrings.dateField.nextMonth,
+      formatHint: commonStrings.dateField.formatHint({ pattern }),
     },
   };
 }

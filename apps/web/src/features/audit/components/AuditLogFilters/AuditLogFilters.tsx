@@ -2,10 +2,6 @@ import { Combobox } from '@repo/ui/combobox';
 import { Label } from '@repo/ui/label';
 import { DateField } from '@/features/shared/components/DateField';
 import { ListFilterPopover } from '@/features/shared/components/ListFilterPopover';
-// Side effect: registers this feature's catalogs. Needed HERE and not only in
-// the hook file, because a component test mocks the hook module away, and
-// without this import the panel would render bare i18n keys under test.
-import '../../Audit.i18n';
 import { useAuditLogFilters } from './AuditLogFilters.hooks';
 import type { IAuditLogFiltersProps } from './AuditLogFilters.types';
 

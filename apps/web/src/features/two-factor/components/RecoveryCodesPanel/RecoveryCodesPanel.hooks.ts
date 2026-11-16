@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { RECOVERY_CODES_FILENAME } from '../../TwoFactor.constants';
 import type { IRecoveryCodesPanelProps, IRecoveryCodesPanelView } from './RecoveryCodesPanel.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 /**
  * Copy + download wiring for the one-time recovery-codes display. Both actions
@@ -12,7 +12,6 @@ import type { IRecoveryCodesPanelProps, IRecoveryCodesPanelView } from './Recove
 export function useRecoveryCodesPanel({
   codes,
 }: IRecoveryCodesPanelProps): IRecoveryCodesPanelView {
-  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const text = codes.join('\n');
 
@@ -20,11 +19,11 @@ export function useRecoveryCodesPanel({
     void navigator.clipboard.writeText(text).then(
       () => {
         setCopied(true);
-        toast.success(t('twoFactor.recoveryCodes.copiedToast'));
+        toast.success(twoFactorStrings.recoveryCodes.copiedToast);
       },
-      () => toast.error(t('twoFactor.recoveryCodes.copyFailed')),
+      () => toast.error(twoFactorStrings.recoveryCodes.copyFailed),
     );
-  }, [text, t]);
+  }, [text]);
 
   const onDownload = useCallback(() => {
     const blob = new Blob([`${text}\n`], { type: 'text/plain' });

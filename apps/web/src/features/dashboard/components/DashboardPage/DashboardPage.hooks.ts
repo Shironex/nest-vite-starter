@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { formatLongDate } from '@/lib/i18n/format';
-import '../../Dashboard.i18n';
+import { formatLongDate } from '@/lib/format';
 import { useDashboardUser } from '../../Dashboard.queries';
 import type { IDashboardPageView } from './DashboardPage.types';
+import { dashboardStrings } from '@/features/dashboard/Dashboard.strings';
 
 /**
  * The greeting names whoever is signed in.
@@ -21,10 +20,10 @@ import type { IDashboardPageView } from './DashboardPage.types';
  * profile, where a user sets a display name.
  */
 export function useDashboardPage(): IDashboardPageView {
-  const { t } = useTranslation('dashboard');
   const { data } = useDashboardUser();
 
-  const name = data?.displayName ?? data?.email?.split('@')[0] ?? t('greeting.fallbackName');
+  const name =
+    data?.displayName ?? data?.email?.split('@')[0] ?? dashboardStrings.greeting.fallbackName;
 
   // Read the clock once per mount so the date cannot change identity between
   // two renders. A bare clock read in render scope is impure, and this value
@@ -33,8 +32,8 @@ export function useDashboardPage(): IDashboardPageView {
   const [today] = useState(() => new Date());
 
   return {
-    greeting: t('greeting.title', { name }),
-    subtitle: t('greeting.subtitle'),
+    greeting: dashboardStrings.greeting.title({ name }),
+    subtitle: dashboardStrings.greeting.subtitle,
     todayLabel: formatLongDate(today),
   };
 }

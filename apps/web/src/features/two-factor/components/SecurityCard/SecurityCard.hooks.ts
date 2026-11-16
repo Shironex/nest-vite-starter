@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { trpc } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import { useTwoFactorStatus } from '../../TwoFactor.queries';
 import type { ISecurityCardView } from './SecurityCard.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 export function useSecurityCard(): ISecurityCardView {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: status, isLoading } = useTwoFactorStatus();
   const [isEnrollOpen, setIsEnrollOpen] = useState(false);
@@ -18,11 +17,11 @@ export function useSecurityCard(): ISecurityCardView {
   const revokeMutation = useMutation({
     ...trpc.twoFactor.revokeTrustedDevices.mutationOptions(),
     onSuccess: () => {
-      toast.success(t('twoFactor.securityCard.revokedToast'));
+      toast.success(twoFactorStrings.securityCard.revokedToast);
       void queryClient.invalidateQueries(trpc.twoFactor.status.queryOptions());
     },
     onError: (error) =>
-      toast.error(translateAppError(error) ?? t('twoFactor.securityCard.revokeFailed')),
+      toast.error(translateAppError(error) ?? twoFactorStrings.securityCard.revokeFailed),
   });
 
   function onEnrollComplete() {

@@ -1,6 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ROLES } from '@repo/shared/permissions';
+import { layoutStrings } from '@/features/layout/Layout.strings';
 import { useAppSidebar } from './AppSidebar.hooks';
 
 const { pathname, user } = vi.hoisted(() => ({
@@ -10,11 +11,6 @@ const { pathname, user } = vi.hoisted(() => ({
 
 vi.mock('@tanstack/react-router', () => ({
   useRouterState: () => ({ location: { pathname: pathname.current } }),
-}));
-
-vi.mock('react-i18next', () => ({
-  // Echo the key so the test asserts on wiring, not on catalog copy.
-  useTranslation: () => ({ t: (key: string) => key }),
 }));
 
 vi.mock('@/hooks/use-auth', () => ({
@@ -68,12 +64,12 @@ describe('useAppSidebar', () => {
     expect(items.find((item) => item.href === '/settings')?.isActive).toBe(false);
   });
 
-  it('translates the group labels and the landmark name', () => {
+  it('names the group labels and the landmark name', () => {
     const { result } = renderHook(() => useAppSidebar());
-    expect(result.current.navLabel).toBe('nav.primary');
+    expect(result.current.navLabel).toBe(layoutStrings.nav.primary);
     expect(result.current.groups.map((group) => group.label)).toEqual([
-      'nav.groupMain',
-      'nav.groupSettings',
+      layoutStrings.nav.groupMain,
+      layoutStrings.nav.groupSettings,
     ]);
   });
 });

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { AppErrorCode } from '@repo/shared/errors';
 import { trpc } from '@/lib/trpc';
 import { getAppErrorCode, translateAppError } from '@/lib/trpc-errors';
 import type { ConfirmEmailChangeStatus, IConfirmEmailChangeView } from './ConfirmEmailChange.types';
+import { authStrings } from '@/features/auth/Auth.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * Auto-confirm exactly once when arriving from the email link, the
@@ -14,7 +15,6 @@ import type { ConfirmEmailChangeStatus, IConfirmEmailChangeView } from './Confir
  * success state routes to sign-in rather than back into the app.
  */
 export function useConfirmEmailChange(token: string): IConfirmEmailChangeView {
-  const { t } = useTranslation();
   const [status, setStatus] = useState<ConfirmEmailChangeStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const triggeredRef = useRef<string | null>(null);
@@ -30,11 +30,11 @@ export function useConfirmEmailChange(token: string): IConfirmEmailChangeView {
       if (code === AppErrorCode.INVALID_TOKEN || code === AppErrorCode.TOKEN_EXPIRED) {
         // A consumed, expired or replaced link cannot be retried: the fix is
         // a fresh request from settings, which the copy says.
-        setErrorMessage(t('auth.emailChange.confirm.invalidLink'));
+        setErrorMessage(authStrings.emailChange.confirm.invalidLink);
       } else if (code === AppErrorCode.EMAIL_IN_USE) {
-        setErrorMessage(t('auth.emailChange.confirm.emailInUse'));
+        setErrorMessage(authStrings.emailChange.confirm.emailInUse);
       } else {
-        setErrorMessage(translateAppError(error) ?? t('errors.unexpected'));
+        setErrorMessage(translateAppError(error) ?? commonStrings.errors.unexpected);
       }
     },
   });

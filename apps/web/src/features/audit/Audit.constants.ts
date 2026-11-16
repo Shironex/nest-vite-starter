@@ -1,5 +1,7 @@
 import { AUDIT_ACTIONS, type AuditAction } from '@repo/shared/audit';
 import type { StatusTone } from '@repo/ui/status-pill';
+import { labelFor } from '@/lib/strings';
+import { auditStrings } from './Audit.strings';
 import type { AuditQuickFilter } from './Audit.types';
 
 /**
@@ -38,18 +40,30 @@ export const AUDIT_ACTION_GROUPS: readonly { key: string; actions: readonly Audi
   })();
 
 /**
- * i18n key for an action label. Dots would nest in i18next (and `auth.logout`
- * is both a leaf and a prefix of `auth.logout.all`), so catalog keys flatten
- * them to underscores. Callers pass `defaultValue: action` so an action the
- * catalog does not know yet renders as its raw name instead of a bare key.
+ * The key of an action in `auditStrings.actions`. Dots would nest (and
+ * `auth.logout` is both a leaf and a prefix of `auth.logout.all`), so the keys
+ * flatten them to underscores.
  */
-export function auditActionLabelKey(action: string): string {
-  return `actions.${action.replaceAll('.', '_')}`;
+export function auditActionKey(action: string): string {
+  return action.replaceAll('.', '_');
 }
 
-/** Same flattening for the targetType label lookup. */
-export function auditTargetLabelKey(targetType: string): string {
-  return `targetTypes.${targetType}`;
+/**
+ * The label of an action. An action the table does not know yet renders as its
+ * raw name instead of a bare key.
+ */
+export function auditActionLabel(action: string): string {
+  return labelFor(auditStrings.actions, auditActionKey(action), action);
+}
+
+/** The label of a targetType, falling back to the raw type name. */
+export function auditTargetLabel(targetType: string): string {
+  return labelFor(auditStrings.targetTypes, targetType);
+}
+
+/** The label of an action group (the domain prefix), falling back to the prefix. */
+export function auditActionGroupLabel(group: string): string {
+  return labelFor(auditStrings.actionGroups, group);
 }
 
 const DANGER_MARKERS = [

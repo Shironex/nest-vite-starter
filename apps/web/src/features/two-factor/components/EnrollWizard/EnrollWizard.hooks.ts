@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '@repo/ui/sonner';
@@ -20,9 +19,9 @@ import type {
   IEnrollWizardView,
   TwoFactorEnrollStep,
 } from './EnrollWizard.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 export function useEnrollWizard({ onComplete }: IEnrollWizardProps): IEnrollWizardView {
-  const { t } = useTranslation();
   const [step, setStep] = useState<TwoFactorEnrollStep>('password');
   const [qrDataUri, setQrDataUri] = useState<string | null>(null);
   const [secretBase32, setSecretBase32] = useState<string | null>(null);
@@ -50,9 +49,9 @@ export function useEnrollWizard({ onComplete }: IEnrollWizardProps): IEnrollWiza
     },
     onError: (error) => {
       if (getAppErrorCode(error) === AppErrorCode.INVALID_CREDENTIALS) {
-        passwordForm.setError('password', { message: t('twoFactor.enroll.passwordIncorrect') });
+        passwordForm.setError('password', { message: twoFactorStrings.enroll.passwordIncorrect });
       } else {
-        toast.error(translateAppError(error) ?? t('twoFactor.enroll.beginFailed'));
+        toast.error(translateAppError(error) ?? twoFactorStrings.enroll.beginFailed);
       }
     },
   });
@@ -69,9 +68,9 @@ export function useEnrollWizard({ onComplete }: IEnrollWizardProps): IEnrollWiza
     },
     onError: (error) => {
       if (getAppErrorCode(error) === AppErrorCode.TWO_FACTOR_INVALID_CODE) {
-        confirmForm.setError('code', { message: t('twoFactor.enroll.codeIncorrect') });
+        confirmForm.setError('code', { message: twoFactorStrings.enroll.codeIncorrect });
       } else {
-        toast.error(translateAppError(error) ?? t('twoFactor.enroll.verifyFailed'));
+        toast.error(translateAppError(error) ?? twoFactorStrings.enroll.verifyFailed);
       }
     },
   });

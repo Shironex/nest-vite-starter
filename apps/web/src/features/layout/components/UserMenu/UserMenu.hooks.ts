@@ -1,15 +1,14 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { useAuth } from '@/hooks/use-auth';
 import { trpc, resetCsrfToken } from '@/lib/trpc';
 import { getInitials } from '@/lib/avatar';
 import type { IUserMenuView } from './UserMenu.types';
+import { layoutStrings } from '@/features/layout/Layout.strings';
 
 export function useUserMenu(): IUserMenuView | null {
   const { user } = useAuth();
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -21,7 +20,7 @@ export function useUserMenu(): IUserMenuView | null {
       void navigate({ to: '/auth/login' });
     },
     onError: () => {
-      toast.error(t('userMenu.logoutError'));
+      toast.error(layoutStrings.userMenu.logoutError);
     },
   });
 
@@ -36,9 +35,9 @@ export function useUserMenu(): IUserMenuView | null {
     isLogoutPending: logoutMutation.isPending,
     labels: {
       // The trigger is icon-only, so the name carries into its accessible name.
-      trigger: `${t('userMenu.trigger')}: ${displayName}`,
-      settings: t('userMenu.settings'),
-      logout: t('userMenu.logout'),
+      trigger: `${layoutStrings.userMenu.trigger}: ${displayName}`,
+      settings: layoutStrings.userMenu.settings,
+      logout: layoutStrings.userMenu.logout,
     },
     onLogout: () => logoutMutation.mutate(),
     onNavigateToSettings: () => void navigate({ to: '/settings' }),

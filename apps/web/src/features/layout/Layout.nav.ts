@@ -1,5 +1,7 @@
 import { Building2, History, LayoutDashboard, Settings } from 'lucide-react';
 import { ROLES } from '@repo/shared/permissions';
+import { commonStrings } from '@/lib/strings';
+import { layoutStrings } from './Layout.strings';
 import type { INavGroupConfig, INavItemConfig } from './Layout.nav.types';
 
 /**
@@ -12,11 +14,11 @@ import type { INavGroupConfig, INavItemConfig } from './Layout.nav.types';
  */
 export const NAV_GROUPS: readonly INavGroupConfig[] = [
   {
-    labelKey: 'nav.groupMain',
+    label: layoutStrings.nav.groupMain,
     items: [
       {
-        titleKey: 'nav.dashboard',
-        pageTitleKey: 'pageTitle.dashboard',
+        title: layoutStrings.nav.dashboard,
+        pageTitle: commonStrings.pageTitle.dashboard,
         href: '/dashboard',
         icon: LayoutDashboard,
       },
@@ -27,8 +29,8 @@ export const NAV_GROUPS: readonly INavGroupConfig[] = [
        * ADMIN-only at the router and the screen hides it for a USER.
        */
       {
-        titleKey: 'nav.workspaces',
-        pageTitleKey: 'pageTitle.workspaces',
+        title: layoutStrings.nav.workspaces,
+        pageTitle: commonStrings.pageTitle.workspaces,
         href: '/workspaces',
         icon: Building2,
       },
@@ -37,8 +39,8 @@ export const NAV_GROUPS: readonly INavGroupConfig[] = [
        * courtesy, the audit.list procedure's AdminMiddleware is the control.
        */
       {
-        titleKey: 'nav.audit',
-        pageTitleKey: 'pageTitle.audit',
+        title: layoutStrings.nav.audit,
+        pageTitle: commonStrings.pageTitle.audit,
         href: '/audit',
         icon: History,
         role: ROLES.ADMIN,
@@ -46,11 +48,11 @@ export const NAV_GROUPS: readonly INavGroupConfig[] = [
     ],
   },
   {
-    labelKey: 'nav.groupSettings',
+    label: layoutStrings.nav.groupSettings,
     items: [
       {
-        titleKey: 'nav.settings',
-        pageTitleKey: 'pageTitle.settings',
+        title: layoutStrings.nav.settings,
+        pageTitle: commonStrings.pageTitle.settings,
         href: '/settings',
         icon: Settings,
       },

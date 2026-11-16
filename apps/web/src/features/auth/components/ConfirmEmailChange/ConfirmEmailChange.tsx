@@ -1,10 +1,10 @@
 import { Link } from '@tanstack/react-router';
 import { CheckCircle, Loader2, XCircle } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { AUTH_SUBMIT_CLASS } from '@/features/auth/Auth.constants';
 import { useConfirmEmailChange } from './ConfirmEmailChange.hooks';
 import type { IConfirmEmailChangeStateProps } from './ConfirmEmailChange.types';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 /**
  * Landing screen for the link mailed to the NEW address. Borrows VerifyEmail's
@@ -14,15 +14,13 @@ import type { IConfirmEmailChangeStateProps } from './ConfirmEmailChange.types';
  * sign-in with the new address.
  */
 export default function ConfirmEmailChange({ token }: { token: string | undefined }) {
-  const { t } = useTranslation();
-
   if (token === undefined || token === '') {
     return (
       <ConfirmEmailChangeState
         badgeClass="bg-danger-bg text-danger"
         icon={<XCircle aria-hidden="true" />}
-        title={t('auth.emailChange.confirm.errorTitle')}
-        description={t('auth.emailChange.confirm.missingToken')}
+        title={authStrings.emailChange.confirm.errorTitle}
+        description={authStrings.emailChange.confirm.missingToken}
       >
         <GoToLogin />
       </ConfirmEmailChangeState>
@@ -54,18 +52,16 @@ function ConfirmEmailChangeState({
 }
 
 function GoToLogin() {
-  const { t } = useTranslation();
   return (
     <div className="mt-7 grid w-full gap-2.5">
       <Button asChild className={AUTH_SUBMIT_CLASS}>
-        <Link to="/auth/login">{t('auth.emailChange.confirm.goToLogin')}</Link>
+        <Link to="/auth/login">{authStrings.emailChange.confirm.goToLogin}</Link>
       </Button>
     </div>
   );
 }
 
 function ConfirmWithToken({ token }: { token: string }) {
-  const { t } = useTranslation();
   const { status, errorMessage, retry } = useConfirmEmailChange(token);
 
   if (status === 'loading') {
@@ -73,8 +69,8 @@ function ConfirmWithToken({ token }: { token: string }) {
       <ConfirmEmailChangeState
         badgeClass="bg-brand-tint text-brand-ink"
         icon={<Loader2 className="animate-spin" aria-hidden="true" />}
-        title={t('auth.emailChange.confirm.loadingTitle')}
-        description={t('auth.emailChange.confirm.loadingDescription')}
+        title={authStrings.emailChange.confirm.loadingTitle}
+        description={authStrings.emailChange.confirm.loadingDescription}
       />
     );
   }
@@ -84,8 +80,8 @@ function ConfirmWithToken({ token }: { token: string }) {
       <ConfirmEmailChangeState
         badgeClass="bg-success-bg text-success"
         icon={<CheckCircle aria-hidden="true" />}
-        title={t('auth.emailChange.confirm.successTitle')}
-        description={t('auth.emailChange.confirm.successDescription')}
+        title={authStrings.emailChange.confirm.successTitle}
+        description={authStrings.emailChange.confirm.successDescription}
       >
         <GoToLogin />
       </ConfirmEmailChangeState>
@@ -96,15 +92,15 @@ function ConfirmWithToken({ token }: { token: string }) {
     <ConfirmEmailChangeState
       badgeClass="bg-danger-bg text-danger"
       icon={<XCircle aria-hidden="true" />}
-      title={t('auth.emailChange.confirm.errorTitle')}
+      title={authStrings.emailChange.confirm.errorTitle}
       description={errorMessage}
     >
       <div className="mt-7 grid w-full gap-2.5">
         <Button onClick={retry} className={AUTH_SUBMIT_CLASS}>
-          {t('auth.emailChange.confirm.retry')}
+          {authStrings.emailChange.confirm.retry}
         </Button>
         <Button variant="outline" asChild className="h-10.5 w-full rounded-lg">
-          <Link to="/auth/login">{t('auth.emailChange.confirm.goToLogin')}</Link>
+          <Link to="/auth/login">{authStrings.emailChange.confirm.goToLogin}</Link>
         </Button>
       </div>
     </ConfirmEmailChangeState>

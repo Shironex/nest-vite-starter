@@ -1,6 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
 import { FileText, MonitorSmartphone, ShieldCheck } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { cn } from '@repo/ui/lib/utils';
 import { Button } from '@repo/ui/button';
 import { Badge } from '@repo/ui/badge';
@@ -18,6 +17,8 @@ import { EnrollWizard } from '../EnrollWizard';
 import { DisableDialog } from '../DisableDialog';
 import { RegenerateDialog } from '../RegenerateDialog';
 import { useSecurityCard } from './SecurityCard.hooks';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * The account-security panel, built to the design: divider-separated rows, each an icon tile
@@ -59,7 +60,6 @@ function RowIcon({ icon: Icon, isPrimary }: { icon: LucideIcon; isPrimary?: bool
 }
 
 export default function SecurityCard() {
-  const { t } = useTranslation();
   const v = useSecurityCard();
 
   const enabled = v.status?.enabled ?? false;
@@ -70,8 +70,8 @@ export default function SecurityCard() {
   const showEnabledState = !v.isLoading && enabled;
   const revokeDisabled = v.isRevoking || trustedCount === 0;
   const statusLabel = enabled
-    ? t('twoFactor.securityCard.statusOn')
-    : t('twoFactor.securityCard.statusOff');
+    ? twoFactorStrings.securityCard.statusOn
+    : twoFactorStrings.securityCard.statusOff;
   // The design's `Badge/Success` for the on state; neutral otherwise.
   const statusBadgeClass = enabled ? 'bg-success-bg text-success' : undefined;
 
@@ -80,8 +80,8 @@ export default function SecurityCard() {
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
           <div className="space-y-1">
-            <CardTitle>{t('twoFactor.securityCard.title')}</CardTitle>
-            <CardDescription>{t('twoFactor.securityCard.description')}</CardDescription>
+            <CardTitle>{twoFactorStrings.securityCard.title}</CardTitle>
+            <CardDescription>{twoFactorStrings.securityCard.description}</CardDescription>
           </div>
           {/*
            * The badge waits for the query, unlike the `?? false` defaults
@@ -100,15 +100,17 @@ export default function SecurityCard() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {v.isLoading && <p className="type-body-small text-text-muted">{t('states.loading')}</p>}
+        {v.isLoading && (
+          <p className="type-body-small text-text-muted">{commonStrings.states.loading}</p>
+        )}
 
         {showDisabledState && (
           <div className="space-y-3">
             <p className="type-body-small text-text-muted">
-              {t('twoFactor.securityCard.disabledHint')}
+              {twoFactorStrings.securityCard.disabledHint}
             </p>
             <Button onClick={() => v.onEnrollOpenChange(true)}>
-              {t('twoFactor.securityCard.enableCta')}
+              {twoFactorStrings.securityCard.enableCta}
             </Button>
           </div>
         )}
@@ -120,10 +122,10 @@ export default function SecurityCard() {
                 <RowIcon icon={ShieldCheck} isPrimary />
                 <div className="min-w-0 space-y-0.5">
                   <p className="type-body-strong text-text">
-                    {t('twoFactor.securityCard.authenticatorTitle')}
+                    {twoFactorStrings.securityCard.authenticatorTitle}
                   </p>
                   <p className="type-body-small text-text-muted">
-                    {t('twoFactor.securityCard.authenticatorHint')}
+                    {twoFactorStrings.securityCard.authenticatorHint}
                   </p>
                 </div>
               </div>
@@ -138,10 +140,10 @@ export default function SecurityCard() {
                 variant="ghost"
                 size="sm"
                 className={DANGER_GHOST_CLASS}
-                aria-label={t('twoFactor.securityCard.turnOffAccessible')}
+                aria-label={twoFactorStrings.securityCard.turnOffAccessible}
                 onClick={() => v.onDisableOpenChange(true)}
               >
-                {t('twoFactor.securityCard.turnOff')}
+                {twoFactorStrings.securityCard.turnOff}
               </Button>
             </div>
 
@@ -152,14 +154,14 @@ export default function SecurityCard() {
                 <RowIcon icon={FileText} />
                 <div className="min-w-0 space-y-0.5">
                   <p className="type-body-strong text-text">
-                    {t('twoFactor.securityCard.recoveryTitle')}
+                    {twoFactorStrings.securityCard.recoveryTitle}
                   </p>
                   <p className="type-body-small text-text-muted">
-                    {t('twoFactor.securityCard.recoveryRemaining', { count: remaining })}
+                    {twoFactorStrings.securityCard.recoveryRemaining(remaining)}
                   </p>
                   {lowCodes && (
                     <p className="type-body-small text-warning">
-                      {t('twoFactor.securityCard.recoveryLow')}
+                      {twoFactorStrings.securityCard.recoveryLow}
                     </p>
                   )}
                 </div>
@@ -170,7 +172,7 @@ export default function SecurityCard() {
                 className={SOFT_BUTTON_CLASS}
                 onClick={() => v.onRegenerateOpenChange(true)}
               >
-                {t('twoFactor.securityCard.regenerate')}
+                {twoFactorStrings.securityCard.regenerate}
               </Button>
             </div>
 
@@ -181,10 +183,10 @@ export default function SecurityCard() {
                 <RowIcon icon={MonitorSmartphone} />
                 <div className="min-w-0 space-y-0.5">
                   <p className="type-body-strong text-text">
-                    {t('twoFactor.securityCard.trustedTitle')}
+                    {twoFactorStrings.securityCard.trustedTitle}
                   </p>
                   <p className="type-body-small text-text-muted">
-                    {t('twoFactor.securityCard.trustedCount', { count: trustedCount })}
+                    {twoFactorStrings.securityCard.trustedCount(trustedCount)}
                   </p>
                 </div>
               </div>
@@ -195,7 +197,7 @@ export default function SecurityCard() {
                 disabled={revokeDisabled}
                 onClick={v.onRevokeTrusted}
               >
-                {t('twoFactor.securityCard.revokeAll')}
+                {twoFactorStrings.securityCard.revokeAll}
               </Button>
             </div>
           </div>
@@ -205,9 +207,9 @@ export default function SecurityCard() {
       <Dialog open={v.isEnrollOpen} onOpenChange={v.onEnrollOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('twoFactor.securityCard.enrollDialogTitle')}</DialogTitle>
+            <DialogTitle>{twoFactorStrings.securityCard.enrollDialogTitle}</DialogTitle>
             <DialogDescription>
-              {t('twoFactor.securityCard.enrollDialogDescription')}
+              {twoFactorStrings.securityCard.enrollDialogDescription}
             </DialogDescription>
           </DialogHeader>
           <EnrollWizard onComplete={v.onEnrollComplete} />

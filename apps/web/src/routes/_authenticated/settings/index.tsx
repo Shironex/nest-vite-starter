@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Palette, Shield, User, Users } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { ROLES } from '@repo/shared/permissions';
 import { pageTitle } from '@/lib/page-title';
 import { useAuth } from '@/hooks/use-auth';
@@ -20,9 +19,11 @@ import { EmailChangeSection } from '@/features/auth/components/EmailChangeSectio
 import { SETTINGS_SECTION } from '@/features/settings/Settings.constants';
 import { isSettingsSectionId } from '@/features/settings/Settings.util';
 import type { SettingsSectionId } from '@/features/settings/Settings.constants';
+import { settingsStrings } from '@/features/settings/Settings.strings';
+import { commonStrings } from '@/lib/strings';
 
 export const Route = createFileRoute('/_authenticated/settings/')({
-  head: () => pageTitle('pageTitle.settings'),
+  head: () => pageTitle(commonStrings.pageTitle.settings),
   /**
    * `?section=<id>` deep links to one rail row. A total function, no schema parse: only an
    * id from SETTINGS_SECTION survives, anything else is dropped. The page
@@ -56,7 +57,6 @@ export const Route = createFileRoute('/_authenticated/settings/')({
  * would be a second one competing with it.
  */
 function SettingsPage() {
-  const { t } = useTranslation();
   const { user } = useAuth();
   const { section } = Route.useSearch();
   const navigate = useNavigate();
@@ -64,12 +64,12 @@ function SettingsPage() {
 
   // The design puts the strapline under the page TITLE, in the shell topbar,
   // not in the page body. The shell owns that row, so the page publishes into it.
-  useSetTopbarSubtitle(t('settings.subtitle'));
+  useSetTopbarSubtitle(settingsStrings.subtitle);
 
   const sections: ISettingsSection[] = [
     {
       id: SETTINGS_SECTION.profile,
-      label: t('settings.sections.profile'),
+      label: settingsStrings.sections.profile,
       icon: User,
       // The GDPR export sits with the profile it exports.
       panel: (
@@ -82,7 +82,7 @@ function SettingsPage() {
     },
     {
       id: SETTINGS_SECTION.security,
-      label: t('settings.sections.security'),
+      label: settingsStrings.sections.security,
       icon: Shield,
       panel: (
         <>
@@ -95,7 +95,7 @@ function SettingsPage() {
     },
     {
       id: SETTINGS_SECTION.appearance,
-      label: t('settings.sections.appearance'),
+      label: settingsStrings.sections.appearance,
       icon: Palette,
       panel: <ThemeSection />,
     },
@@ -109,7 +109,7 @@ function SettingsPage() {
   if (isAdmin) {
     sections.splice(1, 0, {
       id: SETTINGS_SECTION.members,
-      label: t('settings.sections.members'),
+      label: settingsStrings.sections.members,
       icon: Users,
       panel: <MembersSection />,
     });

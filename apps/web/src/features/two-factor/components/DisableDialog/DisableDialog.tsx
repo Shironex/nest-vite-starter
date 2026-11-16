@@ -1,5 +1,4 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import { Input } from '@repo/ui/input';
 import {
@@ -13,6 +12,8 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@repo/ui/form';
 import { useDisableDialog } from './DisableDialog.hooks';
 import type { IDisableDialogProps } from './DisableDialog.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * The disable confirmation, built to the design's modal: title, the three consequences, and
@@ -26,15 +27,14 @@ import type { IDisableDialogProps } from './DisableDialog.types';
  * and the copy follow the design.
  */
 export default function DisableDialog(props: IDisableDialogProps) {
-  const { t } = useTranslation();
   const { form, onSubmit, isPending } = useDisableDialog(props);
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('twoFactor.disable.title')}</DialogTitle>
-          <DialogDescription>{t('twoFactor.disable.description')}</DialogDescription>
+          <DialogTitle>{twoFactorStrings.disable.title}</DialogTitle>
+          <DialogDescription>{twoFactorStrings.disable.description}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -43,12 +43,12 @@ export default function DisableDialog(props: IDisableDialogProps) {
               name="password"
               render={({ field }) => (
                 <FormItem required>
-                  <FormLabel>{t('twoFactor.disable.passwordLabel')}</FormLabel>
+                  <FormLabel>{twoFactorStrings.disable.passwordLabel}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
                       autoComplete="current-password"
-                      placeholder={t('twoFactor.disable.passwordPlaceholder')}
+                      placeholder={twoFactorStrings.disable.passwordPlaceholder}
                       {...field}
                     />
                   </FormControl>
@@ -70,7 +70,7 @@ export default function DisableDialog(props: IDisableDialogProps) {
               name="code"
               render={({ field }) => (
                 <FormItem required>
-                  <FormLabel>{t('twoFactor.disable.codeLabel')}</FormLabel>
+                  <FormLabel>{twoFactorStrings.disable.codeLabel}</FormLabel>
                   <FormControl>
                     <Input autoComplete="one-time-code" placeholder="123456" {...field} />
                   </FormControl>
@@ -88,11 +88,11 @@ export default function DisableDialog(props: IDisableDialogProps) {
                 disabled={isPending}
                 onClick={() => props.onOpenChange(false)}
               >
-                {t('actions.cancel')}
+                {commonStrings.actions.cancel}
               </Button>
               <Button type="submit" variant="destructive" disabled={isPending}>
                 {isPending && <Loader2 className="animate-spin" />}
-                {t('twoFactor.disable.confirm')}
+                {twoFactorStrings.disable.confirm}
               </Button>
             </DialogFooter>
           </form>

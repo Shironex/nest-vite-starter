@@ -8,10 +8,6 @@ import {
   ListToolbar,
   ListToolbarActions,
 } from '@repo/ui/list-surface';
-// Side effect: registers this feature's catalogs. Needed HERE and not only in
-// the hook file, because a component test mocks the hook module away, and
-// without this import the screen would render bare i18n keys under test.
-import '../../Audit.i18n';
 import { AuditLogFilters } from '../AuditLogFilters';
 import { AuditLogTable } from '../AuditLogTable';
 import { useAuditLogPage } from './AuditLogPage.hooks';

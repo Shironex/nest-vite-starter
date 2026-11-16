@@ -3,7 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppErrorCode } from '@repo/shared/errors';
-import enLocale from '@/lib/i18n/locales/en.json';
+import { commonStrings } from '@/lib/strings';
 import { useConfirmEmailChange } from './ConfirmEmailChange.hooks';
 
 /**
@@ -102,7 +102,7 @@ describe('useConfirmEmailChange', () => {
     const { result } = renderConfirm('tok-1');
 
     await waitFor(() => expect(result.current.status).toBe('error'));
-    expect(result.current.errorMessage).toBe(enLocale.common.errors.network);
+    expect(result.current.errorMessage).toBe(commonStrings.errors.network);
     expect(result.current.errorMessage).not.toContain('fetch');
   });
 

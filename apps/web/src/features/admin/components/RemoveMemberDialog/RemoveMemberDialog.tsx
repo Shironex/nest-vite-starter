@@ -1,5 +1,4 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import {
   Dialog,
@@ -11,6 +10,8 @@ import {
 } from '@repo/ui/dialog';
 import { useRemoveMemberDialog } from './RemoveMemberDialog.hooks';
 import type { IRemoveMemberDialogProps } from './RemoveMemberDialog.types';
+import { adminStrings } from '@/features/admin/Admin.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * The lighter of the two confirmations on this screen.
@@ -22,16 +23,15 @@ import type { IRemoveMemberDialogProps } from './RemoveMemberDialog.types';
  * the irreversible one wears it.
  */
 export default function RemoveMemberDialog(props: IRemoveMemberDialogProps) {
-  const { t } = useTranslation();
   const { onConfirm, isPending } = useRemoveMemberDialog(props);
 
-  const description = t('admin.removeDialog.description', { email: props.email });
+  const description = adminStrings.removeDialog.description({ email: props.email });
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent data-slot="remove-member-dialog">
         <DialogHeader>
-          <DialogTitle>{t('admin.removeDialog.title')}</DialogTitle>
+          <DialogTitle>{adminStrings.removeDialog.title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -41,11 +41,11 @@ export default function RemoveMemberDialog(props: IRemoveMemberDialogProps) {
             disabled={isPending}
             onClick={() => props.onOpenChange(false)}
           >
-            {t('actions.cancel')}
+            {commonStrings.actions.cancel}
           </Button>
           <Button type="button" disabled={isPending} onClick={onConfirm}>
             {isPending && <Loader2 className="animate-spin" />}
-            {t('admin.removeDialog.confirm')}
+            {adminStrings.removeDialog.confirm}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '@repo/ui/sonner';
@@ -9,9 +8,9 @@ import { trpc } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import type { IDisableDialogProps, IDisableDialogView } from './DisableDialog.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 export function useDisableDialog({ onOpenChange }: IDisableDialogProps): IDisableDialogView {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const form = useForm<TwoFactorDisableInput>({
@@ -23,7 +22,7 @@ export function useDisableDialog({ onOpenChange }: IDisableDialogProps): IDisabl
   const disableMutation = useMutation({
     ...trpc.twoFactor.disable.mutationOptions(),
     onSuccess: () => {
-      toast.success(t('twoFactor.disable.success'));
+      toast.success(twoFactorStrings.disable.success);
       void queryClient.invalidateQueries(trpc.twoFactor.status.queryOptions());
       form.reset();
       onOpenChange(false);
@@ -31,11 +30,11 @@ export function useDisableDialog({ onOpenChange }: IDisableDialogProps): IDisabl
     onError: (error) => {
       const code = getAppErrorCode(error);
       if (code === AppErrorCode.INVALID_CREDENTIALS) {
-        form.setError('password', { message: t('twoFactor.disable.passwordIncorrect') });
+        form.setError('password', { message: twoFactorStrings.disable.passwordIncorrect });
       } else if (code === AppErrorCode.TWO_FACTOR_INVALID_CODE) {
-        form.setError('code', { message: t('twoFactor.disable.codeIncorrect') });
+        form.setError('code', { message: twoFactorStrings.disable.codeIncorrect });
       } else {
-        toast.error(translateAppError(error) ?? t('twoFactor.disable.failed'));
+        toast.error(translateAppError(error) ?? twoFactorStrings.disable.failed);
       }
     },
   });

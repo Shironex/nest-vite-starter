@@ -1,24 +1,21 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import type { TFunction } from 'i18next';
 import { AUDIT_LOG_LIST_DEFAULT_LIMIT } from '@repo/shared/constants';
 import type { AuditLogItem, AuditLogListInput } from '@repo/shared/schemas';
 import type { AuditAction } from '@repo/shared/audit';
-import { formatDate, fromDateInputValue, APP_LOCALE } from '@/lib/i18n/format';
+import { formatDate, fromDateInputValue, APP_LOCALE } from '@/lib/format';
 import { useCursorPages } from '@/features/shared/CursorPages.hooks';
-// Side effect: attaches this feature's catalogs before the first t() call, so
-// a hook rendered in isolation (a *.hooks.test.tsx) has the copy too.
-import '../../Audit.i18n';
 import {
   AUDIT_QUICK_FILTER_ACTIONS,
-  auditActionLabelKey,
+  auditActionLabel,
   auditActionTone,
-  auditTargetLabelKey,
+  auditTargetLabel,
 } from '../../Audit.constants';
 import { changedFieldNames, diffSnapshots, metadataEntries } from '../../Audit.diff';
 import { useAuditLogList } from '../../Audit.queries';
 import type { AuditQuickFilter, IAuditRowView } from '../../Audit.types';
 import type { AuditLogTab, IAuditLogPageView, IAuditPaginationView } from './AuditLogPage.types';
+import { auditStrings } from '@/features/audit/Audit.strings';
+import { commonStrings } from '@/lib/strings';
 
 const timeFormatter = new Intl.DateTimeFormat(APP_LOCALE, { hour: '2-digit', minute: '2-digit' });
 
@@ -59,14 +56,15 @@ function toTab(value: string): AuditLogTab | undefined {
 }
 
 /** One wire item, precomputed into everything its feed row renders. */
-function buildRow(item: AuditLogItem, t: TFunction<'audit'>): IAuditRowView {
+function buildRow(item: AuditLogItem): IAuditRowView {
   const actor = item.actor;
   const isSystem = actor === null;
-  const actorName = actor === null ? t('list.systemActor') : (actor.displayName ?? actor.email);
+  const actorName =
+    actor === null ? auditStrings.list.systemActor : (actor.displayName ?? actor.email);
   const targetLabel =
     item.targetType === null
       ? null
-      : `${t(auditTargetLabelKey(item.targetType), { defaultValue: item.targetType })}${
+      : `${auditTargetLabel(item.targetType)}${
           item.targetId === null ? '' : ` (${item.targetId})`
         }`;
 
@@ -75,7 +73,7 @@ function buildRow(item: AuditLogItem, t: TFunction<'audit'>): IAuditRowView {
     actorName,
     actorInitials: isSystem ? 'SY' : initialsOf(actorName),
     isSystem,
-    actionLabel: t(auditActionLabelKey(item.action), { defaultValue: item.action }),
+    actionLabel: auditActionLabel(item.action),
     actionTone: auditActionTone(item.action, item.success),
     changes: diffSnapshots(item.before, item.after),
     changedFields: changedFieldNames(item.metadata),
@@ -105,7 +103,6 @@ function buildRow(item: AuditLogItem, t: TFunction<'audit'>): IAuditRowView {
  * that a degraded footer is the honest answer rather than a missing feature.
  */
 export function useAuditLogPage(): IAuditLogPageView {
-  const { t } = useTranslation('audit');
   const [actorId, setActorId] = useState('');
   const [action, setAction] = useState('');
   const [tab, setTab] = useState<AuditLogTab>('all');
@@ -151,7 +148,7 @@ export function useAuditLogPage(): IAuditLogPageView {
   ).length;
   const hasActiveFilters = activeFilters > 0 || tab !== 'all';
 
-  const rows = (query.data?.items ?? []).map((item) => buildRow(item, t));
+  const rows = (query.data?.items ?? []).map((item) => buildRow(item));
 
   /*
    * `isPending` is the FIRST load and only the first load, because the query
@@ -174,8 +171,8 @@ export function useAuditLogPage(): IAuditLogPageView {
     state !== 'ready'
       ? null
       : {
-          summary: t('pagination.summary', { from, to: from + rows.length - 1 }),
-          label: t('pagination.label'),
+          summary: auditStrings.pagination.summary({ from, to: from + rows.length - 1 }),
+          label: auditStrings.pagination.label,
           hasPrevious: pages.hasPrevious,
           hasNext: (query.data?.nextCursor ?? null) !== null,
           isBusy: isRefreshing,
@@ -230,17 +227,19 @@ export function useAuditLogPage(): IAuditLogPageView {
     state,
     isRefreshing,
     tab,
-    tabs: TAB_ORDER.map((value) => ({ value, label: t(`tabs.${value}`) })),
+    tabs: TAB_ORDER.map((value) => ({ value, label: auditStrings.tabs[value] })),
     onTabChange,
     pagination,
     onRetry: () => {
       void query.refetch();
     },
     labels: {
-      loadError: t('list.loadError'),
-      retry: t('actions.retry', { ns: 'common' }),
-      emptyTitle: hasActiveFilters ? t('list.emptyFiltered') : t('list.empty'),
-      emptyHint: hasActiveFilters ? t('list.emptyFilteredHint') : t('list.emptyHint'),
+      loadError: auditStrings.list.loadError,
+      retry: commonStrings.actions.retry,
+      emptyTitle: hasActiveFilters ? auditStrings.list.emptyFiltered : auditStrings.list.empty,
+      emptyHint: hasActiveFilters
+        ? auditStrings.list.emptyFilteredHint
+        : auditStrings.list.emptyHint,
     },
   };
 }

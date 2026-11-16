@@ -1,12 +1,11 @@
-import { useTranslation } from 'react-i18next';
 import { Form } from '@repo/ui/form';
 import { PasswordStrength } from '@/features/shared/components/PasswordStrength';
-import { AUTH_NS } from '@/features/auth/Auth.i18n';
 import { AuthField } from '@/features/auth/components/AuthField';
 import { TurnstileField } from '@/features/auth/components/TurnstileField';
 import { AuthSubmit } from '@/features/auth/components/AuthSubmit';
 import { FormError } from '@/features/auth/components/FormError';
 import { useRegisterForm } from './RegisterForm.hooks';
+import { authStrings } from '@/features/auth/Auth.strings';
 
 /**
  * The registration screen, restricted to the fields the register mutation
@@ -15,7 +14,6 @@ import { useRegisterForm } from './RegisterForm.hooks';
  * left out rather than stubbed into inputs that go nowhere.
  */
 export default function RegisterForm() {
-  const { t } = useTranslation(AUTH_NS);
   const {
     form,
     onSubmit,
@@ -36,17 +34,17 @@ export default function RegisterForm() {
           form={form}
           name="email"
           required
-          label={t('register.workEmail')}
+          label={authStrings.register.workEmail}
           type="email"
-          placeholder={t('fields.emailPlaceholder')}
+          placeholder={authStrings.fields.emailPlaceholder}
           autoComplete="email"
         />
 
         <AuthField
           form={form}
           name="displayName"
-          label={t('register.displayName')}
-          placeholder={t('register.displayNamePlaceholder')}
+          label={authStrings.register.displayName}
+          placeholder={authStrings.register.displayNamePlaceholder}
           autoComplete="name"
         />
 
@@ -54,9 +52,9 @@ export default function RegisterForm() {
           form={form}
           name="password"
           required
-          label={t('fields.password')}
+          label={authStrings.fields.password}
           type="password"
-          placeholder={t('fields.newPasswordPlaceholder')}
+          placeholder={authStrings.fields.newPasswordPlaceholder}
           autoComplete="new-password"
         >
           <PasswordStrength password={password} />
@@ -69,7 +67,7 @@ export default function RegisterForm() {
         />
 
         <AuthSubmit isPending={isPending} captchaStatus={captchaStatus}>
-          {t('register.submit')}
+          {authStrings.register.submit}
         </AuthSubmit>
       </form>
     </Form>

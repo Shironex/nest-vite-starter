@@ -1,5 +1,4 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import {
   Dialog,
@@ -11,6 +10,8 @@ import {
 } from '@repo/ui/dialog';
 import { useRestoreMemberDialog } from './RestoreMemberDialog.hooks';
 import type { IRestoreMemberDialogProps } from './RestoreMemberDialog.types';
+import { adminStrings } from '@/features/admin/Admin.strings';
+import { commonStrings } from '@/lib/strings';
 
 /**
  * Confirmed rather than a bare menu click, even though it undoes a reversible
@@ -19,16 +20,15 @@ import type { IRestoreMemberDialogProps } from './RestoreMemberDialog.types';
  * dialog. A grant deserves the same beat of hesitation wherever it happens.
  */
 export default function RestoreMemberDialog(props: IRestoreMemberDialogProps) {
-  const { t } = useTranslation();
   const { onConfirm, isPending } = useRestoreMemberDialog(props);
 
-  const description = t('admin.restoreDialog.description', { email: props.email });
+  const description = adminStrings.restoreDialog.description({ email: props.email });
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent data-slot="restore-member-dialog">
         <DialogHeader>
-          <DialogTitle>{t('admin.restoreDialog.title')}</DialogTitle>
+          <DialogTitle>{adminStrings.restoreDialog.title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -38,11 +38,11 @@ export default function RestoreMemberDialog(props: IRestoreMemberDialogProps) {
             disabled={isPending}
             onClick={() => props.onOpenChange(false)}
           >
-            {t('actions.cancel')}
+            {commonStrings.actions.cancel}
           </Button>
           <Button type="button" disabled={isPending} onClick={onConfirm}>
             {isPending && <Loader2 className="animate-spin" />}
-            {t('admin.restoreDialog.confirm')}
+            {adminStrings.restoreDialog.confirm}
           </Button>
         </DialogFooter>
       </DialogContent>

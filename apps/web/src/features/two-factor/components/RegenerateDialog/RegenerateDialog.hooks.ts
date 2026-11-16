@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '@repo/ui/sonner';
@@ -10,11 +9,11 @@ import { trpc } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import type { IRegenerateDialogProps, IRegenerateDialogView } from './RegenerateDialog.types';
+import { twoFactorStrings } from '@/features/two-factor/TwoFactor.strings';
 
 export function useRegenerateDialog({
   onOpenChange,
 }: IRegenerateDialogProps): IRegenerateDialogView {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [codes, setCodes] = useState<readonly string[] | null>(null);
 
@@ -33,9 +32,9 @@ export function useRegenerateDialog({
     },
     onError: (error) => {
       if (getAppErrorCode(error) === AppErrorCode.INVALID_CREDENTIALS) {
-        form.setError('password', { message: t('twoFactor.regenerate.passwordIncorrect') });
+        form.setError('password', { message: twoFactorStrings.regenerate.passwordIncorrect });
       } else {
-        toast.error(translateAppError(error) ?? t('twoFactor.regenerate.failed'));
+        toast.error(translateAppError(error) ?? twoFactorStrings.regenerate.failed);
       }
     },
   });

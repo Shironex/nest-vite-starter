@@ -1,5 +1,4 @@
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@repo/ui/button';
 import {
   Dialog,
@@ -11,18 +10,19 @@ import {
 } from '@repo/ui/dialog';
 import { useResetMemberDialog } from './ResetMemberDialog.hooks';
 import type { IResetMemberDialogProps } from './ResetMemberDialog.types';
+import { adminStrings } from '@/features/admin/Admin.strings';
+import { commonStrings } from '@/lib/strings';
 
 export default function ResetMemberDialog(props: IResetMemberDialogProps) {
-  const { t } = useTranslation();
   const { onConfirm, isPending } = useResetMemberDialog(props);
 
-  const description = t('admin.resetDialog.description', { email: props.email });
+  const description = adminStrings.resetDialog.description({ email: props.email });
 
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t('admin.resetDialog.title')}</DialogTitle>
+          <DialogTitle>{adminStrings.resetDialog.title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -32,11 +32,11 @@ export default function ResetMemberDialog(props: IResetMemberDialogProps) {
             disabled={isPending}
             onClick={() => props.onOpenChange(false)}
           >
-            {t('actions.cancel')}
+            {commonStrings.actions.cancel}
           </Button>
           <Button type="button" variant="destructive" disabled={isPending} onClick={onConfirm}>
             {isPending && <Loader2 className="animate-spin" />}
-            {t('admin.resetDialog.confirm')}
+            {adminStrings.resetDialog.confirm}
           </Button>
         </DialogFooter>
       </DialogContent>

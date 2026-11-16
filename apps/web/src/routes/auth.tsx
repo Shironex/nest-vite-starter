@@ -1,15 +1,14 @@
 import { createFileRoute, isRedirect, Outlet, redirect } from '@tanstack/react-router';
-import { useTranslation } from 'react-i18next';
 import { Spinner } from '@repo/ui/spinner';
 import { trpc } from '@/lib/trpc';
 import { USER_ME_STALE_TIME } from '@/hooks/use-auth';
 import { LOGIN_PATH, STAFF_HOME_PATH } from '@/lib/shell-routes';
+import { commonStrings } from '@/lib/strings';
 
 function AuthPendingComponent() {
-  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen items-center justify-center bg-bg text-brand-ink">
-      <Spinner size="lg" label={t('states.loading')} />
+      <Spinner size="lg" label={commonStrings.states.loading} />
     </div>
   );
 }
