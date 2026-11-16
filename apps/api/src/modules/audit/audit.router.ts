@@ -18,7 +18,7 @@ export class AuditRouter {
   constructor(private readonly auditReadService: AuditReadService) {}
 
   /**
-   * One keyset page of the caller's tenant audit history, newest first.
+   * One keyset page of the audit history, newest first (admin only).
    * Filters: actor, event types (OR set), date range. No free-text search by
    * design.
    */

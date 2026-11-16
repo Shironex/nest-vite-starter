@@ -18,12 +18,12 @@ const buildSubject = async () => {
 
 const row = (id: string, overrides: Record<string, unknown> = {}) => ({
   id,
-  action: 'workspace.updated',
-  targetType: 'Workspace',
-  targetId: 'workspace-1',
-  before: null,
-  after: null,
-  metadata: { fields: ['city'] },
+  action: 'user.role.changed',
+  targetType: 'User',
+  targetId: 'u-2',
+  before: { role: 'USER' },
+  after: { role: 'ADMIN' },
+  metadata: null,
   reason: null,
   ipAddress: '10.0.0.1',
   userAgent: 'jest',
@@ -34,48 +34,20 @@ const row = (id: string, overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-// These tests pin the literal visibility clause onto the Prisma where-clause.
-// `AuditLog` is deliberately outside the tenant-scope extension, so this
-// explicit clause IS the cross-tenant containment for the read surface.
-describe('AuditReadRepository tenant containment', () => {
-  it('always sends the two-arm visibility clause for the given tenant', async () => {
+describe('AuditReadRepository', () => {
+  it('sends no clause at all when no filter is set: an admin reads the whole trail', async () => {
     const { repo, findMany } = await buildSubject();
-    await repo.listPage('tenant-a', { limit: 25 });
+    await repo.listPage({ limit: 25 });
 
     expect(findMany).toHaveBeenCalledTimes(1);
-    const args = findMany.mock.calls[0][0];
-    expect(args.where).toEqual({
-      AND: [
-        {
-          OR: [{ tenantId: 'tenant-a' }, { tenantId: null, user: { tenantId: 'tenant-a' } }],
-        },
-      ],
-    });
+    expect(findMany.mock.calls[0][0].where).toEqual({ AND: [] });
   });
 
-  it('never lets the actor fallback reach a row that carries its own tenantId', async () => {
-    // The move case: an account leaves organization A for organization B. A
-    // stamped row stays with A because the
-    // fallback arm is gated on `tenantId: null`, so B's admin reading their own
-    // audit view cannot pull A-era rows through the actor relation.
-    const { repo, findMany } = await buildSubject();
-    await repo.listPage('tenant-b', { limit: 25, actorId: 'moved-user' });
-
-    const [visibility] = findMany.mock.calls[0][0].where.AND;
-    const [ownArm, fallbackArm] = visibility.OR;
-    expect(ownArm).toEqual({ tenantId: 'tenant-b' });
-    expect(fallbackArm).toEqual({ tenantId: null, user: { tenantId: 'tenant-b' } });
-    // The fallback must never be a bare actor match: that is what would move a
-    // stamped row between organizations.
-    expect(fallbackArm).not.toEqual({ user: { tenantId: 'tenant-b' } });
-    expect(Object.keys(fallbackArm)).toContain('tenantId');
-  });
-
-  it('ANDs every filter alongside the visibility clause, never inside its OR', async () => {
+  it('ANDs every filter', async () => {
     const { repo, findMany } = await buildSubject();
     const from = new Date('2026-01-01T00:00:00Z');
     const to = new Date('2026-01-31T00:00:00Z');
-    await repo.listPage('tenant-a', {
+    await repo.listPage({
       limit: 25,
       actorId: 'u-9',
       actions: ['auth.login.failure', 'auth.login.locked'],
@@ -85,9 +57,6 @@ describe('AuditReadRepository tenant containment', () => {
 
     const args = findMany.mock.calls[0][0];
     expect(args.where.AND).toEqual([
-      {
-        OR: [{ tenantId: 'tenant-a' }, { tenantId: null, user: { tenantId: 'tenant-a' } }],
-      },
       { userId: 'u-9' },
       { action: { in: ['auth.login.failure', 'auth.login.locked'] } },
       { createdAt: { gte: from, lte: to } },
@@ -96,7 +65,7 @@ describe('AuditReadRepository tenant containment', () => {
 
   it('orders newest first with the id tiebreaker and pages by keyset cursor', async () => {
     const { repo, findMany } = await buildSubject();
-    await repo.listPage('tenant-a', { limit: 10, cursor: 'a-10' });
+    await repo.listPage({ limit: 10, cursor: 'a-10' });
 
     const args = findMany.mock.calls[0][0];
     expect(args.orderBy).toEqual([{ createdAt: 'desc' }, { id: 'desc' }]);
@@ -109,7 +78,7 @@ describe('AuditReadRepository tenant containment', () => {
 
   it('omits cursor args entirely on the first page', async () => {
     const { repo, findMany } = await buildSubject();
-    await repo.listPage('tenant-a', { limit: 10 });
+    await repo.listPage({ limit: 10 });
 
     const args = findMany.mock.calls[0][0];
     expect(args).not.toHaveProperty('cursor');
@@ -120,7 +89,7 @@ describe('AuditReadRepository tenant containment', () => {
     const { repo, findMany } = await buildSubject();
     findMany.mockResolvedValue([row('a-1'), row('a-2'), row('a-3')]);
 
-    const page = await repo.listPage('tenant-a', { limit: 2 });
+    const page = await repo.listPage({ limit: 2 });
     expect(page.items.map((item) => item.id)).toEqual(['a-1', 'a-2']);
     expect(page.nextCursor).toBe('a-2');
   });
@@ -129,7 +98,7 @@ describe('AuditReadRepository tenant containment', () => {
     const { repo, findMany } = await buildSubject();
     findMany.mockResolvedValue([row('a-1'), row('a-2')]);
 
-    const page = await repo.listPage('tenant-a', { limit: 2 });
+    const page = await repo.listPage({ limit: 2 });
     expect(page.items).toHaveLength(2);
     expect(page.nextCursor).toBeNull();
   });
@@ -138,7 +107,7 @@ describe('AuditReadRepository tenant containment', () => {
     const { repo, findMany } = await buildSubject();
     findMany.mockResolvedValue([row('a-1'), row('a-2', { user: null })]);
 
-    const page = await repo.listPage('tenant-a', { limit: 10 });
+    const page = await repo.listPage({ limit: 10 });
     expect(page.items[0]!.actor).toEqual({ id: 'u-1', email: 'a@example.com', displayName: 'A' });
     expect(page.items[0]).not.toHaveProperty('user');
     expect(page.items[1]!.actor).toBeNull();

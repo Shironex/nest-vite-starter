@@ -74,12 +74,8 @@ export function eraseRegisteredPii(value: unknown): unknown {
  * row is erased too. Over-erasing a living person's address from an old trail is
  * the recoverable direction; keeping a purged person's is not.
  *
- * ACROSS TENANTS, by design, which is why this file sits in
- * TENANT_WHERE_ALLOW_IN (packages/eslint-config/nestjs.js). A user's rows can
- * carry a null tenantId (pre-auth writes) or a PREVIOUS organization's (an
- * account that moved between tenants), so a tenantId filter would
- * silently leave rows unscrubbed. The keys it filters on are the purged user's
- * own id, which the purge read from the row it is erasing, never caller input.
+ * The keys it filters on are the purged user's own id, which the purge read
+ * from the row it is erasing, never caller input.
  *
  * MUST RUN BEFORE the user row is deleted: AuditLog.userId is `SetNull`, so
  * after the delete the actor arm no longer finds anything.

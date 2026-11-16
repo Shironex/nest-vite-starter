@@ -43,10 +43,6 @@ export const AUDIT_RETENTION_MAX_BATCHES = 200;
  * the deletes so the pass cannot erase its own evidence: the row's createdAt is
  * necessarily newer than the cutoff that chose the rows, so it survives until a
  * sweep a full retention period later, by which time it has done its job.
- *
- * Uses `prismaService.client`: AuditLog is not a tenant-scoped model, so the
- * tenant-scope extension passes it through untouched even without a request
- * context, and the lint-guarded `unscoped` escape hatch stays unused.
  */
 @Injectable()
 export class AuditRetentionService {
@@ -114,8 +110,6 @@ export class AuditRetentionService {
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUDIT_RETENTION_SWEEP,
         userId: null,
-        tenantId: null,
-        workspaceId: null,
         targetType: 'AuditLog',
         metadata: {
           cutoff: cutoff.toISOString(),

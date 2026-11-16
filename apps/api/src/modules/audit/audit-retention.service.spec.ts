@@ -161,8 +161,6 @@ describe('AuditRetentionService durable record', () => {
     expect(audit.log).toHaveBeenCalledWith({
       action: AUDIT_ACTIONS.AUDIT_RETENTION_SWEEP,
       userId: null,
-      tenantId: null,
-      workspaceId: null,
       targetType: 'AuditLog',
       metadata: {
         cutoff: new Date(Date.now() - 365 * DAY_MS).toISOString(),

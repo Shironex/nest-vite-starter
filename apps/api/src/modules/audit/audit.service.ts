@@ -11,10 +11,6 @@ export interface IAuditLogParams {
   action: string;
   /** When omitted, taken from the ALS request context (set by auth middleware). */
   userId?: string | null;
-  /** Active organization id. When omitted, taken from the ALS request context. */
-  tenantId?: string | null;
-  /** Active workspace id. When omitted, taken from the ALS request context. */
-  workspaceId?: string | null;
   /** Logical kind of the resource that was acted on (e.g. `User`, `Invoice`). */
   targetType?: string;
   /** Primary key of the resource that was acted on. */
@@ -85,14 +81,9 @@ export class AuditService {
     const requestId = getRequestId();
 
     const userId = params.userId ?? ctx?.userId ?? null;
-    // Explicit params win over the ALS context, mirroring the userId fallback.
-    const tenantId = params.tenantId ?? ctx?.tenantId ?? null;
-    const workspaceId = params.workspaceId ?? ctx?.workspaceId ?? null;
 
     const data: Record<string, unknown> = {
       userId,
-      tenantId,
-      workspaceId,
       action: params.action,
       targetType: params.targetType ?? null,
       targetId: params.targetId ?? null,
