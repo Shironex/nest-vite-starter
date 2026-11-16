@@ -243,10 +243,10 @@ jobs:
           # never fails the suite at config validation. CI-only throwaway key.
           ENCRYPTION_KEY: 6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81
 
-      # The isolation lane: the *.isolation.spec.ts specs that prove the
-      # tenant-scope extension is a real boundary (there is no Postgres RLS) and
-      # that the raw statements actually execute against a real engine. It runs
-      # HERE because this job already has migrated Postgres and Redis up.
+      # The integration lane: the *.isolation.spec.ts specs that need a real
+      # engine (the raw advisory locks actually execute, the login attempt
+      # budget holds under a real burst, flows end to end across real rows). It
+      # runs HERE because this job already has migrated Postgres and Redis up.
       #
       # `tsconfig.build.json` excludes `**/*.spec.ts`, so a spec that stops
       # compiling is invisible to a build-only type check. Running the lane here
@@ -257,7 +257,7 @@ jobs:
         if: steps.aff.outputs.run == 'true'
         run: pnpm verify:inventory --from-report --suite=api
 
-      - name: Run API isolation lane (live Postgres)
+      - name: Run API integration lane (live Postgres)
         if: steps.aff.outputs.run == 'true'
         run: pnpm --filter @repo/api test:integration
         env:
@@ -265,7 +265,7 @@ jobs:
           REDIS_URL: redis://localhost:6379
           ENCRYPTION_KEY: 6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81
 
-      - name: Isolation lane test inventory
+      - name: Integration lane test inventory
         if: steps.aff.outputs.run == 'true'
         run: pnpm verify:inventory --from-report --suite=isolation
 
