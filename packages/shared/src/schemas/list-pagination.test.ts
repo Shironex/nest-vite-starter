@@ -24,7 +24,7 @@ import { adminUserListPageOutput } from './user';
  */
 
 /** Every list output that gained a total, named by the screen that renders it. */
-const WITH_TOTAL = [['user.listUsers (settings members)', adminUserListPageOutput]] as const;
+const WITH_TOTAL = [['user.listUsers (admin users table)', adminUserListPageOutput]] as const;
 
 describe('paginated list contracts', () => {
   it.each(WITH_TOTAL)('%s carries both the cursor and the total', (_screen, schema) => {

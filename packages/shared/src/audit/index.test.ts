@@ -3,7 +3,7 @@ import { AUDIT_ACTIONS } from './index';
 
 /**
  * An audit action's VALUE is persisted in `AuditLog.action`, append-only, and
- * the audit screen filters and labels rows by it. A constant may be renamed,
+ * the admin audit list labels rows by it. A constant may be renamed,
  * but the string it names may not: a new value would orphan every row already
  * written under the old one.
  */
