@@ -2,33 +2,6 @@
   "version": 1,
   "findings": [
     {
-      "id": "SEC-003",
-      "title": "A Google-signup owner is listed as a pending invite, and 'withdraw invitation' would hard-delete the account, and countLiveAdmins counted pending invitees",
-      "status": "fixed",
-      "spec": "security-spec/pending-invite-predicate.security-spec.ts",
-      "alsoCoveredBy": [
-        "apps/api/src/modules/auth/staff-invite/pending-invite-predicate.isolation.spec.ts"
-      ],
-      "cases": [
-        {
-          "name": "SEC-003 an open invitation is the pending pair, everywhere > control: a Google-signup admin counts as an admin and is listed active",
-          "expect": "pass"
-        },
-        {
-          "name": "SEC-003 an open invitation is the pending pair, everywhere > the last-admin guard does not count a pending ADMIN invitee",
-          "expect": "pass"
-        },
-        {
-          "name": "SEC-003 an open invitation is the pending pair, everywhere > revoke refuses the Google-signup owner and deletes nothing",
-          "expect": "pass"
-        },
-        {
-          "name": "SEC-003 an open invitation is the pending pair, everywhere > control: revoke still withdraws a real pending invitation and audits it",
-          "expect": "pass"
-        }
-      ]
-    },
-    {
       "id": "SEC-004",
       "title": "Log redaction fails open past the depth cap and never scrubs message strings",
       "status": "fixed",

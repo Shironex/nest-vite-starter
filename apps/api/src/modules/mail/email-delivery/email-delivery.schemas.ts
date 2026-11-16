@@ -13,8 +13,6 @@ import type {
   ISendTwoFactorSupportResetContestJobData,
   ISendEmailChangeVerificationJobData,
   ISendEmailChangeRequestedJobData,
-  ISendStaffInviteJobData,
-  ISendStaffInviteJoinAndCloseJobData,
 } from './email-delivery.types';
 
 /**
@@ -140,27 +138,3 @@ export const sendEmailChangeRequestedJobSchema = z.object({
     settingsUrl: z.string().min(1),
   }),
 }) satisfies z.ZodType<ISendEmailChangeRequestedJobData>;
-
-export const sendStaffInviteJobSchema = z.object({
-  to: z.string().min(1),
-  props: z.object({
-    inviteUrl: z.string().min(1),
-    appName: z.string().min(1),
-    organizationName: z.string().min(1),
-    // Optional: an organization account need not carry a display name.
-    inviterName: z.string().min(1).optional(),
-    // Optional: see sendVerificationJobSchema.
-    expiresIn: z.string().min(1).optional(),
-  }),
-}) satisfies z.ZodType<ISendStaffInviteJobData>;
-
-export const sendStaffInviteJoinAndCloseJobSchema = z.object({
-  to: z.string().min(1),
-  props: z.object({
-    inviteUrl: z.string().min(1),
-    appName: z.string().min(1),
-    organizationName: z.string().min(1),
-    inviterName: z.string().min(1).optional(),
-    expiresIn: z.string().min(1).optional(),
-  }),
-}) satisfies z.ZodType<ISendStaffInviteJoinAndCloseJobData>;

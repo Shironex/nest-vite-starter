@@ -281,14 +281,7 @@ export const config = [
           // Notification read state is deliberately unaudited: Notification
           // .readAt already persists exactly the fact an audit row would.
           // See the NotificationsService docblock.
-          ignoreEntries: [
-            'NotificationsRouter.markRead',
-            'NotificationsRouter.markAllRead',
-            // False positive. `findLiveToken` deletes an expired token only
-            // when `burnExpired` is set, and the invite PRE-CHECK never sets
-            // it, because a page load must not burn a single-use invitation.
-            'AuthRouter.staffInviteState',
-          ],
+          ignoreEntries: ['NotificationsRouter.markRead', 'NotificationsRouter.markAllRead'],
         },
       ],
     },

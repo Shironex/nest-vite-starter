@@ -20,8 +20,6 @@ const RENDER_METHODS = [
   'renderTwoFactorSupportResetContestEmail',
   'renderEmailChangeVerificationEmail',
   'renderEmailChangeRequestedEmail',
-  'renderStaffInviteEmail',
-  'renderStaffInviteJoinAndCloseEmail',
 ] as const;
 
 type IRenderFn = (props: unknown) => Promise<string>;

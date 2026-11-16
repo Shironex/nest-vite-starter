@@ -6,7 +6,6 @@ import { PrismaService } from '../../common/database/prisma.service';
 import { now } from '../../common/clock';
 import type { IUserProfile, IAdminUserListPage, IListUsersParams } from './user.service';
 import { idCursorArgs, pageByIdCursor } from '../../common/utils/cursor-page';
-import { PENDING_INVITATION_WHERE, isPendingInvitation } from './pending-invitation.util';
 import type { AvatarOwnerPort } from '../storage/avatar-owner.port';
 
 // The `user.me` projection.
@@ -49,11 +48,6 @@ const ADMIN_LIST_SELECT = {
   lockedUntil: true,
   createdAt: true,
   membershipEndedAt: true,
-  // Not shown as a credential and not one: with `emailVerified` it is what
-  // separates a PENDING invitee from a member, and the members list is
-  // unbuildable without it. The projection below turns it into a status before
-  // the row leaves the repository, so no hash reaches the service layer.
-  passwordHash: true,
 } as const;
 
 @Injectable()
@@ -85,49 +79,18 @@ export class UserRepository extends BaseRepository implements AvatarOwnerPort {
    * needs, so this stays consistent with CREDENTIAL_FREE_SELECT's rule that a
    * credential does not leave the repository.
    *
-   * The two refusals, both silent at the call site because the reset flow
-   * returns a generic answer either way:
-   *
-   *   - a removed member. They keep their address and their account, and a
-   *     reset would hand them a working credential whose only remaining barrier
-   *     is the login check.
-   *   - a PENDING invitee. The reset flow would otherwise set a
-   *     password WITHOUT flipping emailVerified and without touching the
-   *     invitation token, producing a member who joined without ever accepting,
-   *     with no staff.invite.accepted row and a live invite token still pointed
-   *     at what is now an active account.
+   * The refusal is silent at the call site because the reset flow returns a
+   * generic answer either way: a removed member keeps their address and their
+   * account, and a reset would hand them a working credential whose only
+   * remaining barrier is the login check.
    */
-  async findPasswordResetEligibility(
-    userId: string,
-  ): Promise<{ membershipEnded: boolean; pendingInvite: boolean } | null> {
+  async findPasswordResetEligibility(userId: string): Promise<{ membershipEnded: boolean } | null> {
     const user = await this.client.user.findFirst({
       where: { id: userId, ...this.notDeleted },
-      select: {
-        membershipEndedAt: true,
-        passwordHash: true,
-        emailVerified: true,
-        // Every invite token type: an invitee is pending until they accept,
-        // and a type left out here would let its population set a password
-        // without ever accepting.
-        tokens: {
-          where: { type: { in: ['STAFF_INVITE'] } },
-          select: { id: true },
-          take: 1,
-        },
-      },
+      select: { membershipEndedAt: true },
     });
     if (!user) return null;
-    // ROW-INTRINSIC, not token-dependent. The token expires after 7 days and the
-    // hourly sweep then deletes it, so a gate that hangs off its presence
-    // REOPENS a week after the invitation was ignored: the invitee, or whoever
-    // later controls that mailbox, sets a password through forgot-password and
-    // signs in with emailVerified permanently false and no acceptance row.
-    // "No password AND never verified" is what pending MEANS on this row, and
-    // nothing deletes it.
-    return {
-      membershipEnded: user.membershipEndedAt !== null,
-      pendingInvite: user.passwordHash === null && (!user.emailVerified || user.tokens.length > 0),
-    };
+    return { membershipEnded: user.membershipEndedAt !== null };
   }
 
   /**
@@ -250,12 +213,6 @@ export class UserRepository extends BaseRepository implements AvatarOwnerPort {
    *
    * Same liveness predicate as `countLiveAdmins`, and for the same reasons:
    * neither a soft-deleted nor a removed row is somebody who would be stranded.
-   *
-   * With one deliberate difference: an open invitation still COUNTS here. The
-   * question is who would be left behind with no admin, and a pending invitee
-   * who accepts after the last admin is gone arrives in exactly that organization. So
-   * the last admin has to withdraw their open invitations before deleting
-   * themselves, which is the conservative answer to a question with no undo.
    */
   async countOtherLiveMembers(
     tenantId: string,
@@ -306,17 +263,10 @@ export class UserRepository extends BaseRepository implements AvatarOwnerPort {
    * `deletedAt` because a soft-deleted admin is on their way out and cannot
    * administer anything. `membershipEndedAt` because a removed member cannot
    * log in at all, and counting them would let the guard approve demoting the
-   * last admin who actually can. `NOT: PENDING_INVITATION_WHERE` because an
-   * unaccepted ADMIN invitation is not an admin yet and may never be one: the
-   * sole real admin could otherwise delete themselves while it is open, and a
-   * sweep later erases the invitation, leaving an organization nobody can administer.
-   * The pair and never `passwordHash: null` alone, which would drop a
-   * Google-only admin (no password, verified address) who very much is one.
+   * last admin who actually can.
    *
    * `excludeUserId` asks "how many OTHER admins", which is the question a
-   * demotion needs: the target may itself be a pending invitee, who is not in
-   * the live count, so subtracting one for them would refuse a legitimate
-   * re-grade of an invitation.
+   * demotion needs.
    */
   async countLiveAdmins(
     tenantId: string,
@@ -330,7 +280,6 @@ export class UserRepository extends BaseRepository implements AvatarOwnerPort {
         role: ROLES.ADMIN,
         deletedAt: null,
         membershipEndedAt: null,
-        NOT: PENDING_INVITATION_WHERE,
       },
     });
   }
@@ -571,21 +520,14 @@ export class UserRepository extends BaseRepository implements AvatarOwnerPort {
     // only ADMIN self-deleted keeps its Tenant row with no owner to name.
     const ownerId = await this.findOwnerId(tenantId);
 
-    const items = page.map(({ passwordHash, ...user }) => ({
+    const items = page.map((user) => ({
       ...user,
       twoFactorEnabled: enabledUserIds.has(user.id),
       isOwner: ownerId !== null && ownerId === user.id,
-      // Derived here rather than on the client, because it is the same three-way
-      // distinction the removal surfaces branch on and two implementations of it
-      // would eventually disagree. `pending` before `removed`: an invitation
-      // that was withdrawn leaves no row at all, so a pending row is always
-      // still open. The pending PAIR, not a null password alone: a Google-signup
-      // owner has no password and is an ordinary active member.
-      status: (isPendingInvitation({ passwordHash, emailVerified: user.emailVerified })
-        ? 'pending'
-        : user.membershipEndedAt !== null
-          ? 'removed'
-          : 'active') as 'active' | 'pending' | 'removed',
+      // Derived here rather than on the client, because it is the distinction
+      // the removal surfaces branch on and two implementations of it would
+      // eventually disagree.
+      status: (user.membershipEndedAt !== null ? 'removed' : 'active') as 'active' | 'removed',
     }));
     return { items, nextCursor, total };
   }

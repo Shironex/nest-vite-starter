@@ -26,8 +26,6 @@ import {
   sendTwoFactorSupportResetContestJobSchema,
   sendEmailChangeVerificationJobSchema,
   sendEmailChangeRequestedJobSchema,
-  sendStaffInviteJobSchema,
-  sendStaffInviteJoinAndCloseJobSchema,
 } from './email-delivery.schemas';
 
 /**
@@ -165,31 +163,6 @@ export class EmailDeliveryProcessor extends TracedWorkerHost {
         await this.provider.send({
           to,
           subject: 'An email address change was requested',
-          html,
-        });
-        return;
-      }
-      case EMAIL_DELIVERY_JOB_NAMES.SEND_STAFF_INVITE: {
-        const { to, props } = parseJobData(sendStaffInviteJobSchema, job);
-        const html = await this.renderer.renderStaffInviteEmail(props);
-        // The reader is about to become organization staff, so the subject
-        // names the organization.
-        await this.provider.send({
-          to,
-          subject: `Invitation to join ${props.organizationName} on ${props.appName}`,
-          html,
-        });
-        return;
-      }
-      case EMAIL_DELIVERY_JOB_NAMES.SEND_STAFF_INVITE_JOIN_AND_CLOSE: {
-        const { to, props } = parseJobData(sendStaffInviteJoinAndCloseJobSchema, job);
-        const html = await this.renderer.renderStaffInviteJoinAndCloseEmail(props);
-        // The subject carries the consequence too. Somebody who reads only the
-        // subject line in a notification must still learn that this invitation
-        // moves their account rather than merely offering them a second one.
-        await this.provider.send({
-          to,
-          subject: `Invitation to join ${props.organizationName}: your account will move`,
           html,
         });
         return;

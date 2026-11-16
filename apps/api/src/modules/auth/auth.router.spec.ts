@@ -40,9 +40,6 @@ const buildRouter = () => {
     requestEmailChange: jest.fn().mockResolvedValue(undefined),
     confirmEmailChange: jest.fn().mockResolvedValue(undefined),
   };
-  // No procedure under test reaches the invite services; empty stubs keep the
-  // constructor arity honest so a new dependency fails type-check here.
-  const staffInviteService = {};
 
   const router = new AuthRouter(
     registerService as unknown as Services[0],
@@ -54,7 +51,6 @@ const buildRouter = () => {
     twoFactorChallengeService as unknown as Services[6],
     sudoService as unknown as Services[7],
     emailChangeService as unknown as Services[8],
-    staffInviteService as unknown as Services[9],
   );
 
   return {

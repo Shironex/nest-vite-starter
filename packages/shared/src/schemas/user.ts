@@ -44,12 +44,11 @@ const adminUserListItemSchema = z.object({
    */
   isOwner: z.boolean(),
   /**
-   * DERIVED server-side, from `passwordHash` and `membershipEndedAt`, neither of
-   * which crosses the wire. It is the same three-way distinction the removal
-   * procedures branch on, so deriving it twice would eventually mean two
-   * answers.
+   * DERIVED server-side, from `membershipEndedAt`. It is the same distinction
+   * the removal procedures branch on, so deriving it twice would eventually
+   * mean two answers.
    */
-  status: z.enum(['active', 'pending', 'removed']),
+  status: z.enum(['active', 'removed']),
 });
 
 /**
@@ -97,3 +96,16 @@ export const userTenantOutput = z.object({
 });
 
 export type UserTenantOutput = z.infer<typeof userTenantOutput>;
+
+/**
+ * Remove a member from the organization, or put a removed one back.
+ *
+ * Removal is NOT deletion and the two are separate procedures on purpose: this
+ * one is reversible, stamps `membershipEndedAt`, and leaves the account and its
+ * audit trail standing. `adminDeleteUser` remains the destructive one.
+ */
+export const memberActionSchema = z.object({
+  userId: z.string().min(1, 'User is required'),
+});
+
+export type MemberActionInput = z.infer<typeof memberActionSchema>;

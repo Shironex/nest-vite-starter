@@ -66,21 +66,12 @@ export class PasswordResetService {
       return;
     }
 
-    // Two accounts must not be sent a reset link, and both refusals return the
-    // SAME generic response as an unknown address, so neither becomes an
-    // enumeration oracle.
-    //
-    //   - a removed member. They keep their account and their address, and the
-    //     only barrier left after a successful reset would be the login check.
-    //   - a PENDING invitee. `resetPassword` sets a password without flipping
-    //     emailVerified and without touching the invitation token, and login
-    //     establishes a session for unverified users, so the result is a member
-    //     who joined without ever accepting, with no staff.invite.accepted row
-    //     and a live invitation still pointed at an active account. The guarded
-    //     UPDATE in the acceptance handler is the second line of defense and
-    //     stays regardless.
+    // A removed member must not be sent a reset link: they keep their account
+    // and their address, and the only barrier left after a successful reset
+    // would be the login check. The refusal returns the SAME generic response
+    // as an unknown address, so it never becomes an enumeration oracle.
     const eligibility = await this.userService.findPasswordResetEligibility(user.id);
-    if (eligibility === null || eligibility.membershipEnded || eligibility.pendingInvite) {
+    if (eligibility === null || eligibility.membershipEnded) {
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_PASSWORD_FORGOT,
         userId: user.id,
@@ -89,12 +80,7 @@ export class PasswordResetService {
         success: false,
         ipAddress: ip,
         metadata: {
-          reason:
-            eligibility === null
-              ? 'unknown_email'
-              : eligibility.membershipEnded
-                ? 'membership_ended'
-                : 'pending_invite',
+          reason: eligibility === null ? 'unknown_email' : 'membership_ended',
         },
       });
       recordAuthOutcome({

@@ -30,7 +30,7 @@ export interface IStepUpParams {
   readonly ip: string;
   /**
    * The flow asking, as it appears in the audit row's `metadata.context`
-   * (`password_reset`, `email_change`, `staff_invite_accept`). A closed
+   * (`password_reset`, `email_change`). A closed
    * vocabulary in practice, kept a string because the audit metadata is a JSON
    * blob and a union here would be a second list to keep in step.
    */
@@ -50,23 +50,18 @@ export interface IStepUpParams {
 }
 
 /**
- * The second-factor step-up gate: one implementation, four callers.
+ * The second-factor step-up gate: one implementation for every caller.
  *
- * WHAT IT IS. Three flows can change a credential or move an account, and each
- * must refuse to do so on one proof alone when the account carries an active
- * non-recovery factor:
+ * WHAT IT IS. Two flows can change a credential, and each must refuse to do so
+ * on one proof alone when the account carries an active non-recovery factor:
  *
  *   - password reset, on mailbox proof (closes the mailbox-only lockout attack);
- *   - email change, on password sudo (the login identity is what 2FA protects);
- *   - staff-invite acceptance, which does strictly MORE than a reset on the
- *     collision path: it overwrites the credential, moves the account between
- *     organizations and changes its role.
+ *   - email change, on password sudo (the login identity is what 2FA protects).
  *
  * WHY IT IS ONE SERVICE. The sequence (find an active factor, spend one of the
  * per-user manage budget, verify by code shape, audit the failure, throw
- * TWO_FACTOR_INVALID_CODE) was hand-copied into all three, and two of the three
- * `verifyFactorCode` bodies were byte-identical. A security control maintained
- * in three places is a control where a change to recovery-code redemption, the
+ * TWO_FACTOR_INVALID_CODE) used to be hand-copied into each flow. A security
+ * control maintained in several places is a control where a change to recovery-code redemption, the
  * TOTP replay rule, the lockout key or the audit shape lands in whichever copy
  * the author happened to open.
  *

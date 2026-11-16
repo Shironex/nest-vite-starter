@@ -98,18 +98,6 @@ export const AUDIT_ACTIONS = {
   USER_ACCOUNT_ADMIN_DELETED: 'user.account.admin_deleted',
   USER_ACCOUNT_PURGED: 'user.account.purged',
 
-  // user.tenant. An account changing which organization it belongs to, which happens
-  // on exactly one path: accepting a staff invitation at an address that already
-  // has an account elsewhere.
-  //
-  // No precedent, because nothing in this product has ever moved an account
-  // between tenants. before/after carry BOTH the tenantId and the role, and the
-  // role half is the one that is easy to leave out: branch B sets the invited
-  // role directly, without going through updateRole, so omitting it would leave
-  // "when did this person become an admin" unanswerable in an application built
-  // for exactly that question. No address and no PII.
-  USER_TENANT_MOVED: 'user.tenant.moved',
-
   // data_export (GDPR Art. 20 data portability; access events, metadata only)
   DATA_EXPORT_DOWNLOADED: 'data_export.downloaded',
 
@@ -129,32 +117,6 @@ export const AUDIT_ACTIONS = {
   // metadata: { fields }: field NAMES only, never the values.
   WORKSPACE_UPDATED: 'workspace.updated',
 
-  // staff. Admitting a colleague INTO the organization. A separate
-  // domain rather than more `user.` actions because the
-  // question these answer is a different one: `user.` rows are about an account,
-  // these are about MEMBERSHIP of an organization, and the filter dropdown groups
-  // by exactly that distinction.
-  // metadata: { role, outcome, emailSent }: never the address, which is the
-  // invitee's own PII and is already the target row's identity.
-  STAFF_INVITE_SENT: 'staff.invite.sent',
-  // metadata: { reason }: email_in_use, deleted_address, already_a_member,
-  // removed_member. Refusals are audited because "we never invited them" and
-  // "the invite was refused" are different answers
-  // to the same question, and only one of them is innocent.
-  STAFF_INVITE_FAILED: 'staff.invite.failed',
-  // The invitation withdrawn before it was ever accepted. The pending row is
-  // hard-deleted with it, which is safe precisely because an account that never
-  // had a password was never an actor on anything, so this row is the only
-  // surviving trace that the invitation existed at all.
-  STAFF_INVITE_REVOKED: 'staff.invite.revoked',
-  // The member exists from here on: password set, emailVerified flipped.
-  STAFF_INVITE_ACCEPTED: 'staff.invite.accepted',
-  // The sweep erased an invitation nobody ever accepted, more than 30 days
-  // after its last link expired. Same shape and same safety as the withdrawal
-  // above (an account that never had a password was never an actor on
-  // anything), and separate from it because no person decided this one.
-  // metadata: { role }.
-  STAFF_INVITE_EXPIRED: 'staff.invite.expired',
   // Membership ended without deleting the account: reversible, and the account
   // keeps its tenantId so the removal stays visible. Sessions are revoked with
   // it. Distinct from user.account.admin_deleted, which is the one-way door.

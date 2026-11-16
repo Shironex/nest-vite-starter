@@ -25,7 +25,7 @@ export const UNSCOPED_BY_DESIGN: Readonly<Record<string, string>> = {
     'The audit trail must accept pre-auth writes (a failed login on an unknown email has no tenant yet), which is why the column is nullable. A fail-closed $allOperations hook would reject exactly the security events that matter most. Reads are scoped by hand in audit-read.repository.ts, which filters on the ALS tenantId.',
   notification:
     'Mirrors AuditLog: a nullable scope column with no FK, written by crons and workers that run outside any tenant context. Every read is self-scoped by userId (a notification belongs to one user, not to a tenant), so the boundary is the session, not the extension.',
-  user: 'User is the row that CARRIES the tenant, so the extension cannot scope it without a circular dependency: login, registration, invite acceptance and password reset all have to read a user BEFORE any tenant context exists, and a fail-closed hook would break every unauthenticated path. Scoped by hand instead: every read keys on ctx.user.id or passes an explicit tenantId from the ALS.',
+  user: 'User is the row that CARRIES the tenant, so the extension cannot scope it without a circular dependency: login, registration and password reset all have to read a user BEFORE any tenant context exists, and a fail-closed hook would break every unauthenticated path. Scoped by hand instead: every read keys on ctx.user.id or passes an explicit tenantId from the ALS.',
 };
 
 /**
@@ -66,7 +66,7 @@ export const HAND_SCOPED_MODELS: Readonly<Record<string, readonly string[]>> = {
  * the static guard by simply not mentioning it.
  */
 export const HAND_SCOPE_PENDING: Readonly<Record<string, string>> = {
-  user: 'User is read by id on dozens of paths that have no tenant and no session yet (login, registration, invite acceptance, password reset), so a single required scope field does not exist for it. It needs its own pass over those call sites first.',
+  user: 'User is read by id on dozens of paths that have no tenant and no session yet (login, registration, password reset), so a single required scope field does not exist for it. It needs its own pass over those call sites first.',
 };
 
 /**
@@ -111,8 +111,8 @@ export const TENANT_MODELS: readonly string[] = ['workspace', 'twoFactorPolicy']
  * The purge's audit PII scrub (the scrub-on-purge policy) is a third case of the
  * same shape. It finds ONE purged user's AuditLog rows by that user's id, and it is
  * cross-tenant by design: a user's rows carry a null tenantId (writes made before
- * they authenticated) or a PREVIOUS organization's (staff-invite acceptance moves an
- * account between organizations), so a tenantId filter would leave exactly the rows the
+ * they authenticated) or a PREVIOUS organization's (an account that moved
+ * between organizations), so a tenantId filter would leave exactly the rows the
  * scrub exists to erase. It touches only AuditLog, like the retention sweep, and
  * is exempted by exact path for the same reason.
  */
@@ -155,30 +155,21 @@ export interface ISoftDeleteFunctionExemption {
  *  - user-purge.service.ts `sweep`: reads the expired rows with an explicit
  *    `deletedAt: { lte: cutoff }` filter and hard-deletes each one by primary
  *    key. The purge is the one job whose SUBJECT is the soft-deleted rows.
- *  - staff-invite.repository.ts `countAllUsersInTenant`: must count
- *    soft-deleted rows. `User.tenantId` is `onDelete: Restrict`, so a live-only
- *    count would report an abandonable organization whose delete then fails with a
- *    P2003 well after the caller was told otherwise.
  *
  * Functions, not files: a file-level `allowIn` also stopped policing the
- * compliant calls beside these (`acceptInPlace`, `acceptAndMove`,
- * `deletePendingMember`), so an edit there could drop the filter without
+ * compliant calls beside these, so an edit there could drop the filter without
  * turning CI red. A named helper declared inside one of these functions is
  * policed as its own function.
  *
  * An exemption list rather than an "already narrowed by a unique id" carve-out
  * in the rule, and that is the load-bearing choice: `where: { id }` is the
  * single most common shape in the repo, so a rule treating it as compliant
- * would stop reporting the lockout counters, the role change and the
- * staff-invite writes, which are exactly the sites this guard exists to catch.
+ * would stop reporting the lockout counters and the role change, which are
+ * exactly the sites this guard exists to catch.
  *
  * Exact files, never a directory glob: each exemption is for one call site, not
  * for whatever lands beside it later.
  */
 export const SOFT_DELETE_ALLOW_IN_FUNCTIONS: readonly ISoftDeleteFunctionExemption[] = [
   { files: ['**/modules/user/user-purge.service.ts'], functions: ['sweep'] },
-  {
-    files: ['**/modules/auth/staff-invite/staff-invite.repository.ts'],
-    functions: ['countAllUsersInTenant'],
-  },
 ];

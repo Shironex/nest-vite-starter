@@ -42,17 +42,10 @@ import {
   EmailChangeRequestedEmail,
   type EmailChangeRequestedEmailProps,
 } from './templates/email-change-requested.js';
-import { StaffInviteEmail, type StaffInviteEmailProps } from './templates/staff-invite.js';
-import {
-  StaffInviteJoinAndCloseEmail,
-  type StaffInviteJoinAndCloseEmailProps,
-} from './templates/staff-invite-join-and-close.js';
 
 export type {
   EmailChangeVerificationEmailProps,
   EmailChangeRequestedEmailProps,
-  StaffInviteEmailProps,
-  StaffInviteJoinAndCloseEmailProps,
   VerificationEmailProps,
   PasswordResetEmailProps,
   WelcomeEmailProps,
@@ -136,14 +129,4 @@ export async function renderEmailChangeRequestedEmail(
   props: EmailChangeRequestedEmailProps,
 ): Promise<string> {
   return await render(EmailChangeRequestedEmail(props));
-}
-
-export async function renderStaffInviteEmail(props: StaffInviteEmailProps): Promise<string> {
-  return await render(StaffInviteEmail(props));
-}
-
-export async function renderStaffInviteJoinAndCloseEmail(
-  props: StaffInviteJoinAndCloseEmailProps,
-): Promise<string> {
-  return await render(StaffInviteJoinAndCloseEmail(props));
 }

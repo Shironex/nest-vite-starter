@@ -54,8 +54,8 @@ describe('AuditReadRepository tenant containment', () => {
   });
 
   it('never lets the actor fallback reach a row that carries its own tenantId', async () => {
-    // The move case: an account leaves organization A for organization B through the
-    // staff-invite collision path. A stamped row stays with A because the
+    // The move case: an account leaves organization A for organization B. A
+    // stamped row stays with A because the
     // fallback arm is gated on `tenantId: null`, so B's admin reading their own
     // audit view cannot pull A-era rows through the actor relation.
     const { repo, findMany } = await buildSubject();

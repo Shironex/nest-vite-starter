@@ -68,27 +68,9 @@ export const PASSWORD_RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 // 24 h verification one: the flow re-keys the login identity, and the user is
 // actively at their new mailbox while it runs.
 export const EMAIL_CHANGE_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
-/**
- * Staff invitations into an existing organization get 7 days, not the 1 h a reset
- * gets: the reader has no self-service resend and may read work mail only on
- * office days. The link is single-use, so the longer window buys reachability
- * rather than privilege.
- */
-export const STAFF_INVITE_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /** Human copy for a token TTL at hour granularity: '1 hour', '24 hours'. */
 export function formatTokenTtl(ttlMs: number): string {
   const hours = Math.round(ttlMs / (60 * 60 * 1000));
   return hours === 1 ? '1 hour' : `${hours} hours`;
-}
-
-/**
- * Human copy for a token TTL at DAY granularity: '1 day', '7 days'. A separate
- * formatter rather than a wider `formatTokenTtl`: its consumer is the staff
- * invite, and teaching the hour formatter to switch units would silently
- * rewrite the existing verification email's copy from '24 hours' to '1 day'.
- */
-export function formatTokenTtlDays(ttlMs: number): string {
-  const days = Math.round(ttlMs / (24 * 60 * 60 * 1000));
-  return days === 1 ? '1 day' : `${days} days`;
 }

@@ -101,6 +101,8 @@ export {
   userProfileOutput,
   adminUserListPageOutput,
   userTenantOutput,
+  memberActionSchema,
+  type MemberActionInput,
   type UserProfileOutput,
   type AdminUserListPageOutput,
   type UserTenantOutput,
@@ -173,26 +175,6 @@ export {
   type ActiveSessionItem,
   type RevokeSessionInput,
 } from './sessions.js';
-
-// Staff invitations into an existing organization.
-export {
-  staffInviteSendSchema,
-  staffInviteSendOutput,
-  staffInviteRevokeSchema,
-  staffInviteWithdrawByEmailSchema,
-  staffInviteAcceptSchema,
-  staffInviteStateSchema,
-  staffInviteStateOutput,
-  memberActionSchema,
-  type StaffInviteSendInput,
-  type StaffInviteSendOutput,
-  type StaffInviteRevokeInput,
-  type StaffInviteWithdrawByEmailInput,
-  type StaffInviteAcceptInput,
-  type StaffInviteStateInput,
-  type StaffInviteStateOutput,
-  type MemberActionInput,
-} from './staff-invite.js';
 
 export {
   TOUR_PROGRESS_MAX_ENTRIES,

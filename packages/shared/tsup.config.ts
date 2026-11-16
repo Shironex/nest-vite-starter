@@ -22,7 +22,6 @@ const SCHEMA_DOMAINS = [
   'help',
   'notifications',
   'sessions',
-  'staff-invite',
   'storage',
   'user',
 ] as const;

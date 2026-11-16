@@ -35,16 +35,14 @@ describe('UserRepository tenant containment', () => {
       lockedUntil: null,
       createdAt: new Date('2026-01-01T00:00:00Z'),
       membershipEndedAt: null,
-      // Read to derive `status` and stripped before the row leaves the
-      // repository, so no hash reaches the service layer.
-      passwordHash: 'argon2',
     });
 
-    /** The same row as the caller sees it: no hash, plus the derived fields. */
-    const visibleItem = (id: string) => {
-      const { passwordHash: _passwordHash, ...rest } = listItem(id);
-      return { ...rest, isOwner: false, status: 'active' as const };
-    };
+    /** The same row as the caller sees it, plus the derived fields. */
+    const visibleItem = (id: string) => ({
+      ...listItem(id),
+      isOwner: false,
+      status: 'active' as const,
+    });
 
     it('filters findMany by { tenantId, kind: STAFF, deletedAt: null } with the admin projection and deterministic ordering', async () => {
       const { repo, prisma } = await buildSubject();
@@ -63,10 +61,6 @@ describe('UserRepository tenant containment', () => {
           lockedUntil: true,
           createdAt: true,
           membershipEndedAt: true,
-          // Selected to derive `status`, and stripped from every row before it
-          // leaves the repository. Asserted here so a projection that started
-          // returning it would be a red test rather than a hash on the wire.
-          passwordHash: true,
         },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: 51,
@@ -208,16 +202,12 @@ describe('UserRepository tenant containment', () => {
     });
 
     it.each([
-      ['pending', { passwordHash: null, emailVerified: false, membershipEndedAt: null }],
-      ['removed', { passwordHash: 'argon2', membershipEndedAt: new Date('2026-05-01T00:00:00Z') }],
-      ['active', { passwordHash: 'argon2', membershipEndedAt: null }],
-      // A Google signup: no password, a provider-verified address. That is how
-      // the organization OWNER is provisioned, and it is a member, not an invitation.
-      ['active', { passwordHash: null, emailVerified: true, membershipEndedAt: null }],
+      ['removed', { membershipEndedAt: new Date('2026-05-01T00:00:00Z') }],
+      ['active', { membershipEndedAt: null }],
     ])(
       'derives status %p from the row rather than leaving it to the client',
       async (expected, row) => {
-        // The same three-way distinction the removal procedures branch on. Two
+        // The same distinction the removal procedures branch on. Two
         // implementations of it would eventually disagree, and the one on the
         // client is the one that would be wrong.
         const { repo, prisma } = await buildSubject();
@@ -228,35 +218,6 @@ describe('UserRepository tenant containment', () => {
         expect(page.items[0]!.status).toBe(expected);
       },
     );
-
-    it('ranks pending ahead of removed, because a withdrawn invite leaves no row', async () => {
-      const { repo, prisma } = await buildSubject();
-      prisma.client.user.findMany.mockResolvedValue([
-        {
-          ...listItem('u-1'),
-          passwordHash: null,
-          emailVerified: false,
-          membershipEndedAt: new Date('2026-05-01T00:00:00Z'),
-        },
-      ]);
-
-      const page = await repo.listUsers('tenant-a', { limit: 50 });
-
-      expect(page.items[0]!.status).toBe('pending');
-    });
-
-    it('lists a Google-signup owner as an active member, never as an open invitation', async () => {
-      // The owner row the "withdraw invitation" action once offered to delete.
-      const { repo, prisma } = await buildSubject();
-      prisma.client.tenant.findUnique.mockResolvedValue({ ownerId: 'owner-1' });
-      prisma.client.user.findMany.mockResolvedValue([
-        { ...listItem('owner-1'), role: 'ADMIN', passwordHash: null, emailVerified: true },
-      ]);
-
-      const page = await repo.listUsers('tenant-a', { limit: 50 });
-
-      expect(page.items[0]).toMatchObject({ isOwner: true, status: 'active' });
-    });
 
     it('marks the owner, and marks nobody when the organization has none', async () => {
       // A null owner is permanent, not transitional: an organization whose only ADMIN
@@ -590,67 +551,21 @@ describe('UserRepository password-reset eligibility', () => {
   /** The row as the eligibility projection returns it. */
   const row = (over: Record<string, unknown> = {}) => ({
     membershipEndedAt: null,
-    passwordHash: null,
-    emailVerified: false,
-    tokens: [],
     ...over,
   });
 
-  it('asks for BOTH invite token types', async () => {
+  it('leaves a member eligible', async () => {
     const { repo, prisma } = await buildSubject();
     prisma.client.user.findFirst.mockResolvedValue(row());
 
-    await repo.findPasswordResetEligibility('u-1');
-
-    expect(prisma.client.user.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        select: expect.objectContaining({
-          tokens: expect.objectContaining({
-            where: { type: { in: ['STAFF_INVITE'] } },
-          }),
-        }),
-      }),
-    );
-  });
-
-  it('holds the gate closed after the invite token has been swept away', async () => {
-    // The token expires after 7 days and the hourly sweep deletes it. A gate
-    // that hangs off its presence reopens a week after the invitation was
-    // ignored, which is the whole defect.
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.findFirst.mockResolvedValue(row({ tokens: [] }));
-
-    await expect(repo.findPasswordResetEligibility('u-1')).resolves.toMatchObject({
-      pendingInvite: true,
-    });
-  });
-
-  it('treats a live invite token as pending too', async () => {
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.findFirst.mockResolvedValue(row({ tokens: [{ id: 'tok-1' }] }));
-
-    await expect(repo.findPasswordResetEligibility('u-1')).resolves.toMatchObject({
-      pendingInvite: true,
-    });
-  });
-
-  it('leaves an accepted member eligible', async () => {
-    const { repo, prisma } = await buildSubject();
-    prisma.client.user.findFirst.mockResolvedValue(
-      row({ passwordHash: 'argon2', emailVerified: true }),
-    );
-
     await expect(repo.findPasswordResetEligibility('u-1')).resolves.toEqual({
       membershipEnded: false,
-      pendingInvite: false,
     });
   });
 
   it('reports a removed member', async () => {
     const { repo, prisma } = await buildSubject();
-    prisma.client.user.findFirst.mockResolvedValue(
-      row({ passwordHash: 'argon2', emailVerified: true, membershipEndedAt: new Date() }),
-    );
+    prisma.client.user.findFirst.mockResolvedValue(row({ membershipEndedAt: new Date() }));
 
     await expect(repo.findPasswordResetEligibility('u-1')).resolves.toMatchObject({
       membershipEnded: true,
@@ -660,12 +575,7 @@ describe('UserRepository password-reset eligibility', () => {
 
 describe('UserRepository membership counts', () => {
   describe('countLiveAdmins', () => {
-    /**
-     * An unaccepted ADMIN invitation is not an admin, and counting it let the
-     * sole real admin delete themselves while it was open. The exclusion is the
-     * PAIR: `passwordHash: null` alone would also drop a Google-only admin.
-     */
-    it('leaves open invitations out by the pending pair, never by a null password alone', async () => {
+    it('counts live, current ADMIN members only', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.count.mockResolvedValue(1);
 
@@ -677,7 +587,6 @@ describe('UserRepository membership counts', () => {
           role: 'ADMIN',
           deletedAt: null,
           membershipEndedAt: null,
-          NOT: { passwordHash: null, emailVerified: false },
         },
       });
     });
@@ -695,12 +604,7 @@ describe('UserRepository membership counts', () => {
   });
 
   describe('countOtherLiveMembers', () => {
-    /**
-     * Deliberately NOT the admin count's exclusion: a pending invitee who
-     * accepts after the last admin left arrives in an organization nobody can run, so
-     * they count as somebody the deletion would strand.
-     */
-    it('still counts open invitations as people who would be stranded', async () => {
+    it('counts every other live member as somebody the deletion would strand', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.count.mockResolvedValue(1);
 

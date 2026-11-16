@@ -63,7 +63,7 @@ const SKIPPED_TESTS_MARKERS = ['https?://\\S+', 'TODO\\([^\\s)]+\\)'];
 //   kind           files  flagged  under the allow below
 //   .types.ts        147        1  1 (since fixed: it exported constants)
 //   .constants.ts     24       18  11 (every one exports functions)
-//   .util.ts           4        2  1 (pending-invitation.util.ts: constant+function)
+//   .util.ts           4        2  1 (since removed)
 //
 // Everything else stays off: .service 42/83, plain files 15/42 in the api,
 // 24/29 in shared, .hooks 14/140 in the web. Those mix categories for reasons
@@ -79,9 +79,7 @@ export const SINGLE_SEMANTIC_CONSTANTS_BACKLOG = [
   'apps/web/src/features/auth/Auth.constants.ts',
 ];
 
-export const SINGLE_SEMANTIC_UTILS_BACKLOG = [
-  'apps/api/src/modules/user/pending-invitation.util.ts',
-];
+export const SINGLE_SEMANTIC_UTILS_BACKLOG = [];
 
 // A repo-relative path as a glob that matches from whichever package config
 // lints it (ESLint matches `ignores` against the path below that config).

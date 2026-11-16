@@ -46,14 +46,13 @@ export interface IAdminUserListItem {
   /** The person the organization was provisioned around, who cannot be demoted. */
   isOwner: boolean;
   /**
-   * The three states the members list distinguishes, derived in the repository
+   * The two states the members list distinguishes, derived in the repository
    * so the client and the removal surfaces cannot disagree about them.
    *
-   *   pending: invited, no password ever set. Withdrawable.
    *   removed: was a member, no longer is. Restorable.
    *   active:  a member.
    */
-  status: 'active' | 'pending' | 'removed';
+  status: 'active' | 'removed';
 }
 
 /** One cursor page of the admin user list. `nextCursor` is null on the last page. */
@@ -243,7 +242,7 @@ export class UserService {
     // someone else is ownership TRANSFER, an audited operation of its own, and
     // until it exists the owner is simply not demotable.
     //
-    // Without this an invited ADMIN could demote the founder and then delete
+    // Without this a promoted ADMIN could demote the founder and then delete
     // them, two calls that each pass every other check in the system.
     //
     // A null owner is a real, permanent population (an organization whose only ADMIN
@@ -295,8 +294,7 @@ export class UserService {
   /**
    * End somebody's membership of the organization without deleting their account.
    *
-   * The reversible middle term between withdrawing an invitation (nothing
-   * existed) and deleting an account (nothing survives). The row keeps its
+   * The reversible alternative to deleting an account (nothing survives). The row keeps its
    * tenantId, so the removal stays VISIBLE on the members list and can be
    * undone; modeling it as `tenantId = null` was considered and rejected,
    * because a null-tenant user fails every fail-closed tenant-scoped operation
@@ -515,9 +513,8 @@ export class UserService {
       // BEFORE the count, never between the count and the write.
       await this.userRepository.lockTenantMembership(tenantId, tx);
 
-      // OTHER live admins, not "all minus one": the target may be a pending
-      // ADMIN invitation, which the live count already leaves out, and
-      // re-grading an invitation must not be refused as if it stranded anyone.
+      // OTHER live admins, not "all minus one": the target may already be out
+      // of the live count (soft-deleted or removed).
       const otherLiveAdmins = await this.userRepository.countLiveAdmins(tenantId, tx, targetUserId);
       if (otherLiveAdmins === 0) {
         // Deliberately the generic FORBIDDEN app code, like the sibling

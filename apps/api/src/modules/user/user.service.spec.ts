@@ -676,12 +676,7 @@ describe('UserService', () => {
       expect(repo.updateRoleScoped).toHaveBeenCalledWith('u-1', TENANT_A, 'USER', {});
     });
 
-    /**
-     * The live count leaves pending invitations out, so the target of a
-     * re-grade may not be in it at all. "Total minus one" would then refuse
-     * re-grading a pending ADMIN invitation in an organization with one real admin;
-     * asking for the OTHER admins answers the question the guard means.
-     */
+    /** Asking for the OTHER admins answers the question the guard means. */
     it('counts the admins OTHER than the target', async () => {
       const { service, repo } = await buildSubject();
       existingStaffUser(repo, 'ADMIN');
@@ -726,7 +721,7 @@ describe('UserService', () => {
     });
 
     /**
-     * The founder takeover, closed at its first step. An invited ADMIN could
+     * The founder takeover, closed at its first step. A promoted ADMIN could
      * otherwise demote the owner and then delete them, two calls that each pass
      * every other check in the system.
      */

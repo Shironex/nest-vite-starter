@@ -41,17 +41,6 @@ export const EMAIL_DELIVERY_JOB_NAMES = {
   // notices: the change itself must not fail on a mail outage.
   SEND_EMAIL_CHANGE_VERIFICATION: 'send-email-change-verification',
   SEND_EMAIL_CHANGE_REQUESTED: 'send-email-change-requested',
-  // Staff invitation into an existing organization.
-  // CRITICAL class: the invitee has no account they can log into yet, and no
-  // way to ask for another link.
-  SEND_STAFF_INVITE: 'send-staff-invite',
-  // The collision twin, sent when the invited address already has an account
-  // elsewhere. A separate job name rather than a flag on the one above, for the
-  // reason the employer twin gives, plus a stronger one: this mail carries the
-  // disclosure that accepting closes the reader's current organization, and a payload
-  // discriminant would put that choice in the processor's body where the
-  // exhaustive switch cannot see it.
-  SEND_STAFF_INVITE_JOIN_AND_CLOSE: 'send-staff-invite-join-and-close',
 } as const;
 
 /**

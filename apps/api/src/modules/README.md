@@ -14,14 +14,14 @@ suffix is added here and only here.
 
 Standard NestJS, used the standard way:
 
-| Suffix        | Holds                                                             | Example                                       |
-| ------------- | ----------------------------------------------------------------- | --------------------------------------------- |
-| `.module`     | Nest wiring only                                                  | `user/user.module.ts`                         |
-| `.service`    | Domain logic and writes                                           | `user/user.service.ts`                        |
-| `.repository` | Prisma queries only; extends `common/database/base.repository.ts` | `user/user.repository.ts`                     |
-| `.router`     | tRPC procedures; the default entry point                          | `user/user.router.ts`                         |
-| `.controller` | Plain HTTP, for what tRPC cannot serve: bytes, redirects, feeds   | `auth/oauth/oauth.controller.ts`              |
-| `.constants`  | One module's enums, unions and DI tokens                          | `auth/staff-invite/staff-invite.constants.ts` |
+| Suffix        | Holds                                                             | Example                          |
+| ------------- | ----------------------------------------------------------------- | -------------------------------- |
+| `.module`     | Nest wiring only                                                  | `user/user.module.ts`            |
+| `.service`    | Domain logic and writes                                           | `user/user.service.ts`           |
+| `.repository` | Prisma queries only; extends `common/database/base.repository.ts` | `user/user.repository.ts`        |
+| `.router`     | tRPC procedures; the default entry point                          | `user/user.router.ts`            |
+| `.controller` | Plain HTTP, for what tRPC cannot serve: bytes, redirects, feeds   | `auth/oauth/oauth.controller.ts` |
+| `.constants`  | One module's enums, unions and DI tokens                          | `auth/auth.constants.ts`         |
 
 There is one more, unsuffixed by convention: `<module>.public.ts` names what
 another module may import from this one by value.

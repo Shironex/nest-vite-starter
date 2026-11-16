@@ -13,8 +13,6 @@ import type {
   TwoFactorSupportResetContestEmailProps,
   EmailChangeVerificationEmailProps,
   EmailChangeRequestedEmailProps,
-  StaffInviteEmailProps,
-  StaffInviteJoinAndCloseEmailProps,
 } from '@repo/email' with { 'resolution-mode': 'import' };
 import { esmImport } from '../../common/utils/esm-import';
 
@@ -38,8 +36,6 @@ interface IEmailRenderModule {
   ): Promise<string>;
   renderEmailChangeVerificationEmail(props: EmailChangeVerificationEmailProps): Promise<string>;
   renderEmailChangeRequestedEmail(props: EmailChangeRequestedEmailProps): Promise<string>;
-  renderStaffInviteEmail(props: StaffInviteEmailProps): Promise<string>;
-  renderStaffInviteJoinAndCloseEmail(props: StaffInviteJoinAndCloseEmailProps): Promise<string>;
 }
 
 /**
@@ -119,15 +115,5 @@ export class EmailRendererService {
 
   async renderEmailChangeRequestedEmail(props: EmailChangeRequestedEmailProps): Promise<string> {
     return (await this.getModule()).renderEmailChangeRequestedEmail(props);
-  }
-
-  async renderStaffInviteEmail(props: StaffInviteEmailProps): Promise<string> {
-    return (await this.getModule()).renderStaffInviteEmail(props);
-  }
-
-  async renderStaffInviteJoinAndCloseEmail(
-    props: StaffInviteJoinAndCloseEmailProps,
-  ): Promise<string> {
-    return (await this.getModule()).renderStaffInviteJoinAndCloseEmail(props);
   }
 }

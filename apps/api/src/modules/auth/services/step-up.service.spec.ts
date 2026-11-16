@@ -73,7 +73,7 @@ describe('StepUpService', () => {
           userId: 'u-1',
           code: '000000',
           ip: '1.2.3.4',
-          context: 'staff_invite_accept',
+          context: 'email_change',
         }),
       ).rejects.toBeDefined();
 
@@ -83,7 +83,7 @@ describe('StepUpService', () => {
           userId: 'u-1',
           success: false,
           ipAddress: '1.2.3.4',
-          metadata: { reason: 'bad_code', context: 'staff_invite_accept' },
+          metadata: { reason: 'bad_code', context: 'email_change' },
         }),
       );
     });

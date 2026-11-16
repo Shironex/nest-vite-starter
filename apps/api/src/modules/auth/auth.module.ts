@@ -31,9 +31,6 @@ import { TrustedDeviceService } from './services/trusted-device.service';
 import { TokenRepository } from './repositories/token.repository';
 import { SecondFactorRepository } from './repositories/second-factor.repository';
 import { SessionManagementService } from './services/session-management.service';
-import { StaffInviteService } from './staff-invite/staff-invite.service';
-import { StaffInviteRepository } from './staff-invite/staff-invite.repository';
-import { StaffInviteRouter } from './staff-invite/staff-invite.router';
 import { AuthRouter } from './auth.router';
 import { SessionsRouter } from './sessions.router';
 import { TwoFactorRouter } from './two-factor.router';
@@ -96,12 +93,6 @@ import { TwoFactorEnforcementScheduler } from './two-factor-enforcement/two-fact
     TwoFactorPolicyService,
     TrustedDeviceService,
     SessionManagementService,
-    // Staff invitations into an existing organization. Lives in this
-    // injector because it needs TokenRepository, PasswordService, MailService
-    // and UserService.revokeAuthState, all of which are already here.
-    StaffInviteRepository,
-    StaffInviteService,
-    StaffInviteRouter,
     AuthRouter,
     SessionsRouter,
     TwoFactorRouter,

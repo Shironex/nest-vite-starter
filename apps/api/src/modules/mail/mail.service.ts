@@ -5,9 +5,7 @@ import type { Queue } from 'bullmq';
 import {
   EMAIL_CHANGE_TOKEN_TTL_MS,
   formatTokenTtl,
-  formatTokenTtlDays,
   PASSWORD_RESET_TOKEN_TTL_MS,
-  STAFF_INVITE_TOKEN_TTL_MS,
   VERIFICATION_TOKEN_TTL_MS,
 } from '@repo/shared/constants';
 import { withJobContext } from '../../common/queue';
@@ -321,57 +319,6 @@ export class MailService {
       { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, ...(jobId ? { jobId } : {}) },
     );
     this.logger.log('Email change requested email enqueued');
-  }
-
-  /**
-   * Enqueue a staff invitation into an existing organization. CRITICAL class: the
-   * invitee has no account they can sign into yet and no way to ask for
-   * another link, so a silently dropped mail is a
-   * colleague who can never join.
-   *
-   * `movesExistingAccount` picks the TEMPLATE rather than a paragraph inside
-   * one. On that path, accepting moves the reader's account into this organization and
-   * closes the one they are in today, and an invitation that changes account
-   * ownership without saying so is a phishing template. Routing on the flag here
-   * keeps that choice next to the fact it follows from.
-   */
-  async sendStaffInviteEmail(
-    to: string,
-    inviteUrl: string,
-    organizationName: string,
-    options: { inviterName?: string | undefined; movesExistingAccount: boolean },
-  ): Promise<void> {
-    const jobName = options.movesExistingAccount
-      ? EMAIL_DELIVERY_JOB_NAMES.SEND_STAFF_INVITE_JOIN_AND_CLOSE
-      : EMAIL_DELIVERY_JOB_NAMES.SEND_STAFF_INVITE;
-    // Dedupe on the invite URL: it embeds the single-use
-    // raw token, so hashing it yields one id per token. A re-invite mints a new
-    // token and therefore a new id, which is what makes "invite again" work
-    // while a double-submit collapses. The job name is part of the id so a
-    // token that somehow reached both paths cannot have one collapse the other.
-    const jobId = `${jobName}-${sha256Hex(inviteUrl)}`;
-    try {
-      await this.queue.add(
-        jobName,
-        withJobContext({
-          to,
-          props: {
-            inviteUrl,
-            appName: this.appName,
-            organizationName,
-            ...(options.inviterName ? { inviterName: options.inviterName } : {}),
-            // Expiry prose follows the real TTL (shared constant).
-            expiresIn: formatTokenTtlDays(STAFF_INVITE_TOKEN_TTL_MS),
-          },
-        }),
-        { jobId },
-      );
-    } catch (error) {
-      mailSendFailuresTotal.inc({ template: jobName });
-      throw error;
-    }
-    // Recipient is intentionally not logged.
-    this.logger.log('Staff invite email enqueued');
   }
 
   /** Public settings deep-link, sourced from APP_URL (see constructor). */

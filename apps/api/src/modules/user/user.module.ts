@@ -3,7 +3,6 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { UserRouter } from './user.router';
 import { UserPurgeService } from './user-purge.service';
-import { ExpiredInviteSweepService } from './expired-invite-sweep.service';
 import { SessionModule } from '../auth/session.module';
 import { AuthMiddlewareModule } from '../auth/auth-middleware.module';
 import { LockoutModule } from '../auth/lockout.module';
@@ -39,7 +38,7 @@ import { IdempotencyModule } from '../../common/idempotency/idempotency.module';
     IdempotencyModule,
     NotificationsModule,
   ],
-  providers: [UserRepository, UserService, UserRouter, UserPurgeService, ExpiredInviteSweepService],
+  providers: [UserRepository, UserService, UserRouter, UserPurgeService],
   exports: [UserService, UserRepository],
 })
 export class UserModule {}

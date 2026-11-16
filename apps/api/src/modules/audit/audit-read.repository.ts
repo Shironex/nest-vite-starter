@@ -66,8 +66,8 @@ export class AuditReadRepository extends BaseRepository {
    *
    * Arm 1 is deliberately first in meaning as well as in order: a row that
    * carries a tenant is attributed to THAT tenant and never to the actor's
-   * current one, so an account moved between organizations (the staff-invite collision
-   * path) leaves its history behind. Arm 2 is the fallback, and the auth flows
+   * current one, so an account moved between organizations leaves its history
+   * behind. Arm 2 is the fallback, and the auth flows
    * now shrink it: login success/failure, lockout, 2FA challenges and the
    * password-reset rows run before AuthMiddleware seeds the ALS, so they used
    * to be written `tenantId: null` even though the user row was in hand, and

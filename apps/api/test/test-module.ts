@@ -537,9 +537,7 @@ const buildAuthMocks = (
       findCredentialById: jest.fn(),
       // Defaults to eligible, so every existing reset spec keeps its meaning:
       // the two refusals this answers are states a spec has to arrange.
-      findPasswordResetEligibility: jest
-        .fn()
-        .mockResolvedValue({ membershipEnded: false, pendingInvite: false }),
+      findPasswordResetEligibility: jest.fn().mockResolvedValue({ membershipEnded: false }),
       create: jest.fn(),
       updatePassword: jest.fn(),
       verifyEmail: jest.fn(),

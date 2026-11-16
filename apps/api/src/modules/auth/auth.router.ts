@@ -20,9 +20,6 @@ import {
   confirmPasswordSchema,
   requestEmailChangeSchema,
   confirmEmailChangeSchema,
-  staffInviteAcceptSchema,
-  staffInviteStateSchema,
-  staffInviteStateOutput,
 } from '@repo/shared/schemas';
 import { ForbiddenError } from '../../common/errors';
 import { RegisterService } from './services/register.service';
@@ -34,7 +31,6 @@ import { AccountDeletionService } from './services/account-deletion.service';
 import { SudoService } from './services/sudo.service';
 import { EmailChangeService } from './services/email-change.service';
 import { TwoFactorChallengeService } from './services/two-factor-challenge.service';
-import { StaffInviteService } from './staff-invite/staff-invite.service';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { IdempotencyMiddleware } from '../../common/idempotency/idempotency.middleware';
 import type { IAppContextType, IAuthenticatedContextType } from '../../trpc/trpc.context';
@@ -52,7 +48,6 @@ export class AuthRouter {
     private readonly twoFactorChallengeService: TwoFactorChallengeService,
     private readonly sudoService: SudoService,
     private readonly emailChangeService: EmailChangeService,
-    private readonly staffInviteService: StaffInviteService,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -126,63 +121,6 @@ export class AuthRouter {
   ) {
     const ip = getClientIp(ctx.req);
     return this.passwordResetService.getResetTokenState(input.token, ip);
-  }
-
-  /**
-   * Accept a STAFF invitation into an existing organization: set the password, and on
-   * the collision path move the account into the inviting organization.
-   *
-   * Public, and on this router rather than the admin-side `staffInvite` one:
-   * the caller has no session yet, so there is nothing for a guard to fence.
-   * The token IS the authorization.
-   *
-   * `factorCode` is required only when the account already carries an active
-   * second factor, which is possible only on the collision path. That gate is
-   * not optional: acceptance there does strictly more than a password reset
-   * (it overwrites the credential, moves the account between organizations and changes
-   * its role) on the same mailbox proof.
-   *
-   * No session is established, deliberately. The invitee signs in afterwards
-   * through the ordinary login path, which is what puts them through lockout,
-   * the session-epoch fence and the 2FA challenge seam.
-   */
-  @Mutation({ input: staffInviteAcceptSchema, output: authAckOutput })
-  async acceptStaffInvite(
-    @Input() input: z.infer<typeof staffInviteAcceptSchema>,
-    @Ctx() ctx: IAppContextType,
-  ) {
-    const ip = getClientIp(ctx.req);
-    const userAgent = getUserAgent(ctx.req);
-    await this.staffInviteService.accept(
-      input.token,
-      input.password,
-      input.factorCode,
-      ip,
-      userAgent,
-    );
-    return { success: true as const };
-  }
-
-  /**
-   * Staff-invitation pre-check, called on load by the set-password screen.
-   *
-   * A mutation so the secret token rides the body rather than a cacheable GET
-   * URL, and it does NOT consume the token: a page load must not burn a
-   * single-use invitation.
-   *
-   * Returns only what the form cannot be built without. `requiresTwoFactor`
-   * decides whether to render the code field; `movesExistingAccount` is a
-   * disclosure rather than a convenience, because accepting on that path closes
-   * the reader's current organization and a screen that takes a password without
-   * saying so is a phishing page we wrote ourselves.
-   */
-  @Mutation({ input: staffInviteStateSchema, output: staffInviteStateOutput })
-  async staffInviteState(
-    @Input() input: z.infer<typeof staffInviteStateSchema>,
-    @Ctx() ctx: IAppContextType,
-  ) {
-    const ip = getClientIp(ctx.req);
-    return this.staffInviteService.getInviteState(input.token, ip);
   }
 
   @Mutation({ input: verifyEmailSchema, output: authAckOutput })

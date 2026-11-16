@@ -157,8 +157,8 @@ export class UserRouter {
    * End somebody's membership of the organization without deleting their account
    * (admin only).
    *
-   * The reversible middle term between withdrawing an invitation, which leaves
-   * nothing, and deleting an account, which leaves nothing recoverable. The row
+   * The reversible alternative to deleting an account, which leaves nothing
+   * recoverable. The row
    * keeps its tenantId so the removal is visible and can be undone; the guards
    * (no self, no ADMIN target) are in the service, where the write repeats the
    * role predicate.

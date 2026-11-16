@@ -12,8 +12,6 @@ import type {
   TwoFactorSupportResetContestEmailProps,
   EmailChangeVerificationEmailProps,
   EmailChangeRequestedEmailProps,
-  StaffInviteEmailProps,
-  StaffInviteJoinAndCloseEmailProps,
 } from '@repo/email' with {
   'resolution-mode': 'import',
 };
@@ -95,16 +93,6 @@ export interface ISendEmailChangeRequestedJobData {
   readonly props: EmailChangeRequestedEmailProps;
 }
 
-export interface ISendStaffInviteJobData {
-  readonly to: string;
-  readonly props: StaffInviteEmailProps;
-}
-
-export interface ISendStaffInviteJoinAndCloseJobData {
-  readonly to: string;
-  readonly props: StaffInviteJoinAndCloseEmailProps;
-}
-
 export type EmailDeliveryJobData =
   | ISendVerificationJobData
   | ISendPasswordResetJobData
@@ -118,6 +106,4 @@ export type EmailDeliveryJobData =
   | ISendTwoFactorEnforcementReminderJobData
   | ISendTwoFactorSupportResetContestJobData
   | ISendEmailChangeVerificationJobData
-  | ISendEmailChangeRequestedJobData
-  | ISendStaffInviteJobData
-  | ISendStaffInviteJoinAndCloseJobData;
+  | ISendEmailChangeRequestedJobData;

@@ -82,7 +82,7 @@ describe('PasswordResetService', () => {
     });
   });
 
-  describe('forgotPassword(): the two accounts that must not be sent a link', () => {
+  describe('forgotPassword(): the account that must not be sent a link', () => {
     it('refuses a removed member, silently and with the generic response', async () => {
       // They keep their address and their account, so a successful reset would
       // leave the login check as the only remaining barrier.
@@ -90,7 +90,6 @@ describe('PasswordResetService', () => {
       mocks.user.findByEmail.mockResolvedValue(userFixture({ id: 'u-1', email: 'a@b.c' }));
       mocks.user.findPasswordResetEligibility.mockResolvedValue({
         membershipEnded: true,
-        pendingInvite: false,
       });
 
       await expect(
@@ -101,31 +100,11 @@ describe('PasswordResetService', () => {
       expect(mocks.mail.sendPasswordResetEmail).not.toHaveBeenCalled();
     });
 
-    it('refuses a pending invitee, who would otherwise join without ever accepting', async () => {
-      // resetPassword sets a password without flipping emailVerified and without
-      // touching the invitation token, and login establishes a session for an
-      // unverified user. The result is a member with no staff.invite.accepted
-      // row and a live invitation still pointed at an active account.
-      const { service, mocks } = await buildCtx();
-      mocks.user.findByEmail.mockResolvedValue(userFixture({ id: 'u-1', email: 'a@b.c' }));
-      mocks.user.findPasswordResetEligibility.mockResolvedValue({
-        membershipEnded: false,
-        pendingInvite: true,
-      });
-
-      await expect(
-        service.forgotPassword('a@b.c', 'turnstile', '1.2.3.4'),
-      ).resolves.toBeUndefined();
-
-      expect(mocks.token.createPasswordResetToken).not.toHaveBeenCalled();
-    });
-
     it('records the real reason server-side, where the client cannot read it', async () => {
       const { service, mocks } = await buildCtx();
       mocks.user.findByEmail.mockResolvedValue(userFixture({ id: 'u-1', email: 'a@b.c' }));
       mocks.user.findPasswordResetEligibility.mockResolvedValue({
-        membershipEnded: false,
-        pendingInvite: true,
+        membershipEnded: true,
       });
 
       await service.forgotPassword('a@b.c', 'turnstile', '1.2.3.4');
@@ -133,7 +112,7 @@ describe('PasswordResetService', () => {
       expect(mocks.audit.log).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          metadata: expect.objectContaining({ reason: 'pending_invite' }),
+          metadata: expect.objectContaining({ reason: 'membership_ended' }),
         }),
       );
     });

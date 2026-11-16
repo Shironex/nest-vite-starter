@@ -4,12 +4,10 @@ import { join } from 'node:path';
 /**
  * What a plain `USER` may reach, pinned.
  *
- * WHY THIS FILE EXISTS. Staff invitations are the first time this product has
- * more than one person in an organization, so `USER` stops being a role nobody holds
- * and becomes the role most colleagues hold. Its capability line was never
- * designed: it is the residue of which routers happened to get
- * `AdminMiddleware` as they were written, and the multi-user charting decided to
- * RATIFY it as-is rather than redesign it under time pressure.
+ * WHY THIS FILE EXISTS. `USER` is the role most accounts hold. Its capability
+ * line was never designed: it is the residue of which routers happened to get
+ * `AdminMiddleware` as they were written, and it was RATIFIED as-is rather than
+ * redesigned under time pressure.
  *
  * A ratified accident still has to be defended, or it drifts. This test does not
  * assert that the current split is correct. It asserts that it is what somebody
@@ -22,7 +20,7 @@ import { join } from 'node:path';
  * minor release stops being a pin and starts being noise.
  */
 
-const ROUTER_ROOT = join(__dirname, '..', '..', '..', 'modules');
+const ROUTER_ROOT = join(__dirname, '..');
 
 /**
  * Routers this pin deliberately says nothing about.
@@ -32,8 +30,7 @@ const ROUTER_ROOT = join(__dirname, '..', '..', '..', 'modules');
 const OUT_OF_SCOPE = new Set(['auth', 'ping']);
 
 /**
- * ADMIN-gated procedures out of total, per staff router, as of the multi-user
- * effort. A change to any number is a change to what a colleague can do.
+ * ADMIN-gated procedures out of total, per router. A change to any number is a change to what a colleague can do.
  */
 const EXPECTED: Record<string, { gated: number; total: number }> = {
   audit: { gated: 1, total: 1 },
@@ -41,7 +38,6 @@ const EXPECTED: Record<string, { gated: number; total: number }> = {
   workspaces: { gated: 2, total: 3 },
   notifications: { gated: 0, total: 5 },
   sessions: { gated: 0, total: 3 },
-  staffInvite: { gated: 3, total: 3 },
   storage: { gated: 0, total: 3 },
   twoFactor: { gated: 3, total: 9 },
   // 9, not 8: user.tenant was added (the sidebar's organization identity block).
@@ -119,13 +115,12 @@ describe('what a plain USER may reach, as ratified rather than designed', () => 
     },
   );
 
-  it('keeps every access GRANT admin-only, which is the one line that is designed', () => {
+  it('keeps every role GRANT admin-only, which is the one line that is designed', () => {
     // The rest of the split is inherited. This part is not: handing somebody a
-    // login or a role is reserved for an ADMIN everywhere it appears, and that
-    // is the invariant worth stating separately from the counts above.
-    for (const alias of ['staffInvite']) {
-      const router = ROUTERS.find((entry) => entry.alias === alias)!;
-      expect(router.gated).toBe(router.total);
-    }
+    // role is reserved for an ADMIN, and that is the invariant worth stating
+    // separately from the counts above.
+    const source = readFileSync(join(ROUTER_ROOT, 'user', 'user.router.ts'), 'utf8');
+    const roleChange = /((?:\s*@[^\n]*\n)+)\s*async updateUserRole\(/.exec(source);
+    expect(roleChange?.[1]).toContain('AdminMiddleware');
   });
 });

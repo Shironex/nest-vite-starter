@@ -19,8 +19,7 @@ export function sha256Hex(value: string): string {
  * Deliberately paired with `sha256Hex` in the same file, because "mint a raw
  * hex token, hand it to the client, store only its digest" is the api's ONE
  * token discipline and was being written out inline at a dozen call sites:
- * sessions, one-time links, trusted devices, staff invites,
- * download tickets, staged uploads. Inline, each site is one typo (`randomBytes(8)`,
+ * sessions, one-time links, trusted devices, download tickets. Inline, each site is one typo (`randomBytes(8)`,
  * `'base64'`) away from a weaker or differently-shaped secret than the checker
  * that later validates it, and nothing would fail: a short token still works.
  *
