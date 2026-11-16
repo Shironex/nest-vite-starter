@@ -16,10 +16,9 @@ import type { ISettingsShellProps, ISettingsShellView } from './SettingsShell.ty
  * the first render once `useAuth` resolves. A stale id then resolves to the
  * first row instead of an empty panel, with no effect needed to repair it.
  *
- * `initialSectionId` is followed when it CHANGES, not only read at mount: the
- * two-factor grace banner is shown on `/settings` itself, so its deep link to
- * the security row can arrive while the shell is already mounted on another
- * row. The previous value is kept in state and compared during render (React's
+ * `initialSectionId` is followed when it CHANGES, not only read at mount: a
+ * `?section=` deep link can arrive while the shell is already mounted on
+ * another row. The previous value is kept in state and compared during render (React's
  * "adjust state when a prop changes" pattern), which switches the row in the
  * same render instead of painting the old one first and fixing it in an
  * effect. A change back to `undefined` (the route stripping the consumed

@@ -9,10 +9,9 @@ import {
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import superjson from 'superjson';
 import { toast } from '@repo/ui/sonner';
-import { AppErrorCode } from '@repo/shared/errors';
 import type { AppRouter } from '@api/@generated/server';
 import { fetchWithCsrfRetry } from './csrf';
-import { getAppErrorCode, translateAppError } from './trpc-errors';
+import { translateAppError } from './trpc-errors';
 import { captureException } from './error-reporting';
 import { i18n } from './i18n';
 
@@ -97,9 +96,6 @@ export const queryClient = new QueryClient({
        */
       reactToUnauthorized(error);
       if (isUnauthorizedError(error)) return;
-      // A 2FA-enrollment-required 403 is handled by the route guards
-      // (_authenticated -> /enroll-two-factor); no toast for the expected 403.
-      if (getAppErrorCode(error) === AppErrorCode.TWO_FACTOR_ENROLLMENT_REQUIRED) return;
       console.error('[query] query failed', query.queryKey, error);
       captureException(error, { extra: { queryKey: query.queryKey } });
       // Toast only background refetch failures (data already on screen).

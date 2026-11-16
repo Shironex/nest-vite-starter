@@ -188,11 +188,6 @@ export default function MembersSection() {
 
   return (
     <section data-slot="admin-members-section" className="space-y-4">
-      {/*
-        Card-title scale rather than a hand-picked `text-lg`: this heading sits
-        beside `OrgTwoFactorPolicyCard`'s `CardTitle` in the same panel, and the
-        two have to read as the same level.
-      */}
       <div className="space-y-1">
         <h2 className="type-heading-h3 text-text">{t('admin.members.title')}</h2>
         <p className={MUTED_LINE_CLASS}>{t('admin.members.description')}</p>

@@ -23,7 +23,7 @@ describe('pageTitle', () => {
   });
 
   it('covers the auth surfaces that have no nav entry', () => {
-    for (const key of ['pageTitle.signIn', 'pageTitle.enrollTwoFactor'] as const) {
+    for (const key of ['pageTitle.signIn', 'pageTitle.twoFactor'] as const) {
       const title = pageTitle(key).meta[0]?.title ?? '';
       // A missing key would come back as the bare key next to the product name.
       expect(title).not.toContain('pageTitle.');

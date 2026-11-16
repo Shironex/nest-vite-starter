@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as EnrollTwoFactorRouteImport } from './routes/enroll-two-factor'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedWorkspacesRouteImport } from './routes/_authenticated/workspaces'
 import { Route as AuthConfirmEmailChangeRouteImport } from './routes/auth/confirm-email-change'
@@ -37,11 +36,6 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EnrollTwoFactorRoute = EnrollTwoFactorRouteImport.update({
-  id: '/enroll-two-factor',
-  path: '/enroll-two-factor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
@@ -105,7 +99,6 @@ const AuthenticatedSettingsIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/enroll-two-factor': typeof EnrollTwoFactorRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/workspaces': typeof AuthenticatedWorkspacesRoute
   '/auth/confirm-email-change': typeof AuthConfirmEmailChangeRoute
@@ -121,7 +114,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/enroll-two-factor': typeof EnrollTwoFactorRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/workspaces': typeof AuthenticatedWorkspacesRoute
   '/auth/confirm-email-change': typeof AuthConfirmEmailChangeRoute
@@ -139,7 +131,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
-  '/enroll-two-factor': typeof EnrollTwoFactorRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/workspaces': typeof AuthenticatedWorkspacesRoute
   '/auth/confirm-email-change': typeof AuthConfirmEmailChangeRoute
@@ -157,7 +148,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/enroll-two-factor'
     | '/audit'
     | '/workspaces'
     | '/auth/confirm-email-change'
@@ -173,7 +163,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
-    | '/enroll-two-factor'
     | '/audit'
     | '/workspaces'
     | '/auth/confirm-email-change'
@@ -190,7 +179,6 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/enroll-two-factor'
     | '/_authenticated/audit'
     | '/_authenticated/workspaces'
     | '/auth/confirm-email-change'
@@ -208,7 +196,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
-  EnrollTwoFactorRoute: typeof EnrollTwoFactorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,13 +219,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/enroll-two-factor': {
-      id: '/enroll-two-factor'
-      path: '/enroll-two-factor'
-      fullPath: '/enroll-two-factor'
-      preLoaderRoute: typeof EnrollTwoFactorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/audit': {
@@ -365,7 +345,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
-  EnrollTwoFactorRoute: EnrollTwoFactorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -9,7 +9,7 @@ import { LOGIN_PATH, loginPathForExpiredSession, pendingSkeletonForPath } from '
  * what a REFUSED sign-in attempt (a 401) would otherwise cause.
  */
 describe('loginPathForExpiredSession', () => {
-  it.each([['/dashboard'], ['/audit'], ['/settings'], ['/enroll-two-factor'], ['/']])(
+  it.each([['/dashboard'], ['/audit'], ['/settings'], ['/']])(
     'sends %s to the sign-in path',
     (pathname) => {
       expect(loginPathForExpiredSession(pathname)).toBe(LOGIN_PATH);

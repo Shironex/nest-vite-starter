@@ -14,16 +14,13 @@ import { SidebarProvider } from '@repo/ui/sidebar';
 import { Button } from '@repo/ui/button';
 import { PageSkeleton } from '@repo/ui/page-skeleton';
 import { ErrorBoundary } from '@repo/ui/error-boundary';
-import { AppErrorCode } from '@repo/shared/errors';
 import { translateAppError } from '@/lib/trpc-errors';
 import { trpc, isUnauthorizedError } from '@/lib/trpc';
-import { getAppErrorCode } from '@/lib/trpc-errors';
 import { useUIStore } from '@/stores/ui-store';
 import { USER_ME_STALE_TIME } from '@/hooks/use-auth';
 import { pendingSkeletonForPath } from '@/lib/shell-routes';
 import { AppSidebar } from '@/features/layout/components/AppSidebar';
 import { AppTopbar } from '@/features/layout/components/AppTopbar';
-import { GraceBanner } from '@/features/two-factor/components/GraceBanner';
 
 /** 240px, matching the design's sidebar. The primitive defaults to 256px. */
 const SHELL_STYLE = { '--sidebar-width': '15rem' } as CSSProperties;
@@ -126,12 +123,6 @@ export const Route = createFileRoute('/_authenticated')({
           search: { redirect: location.href },
         });
       }
-      // A session flagged for 2FA enrollment 403s every non-allowlisted
-      // procedure (including user.me). Send those users to the enroll-only
-      // screen. The server allowlist is the boundary; this is the UX redirect.
-      if (getAppErrorCode(error) === AppErrorCode.TWO_FACTOR_ENROLLMENT_REQUIRED) {
-        throw redirect({ to: '/enroll-two-factor' });
-      }
       console.error('[auth] user.me failed during route guard', error);
       throw error;
     }
@@ -172,7 +163,6 @@ function AuthenticatedLayout() {
       <div className="relative flex w-full min-w-0 flex-1 flex-col bg-bg">
         <AppTopbar />
         <main id="main-content" className="flex-1 p-6">
-          <GraceBanner />
           <ErrorBoundary
             title={t('fallback.errorTitle')}
             description={t('errors.unexpected')}

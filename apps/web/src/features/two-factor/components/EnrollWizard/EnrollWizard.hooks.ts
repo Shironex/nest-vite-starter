@@ -60,7 +60,7 @@ export function useEnrollWizard({ onComplete }: IEnrollWizardProps): IEnrollWiza
   const activateMutation = useMutation({
     ...trpc.twoFactor.activate.mutationOptions(),
     onSuccess: (data) => {
-      // activate re-issues the session (dropping any enrollment-required flag);
+      // activate re-issues the session;
       // the pre-activate CSRF token is now stale, so reset it before the next
       // authenticated call (e.g. the status refetch behind the settings card).
       resetCsrfToken();

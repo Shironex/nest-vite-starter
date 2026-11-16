@@ -27,7 +27,7 @@ describe('findNavItemForPath', () => {
   });
 
   it('returns null outside the nav', () => {
-    expect(findNavItemForPath('/enroll-two-factor')).toBeNull();
+    expect(findNavItemForPath('/auth/two-factor')).toBeNull();
   });
 
   it('prefers the deepest match when two entries overlap', () => {

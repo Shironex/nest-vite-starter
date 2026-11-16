@@ -47,7 +47,6 @@
       "verifyEmail": "Verify email address",
       "confirmEmailChange": "Change email address",
       "twoFactor": "Two-factor verification",
-      "enrollTwoFactor": "Two-factor setup",
       "dashboard": "Dashboard",
       "workspaces": "Workspaces",
       "audit": "Audit log",
@@ -252,23 +251,6 @@
         "revokedToast": "Trusted browsers revoked",
         "revokeFailed": "Could not revoke trusted browsers"
       },
-      "orgPolicy": {
-        "title": "Organization two-factor requirement",
-        "description": "Require every member of your organization to set up two-factor authentication.",
-        "badgeEnforcing": "Enforcing",
-        "badgeGrace": "Grace period",
-        "badgeOff": "Off",
-        "statusRequired": "Required for all members",
-        "statusNotRequired": "Not required",
-        "deadline": "Members must enroll by {{date}}",
-        "switchLabel": "Require two-factor authentication for all members",
-        "confirmTitle": "Require two-factor for your organization?",
-        "confirmDescription": "Every member without two-factor gets a 7-day window to enroll and is emailed now. After the deadline they must set it up before they can continue using the app.",
-        "confirmCta": "Require two-factor",
-        "enabledToast": "Two-factor is now required for your organization",
-        "disabledToast": "Two-factor requirement turned off",
-        "updateFailed": "Could not update the two-factor policy"
-      },
       "enroll": {
         "passwordHint": "Confirm your password to begin setting up two-factor authentication.",
         "passwordLabel": "Password",
@@ -287,25 +269,12 @@
         "codeIncorrect": "That code was not correct",
         "verifyFailed": "Could not verify the code"
       },
-      "enrollOnly": {
-        "hint": "Your organization now requires two-factor authentication. Set it up to continue, or sign out.",
-        "signOut": "Sign out",
-        "logoutFailed": "Could not log out. Please try again.",
-        "pageTitle": "Set up two-factor authentication",
-        "pageDescription": "Your organization requires a second factor to continue"
-      },
       "recoveryCodes": {
         "copy": "Copy",
         "copied": "Copied",
         "download": "Download",
         "copiedToast": "Recovery codes copied to clipboard",
         "copyFailed": "Could not copy to clipboard"
-      },
-      "graceBanner": {
-        "title": "Two-factor authentication is required for your organization.",
-        "deadline": "Set it up before {{date}} to keep your access.",
-        "noDeadline": "Set it up soon to keep your access.",
-        "cta": "Set up now"
       },
       "disable": {
         "title": "Disable two-factor authentication?",

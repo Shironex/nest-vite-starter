@@ -35,8 +35,8 @@ describe('SettingsShell', () => {
   });
 
   /*
-   * The grace banner is shown on /settings too, so its deep link to the
-   * security row can arrive while the shell is already mounted. The route
+   * A `?section=` deep link to the security row can arrive while the shell
+   * is already mounted. The route
    * strips the consumed param (back to undefined), which must not move the
    * rail, and a later request must win again even after a manual switch.
    */

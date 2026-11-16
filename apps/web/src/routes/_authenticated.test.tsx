@@ -1,19 +1,16 @@
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { AppErrorCode } from '@repo/shared/errors';
 import { useUIStore } from '@/stores/ui-store';
 import { Route } from './_authenticated';
 
 /**
  * The app shell's guard: a signed-out visitor goes to sign-in with their
- * destination, a 2FA-enrollment refusal goes to the enroll screen, and anything
- * else rethrows so a transient failure never logs a valid session out.
+ * destination, and anything else rethrows so a transient failure never logs a valid session out.
  */
-const { profile, isUnauthorized, appErrorCode } = vi.hoisted(() => ({
+const { profile, isUnauthorized } = vi.hoisted(() => ({
   profile: { current: null as unknown, error: null as unknown },
   isUnauthorized: { current: false },
-  appErrorCode: { current: undefined as string | undefined },
 }));
 
 vi.mock('@tanstack/react-router', async (importOriginal) => {
@@ -30,10 +27,7 @@ vi.mock('@/lib/trpc', () => ({
   isUnauthorizedError: () => isUnauthorized.current,
 }));
 
-vi.mock('@/lib/trpc-errors', () => ({ getAppErrorCode: () => appErrorCode.current }));
-
 vi.mock('@/hooks/use-auth', () => ({ USER_ME_STALE_TIME: 0 }));
-vi.mock('@/features/two-factor/components/GraceBanner', () => ({ GraceBanner: () => null }));
 
 /*
  * Stand-ins for the two shell pieces, kept on the REAL primitives so the thing
@@ -84,7 +78,6 @@ beforeEach(() => {
   profile.current = { role: 'USER' };
   profile.error = null;
   isUnauthorized.current = false;
-  appErrorCode.current = undefined;
 });
 
 describe('/_authenticated guard', () => {
@@ -100,13 +93,6 @@ describe('/_authenticated guard', () => {
       to: '/auth/login',
       search: { redirect: '/settings' },
     });
-  });
-
-  it('still routes a 2FA-enrollment refusal to the enroll screen', async () => {
-    profile.error = new Error('enroll first');
-    appErrorCode.current = AppErrorCode.TWO_FACTOR_ENROLLMENT_REQUIRED;
-
-    await expect(redirectTarget()).resolves.toMatchObject({ to: '/enroll-two-factor' });
   });
 
   it('rethrows a transport failure rather than logging a valid session out', async () => {

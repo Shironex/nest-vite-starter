@@ -14,7 +14,6 @@ import { DangerZoneSection } from '@/features/settings/components/DangerZoneSect
 import { SettingsShell } from '@/features/settings/components/SettingsShell';
 import type { ISettingsSection } from '@/features/settings/components/SettingsShell';
 import { SecurityCard } from '@/features/two-factor/components/SecurityCard';
-import { OrgTwoFactorPolicyCard } from '@/features/two-factor/components/OrgTwoFactorPolicyCard';
 import { MembersSection } from '@/features/admin/components/MembersSection';
 import { ThemeSection } from '@/features/settings/components/ThemeSection';
 import { EmailChangeSection } from '@/features/auth/components/EmailChangeSection';
@@ -25,8 +24,7 @@ import type { SettingsSectionId } from '@/features/settings/Settings.constants';
 export const Route = createFileRoute('/_authenticated/settings/')({
   head: () => pageTitle('pageTitle.settings'),
   /**
-   * `?section=<id>` deep links to one rail row (the two-factor grace banner
-   * sends the user to `security`). A total function, no schema parse: only an
+   * `?section=<id>` deep links to one rail row. A total function, no schema parse: only an
    * id from SETTINGS_SECTION survives, anything else is dropped. The page
    * consumes it and strips it again, see SettingsPage.
    */
@@ -113,22 +111,17 @@ function SettingsPage() {
       id: SETTINGS_SECTION.members,
       label: t('settings.sections.members'),
       icon: Users,
-      panel: (
-        <>
-          <OrgTwoFactorPolicyCard />
-          <MembersSection />
-        </>
-      ),
+      panel: <MembersSection />,
     });
   }
 
   /*
    * `section` is a one-shot request, not the rail's state: the shell adopts it
    * when it changes and the rail stays local state after that. Stripping it
-   * once consumed is what makes the NEXT request a change. The grace banner is
-   * shown on this page too, so without the strip a second click on its CTA
-   * (after the user moved to another row) would navigate to the URL already
-   * on screen and do nothing. `replace` keeps Back from resurrecting it.
+   * once consumed is what makes the NEXT request a change: without the strip a
+   * second visit to the same deep link (after the user moved to another row)
+   * would navigate to the URL already on screen and do nothing. `replace`
+   * keeps Back from resurrecting it.
    */
   useEffect(() => {
     if (section === undefined) return;

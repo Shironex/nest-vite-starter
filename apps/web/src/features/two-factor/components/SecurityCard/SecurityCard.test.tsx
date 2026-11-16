@@ -30,8 +30,6 @@ function renderWithClient(ui: React.ReactElement) {
   return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
 }
 
-const POLICY = { required: false, graceEndsAt: null, enforced: false };
-
 afterEach(() => {
   status.value = undefined;
   status.loading = false;
@@ -46,7 +44,6 @@ describe('SecurityCard', () => {
       lowRecoveryCodes: false,
       pendingEnrollment: false,
       trustedDeviceCount: 0,
-      policy: POLICY,
     };
     renderWithClient(<SecurityCard />);
     expect(
@@ -62,7 +59,6 @@ describe('SecurityCard', () => {
       lowRecoveryCodes: true,
       pendingEnrollment: false,
       trustedDeviceCount: 3,
-      policy: POLICY,
     };
     renderWithClient(<SecurityCard />);
     expect(screen.getByRole('button', { name: /regenerate/i })).toBeInTheDocument();
@@ -84,7 +80,6 @@ describe('SecurityCard', () => {
       lowRecoveryCodes: false,
       pendingEnrollment: false,
       trustedDeviceCount: 1,
-      policy: POLICY,
     };
     renderWithClient(<SecurityCard />);
     expect(screen.queryByText(/active sessions/i)).not.toBeInTheDocument();
@@ -119,7 +114,6 @@ describe('SecurityCard status badge while loading', () => {
       lowRecoveryCodes: false,
       pendingEnrollment: false,
       trustedDeviceCount: 0,
-      policy: POLICY,
     };
     renderWithClient(<SecurityCard />);
 
