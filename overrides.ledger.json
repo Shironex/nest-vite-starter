@@ -156,5 +156,19 @@
     "firstPatched": "4.18.0",
     "reason": "A high code-injection advisory (_.template imports key names) and a moderate one, reached through docs > mermaid@12 > chevrotain@11 > lodash-es@4.17.23 after the 2026-09-22 mermaid 12 bump. CI's `pnpm audit --prod --audit-level=high` fails on it. chevrotain 13 drops lodash-es, but mermaid still pins 11. lodash-es@4.18.1 (2026-04-01) is long past the min-release-age gate.",
     "reviewBy": "2026-12-01"
+  },
+  "vite@>=8.3.0 <8.3.3": {
+    "kind": "security",
+    "advisories": [
+      "GHSA-698v-4r3x-3vcv",
+      "GHSA-r825-w8mm-5pxw",
+      "GHSA-587h-7wmj-h5pm",
+      "GHSA-9jrq-w75r-8gcw",
+      "GHSA-rq7h-c2jc-7f22",
+      "GHSA-vfpm-58rq-9qcg"
+    ],
+    "firstPatched": "8.3.3",
+    "reason": "Reached through docs > astro, which resolves vite 8.3.0 outside the workspace ranges. CI runs `pnpm audit --prod --audit-level=high`. Drop it with apps/docs.",
+    "reviewBy": "2026-12-01"
   }
 }
