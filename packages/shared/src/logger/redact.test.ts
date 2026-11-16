@@ -61,7 +61,6 @@ describe('SENSITIVE_KEY_PATTERNS / isSensitiveKey', () => {
       ['sidebarCollapsed', 'sid'],
       ['daysId', 'sid'],
       ['emailSent', 'email'],
-      ['releaseNotes', 'notes'],
     ])('exempts %s despite the %s substring', (key) => {
       expect(isSensitiveKey(key)).toBe(false);
     });

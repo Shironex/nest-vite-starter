@@ -240,7 +240,6 @@ export const SENSITIVE_KEY_PATTERNS = [
  * - `sid`: UI state and document identifiers that merely contain the letters
  *   s-i-d. `sid` as a WHOLE key stays denied, as does anything containing
  *   `sessionid`.
- * - `notes`: the Electron updater's changelog text.
  *
  * Deliberately NOT here: `residenceDoc*`. It is caught by `sid` AND by the
  * `residencedoc` personal-data pattern, and the second one is intentional (an
@@ -262,7 +261,6 @@ export const SAFE_KEY_ALLOWLIST = [
   'daysid',
   'side',
   'correctsident',
-  'releasenotes',
 ] as const;
 
 const SAFE_KEYS = new Set<string>(SAFE_KEY_ALLOWLIST);
@@ -324,8 +322,8 @@ const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/
  * the token past the redactor. Case-insensitive: the redactor only ever blanks
  * more. Idempotent, so a value redacted upstream passes through unchanged.
  *
- * Takes the prefixes because the web boundary redacts its own invite routes,
- * which are not api routes; the api uses `redactCredentialSegments` below.
+ * Takes the prefixes so a boundary with its own credential routes can build its
+ * own redactor; the api uses `redactCredentialSegments` below.
  */
 export function createCredentialSegmentRedactor(
   prefixes: readonly string[],

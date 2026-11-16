@@ -22,7 +22,6 @@ const NO_PROCESS_EXIT_ALLOW_IN = [
   '**/instrument.ts',
   '**/apps/api/src/main.ts',
   '**/apps/api/src/worker.ts',
-  '**/apps/desktop/**',
   '**/packages/database/**',
   '**/tools/**',
   '**/scripts/**',
@@ -46,7 +45,6 @@ const NO_DIRECT_PROCESS_ENV_ALLOWED_FILES = [
   // fall outside the test-file pattern below.
   '**/apps/web/e2e/**',
   '**/packages/database/**',
-  '**/apps/desktop/**',
   '**/*.config.{ts,js,mjs,cjs}',
   '**/playwright.config.ts',
   '**/*.{spec,test}.{ts,tsx}',
@@ -122,7 +120,7 @@ export const config = [
       // abbreviated draft leaves behind; the code it names is gone and the file
       // still parses. Measured 0 hits across the tree when wired.
       'code-quality/no-elided-code-comments': 'error',
-      // Measured 13 wrapped-body `if`s across the tree (desktop/ui/api/web), so
+      // Measured 13 wrapped-body `if`s across the tree (ui/api/web), so
       // it stays 'off': the no-warn policy forbids a 'warn' rollout, and a
       // tree-wide guard-clause migration is out of scope. Flip to 'error' once
       // those sites are migrated.

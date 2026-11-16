@@ -17,7 +17,6 @@ const NO_DIRECT_PROCESS_ENV_ALLOWED_FILES = [
   '**/apps/api/src/common/observability/sentry-scrub.ts',
   '**/apps/api/test/**',
   '**/packages/database/**',
-  '**/apps/desktop/**',
   '**/*.config.{ts,js,mjs,cjs}',
   '**/playwright.config.ts',
   '**/*.{spec,test}.{ts,tsx}',
@@ -31,7 +30,7 @@ ruleTester.run('no-direct-process-env', contracts.rules['no-direct-process-env']
   valid: [
     {
       code: 'const url = process.env.APP_URL;',
-      filename: '/repo/apps/desktop/electron/main.ts',
+      filename: '/repo/apps/api/test/setup-env.ts',
       options,
     },
     {

@@ -58,7 +58,7 @@ describe('env-no-direct-import-meta-env', () => {
     assert.deepEqual(checkEnvNoDirectImportMetaEnv(fixture.context()), []);
   });
 
-  it('looks at the web app only: the api and the desktop shell have no import.meta.env', () => {
+  it('looks at the web app only: the api and the packages have no import.meta.env', () => {
     const fixture = createFixture({
       'apps/api/src/config/a.ts': 'export const x = import.meta.env.VITE_SENTRY_DSN;\n',
       'packages/ui/src/a.ts': 'export const y = import.meta.env.VITE_SENTRY_DSN;\n',

@@ -1,4 +1,4 @@
-import { createCredentialSegmentRedactor, isSensitiveKey } from '@repo/shared/logger';
+import { isSensitiveKey } from '@repo/shared/logger';
 import { SENTRY_DSN } from './env';
 
 /**
@@ -85,10 +85,10 @@ function isRedactedKey(key: string): boolean {
  *
  * This is not hypothetical on this boundary. The browser SDK attaches
  * `event.request.url` from `document.location.href`, and records navigation
- * and fetch breadcrumbs whose `data` holds URLs. Four routes take a live,
- * single-use credential as `?token=` (auth/reset-password, auth/verify-email,
- * auth/confirm-email-change, and a set-password screen), so an error raised on any
- * of them shipped a redeemable credential to a third party verbatim.
+ * and fetch breadcrumbs whose `data` holds URLs. Three routes take a live,
+ * single-use credential as `?token=` (auth/reset-password, auth/verify-email
+ * and auth/confirm-email-change), so an error raised on any of them would ship
+ * a redeemable credential to a third party verbatim.
  *
  * The list is deliberately wider than what the app uses today: a false
  * positive costs a slightly less readable Sentry event, a false negative ships
@@ -100,11 +100,6 @@ const CREDENTIAL_QUERY_KEYS = [
   'access_token',
   'id_token',
   'refresh_token',
-  'code',
-  'code_verifier',
-  'code_challenge',
-  'state',
-  'nonce',
   'secret',
   'password',
   'key',
@@ -141,32 +136,11 @@ const REDACTED_QUERY_PARAM_RE = new RegExp(
   'gi',
 );
 
-/**
- * Route prefixes whose NEXT path segment is a credential rather than an
- * identifier, so the redaction has to be positional. The invite link is
- * mailed: the token has to sit in the path because the mail client follows a
- * plain GET, which makes the URL itself the credential.
- *
- * `/auth/invite/<token>` is the invite link, redeemable to create an account with
- * the invited role until it expires: a single-use secret that arrives as
- * `document.location.href` on every error and navigation breadcrumb raised
- * on that page. It is the only `$token` route in `src/routes`.
- *
- * The prefixes are web routes, not the api's credential routes, so this
- * boundary builds its own redactor from the shared factory rather than using
- * the api's `redactCredentialSegments`: one matching rule, two prefix lists.
- */
-const WEB_CREDENTIAL_PATH_PREFIXES = ['/auth/invite/'] as const;
-
-const redactWebCredentialPaths = createCredentialSegmentRedactor(WEB_CREDENTIAL_PATH_PREFIXES);
-
-/** Blank credential-bearing query values and path segments inside one string. */
+/** Blank credential-bearing query values inside one string. */
 function scrubCredentialStrings(value: string): string {
-  return redactWebCredentialPaths(
-    value.replace(
-      REDACTED_QUERY_PARAM_RE,
-      (_match, boundary: string, key: string) => `${boundary}${key}=${REDACTED}`,
-    ),
+  return value.replace(
+    REDACTED_QUERY_PARAM_RE,
+    (_match, boundary: string, key: string) => `${boundary}${key}=${REDACTED}`,
   );
 }
 

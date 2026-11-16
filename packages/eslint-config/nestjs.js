@@ -340,7 +340,7 @@ export const config = [
       // claim a class property such as `totalCount: number` or `checksum:
       // number`; wiring it before there is a money type to point at buys that
       // friction for nothing. Measured with exactly these options
-      // it reports 0 hits across api, web, shared, database, desktop, ui and
+      // it reports 0 hits across api, web, shared, database, ui and
       // email (interface members and untyped initializers are out of its
       // scope, which is why pagination `total` never trips it). Wiring target:
       // @noctcore/eslint-plugin-contracts `money-must-be-decimal` with

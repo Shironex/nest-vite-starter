@@ -223,10 +223,9 @@ describe('scrubEvent: identifiers denied at the Sentry boundary only', () => {
  *
  * Sentry's browser SDK attaches `event.request.url` from
  * `document.location.href` (its httpContext integration) and records
- * navigation / fetch breadcrumbs whose `data` holds URL strings. Four web
- * routes take a single-use credential as a search param and one takes it as a
- * path segment, so an error thrown on any of them shipped a redeemable
- * credential to a third party verbatim until these assertions existed.
+ * navigation / fetch breadcrumbs whose `data` holds URL strings. Three web
+ * routes take a single-use credential as a search param, so an error thrown on
+ * any of them would ship a redeemable credential to a third party verbatim.
  *
  * The route itself must survive: "which page broke" is the whole triage value
  * of `request.url`, so only the credential is blanked.
@@ -247,11 +246,6 @@ describe('scrubEvent: credentials inside URL strings', () => {
       'confirm-email-change',
       'https://app.example.com/auth/confirm-email-change?token=cec_live_abcdef',
       'https://app.example.com/auth/confirm-email-change?token=[REDACTED]',
-    ],
-    [
-      'auth/invite (staff invite, same path-segment shape)',
-      'https://app.example.com/auth/invite/stf_live_abcdef',
-      'https://app.example.com/auth/invite/[REDACTED]',
     ],
   ];
 
@@ -295,7 +289,8 @@ describe('scrubEvent: credentials inside URL strings', () => {
     const { scrubEvent } = await importFacade();
 
     const out = scrubEvent({
-      message: 'navigation to https://app.example.com/auth/invite/inv_live_abcdef failed',
+      message:
+        'navigation to https://app.example.com/auth/verify-email?token=vrf_live_abcdef failed',
       exception: {
         values: [
           {
@@ -308,13 +303,15 @@ describe('scrubEvent: credentials inside URL strings', () => {
 
     const serialized = JSON.stringify(out);
     expect(serialized).not.toContain('rst_live_abcdef');
-    expect(serialized).not.toContain('inv_live_abcdef');
+    expect(serialized).not.toContain('vrf_live_abcdef');
     // The surrounding text, and every other field on the exception, survive.
     expect(out.exception?.values?.[0]).toEqual({
       type: 'TypeError',
       value: 'Failed to fetch /api/auth/reset-password?token=[REDACTED]',
     });
-    expect(out.message).toBe('navigation to https://app.example.com/auth/invite/[REDACTED] failed');
+    expect(out.message).toBe(
+      'navigation to https://app.example.com/auth/verify-email?token=[REDACTED] failed',
+    );
   });
 
   it('leaves ordinary search params alone', async () => {
@@ -387,27 +384,6 @@ describe('scrubBreadcrumb', () => {
     expect(fetched.data).toEqual({
       url: '/api/auth/reset-password?token=[REDACTED]',
       status_code: 400,
-    });
-  });
-
-  // The staff invite (/auth/invite/$token) carries a redeemable credential in
-  // the path, and an invitee lands on it
-  // straight from the mail client, so the navigation breadcrumb that records
-  // the arrival is the first thing a later error ships out.
-  it('blanks the staff invite token in a navigation breadcrumb', async () => {
-    const { scrubBreadcrumb } = await importFacade();
-
-    const navigation = scrubBreadcrumb({
-      message: 'navigation',
-      data: {
-        from: 'https://app.example.com/auth/login',
-        to: 'https://app.example.com/auth/invite/stf_live_abcdef',
-      },
-    });
-
-    expect(navigation.data).toEqual({
-      from: 'https://app.example.com/auth/login',
-      to: 'https://app.example.com/auth/invite/[REDACTED]',
     });
   });
 

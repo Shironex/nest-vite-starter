@@ -8,8 +8,8 @@ import { createLogger, normalizeError } from './index';
  * to keep an Error's message and stack.
  */
 /*
- * This package compiles without the DOM or Node libs (it ships to browser,
- * Electron and Node alike), so `console` is not a global TypeScript knows
+ * This package compiles without the DOM or Node libs (it ships to browser
+ * and Node alike), so `console` is not a global TypeScript knows
  * about. Reach it through globalThis with the one method under test typed.
  */
 const runtimeConsole = (globalThis as unknown as { console: { error: (...a: unknown[]) => void } })

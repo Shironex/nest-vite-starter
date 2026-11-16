@@ -265,24 +265,22 @@ describe('sentry-scrub (API)', () => {
     });
   });
 
-  describe('OAuth wire fields', () => {
-    it('scrubQueryParams blanks code/state/id_token/token values inside URL-ish strings', () => {
-      const url =
-        '/api/auth/oauth/google/callback?code=4/0AbCdEf&state=deadbeef123&id_token=eyJhbGciOi.abc.def';
-      const scrubbed = scrubQueryParams(url);
-      expect(scrubbed).toBe(
-        '/api/auth/oauth/google/callback?code=[redacted]&state=[redacted]&id_token=[redacted]',
+  describe('credential query params', () => {
+    it('scrubQueryParams blanks token values inside URL-ish strings', () => {
+      const token = 'a1'.repeat(8);
+      expect(scrubQueryParams(`/auth/reset-password?token=${token}&lang=en`)).toBe(
+        '/auth/reset-password?token=[redacted]&lang=en',
       );
       // A bare query_string (no leading ?) is scrubbed from the string start too.
-      expect(scrubQueryParams('code=4/0AbCdEf&state=x')).toBe('code=[redacted]&state=[redacted]');
+      expect(scrubQueryParams(`token=${token}&page=2`)).toBe('token=[redacted]&page=2');
     });
 
-    it('leaves non-OAuth params and non-boundary occurrences alone', () => {
+    it('leaves other params and non-boundary occurrences alone', () => {
       expect(scrubQueryParams('/invoices?statusCode=200&page=2')).toBe(
         '/invoices?statusCode=200&page=2',
       );
-      // `barcode=` must not be shredded by the `code=` rule (boundary match).
-      expect(scrubQueryParams('/scan?barcode=123')).toBe('/scan?barcode=123');
+      // `subtoken=` must not be shredded by the `token=` rule (boundary match).
+      expect(scrubQueryParams('/scan?subtoken=123')).toBe('/scan?subtoken=123');
     });
 
     it('blanks the batched tRPC input= and identifier query values, keeping the procedure path', () => {
@@ -307,46 +305,41 @@ describe('sentry-scrub (API)', () => {
       );
     });
 
-    it('redacts the exact-match OAuth keys in request/extra objects, but not statusCode/appCode', () => {
+    it('redacts token keys in request/extra objects, but not statusCode/appCode', () => {
       const event = scrubEvent({
         request: {
-          url: 'https://api.example/api/auth/oauth/google/callback?code=SECRETCODE&state=SECRETSTATE',
-          query_string: 'code=SECRETCODE&state=SECRETSTATE',
-          data: { code: 'SECRETCODE', state: 'SECRETSTATE', nonce: 'SECRETNONCE' },
+          url: 'https://app.example/auth/verify-email?token=SECRETLINK',
+          query_string: 'token=SECRETLINK',
+          data: { token: 'SECRETLINK' },
         },
         extra: {
-          tokenResponse: { id_token: 'SECRETJWT', access_token: 'SECRETAT', token_type: 'Bearer' },
+          session: { accessToken: 'SECRETAT', refresh_token: 'SECRETRT' },
           statusCode: 429,
           appCode: 'RATE_LIMITED',
-          code_verifier: 'SECRETVERIFIER',
         },
       });
       const serialized = JSON.stringify(event);
-      expect(serialized).not.toContain('SECRETCODE');
-      expect(serialized).not.toContain('SECRETSTATE');
-      expect(serialized).not.toContain('SECRETNONCE');
-      expect(serialized).not.toContain('SECRETJWT');
+      expect(serialized).not.toContain('SECRETLINK');
       expect(serialized).not.toContain('SECRETAT');
-      expect(serialized).not.toContain('SECRETVERIFIER');
-      // Exact-match discipline: compound keys stay legible.
+      expect(serialized).not.toContain('SECRETRT');
       expect(serialized).toContain('429');
       expect(serialized).toContain('RATE_LIMITED');
     });
 
-    it('scrubs a callback URL inside message, exception text and breadcrumb messages', () => {
+    it('scrubs a mailed link inside message, exception text and breadcrumb messages', () => {
       const event = scrubEvent({
-        message: 'GET /api/auth/oauth/google/callback?code=SECRETCODE&state=SECRETSTATE failed',
+        message: 'GET /auth/confirm-email-change?token=SECRETLINK failed',
         exception: {
-          values: [{ value: 'redirect to /cb?code=SECRETCODE ended', stacktrace: { frames: [] } }],
+          values: [{ value: 'redirect to /cb?token=SECRETLINK ended', stacktrace: { frames: [] } }],
         },
       });
-      expect(JSON.stringify(event)).not.toContain('SECRETCODE');
+      expect(JSON.stringify(event)).not.toContain('SECRETLINK');
 
       const crumb = scrubBreadcrumb({
-        category: 'http',
-        message: 'GET /api/auth/oauth/google/callback?state=SECRETSTATE',
+        category: 'navigation',
+        message: 'to /auth/reset-password?token=SECRETLINK',
       });
-      expect(JSON.stringify(crumb)).not.toContain('SECRETSTATE');
+      expect(JSON.stringify(crumb)).not.toContain('SECRETLINK');
     });
   });
 

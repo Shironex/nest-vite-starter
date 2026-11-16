@@ -38,29 +38,13 @@ const REDACTED = '[redacted]';
 const MAX_DEPTH = 8;
 
 /**
- * OAuth/OIDC wire fields that the shared substring
- * denylist does not cover. EXACT match (not substring) on purpose: adding
- * `code`/`state` to SENSITIVE_KEY_PATTERNS would shred `statusCode`,
- * `appCode`, `countryCode` and every Redux-ish `state` object across the app.
- * The `*token*` family (`id_token`, `access_token`, ...) already hits the
- * shared list; it is repeated here so this set alone documents the OAuth
- * surface and survives a future narrowing of the shared list.
+ * Credential query keys blanked INSIDE strings. The shared substring denylist
+ * already redacts a `token` KEY on an object, but a URL string carrying
+ * `?token=` (the mailed verify-email, reset-password and confirm-email-change
+ * links all do) is just text to a key-based walker. Matched as whole query
+ * keys at a boundary, so `barcode=` or `statusCode=` stay legible.
  */
-const OAUTH_SENSITIVE_KEYS = new Set([
-  'code',
-  'state',
-  'nonce',
-  'code_verifier',
-  'code_challenge',
-  'id_token',
-  'access_token',
-  'refresh_token',
-  'token_type',
-]);
-
-function isOAuthSensitiveKey(key: string): boolean {
-  return OAUTH_SENSITIVE_KEYS.has(key.toLowerCase());
-}
+const CREDENTIAL_QUERY_KEYS = ['token', 'access_token', 'refresh_token', 'id_token'] as const;
 
 /**
  * The egress identifiers (see EGRESS_IDENTIFIER_PATTERNS below) denied again in
@@ -80,15 +64,14 @@ function isOAuthSensitiveKey(key: string): boolean {
 const IDENTIFIER_QUERY_KEYS = ['userid', 'user_id', 'input'] as const;
 
 /**
- * Redact OAuth wire params and identifier params INSIDE strings: a callback
- * URL such as `/auth/oauth/google/callback?code=4/...&state=...` or a tRPC
- * batch target rides Sentry events as `request.url`, `query_string`,
+ * Redact credential params and identifier params INSIDE strings: a link such
+ * as `/auth/reset-password?token=...` or a tRPC batch target rides Sentry events as `request.url`, `query_string`,
  * breadcrumb messages and exception text, where key-based redaction cannot see
  * it. Matches `key=value` at a query boundary (start, `?`, `&`, `#`) for the
  * keys above and blanks the value.
  */
 const REDACTED_QUERY_PARAM_RE = new RegExp(
-  `(^|[?&#])(${[...OAUTH_SENSITIVE_KEYS, ...IDENTIFIER_QUERY_KEYS].join('|')})=([^&#\\s]*)`,
+  `(^|[?&#])(${[...CREDENTIAL_QUERY_KEYS, ...IDENTIFIER_QUERY_KEYS].join('|')})=([^&#\\s]*)`,
   'gi',
 );
 
@@ -138,9 +121,9 @@ function isEgressIdentifierKey(key: string): boolean {
   return EGRESS_IDENTIFIER_PATTERNS.some((p) => k.includes(p));
 }
 
-/** Shared-denylist substring match, OR OAuth exact match, OR an egress identifier. */
+/** Shared-denylist substring match, OR an egress identifier. */
 function isRedactedKey(key: string): boolean {
-  return isSensitiveKey(key) || isOAuthSensitiveKey(key) || isEgressIdentifierKey(key);
+  return isSensitiveKey(key) || isEgressIdentifierKey(key);
 }
 
 // Username + home-directory paths. Order matters: rewrite the home dir to a

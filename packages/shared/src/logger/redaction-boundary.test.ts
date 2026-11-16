@@ -101,7 +101,7 @@ describe('log redaction boundary', () => {
   });
 
   it('the file sink never emits a sentinel, and keeps ordinary context', () => {
-    // The file transport is what the desktop updater writes to disk. Dev
+    // The file transport writes the log to disk. Dev
     // console output is deliberately unredacted, so silence it here.
     vi.spyOn(runtimeConsole, 'error').mockImplementation(() => undefined);
     const written: string[] = [];

@@ -24,7 +24,7 @@ export const APP_LOCALE = 'en-US';
 
 /**
  * Single source of truth for the product's display name. Every user-facing
- * surface (auth pages, sidebar, desktop title bar, email "from" name via the
+ * surface (auth pages, sidebar, email "from" name via the
  * api's APP_NAME config default) derives from this, so rebranding is a
  * one-line change here rather than a repo-wide sweep.
  *

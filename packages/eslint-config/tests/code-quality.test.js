@@ -13,7 +13,7 @@ import { ruleTester } from './rule-tester.js';
 const NO_PROCESS_EXIT_ALLOW_IN = [
   '**/instrument.ts',
   '**/apps/api/src/main.ts',
-  '**/apps/desktop/**',
+  '**/apps/api/src/worker.ts',
   '**/packages/database/**',
   '**/tools/**',
   '**/scripts/**',
@@ -45,7 +45,7 @@ ruleTester.run('no-process-exit', codeQuality.rules['no-process-exit'], {
     // path, so the prefixes are what preserve that behavior here).
     {
       code: 'process.exit(1);',
-      filename: '/repo/apps/desktop/electron/main.ts',
+      filename: '/repo/apps/api/src/worker.ts',
       options: allowExitOptions,
     },
     {
