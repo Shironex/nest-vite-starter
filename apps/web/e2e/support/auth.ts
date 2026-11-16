@@ -37,6 +37,9 @@ export const E2E_FIXTURE_PASSWORD = 'P@ssw0rd!Change.Me';
 /** auth-login.spec.ts. Owns the deliberate wrong-password submit. */
 export const LOGIN_FIXTURE_EMAIL = 'e2e-login@example.com';
 
+/** admin.spec.ts. The account the admin promotes, demotes, disables and signs out. */
+export const ADMIN_TARGET_FIXTURE_EMAIL = 'e2e-admin-target@example.com';
+
 /**
  * two-factor.spec.ts, one per journey in its serial group.
  *

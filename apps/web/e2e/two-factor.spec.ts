@@ -172,45 +172,47 @@ async function enroll(page: Page): Promise<{ nextCode: () => string; recoveryCod
 }
 
 /**
- * Reset one member's 2FA from the (already-signed-in) admin's members tab.
+ * Reset one user's 2FA from the (already-signed-in) admin's users table.
  *
  * Asserting the post-state rather than the transition is what makes this
  * re-runnable: `resetUserTwoFactor` wipes factors unconditionally, so a
- * member who is already 2FA-free ends up exactly where an enrolled one does.
+ * user who is already 2FA-free ends up exactly where an enrolled one does.
  *
  * Split in two so a caller can assert something between the confirm click and
  * the settled post-state (the success toast, which auto-dismisses).
  */
 interface IPendingReset {
   dialog: Locator;
-  memberRow: Locator;
+  userRow: Locator;
 }
 
-async function confirmMemberTwoFactorReset(page: Page, email: string): Promise<IPendingReset> {
-  const memberRow = page.getByRole('row').filter({ hasText: email });
-  await expect(memberRow).toBeVisible();
-  await memberRow.getByRole('button', { name: `Actions for ${email}` }).click();
+async function confirmUserTwoFactorReset(page: Page, email: string): Promise<IPendingReset> {
+  // Scoped to the users table: the audit list on the same page has rows that
+  // name the same address once the fixture has signed in.
+  const userRow = page
+    .locator('[data-slot="admin-users-section"]')
+    .getByRole('row')
+    .filter({ hasText: email });
+  await expect(userRow).toBeVisible();
+  await userRow.getByRole('button', { name: `Actions for ${email}` }).click();
   await page.getByRole('menuitem', { name: 'Reset two-factor' }).click();
 
   const dialog = page.getByRole('dialog');
-  await expect(dialog.getByText(/reset two-factor for this member/i)).toBeVisible();
+  await expect(dialog.getByText(/reset two-factor for this user/i)).toBeVisible();
   await dialog.getByRole('button', { name: 'Reset two-factor' }).click();
-  return { dialog, memberRow };
+  return { dialog, userRow };
 }
 
-async function expectMemberTwoFactorResetSettled({
-  dialog,
-  memberRow,
-}: IPendingReset): Promise<void> {
+async function expectUserTwoFactorResetSettled({ dialog, userRow }: IPendingReset): Promise<void> {
   // Waiting for the dialog to go means the next row's button cannot be clicked
   // through a still-open overlay. The badge is the durable post-state: it only
-  // flips once the mutation landed AND the members list refetched.
+  // flips once the mutation landed AND the users list refetched.
   await expect(dialog).toBeHidden();
-  await expect(memberRow.getByText('Disabled')).toBeVisible();
+  await expect(userRow.getByText('Disabled')).toBeVisible();
 }
 
 async function resetUserTwoFactor(page: Page, email: string): Promise<void> {
-  await expectMemberTwoFactorResetSettled(await confirmMemberTwoFactorReset(page, email));
+  await expectUserTwoFactorResetSettled(await confirmUserTwoFactorReset(page, email));
 }
 
 /**
@@ -292,21 +294,20 @@ test.describe.serial('Two-factor authentication (real enroll + challenge)', () =
   test.describe('as the seeded admin', () => {
     test.use({ storageState: ADMIN_STORAGE_STATE });
 
-    test("an admin resets a member's two-factor from the members tab", async ({ page }) => {
-      // The Members rail row is admin-only; the seeded member starts with
-      // 2FA enabled.
-      await page.goto('/settings');
-      await page.getByRole('button', { name: 'Members' }).click();
+    test("an admin resets a user's two-factor from the users table", async ({ page }) => {
+      // The admin page is admin-only; the seeded member starts with 2FA
+      // enabled.
+      await page.goto('/admin');
 
       // Success surfaces as a toast; the row's 2FA badge flips to Disabled once
-      // the members list refetches.
+      // the users list refetches.
       // The toast is checked before the settle waits, and only for this first
       // reset: it auto-dismisses, so asserting it after the badge has settled
       // races its timeout, and four in a row would stack into an ambiguous
       // locator.
-      const pending = await confirmMemberTwoFactorReset(page, MEMBER_EMAIL);
-      await expect(page.getByText('Two-factor reset for this member')).toBeVisible();
-      await expectMemberTwoFactorResetSettled(pending);
+      const pending = await confirmUserTwoFactorReset(page, MEMBER_EMAIL);
+      await expect(page.getByText('Two-factor reset for this user')).toBeVisible();
+      await expectUserTwoFactorResetSettled(pending);
 
       // Same procedure, now as fixture hygiene for the journeys below.
       for (const email of Object.values(TWO_FACTOR_FIXTURE_EMAILS)) {

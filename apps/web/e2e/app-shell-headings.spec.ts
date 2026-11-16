@@ -28,7 +28,7 @@ import { ADMIN_STORAGE_STATE } from './support/auth';
 /** Route to the `pageTitle.*` string `Layout.nav.ts` resolves for it. */
 const ROUTE_TITLES: ReadonlyArray<readonly [string, string]> = [
   ['/dashboard', 'Dashboard'],
-  ['/audit', 'Audit log'],
+  ['/admin', 'Admin'],
   ['/settings', 'Settings'],
 ];
 
