@@ -37,7 +37,6 @@ export interface IChallengeUser {
   email: string;
   role: string;
   emailVerified: boolean;
-  tenantId?: string | null | undefined;
 }
 
 export interface IChallengeOptions {
@@ -73,7 +72,7 @@ export type BeginOrEstablishResult =
  * Why the mint gate refused an account, read live from the database. Also the
  * audit and metric reason, spelled like the per-door refusals it backs up.
  */
-type SessionIneligibleReason = 'account_deleted' | 'account_locked' | 'membership_ended';
+type SessionIneligibleReason = 'account_deleted' | 'account_locked' | 'account_disabled';
 
 /** Discriminated login result shared by password login and 2FA verify. */
 export type ILoginResult =
@@ -89,7 +88,6 @@ const pendingChallengeSchema = z.object({
   email: z.string(),
   role: z.string(),
   emailVerified: z.boolean(),
-  tenantId: z.string().optional(),
   ip: z.string(),
   userAgent: z.string(),
   rememberMe: z.boolean(),
@@ -117,7 +115,7 @@ type PendingChallenge = z.infer<typeof pendingChallengeSchema>;
  * fenced session, just one whose fence starts later than its credential read.
  *
  * It is also where live account state is re-checked. Every entry point runs its
- * own deleted / locked / removed-member checks for an accurate audit reason,
+ * own deleted / locked / disabled checks for an accurate audit reason,
  * but those read a snapshot and each door has to remember the whole list. `findIneligibleReason` re-reads
  * the three fields right before anything is minted, here and again before the
  * post-challenge mint, so a door that forgets one, or a state change that lands
@@ -165,13 +163,7 @@ export class TwoFactorChallengeService {
     // not be handed a pending record it could spend a factor on either.
     const ineligible = await this.findIneligibleReason(user.id);
     if (ineligible !== null) {
-      await this.refuseIneligible(
-        user.id,
-        user.tenantId ?? null,
-        ineligible,
-        opts.ip,
-        opts.userAgent,
-      );
+      await this.refuseIneligible(user.id, ineligible, opts.ip, opts.userAgent);
       // The password door's own refusal, so a state change racing the login
       // is indistinguishable from a wrong password.
       throw new UnauthorizedError(AppErrorCode.INVALID_CREDENTIALS, 'Invalid email or password');
@@ -189,11 +181,8 @@ export class TwoFactorChallengeService {
       const session = await this.shared.establishSession(req, res, this.sessionParams(user, opts));
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_2FA_CHALLENGE_SUCCESS,
+        // Explicit: the challenge runs before AuthMiddleware seeds the ALS.
         userId: user.id,
-        // Stamped explicitly: the challenge runs before AuthMiddleware seeds
-        // the ALS, and a tenant-less row is attributed through the actor's
-        // CURRENT tenant, so it would follow the account into a later organization.
-        tenantId: user.tenantId ?? null,
         targetType: 'User',
         targetId: user.id,
         ipAddress: opts.ip,
@@ -222,7 +211,6 @@ export class TwoFactorChallengeService {
       ip: opts.ip,
       userAgent: opts.userAgent,
       rememberMe: opts.rememberMe,
-      tenantId: user.tenantId,
       epoch: opts.epoch,
     };
   }
@@ -276,7 +264,6 @@ export class TwoFactorChallengeService {
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_2FA_LOCKED,
         userId: pending.userId,
-        tenantId: pending.tenantId ?? null,
         targetType: 'User',
         targetId: pending.userId,
         success: false,
@@ -301,7 +288,6 @@ export class TwoFactorChallengeService {
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_2FA_CHALLENGE_FAILURE,
         userId: pending.userId,
-        tenantId: pending.tenantId ?? null,
         targetType: 'User',
         targetId: pending.userId,
         success: false,
@@ -326,19 +312,13 @@ export class TwoFactorChallengeService {
     }
     this.shared.clearAuthCookie(res, this.pendingCookieName);
 
-    // The account may have been removed, deleted or locked during the (up to
+    // The account may have been disabled, deleted or locked during the (up to
     // 300 s) challenge. Checked after the record is consumed, so a refusal
     // cannot be retried with the same cookie, and before resetAttempts, so a
     // lock the challenge itself armed is still in force when it is read.
     const ineligible = await this.findIneligibleReason(pending.userId);
     if (ineligible !== null) {
-      await this.refuseIneligible(
-        pending.userId,
-        pending.tenantId ?? null,
-        ineligible,
-        ip,
-        userAgent,
-      );
+      await this.refuseIneligible(pending.userId, ineligible, ip, userAgent);
       throw this.challengeExpired();
     }
 
@@ -354,7 +334,6 @@ export class TwoFactorChallengeService {
       ip,
       userAgent,
       rememberMe: pending.rememberMe,
-      tenantId: pending.tenantId,
       // The epoch from the PASSWORD step, not from now: the credential this
       // session rests on was read back then, so that is the moment the fence
       // has to cover. A revocation during the challenge therefore fails the
@@ -366,7 +345,6 @@ export class TwoFactorChallengeService {
     await this.auditService.log({
       action: AUDIT_ACTIONS.AUTH_2FA_CHALLENGE_SUCCESS,
       userId: pending.userId,
-      tenantId: pending.tenantId ?? null,
       targetType: 'User',
       targetId: pending.userId,
       ipAddress: ip,
@@ -386,7 +364,6 @@ export class TwoFactorChallengeService {
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_2FA_RECOVERY_USED,
         userId: pending.userId,
-        tenantId: pending.tenantId ?? null,
         targetType: 'User',
         targetId: pending.userId,
         ipAddress: ip,
@@ -413,14 +390,12 @@ export class TwoFactorChallengeService {
    * refused the same way: there is nobody to mint a session for.
    *
    * Runs before AuthMiddleware seeds the ALS, keyed by the userId the caller
-   * authenticated: `User` is
-   * platform-global, so the tenant extension does not filter it and the
-   * request client answers without a tenant in context.
+   * authenticated.
    */
   private async findIneligibleReason(userId: string): Promise<SessionIneligibleReason | null> {
     const user = await this.prismaService.client.user.findFirst({
       where: { id: userId, deletedAt: null },
-      select: { lockedUntil: true, membershipEndedAt: true },
+      select: { lockedUntil: true, disabledAt: true },
     });
     if (!user) {
       return 'account_deleted';
@@ -428,19 +403,18 @@ export class TwoFactorChallengeService {
     if (this.lockoutService.isLockedFromUser(user).locked) {
       return 'account_locked';
     }
-    if (user.membershipEndedAt !== null) {
-      return 'membership_ended';
+    if (user.disabledAt !== null) {
+      return 'account_disabled';
     }
     return null;
   }
 
   /**
-   * Trail and count a mint-gate refusal. Explicit tenantId for the same reason
+   * Trail and count a mint-gate refusal. Explicit userId for the same reason
    * as the trusted-device row: nothing has seeded the ALS yet.
    */
   private async refuseIneligible(
     userId: string,
-    tenantId: string | null,
     reason: SessionIneligibleReason,
     ip: string,
     userAgent: string,
@@ -448,7 +422,6 @@ export class TwoFactorChallengeService {
     await this.auditService.log({
       action: AUDIT_ACTIONS.AUTH_LOGIN_FAILURE,
       userId,
-      tenantId,
       targetType: 'User',
       targetId: userId,
       success: false,
@@ -483,7 +456,6 @@ export class TwoFactorChallengeService {
       email: user.email,
       role: user.role,
       emailVerified: user.emailVerified,
-      tenantId: user.tenantId ?? undefined,
       ip: opts.ip,
       userAgent: opts.userAgent,
       rememberMe: opts.rememberMe,

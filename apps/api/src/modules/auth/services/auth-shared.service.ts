@@ -26,12 +26,6 @@ export interface IEstablishSessionParams {
   userAgent: string;
   rememberMe: boolean;
   /**
-   * User.tenantId is nullable on the schema (pre-tenancy/platform users have
-   * none); establishSession coerces null to undefined so the optional session
-   * field stays absent.
-   */
-  tenantId?: string | null | undefined;
-  /**
    * Session-epoch fence value, captured by the flow that authenticated this
    * user BEFORE it read the state that authenticates them (see
    * `SessionService.readEpoch`). Passing it is what makes a revocation that
@@ -89,11 +83,7 @@ export class AuthSharedService {
     res: Response,
     params: IEstablishSessionParams,
   ): Promise<{ token: string; expiresAt: Date }> {
-    const { tenantId, ...rest } = params;
-    const session = await this.sessionService.createSession({
-      ...rest,
-      tenantId: tenantId ?? undefined,
-    });
+    const session = await this.sessionService.createSession(params);
 
     const maxAge = session.expiresAt.getTime() - nowMs();
     this.setSessionCookie(res, session.token, maxAge);

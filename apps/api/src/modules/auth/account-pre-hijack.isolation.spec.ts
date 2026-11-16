@@ -24,7 +24,6 @@ import type Redis from 'ioredis';
 import RedisMock from 'ioredis-mock';
 import type { PrismaClient } from '@repo/database' with { 'resolution-mode': 'import' };
 import { esmImport } from '../../common/utils/esm-import';
-import { buildCanaryTenantScopeExtension } from '@test/tenant-scope-canary';
 import type { PrismaService } from '../../common/database/prisma.service';
 import type { CsrfService } from '../../common/security/csrf.service';
 import type { AuditService } from '../audit/audit.service';
@@ -45,10 +44,9 @@ import { TokenService } from './services/token.service';
 import type { TrustedDeviceService } from './services/trusted-device.service';
 import { TwoFactorChallengeService } from './services/two-factor-challenge.service';
 
-let unscoped: PrismaClient;
+let prisma: PrismaClient;
 let prismaService: PrismaService;
 
-const createdTenantIds = new Set<string>();
 const createdUserIds = new Set<string>();
 
 const ctx = { ip: '203.0.113.9', userAgent: 'iso' };
@@ -60,15 +58,6 @@ const ATTACKER_PASSWORD = 'attacker-chose-this-1';
 const OWNER_PASSWORD = 'owner-chose-this-1';
 
 const passwordService = new PasswordService();
-
-const makeTenant = async () => {
-  const uid = randomUUID();
-  const tenant = await unscoped.tenant.create({
-    data: { name: `aph-${uid}`, slug: `aph-${uid}` },
-  });
-  createdTenantIds.add(tenant.id);
-  return tenant;
-};
 
 /**
  * Every collaborator the flows under test share, wired to the real database
@@ -108,12 +97,12 @@ const buildSubject = () => {
     // The real mint (and its epoch re-check) minus the cookie: the token is
     // captured so the spec can validate it the way the middleware would.
     establishSession: jest.fn(
-      async (_req: Request, _res: Response, params: { tenantId?: string | null }) => {
-        const { tenantId, ...rest } = params;
-        const session = await sessionService.createSession({
-          ...(rest as Parameters<SessionService['createSession']>[0]),
-          tenantId: tenantId ?? undefined,
-        });
+      async (
+        _req: Request,
+        _res: Response,
+        params: Parameters<SessionService['createSession']>[0],
+      ) => {
+        const session = await sessionService.createSession(params);
         minted.push(session.token);
         return session;
       },
@@ -166,17 +155,15 @@ const buildSubject = () => {
     );
 
   /**
-   * What RegisterService leaves behind: an organization, its unverified ADMIN owner
-   * with the password the registrant typed, a session opened before anyone
-   * proved control of the inbox, and a verification token mailed to it.
+   * What RegisterService leaves behind: an unverified USER with the password
+   * the registrant typed, a session opened before anyone proved control of the
+   * inbox, and a verification token mailed to it.
    */
   const register = async (password: string | null, email = `aph-${randomUUID()}@example.test`) => {
-    const tenant = await makeTenant();
-    const user = await unscoped.user.create({
+    const user = await prisma.user.create({
       data: {
         email,
-        tenantId: tenant.id,
-        role: 'ADMIN',
+        role: 'USER',
         passwordHash: password === null ? null : await passwordService.hash(password),
         emailVerified: false,
       },
@@ -188,14 +175,13 @@ const buildSubject = () => {
     const session = await sessionService.createSession({
       userId: user.id,
       email: user.email,
-      role: 'ADMIN',
+      role: 'USER',
       emailVerified: false,
       ...ctx,
       rememberMe: false,
-      tenantId: tenant.id,
     });
     const verificationToken = await tokenService.createVerificationToken(user.id);
-    return { tenant, user, registrationSession: session.token, verificationToken };
+    return { user, registrationSession: session.token, verificationToken };
   };
 
   const isValid = async (token: string): Promise<boolean> =>
@@ -214,22 +200,15 @@ const buildSubject = () => {
 };
 
 beforeAll(async () => {
-  const { prisma } = (await esmImport('@repo/database')) as { prisma: PrismaClient };
-  unscoped = prisma;
-  // The extended client, exactly as PrismaService.client builds it: verify
-  // runs with no tenant in the ALS.
-  const client = unscoped.$extends(buildCanaryTenantScopeExtension()) as unknown as PrismaClient;
-  prismaService = { client, unscoped } as unknown as PrismaService;
+  ({ prisma } = (await esmImport('@repo/database')) as { prisma: PrismaClient });
+  // Exactly what PrismaService.client hands a service.
+  prismaService = { client: prisma } as unknown as PrismaService;
 });
 
 afterAll(async () => {
-  // Tokens cascade with their user; users before tenants
-  // because User.tenantId is Restrict.
+  // Tokens cascade with their user.
   if (createdUserIds.size > 0) {
-    await unscoped.user.deleteMany({ where: { id: { in: [...createdUserIds] } } });
-  }
-  if (createdTenantIds.size > 0) {
-    await unscoped.tenant.deleteMany({ where: { id: { in: [...createdTenantIds] } } });
+    await prisma.user.deleteMany({ where: { id: { in: [...createdUserIds] } } });
   }
 });
 
@@ -243,7 +222,7 @@ describe('account pre-hijacking', () => {
     // The owner clicks the mailed link.
     await subject.verification.verifyEmail(verificationToken, ctx.ip);
 
-    const row = await unscoped.user.findUnique({
+    const row = await prisma.user.findUnique({
       where: { id: user.id },
       select: { emailVerified: true },
     });

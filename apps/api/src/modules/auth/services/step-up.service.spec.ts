@@ -88,24 +88,6 @@ describe('StepUpService', () => {
       );
     });
 
-    it('stamps the tenant when the caller has one, for the unauthenticated flows', async () => {
-      const { service, mocks } = await buildCtx();
-      withActiveFactor(mocks);
-      mocks.totp.verify.mockResolvedValue(false);
-
-      await expect(
-        service.assertSecondFactor({
-          userId: 'u-1',
-          code: '000000',
-          ip: '1.2.3.4',
-          context: 'password_reset',
-          tenantId: 't-1',
-        }),
-      ).rejects.toBeDefined();
-
-      expect(mocks.audit.log).toHaveBeenCalledWith(expect.objectContaining({ tenantId: 't-1' }));
-    });
-
     it('calls onRefused once, before the throw, for a flow that also counts refusals', async () => {
       const { service, mocks } = await buildCtx();
       withActiveFactor(mocks);

@@ -23,7 +23,7 @@ describe('LoginService', () => {
     it('happy path: validates credentials, delegates to the 2FA seam, audits success', async () => {
       const { service, mocks } = await buildCtx();
       const { req, res } = expressMocks();
-      const user = userFixture({ id: 'u-1', emailVerified: true, tenantId: 't-1' });
+      const user = userFixture({ id: 'u-1', emailVerified: true });
       mocks.user.findCredentialByEmail.mockResolvedValue(user);
       mocks.lockout.isLockedFromUser.mockReturnValue({ locked: false });
       mocks.password.verify.mockResolvedValue(true);
@@ -50,7 +50,7 @@ describe('LoginService', () => {
       expect(mocks.twoFactorChallenge.beginOrEstablish).toHaveBeenCalledWith(
         req,
         res,
-        expect.objectContaining({ id: 'u-1', tenantId: 't-1' }),
+        expect.objectContaining({ id: 'u-1' }),
         expect.objectContaining({ rememberMe: false, ip: '127.0.0.1', userAgent: 'ua' }),
       );
       expect(mocks.audit.log).toHaveBeenCalledWith(
@@ -146,25 +146,6 @@ describe('LoginService', () => {
       );
       expect(mocks.audit.log).toHaveBeenCalledWith(
         expect.objectContaining({ metadata: { rememberMe: true } }),
-      );
-    });
-
-    it('forwards a tenant-less user snapshot to the seam (null tenantId passed through)', async () => {
-      const { service, mocks } = await buildCtx();
-      const { req, res } = expressMocks();
-      mocks.user.findCredentialByEmail.mockResolvedValue(
-        userFixture({ id: 'u-1', emailVerified: true, tenantId: null }),
-      );
-      mocks.lockout.isLockedFromUser.mockReturnValue({ locked: false });
-      mocks.password.verify.mockResolvedValue(true);
-
-      await service.login(baseInput, '1.2.3.4', 'ua', req, res);
-
-      expect(mocks.twoFactorChallenge.beginOrEstablish).toHaveBeenCalledWith(
-        req,
-        res,
-        expect.objectContaining({ id: 'u-1', tenantId: null }),
-        expect.anything(),
       );
     });
 
@@ -340,9 +321,7 @@ describe('LoginService', () => {
     it('refuses an over-budget attempt through the existing ACCOUNT_LOCKED path, without argon2', async () => {
       const { service, mocks } = await buildCtx();
       const { req, res } = expressMocks();
-      mocks.user.findCredentialByEmail.mockResolvedValue(
-        userFixture({ id: 'u-7', tenantId: 'organization-a' }),
-      );
+      mocks.user.findCredentialByEmail.mockResolvedValue(userFixture({ id: 'u-7' }));
       mocks.lockout.isLockedFromUser.mockReturnValue({ locked: false });
       mocks.lockout.reserveAttempt.mockResolvedValue({ withinBudget: false });
 
@@ -357,7 +336,6 @@ describe('LoginService', () => {
         expect.objectContaining({
           action: AUDIT_ACTIONS.AUTH_LOGIN_LOCKED,
           userId: 'u-7',
-          tenantId: 'organization-a',
           success: false,
           // Server-side only: audit rows never reach the client, so an operator
           // can still tell a burst from an ordinary lockout.
@@ -407,43 +385,6 @@ describe('LoginService', () => {
       await expect(service.login(baseInput, '1.2.3.4', 'ua', req, res)).rejects.toThrow();
 
       expect(mocks.lockout.reserveAttempt).not.toHaveBeenCalled();
-    });
-
-    it('stamps the organization on every pre-auth audit row where the user row is in hand', async () => {
-      // These writes run before AuthMiddleware seeds the ALS, so AuditService
-      // would stamp `tenantId: null`, and audit-read.repository attributes a
-      // tenant-less row through the actor's CURRENT tenant. Unstamped, an
-      // account moved between organizations carried its whole login history with it.
-      const { service, mocks } = await buildCtx();
-      const { req, res } = expressMocks();
-      mocks.user.findCredentialByEmail.mockResolvedValue(
-        userFixture({ id: 'u-8', tenantId: 'organization-a' }),
-      );
-      mocks.lockout.isLockedFromUser.mockReturnValue({ locked: false });
-      mocks.password.verify.mockResolvedValue(false);
-      mocks.lockout.recordFailedAttempt.mockResolvedValue({ locked: false, attemptsRemaining: 4 });
-
-      await expect(service.login(baseInput, '1.2.3.4', 'ua', req, res)).rejects.toThrow();
-
-      expect(mocks.audit.log).toHaveBeenCalledWith(
-        expect.objectContaining({
-          action: AUDIT_ACTIONS.AUTH_LOGIN_FAILURE,
-          userId: 'u-8',
-          tenantId: 'organization-a',
-        }),
-      );
-    });
-
-    it('leaves the unknown-email failure tenant-less: no user, no organization', async () => {
-      const { service, mocks } = await buildCtx();
-      const { req, res } = expressMocks();
-      mocks.user.findCredentialByEmail.mockResolvedValue(null);
-
-      await expect(service.login(baseInput, '1.2.3.4', 'ua', req, res)).rejects.toThrow();
-
-      const [row] = mocks.audit.log.mock.calls[0] as [Record<string, unknown>];
-      expect(row.action).toBe(AUDIT_ACTIONS.AUTH_LOGIN_FAILURE);
-      expect(row.tenantId).toBeUndefined();
     });
 
     it('does not call resetAttempts when password verify fails', async () => {
@@ -516,7 +457,7 @@ describe('LoginService', () => {
  * Login is where a removed member is refused, and where a healthy one gets a
  * session. The refusal must look like any other credential failure.
  */
-describe('LoginService: the membership fence', () => {
+describe('LoginService: the disabled-account fence', () => {
   const baseInput = {
     email: 'jane@example.com',
     password: 'CorrectHorseBatteryStaple1!',
@@ -534,34 +475,34 @@ describe('LoginService: the membership fence', () => {
     over: Record<string, unknown> = {},
   ) => {
     mocks.user.findCredentialByEmail.mockResolvedValue(
-      userFixture({ id: 'u-member', emailVerified: true, tenantId: 't-1', ...over }),
+      userFixture({ id: 'u-member', emailVerified: true, ...over }),
     );
     mocks.lockout.isLockedFromUser.mockReturnValue({ locked: false });
     mocks.password.verify.mockResolvedValue(true);
     mocks.lockout.resetAttempts.mockResolvedValue(undefined);
   };
 
-  it('lets a healthy staff login through untouched', async () => {
+  it('lets a healthy login through untouched', async () => {
     const { service, mocks } = await buildCtx();
     const { req, res } = expressMocks();
-    authenticateAs(mocks, { id: 'u-staff', role: 'USER' });
+    authenticateAs(mocks, { id: 'u-healthy', role: 'USER' });
 
     const result = await service.login(baseInput, '127.0.0.1', 'ua', req, res);
 
     expect(result.status).toBe('ok');
   });
 
-  describe('the staff membership fence', () => {
-    it('refuses somebody removed from their organization, with the generic credential error', async () => {
-      // A removal must be indistinguishable from a wrong password to anyone who
-      // does not hold the password, or this becomes an oracle for who has left
-      // which organization.
+  describe('the disabled-account fence', () => {
+    it('refuses a disabled account, with the generic credential error', async () => {
+      // A disabled account must be indistinguishable from a wrong password to
+      // anyone who does not hold the password, or this becomes an oracle for
+      // which accounts an admin disabled.
       const { service, mocks } = await buildCtx();
       const { req, res } = expressMocks();
       authenticateAs(mocks, {
         id: 'u-left',
         role: 'USER',
-        membershipEndedAt: new Date('2026-05-01T00:00:00Z'),
+        disabledAt: new Date('2026-05-01T00:00:00Z'),
       });
 
       await expect(service.login(baseInput, '127.0.0.1', 'ua', req, res)).rejects.toThrow(
@@ -571,13 +512,13 @@ describe('LoginService: the membership fence', () => {
     });
 
     it('runs the check AFTER the credential verify, not before it', async () => {
-      // Refusing early would answer faster for a removed member than for a wrong
+      // Refusing early would answer faster for a disabled account than for a wrong
       // password, which is the timing half of the same oracle.
       const { service, mocks } = await buildCtx();
       const { req, res } = expressMocks();
       authenticateAs(mocks, {
         id: 'u-left',
-        membershipEndedAt: new Date('2026-05-01T00:00:00Z'),
+        disabledAt: new Date('2026-05-01T00:00:00Z'),
       });
 
       await expect(service.login(baseInput, '127.0.0.1', 'ua', req, res)).rejects.toThrow();
@@ -589,13 +530,13 @@ describe('LoginService: the membership fence', () => {
       const { req, res } = expressMocks();
       authenticateAs(mocks, {
         id: 'u-left',
-        membershipEndedAt: new Date('2026-05-01T00:00:00Z'),
+        disabledAt: new Date('2026-05-01T00:00:00Z'),
       });
 
       await expect(service.login(baseInput, '127.0.0.1', 'ua', req, res)).rejects.toThrow();
       expect(mocks.audit.log).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: expect.objectContaining({ reason: 'membership_ended' }),
+          metadata: expect.objectContaining({ reason: 'account_disabled' }),
         }),
       );
     });

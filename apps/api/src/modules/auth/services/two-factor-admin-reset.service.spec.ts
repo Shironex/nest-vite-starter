@@ -2,11 +2,7 @@ import { AppErrorCode } from '@repo/shared/errors';
 import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import { TwoFactorAdminResetService } from './two-factor-admin-reset.service';
 import { PrismaService } from '../../../common/database/prisma.service';
-import { requestContext } from '../../../common/context/request-context';
 import { createAuthTestModule } from '@test/test-module';
-
-const withTenant = <T>(tenantId: string, fn: () => Promise<T>): Promise<T> =>
-  requestContext.run({ requestId: 't', tenantId }, fn);
 
 describe('TwoFactorAdminResetService', () => {
   const buildCtx = async () => {
@@ -27,7 +23,7 @@ describe('TwoFactorAdminResetService', () => {
       prisma.client.user.findFirst.mockResolvedValue({ id: 'm1', email: 'm1@x.c' });
       mocks.redis.smembers.mockResolvedValue([]);
 
-      await withTenant('t-1', () => service.resetMemberTwoFactor('admin-1', 'm1', 'ip', 'ua'));
+      await service.resetMemberTwoFactor('admin-1', 'm1', 'ip', 'ua');
 
       expect(mocks.secondFactor.deleteAllForUser).toHaveBeenCalledWith('m1');
       expect(mocks.trustedDevice.revokeAll).toHaveBeenCalledWith('m1');
@@ -41,15 +37,15 @@ describe('TwoFactorAdminResetService', () => {
     it('refuses to reset the caller themselves', async () => {
       const { service } = await buildCtx();
       await expect(
-        withTenant('t-1', () => service.resetMemberTwoFactor('admin-1', 'admin-1', 'ip', 'ua')),
+        service.resetMemberTwoFactor('admin-1', 'admin-1', 'ip', 'ua'),
       ).rejects.toMatchObject({ appCode: AppErrorCode.FORBIDDEN });
     });
 
-    it('refuses a target outside the tenant (fail closed)', async () => {
+    it('refuses a target that is not a live account (fail closed)', async () => {
       const { service, prisma } = await buildCtx();
       prisma.client.user.findFirst.mockResolvedValue(null);
       await expect(
-        withTenant('t-1', () => service.resetMemberTwoFactor('admin-1', 'other', 'ip', 'ua')),
+        service.resetMemberTwoFactor('admin-1', 'other', 'ip', 'ua'),
       ).rejects.toMatchObject({ appCode: AppErrorCode.FORBIDDEN });
     });
   });

@@ -61,7 +61,7 @@ const buildCtx = async () => {
   // the only thing that can refuse a mint in this file is the epoch fence.
   ctx.mocks.prisma.client.user.findFirst.mockResolvedValue({
     lockedUntil: null,
-    membershipEndedAt: null,
+    disabledAt: null,
   });
   return {
     ...ctx,

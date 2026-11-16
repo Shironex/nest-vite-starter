@@ -51,12 +51,6 @@ export interface ISessionData {
    * before the fence existed have no epoch and read as 0.
    */
   epoch: number;
-  /**
-   * Active Tenant (organization) id for the session owner. Optional: pre-tenancy
-   * sessions and platform/system contexts have no tenant; a user attached to a
-   * organization carries it so AuthMiddleware can seed the ALS without a DB round-trip.
-   */
-  tenantId?: string | undefined;
 }
 
 /**
@@ -80,7 +74,6 @@ const sessionDataSchema = z.object({
   // The first revocation on the account moves the counter off 0 and fences
   // them exactly like a stamped blob.
   epoch: z.number().default(0),
-  tenantId: z.string().optional(),
 });
 
 /** Extended session data returned from validateSession, includes the derived session ID. */
@@ -164,7 +157,6 @@ export class SessionService {
     ip: string;
     userAgent: string;
     rememberMe: boolean;
-    tenantId?: string | undefined;
     /**
      * Session epoch captured by the caller BEFORE it read the state that
      * authenticates this login (see `readEpoch`). Stamped into the blob, and
@@ -179,7 +171,7 @@ export class SessionService {
      */
     epoch?: number | undefined;
   }): Promise<ICreatedSession> {
-    const { userId, email, role, emailVerified, ip, userAgent, rememberMe, tenantId } = params;
+    const { userId, email, role, emailVerified, ip, userAgent, rememberMe } = params;
     const token = randomBytes(TOKEN_ENTROPY_BYTES).toString('hex');
     const sessionId = this.hashToken(token);
     const ttl = rememberMe ? REMEMBER_ME_TTL_SECONDS : DEFAULT_TTL_SECONDS;
@@ -199,12 +191,6 @@ export class SessionService {
       expiresAt,
       epoch,
     };
-    // Conditional-assign (exactOptionalPropertyTypes): only carry tenantId when
-    // present so pre-tenancy/platform sessions don't store `tenantId: undefined`.
-    if (tenantId !== undefined) {
-      sessionData.tenantId = tenantId;
-    }
-
     // Write membership + blob in ONE transaction, SADD logically first: a
     // failure between a lone SETEX and SADD would leave a valid session that
     // revocation (which walks the SET) can never find. The EXPIRE keeps an

@@ -144,7 +144,6 @@ describe('SessionManagementService', () => {
       lastActive: 2_000,
       expiresAt: 3_000,
       epoch: 4,
-      tenantId: 'tenant-1',
     };
 
     const callIt = (service: SessionManagementService) => {
@@ -191,7 +190,6 @@ describe('SessionManagementService', () => {
         ip: '9.9.9.9',
         userAgent: 'new-ua',
         rememberMe: false,
-        tenantId: 'tenant-1',
       });
       // NO epoch: the mint must read the counter the revocation just bumped.
       expect(params).not.toHaveProperty('epoch');

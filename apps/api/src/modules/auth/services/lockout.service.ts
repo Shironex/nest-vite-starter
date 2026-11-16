@@ -4,8 +4,7 @@ import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import { AuditService } from '../../audit/audit.service';
 import { LockoutRepository } from '../repositories/lockout.repository';
 import { now, nowMs } from '../../../common/clock';
-import { ForbiddenError, NotFoundError } from '../../../common/errors';
-import { getTenantId } from '../../../common/context/request-context';
+import { NotFoundError } from '../../../common/errors';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 import { RedisKeys } from '../../../common/redis/redis-keys';
 
@@ -159,13 +158,7 @@ export class LockoutService {
   }
 
   /**
-   * Full admin unlock: resets all lockout state.
-   *
-   * Tenant containment: the `User` model is platform-global, so an admin in
-   * organization A must not be able to unlock a user in organization B. The reset is scoped
-   * to the caller's active tenant (from the ALS); a cross-tenant `userId`
-   * matches zero rows and throws NotFound. Fails closed: a missing tenant in
-   * context throws Forbidden rather than unlocking across all tenants.
+   * Full admin unlock: resets all lockout state. The router is admin-gated.
    *
    * AUDITED, because the other half of this story already is. The failed logins
    * that ARM the lockout write their own rows (auth.login.failure,
@@ -177,22 +170,16 @@ export class LockoutService {
    * the row worth keeping.
    */
   async adminUnlock(userId: string): Promise<void> {
-    const tenantId = getTenantId();
-    if (!tenantId) {
-      throw new ForbiddenError();
-    }
-
     // Snapshot before the reset: `fullReset` is an updateMany and cannot return
-    // the values it overwrites, so this is the last moment they exist. Same
-    // tenant fence as the reset, so a cross-tenant id is refused here.
-    const previous = await this.lockoutRepository.getAdminUnlockState(userId, tenantId);
+    // the values it overwrites, so this is the last moment they exist.
+    const previous = await this.lockoutRepository.getAdminUnlockState(userId);
     if (!previous) {
       throw new NotFoundError();
     }
 
-    const count = await this.lockoutRepository.fullReset(userId, tenantId);
+    const count = await this.lockoutRepository.fullReset(userId);
     if (count === 0) {
-      // Deleted or moved tenant between the probe and the reset.
+      // Deleted between the probe and the reset.
       throw new NotFoundError();
     }
 

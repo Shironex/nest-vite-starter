@@ -81,26 +81,6 @@ describe('SessionService', () => {
       expect(ttl).toBeLessThanOrEqual(30 * 24 * 60 * 60);
     });
 
-    it('stores tenantId in the session blob when provided', async () => {
-      const { service, redis } = await buildSubject();
-      const { token } = await service.createSession({
-        ...baseParams,
-        rememberMe: false,
-        tenantId: 't-1',
-      });
-      const sessionId = createHash('sha256').update(token).digest('hex');
-      const raw = await redis.get(RedisKeys.session(sessionId));
-      expect(JSON.parse(raw!)).toMatchObject({ tenantId: 't-1' });
-    });
-
-    it('omits tenantId from the blob when not provided (pre-tenancy/platform)', async () => {
-      const { service, redis } = await buildSubject();
-      const { token } = await service.createSession({ ...baseParams, rememberMe: false });
-      const sessionId = createHash('sha256').update(token).digest('hex');
-      const raw = await redis.get(RedisKeys.session(sessionId));
-      expect('tenantId' in JSON.parse(raw!)).toBe(false);
-    });
-
     it('enforceMaxSessions: evicts oldest when at MAX (3) on a new login', async () => {
       const { service, redis } = await buildSubject();
       // Seed 3 sessions with increasing createdAt.

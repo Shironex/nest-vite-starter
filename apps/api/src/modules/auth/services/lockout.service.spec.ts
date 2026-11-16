@@ -5,14 +5,7 @@ import { LockoutService } from './lockout.service';
 import { LockoutRepository } from '../repositories/lockout.repository';
 import { AuditService } from '../../audit/audit.service';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
-import { requestContext } from '../../../common/context/request-context';
 import { buildRedisChainMock, type RedisChainMock } from '@test/test-module';
-
-const TENANT_A = 'tenant-a';
-
-/** Run `fn` inside an ALS store carrying the given active tenant. */
-const withTenant = <T>(tenantId: string, fn: () => Promise<T>): Promise<T> =>
-  requestContext.run({ requestId: 't', tenantId }, fn);
 
 type MockLockoutRepository = {
   getLockoutState: jest.Mock;
@@ -277,23 +270,23 @@ describe('LockoutService', () => {
         lockedUntil: LOCKED_UNTIL,
       });
 
-    it('should delegate to repository.fullReset scoped to the caller tenant', async () => {
+    it('should delegate to repository.fullReset', async () => {
       lockedOutTarget();
       repo.fullReset.mockResolvedValue(1);
-      await withTenant(TENANT_A, () => service.adminUnlock('user-1'));
-      expect(repo.fullReset).toHaveBeenCalledWith('user-1', TENANT_A);
+      await service.adminUnlock('user-1');
+      expect(repo.fullReset).toHaveBeenCalledWith('user-1');
     });
 
     it('clears the Redis reservation, or the row says open while the gate still refuses', async () => {
       lockedOutTarget();
       repo.fullReset.mockResolvedValue(1);
-      await withTenant(TENANT_A, () => service.adminUnlock('user-1'));
+      await service.adminUnlock('user-1');
       expect(redis.del).toHaveBeenCalledWith('ratelimit:lockout:user-1');
     });
 
-    it('does not clear the reservation for a cross-tenant target', async () => {
+    it('does not clear the reservation for an unknown target', async () => {
       repo.getAdminUnlockState.mockResolvedValue(null);
-      await expect(withTenant(TENANT_A, () => service.adminUnlock('user-1'))).rejects.toThrow();
+      await expect(service.adminUnlock('user-1')).rejects.toThrow();
       expect(redis.del).not.toHaveBeenCalled();
     });
 
@@ -303,7 +296,7 @@ describe('LockoutService', () => {
       lockedOutTarget();
       repo.fullReset.mockResolvedValue(1);
 
-      await withTenant(TENANT_A, () => service.adminUnlock('user-1'));
+      await service.adminUnlock('user-1');
 
       expect(audit.log).toHaveBeenCalledWith({
         action: AUDIT_ACTIONS.AUTH_LOCKOUT_ADMIN_CLEARED,
@@ -317,44 +310,34 @@ describe('LockoutService', () => {
       });
     });
 
-    it('reads the pre-reset state under the SAME tenant fence as the reset', async () => {
+    it('reads the pre-reset state of the same row it resets', async () => {
       lockedOutTarget();
       repo.fullReset.mockResolvedValue(1);
-      await withTenant(TENANT_A, () => service.adminUnlock('user-1'));
-      expect(repo.getAdminUnlockState).toHaveBeenCalledWith('user-1', TENANT_A);
+      await service.adminUnlock('user-1');
+      expect(repo.getAdminUnlockState).toHaveBeenCalledWith('user-1');
     });
 
-    it('should throw NOT_FOUND for a cross-tenant target and never reset or audit', async () => {
-      // Target lives in another organization: the scoped probe matches zero rows, so
-      // the reset is never attempted at all.
+    it('should throw NOT_FOUND for an unknown target and never reset or audit', async () => {
+      // No live row: the probe matches nothing, so the reset is never attempted.
       repo.getAdminUnlockState.mockResolvedValue(null);
-      await expect(
-        withTenant(TENANT_A, () => service.adminUnlock('other-tenant-user')),
-      ).rejects.toMatchObject({ code: 'NOT_FOUND', message: AppErrorCode.NOT_FOUND });
-      expect(repo.getAdminUnlockState).toHaveBeenCalledWith('other-tenant-user', TENANT_A);
+      await expect(service.adminUnlock('gone-user')).rejects.toMatchObject({
+        code: 'NOT_FOUND',
+        message: AppErrorCode.NOT_FOUND,
+      });
+      expect(repo.getAdminUnlockState).toHaveBeenCalledWith('gone-user');
       expect(repo.fullReset).not.toHaveBeenCalled();
       expect(audit.log).not.toHaveBeenCalled();
     });
 
     it('should throw NOT_FOUND and not audit when the row moves between probe and reset', async () => {
-      // Deleted or re-tenanted in the gap: the reset matched nothing, so there
+      // Deleted in the gap: the reset matched nothing, so there
       // is no clear to record.
       lockedOutTarget();
       repo.fullReset.mockResolvedValue(0);
-      await expect(withTenant(TENANT_A, () => service.adminUnlock('user-1'))).rejects.toMatchObject(
-        { code: 'NOT_FOUND', message: AppErrorCode.NOT_FOUND },
-      );
-      expect(audit.log).not.toHaveBeenCalled();
-    });
-
-    it('should throw FORBIDDEN and never write when there is no tenant in context', async () => {
-      // Called OUTSIDE requestContext.run: no active tenant -> fail closed.
       await expect(service.adminUnlock('user-1')).rejects.toMatchObject({
-        code: 'FORBIDDEN',
-        message: AppErrorCode.FORBIDDEN,
+        code: 'NOT_FOUND',
+        message: AppErrorCode.NOT_FOUND,
       });
-      expect(repo.getAdminUnlockState).not.toHaveBeenCalled();
-      expect(repo.fullReset).not.toHaveBeenCalled();
       expect(audit.log).not.toHaveBeenCalled();
     });
 
@@ -366,7 +349,7 @@ describe('LockoutService', () => {
       });
       repo.fullReset.mockResolvedValue(1);
 
-      await withTenant(TENANT_A, () => service.adminUnlock('user-1'));
+      await service.adminUnlock('user-1');
 
       expect(audit.log).toHaveBeenCalledWith(
         expect.objectContaining({

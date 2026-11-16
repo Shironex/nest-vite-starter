@@ -135,10 +135,8 @@ export const SUDO_TTL_SECONDS = 300;
 
 /**
  * Redis key for the sudo flag. Deliberately NOT routed through `RedisKeys`:
- * that helper is the
- * tenant-prefix retrofit surface for request-scoped tenant DATA, while this is
- * a session-lifetime marker keyed by the already-tenantless sessionId, exactly
- * like `session:<id>` itself. The 2FA step-up (2FA T03) extends this same key.
+ * this is a session-lifetime marker keyed by the sessionId, exactly like
+ * `session:<id>` itself. The 2FA step-up (2FA T03) extends this same key.
  */
 export function sudoKey(sessionId: string): string {
   return `sudo:${sessionId}`;

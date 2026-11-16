@@ -127,9 +127,9 @@ describe('AuthSharedService', () => {
         evictedSessionIds: [],
       });
 
-      const result = await service.establishSession(req, res, { ...params, tenantId: 't-1' });
+      const result = await service.establishSession(req, res, params);
 
-      expect(session.createSession).toHaveBeenCalledWith({ ...params, tenantId: 't-1' });
+      expect(session.createSession).toHaveBeenCalledWith(params);
       expect(cookieMock).toHaveBeenCalledWith(
         'session_id',
         'tok-1',
@@ -140,20 +140,6 @@ describe('AuthSharedService', () => {
       expect(maxAge).toBeLessThanOrEqual(60_000);
       expect(csrf.rotate).toHaveBeenCalledWith(req, res);
       expect(result).toEqual({ token: 'tok-1', expiresAt });
-    });
-
-    it('coerces a null tenantId to undefined so the session field stays absent', async () => {
-      const { service, session } = await buildSubject('development');
-      const { req, res } = expressMocks();
-      session.createSession.mockResolvedValue({
-        token: 't',
-        expiresAt: new Date(),
-        evictedSessionIds: [],
-      });
-
-      await service.establishSession(req, res, { ...params, tenantId: null });
-
-      expect(session.createSession).toHaveBeenCalledWith({ ...params, tenantId: undefined });
     });
   });
 

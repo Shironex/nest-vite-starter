@@ -8,8 +8,9 @@ import {
   isPrismaUniqueConstraintError,
   uniqueConstraintTargetText,
 } from '../prisma-unique-error.util';
+import { PrismaService } from '../../../common/database/prisma.service';
 import { PasswordService } from './password.service';
-import { ProvisioningService } from './provisioning.service';
+import { TokenService } from './token.service';
 import { AuthSharedService } from './auth-shared.service';
 import { UserService, IUserProfile } from '../../user/user.service';
 import { MailService } from '../../mail/mail.service';
@@ -34,7 +35,8 @@ export class RegisterService {
 
   constructor(
     private readonly passwordService: PasswordService,
-    private readonly provisioningService: ProvisioningService,
+    private readonly tokenService: TokenService,
+    private readonly prismaService: PrismaService,
     private readonly userService: UserService,
     private readonly mailService: MailService,
     private readonly auditService: AuditService,
@@ -72,35 +74,33 @@ export class RegisterService {
       throw new ValidationError(AppErrorCode.EMAIL_IN_USE, AppErrorCode.EMAIL_IN_USE);
     }
 
-    // Hash password and create the organization + owner + verification token atomically
+    // Hash password and create the account + verification token atomically
     const passwordHash = await this.passwordService.hash(input.password);
     const normalizedEmail = this.userService.normalizeEmail(input.email);
 
     let user: User;
     let rawVerificationToken: string;
     try {
-      ({ user, rawVerificationToken } =
-        await this.provisioningService.provisionOrganizationForPasswordSignup({
-          normalizedEmail,
-          passwordHash,
-          displayName: input.displayName ?? null,
-        }));
+      ({ user, rawVerificationToken } = await this.createAccount({
+        normalizedEmail,
+        passwordHash,
+        displayName: input.displayName ?? null,
+      }));
     } catch (error) {
       // The email pre-check is best-effort: a concurrent double-submit (or a
       // re-register of a soft-deleted email) races past it and trips the
-      // User.email unique constraint inside the provisioning transaction,
-      // throwing Prisma P2002. Map it to the SAME clean error the pre-check
-      // throws so the client sees a 400/EMAIL_IN_USE instead of an untranslated
-      // 500. Duck-typed (not `instanceof Prisma.*`) so a value import of the
+      // User.email unique constraint inside the account transaction, throwing
+      // Prisma P2002. Map it to the SAME clean error the pre-check throws so the
+      // client sees a 400/EMAIL_IN_USE instead of an untranslated 500.
+      // Duck-typed (not `instanceof Prisma.*`) so a value import of the
       // ESM-only Prisma client never drags the WASM query compiler into this
       // CJS path.
       //
-      // Branch on the violated constraint: that tx ALSO writes Tenant.slug, which
-      // is @unique, so a blanket map would mislabel a slug collision as
-      // "email in use". Only an email-constraint violation (or a P2002 whose
-      // target the driver does not report - email is the realistic cause) maps
-      // to EMAIL_IN_USE; a slug collision is an unexpected internal condition and
-      // is rethrown rather than mislabeled.
+      // Branch on the violated constraint: only an email-constraint violation
+      // (or a P2002 whose target the driver does not report: email is the
+      // realistic cause) maps to EMAIL_IN_USE. Any other unique violation (the
+      // token's) is an unexpected internal condition and is rethrown rather
+      // than mislabeled.
       if (isPrismaUniqueConstraintError(error)) {
         const target = uniqueConstraintTargetText(error);
         if (target === undefined || target.includes('email')) {
@@ -113,9 +113,37 @@ export class RegisterService {
   }
 
   /**
+   * Create the account (a plain USER: admins come from the seed or the
+   * `user:promote` script, never from self-signup) and its verification token
+   * in ONE transaction, so a crash cannot leave an account with no way to
+   * verify it. Callers wrap this to map a P2002 unique-constraint violation.
+   */
+  private async createAccount(args: {
+    normalizedEmail: string;
+    passwordHash: string;
+    displayName: string | null;
+  }): Promise<{ user: User; rawVerificationToken: string }> {
+    const { normalizedEmail, passwordHash, displayName } = args;
+    return this.prismaService.client.$transaction(async (tx) => {
+      // No emailVerified here: password signup must prove the mailbox first
+      // (schema default false), and the token minted below carries that proof.
+      // No role either: the schema default is USER.
+      const createdUser = await tx.user.create({
+        data: { email: normalizedEmail, passwordHash, displayName },
+      });
+
+      // Mint the verification token via the one shared TokenService path
+      // (delete-existing + hash + TTL), on THIS tx so it commits with the user.
+      const rawToken = await this.tokenService.createVerificationToken(createdUser.id, tx);
+
+      return { user: createdUser, rawVerificationToken: rawToken };
+    });
+  }
+
+  /**
    * Post-transaction side effects: verification email, session, cookie, CSRF
    * rotation, and the success audit entry. Split out so `register` keeps only
-   * the P2002 mapping around the provisioning transaction.
+   * the P2002 mapping around the account transaction.
    */
   private async finalizeRegistration(args: {
     user: User;
@@ -141,8 +169,7 @@ export class RegisterService {
     }
 
     // Create session + set cookie + rotate CSRF in the one shared path
-    // (unverified users CAN log in per CONTEXT.md). The owner always has a
-    // tenant (the organization just created in the transaction).
+    // (unverified users CAN log in per CONTEXT.md).
     //
     // No epoch is captured here: the account did not exist when this request
     // started, so there is no earlier credential read for the fence to cover
@@ -156,16 +183,12 @@ export class RegisterService {
       ip,
       userAgent,
       rememberMe: false,
-      tenantId: user.tenantId,
     });
 
     await this.auditService.log({
       action: AUDIT_ACTIONS.AUTH_REGISTER_SUCCESS,
+      // Explicit: this runs BEFORE AuthMiddleware seeds the ALS.
       userId: user.id,
-      // This runs BEFORE AuthMiddleware sets the ALS tenant, so the row would
-      // otherwise land with tenantId null. Pass the new owner's tenant id
-      // explicitly (AuditService honors an explicit tenantId over the ALS).
-      tenantId: user.tenantId,
       targetType: 'User',
       targetId: user.id,
       ipAddress: ip,

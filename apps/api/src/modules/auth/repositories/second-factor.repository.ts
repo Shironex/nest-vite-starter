@@ -25,10 +25,9 @@ export type SecondFactorStatusValue = (typeof SecondFactorStatus)[keyof typeof S
 
 /**
  * SecondFactor data access. This model is USER-scoped credential data (like
- * Token), deliberately absent from TENANT_SCOPED_MODELS, so `this.client`
- * passes its queries through untouched (no tenant context required), which is
- * exactly what the pre-session login challenge needs. The repository lives in
- * the auth module by design so that unscoped access stays contained here.
+ * Token), read before any session exists by the login challenge. The
+ * repository lives in the auth module by design so that credential access
+ * stays contained here.
  */
 @Injectable()
 export class SecondFactorRepository extends BaseRepository {

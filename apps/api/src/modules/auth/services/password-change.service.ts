@@ -119,8 +119,7 @@ export class PasswordChangeService {
     await this.emailChangeService.invalidatePending(userId);
 
     // Re-create a session for the current caller so they stay logged in (one
-    // shared create-session + cookie + CSRF-rotation path). Carry the tenant
-    // forward so the rotated session stays tenant-scoped.
+    // shared create-session + cookie + CSRF-rotation path).
     //
     // Deliberately passes NO epoch, so createSession reads the counter this
     // flow just bumped. Capturing one at the top of the request would stamp the
@@ -134,7 +133,6 @@ export class PasswordChangeService {
       ip,
       userAgent,
       rememberMe: false,
-      tenantId: user.tenantId,
     });
 
     await this.auditService.log({

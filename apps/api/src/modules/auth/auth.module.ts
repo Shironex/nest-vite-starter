@@ -7,7 +7,6 @@ import { AuthMiddlewareModule } from './auth-middleware.module';
 import { LockoutModule } from './lockout.module';
 import { AuthSharedService } from './services/auth-shared.service';
 import { SudoService } from './services/sudo.service';
-import { ProvisioningService } from './services/provisioning.service';
 import { RegisterService } from './services/register.service';
 import { LoginService } from './services/login.service';
 import { EmailVerificationService } from './services/email-verification.service';
@@ -53,7 +52,6 @@ import { TwoFactorRouter } from './two-factor.router';
     TokenRepository,
     SecondFactorRepository,
     AuthSharedService,
-    ProvisioningService,
     RegisterService,
     LoginService,
     EmailVerificationService,

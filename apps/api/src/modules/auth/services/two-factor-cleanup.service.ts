@@ -16,12 +16,6 @@ const SWEEP_LABEL = 'two-factor-pending-cleanup';
  * `PENDING_ENROLLMENT_EXPIRY_MS` (1h), so that is the CORRECTNESS backstop; this
  * sweep is only the cleanup that stops abandoned rows accumulating.
  *
- * Uses `prismaService.client`: SecondFactor is USER-scoped credential data,
- * deliberately absent from TENANT_SCOPED_MODELS, so the tenant-scope extension
- * passes its queries through untouched even without a request context, so no
- * `unscoped` escape hatch needed (mirrors UserPurgeService on the non-scoped
- * User model).
- *
  * Follows the repo `@Cron` contract (see TokenCleanupService):
  *   - Idempotent by predicate (`status = PENDING AND createdAt < cutoff`), so it
  *     races safely when `@Cron` fires on every replica.

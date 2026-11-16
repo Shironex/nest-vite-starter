@@ -36,7 +36,7 @@ const buildOpts = (cookies: Record<string, string>, path = 'user.me') => {
  * Invoke the middleware inside an ALS scope, the way the global
  * TrpcRequestContextMiddleware does for every procedure in production.
  *
- * Required for any call that gets far enough to write `userId`/`tenantId`:
+ * Required for any call that gets far enough to write `userId`:
  * AuthMiddleware treats a missing store as a wiring defect and throws.
  */
 const useInScope = async (
@@ -130,8 +130,9 @@ describe('AuthMiddleware', () => {
       expiresAt: 0,
     });
     const { opts } = buildOpts({ session_id: 't' });
-    // Silently skipping the write would leave every tenant-scoped query to fail
-    // closed later, pointing at Prisma instead of the scope that never opened.
+    // Silently skipping the write would leave every audit row this request
+    // writes without its actor, with nothing pointing at the scope that never
+    // opened.
     // Generic on the wire: tRPC copies a plain Error's message straight to the
     // client, so the diagnostic detail is logged rather than thrown.
     await expect(service.use(opts)).rejects.toThrow(/Request context unavailable/);

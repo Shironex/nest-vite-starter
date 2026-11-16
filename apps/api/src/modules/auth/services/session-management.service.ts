@@ -97,7 +97,7 @@ export class SessionManagementService {
    *
    * The replacement is minted from the CURRENT session blob rather than a
    * fresh user-row read: the blob is what this very request was authenticated
-   * against, and every field it carries (role, tenant, the enrollment gate)
+   * against, and every field it carries (role, the enrollment gate)
    * is revoked-on-change, so it cannot be staler than the request itself.
    * Remember-me is preserved so "log out other devices" does not silently
    * shorten the caller's own 30-day login to 24 hours.
@@ -134,7 +134,6 @@ export class SessionManagementService {
       ip,
       userAgent,
       rememberMe,
-      tenantId: current.tenantId,
     });
 
     await this.auditService.log({

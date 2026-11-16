@@ -93,7 +93,7 @@ export class LockoutRepository extends BaseRepository {
 
   /**
    * The lockout state an admin unlock is about to erase, under the SAME
-   * tenant fence as `fullReset`.
+   * predicate as `fullReset`.
    *
    * Separate from `getLockoutState` because the two answer different questions:
    * that one asks "is this account locked right now" on the login path and
@@ -111,30 +111,22 @@ export class LockoutRepository extends BaseRepository {
    */
   async getAdminUnlockState(
     userId: string,
-    tenantId: string,
   ): Promise<{ failedAttempts: number; lockoutCount: number; lockedUntil: Date | null } | null> {
     return this.client.user.findFirst({
-      where: { id: userId, tenantId, ...this.notDeleted },
+      where: { id: userId, ...this.notDeleted },
       select: { failedAttempts: true, lockoutCount: true, lockedUntil: true },
     });
   }
 
   /**
-   * Tenant-scoped admin unlock: resets all lockout state for the target, but
-   * ONLY when it belongs to the given tenant. The `User` model is
-   * platform-global (the tenant Prisma extension only scopes `workspace`), so the
-   * `tenantId` filter is EXPLICIT here. `tenantId` is non-optional on purpose:
-   * an `undefined` would be dropped from the Prisma where-clause and unlock the
-   * target across all tenants, which is the cross-tenant write we are closing.
-   *
-   * Returns the affected-row count so the service can throw NotFound when a
-   * cross-tenant `userId` matches zero rows.
+   * Admin unlock: resets all lockout state for the target. Returns the
+   * affected-row count so the service can throw NotFound on zero rows.
    */
-  async fullReset(userId: string, tenantId: string): Promise<number> {
+  async fullReset(userId: string): Promise<number> {
     const result = await this.client.user.updateMany({
       // Soft-delete filtered in step with `getAdminUnlockState`; see the note
       // there for why the two predicates are one predicate.
-      where: { id: userId, tenantId, ...this.notDeleted },
+      where: { id: userId, ...this.notDeleted },
       data: { failedAttempts: 0, lockoutCount: 0, lockedUntil: null },
     });
     return result.count;

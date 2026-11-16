@@ -83,13 +83,13 @@ describe('PasswordResetService', () => {
   });
 
   describe('forgotPassword(): the account that must not be sent a link', () => {
-    it('refuses a removed member, silently and with the generic response', async () => {
+    it('refuses a disabled account, silently and with the generic response', async () => {
       // They keep their address and their account, so a successful reset would
       // leave the login check as the only remaining barrier.
       const { service, mocks } = await buildCtx();
       mocks.user.findByEmail.mockResolvedValue(userFixture({ id: 'u-1', email: 'a@b.c' }));
       mocks.user.findPasswordResetEligibility.mockResolvedValue({
-        membershipEnded: true,
+        disabled: true,
       });
 
       await expect(
@@ -104,7 +104,7 @@ describe('PasswordResetService', () => {
       const { service, mocks } = await buildCtx();
       mocks.user.findByEmail.mockResolvedValue(userFixture({ id: 'u-1', email: 'a@b.c' }));
       mocks.user.findPasswordResetEligibility.mockResolvedValue({
-        membershipEnded: true,
+        disabled: true,
       });
 
       await service.forgotPassword('a@b.c', 'turnstile', '1.2.3.4');
@@ -112,7 +112,7 @@ describe('PasswordResetService', () => {
       expect(mocks.audit.log).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          metadata: expect.objectContaining({ reason: 'membership_ended' }),
+          metadata: expect.objectContaining({ reason: 'account_disabled' }),
         }),
       );
     });
@@ -153,7 +153,7 @@ describe('PasswordResetService', () => {
       });
       // Soft-delete guarded write: a deleted row must not take a new credential.
       expect(tx.user.updateMany).toHaveBeenCalledWith({
-        where: { id: 'u-1', deletedAt: null, membershipEndedAt: null },
+        where: { id: 'u-1', deletedAt: null, disabledAt: null },
         data: {
           passwordHash: 'new-hash',
           failedAttempts: 0,
@@ -282,7 +282,7 @@ describe('PasswordResetService', () => {
       });
       expect(tx.user.updateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { id: 'u-deleted', deletedAt: null, membershipEndedAt: null },
+          where: { id: 'u-deleted', deletedAt: null, disabledAt: null },
         }),
       );
       expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();

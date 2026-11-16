@@ -88,7 +88,7 @@ export class LoginService {
        * now that `translateAppError` prefers the strings table over the server's
        * English sentence, and UNAUTHORIZED reads "Sign in to perform this
        * action.", which is what the person is already trying to do. It leaks
-       * nothing: unknown email, wrong password and ended membership are all
+       * nothing: unknown email, wrong password and a disabled account are all
        * answered with this one code and one message, which is the whole point.
        */
       recordAuthOutcome({ flow: 'login', outcome: 'unknown_email', kind: 'refusal' });
@@ -156,7 +156,6 @@ export class LoginService {
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_LOGIN_FAILURE,
         userId: user.id,
-        tenantId: user.tenantId,
         targetType: 'User',
         targetId: user.id,
         success: false,
@@ -176,35 +175,35 @@ export class LoginService {
     // Reset failed attempts on successful login
     await this.lockoutService.resetAttempts(user.id);
 
-    // The membership fence: somebody removed from their organization keeps
-    // their account and their address, and must not be able to sign in with it.
+    // The disabled-account fence: an account an admin disabled keeps its data
+    // and its address, and must not be able to sign in with it.
     //
     // Enforced HERE and not in auth.middleware, which reads the session blob
     // and never touches the database: putting it there would add a per-request
-    // DB read to the hottest path in the app. The sessions a removed member
-    // already holds are closed by revokeAuthState at removal time, so this is
-    // the door for new ones, not a catch-up. The seam below re-reads the flag
-    // right before it mints anything (a removal racing this login, or a door
-    // that forgets the check); this refusal stays for its accurate audit row.
+    // DB read to the hottest path in the app. The sessions a disabled account
+    // already holds are closed by revokeAuthState when it is disabled, so this
+    // is the door for new ones, not a catch-up. The seam below re-reads the
+    // flag right before it mints anything (a disable racing this login, or a
+    // door that forgets the check); this refusal stays for its accurate audit
+    // row.
     //
-    // AFTER the credential check, deliberately. A removal must
-    // be indistinguishable from a wrong password to somebody who does not hold
-    // the password, or this becomes an oracle for who has left which organization.
-    if (user.membershipEndedAt !== null) {
+    // AFTER the credential check, deliberately. A disabled account must be
+    // indistinguishable from a wrong password to somebody who does not hold
+    // the password, or this becomes an oracle for which accounts are disabled.
+    if (user.disabledAt !== null) {
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_LOGIN_FAILURE,
         userId: user.id,
-        tenantId: user.tenantId,
         targetType: 'User',
         targetId: user.id,
         success: false,
         ipAddress: ip,
         userAgent,
-        metadata: { reason: 'membership_ended' },
+        metadata: { reason: 'account_disabled' },
       });
       recordAuthOutcome({
         flow: 'login',
-        outcome: 'membership_ended',
+        outcome: 'account_disabled',
         kind: 'refusal',
         userId: user.id,
       });
@@ -224,7 +223,6 @@ export class LoginService {
         email: user.email,
         role: user.role,
         emailVerified: user.emailVerified,
-        tenantId: user.tenantId,
       },
       { rememberMe: input.rememberMe, ip, userAgent, epoch },
     );
@@ -249,7 +247,6 @@ export class LoginService {
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_LOGIN_SUCCESS,
         userId: user.id,
-        tenantId: user.tenantId,
         targetType: 'User',
         targetId: user.id,
         ipAddress: ip,
@@ -293,20 +290,15 @@ export class LoginService {
    * Returns `never`: every caller throws through it.
    */
   private async refuseLocked(
-    user: { id: string; tenantId: string | null },
+    user: { id: string },
     ip: string,
     userAgent: string,
     reason: 'locked' | 'attempt_budget',
   ): Promise<never> {
     await this.auditService.log({
       action: AUDIT_ACTIONS.AUTH_LOGIN_LOCKED,
+      // Explicit: this write runs BEFORE AuthMiddleware seeds the ALS.
       userId: user.id,
-      // Stamped explicitly: this write runs BEFORE AuthMiddleware seeds the
-      // ALS, so the tenant would otherwise be null and the row would follow
-      // the account into whatever organization it later joins (audit-read.repository
-      // attributes tenant-less rows through the actor's CURRENT tenant). A
-      // login failure belongs to the organization it happened in.
-      tenantId: user.tenantId,
       targetType: 'User',
       targetId: user.id,
       success: false,

@@ -87,7 +87,6 @@ describe('PasswordChangeService', () => {
       ip: '127.0.0.1',
       userAgent: 'ua',
       rememberMe: false,
-      tenantId: user.tenantId,
     });
     expect(mocks.audit.log).toHaveBeenCalledWith(
       expect.objectContaining({

@@ -36,12 +36,6 @@ export interface IStepUpParams {
    */
   readonly context: string;
   /**
-   * The organization the refusal belongs to, for the flows that run UNAUTHENTICATED
-   * and therefore have no tenant in the ALS for AuditService to read. Omit on
-   * an authenticated flow, where the ALS already has it.
-   */
-  readonly tenantId?: string | null;
-  /**
    * Called once, immediately before the throw, for a flow that also counts its
    * refusals (`recordAuthOutcome`). Not the audit row, which this service
    * always writes.
@@ -98,7 +92,6 @@ export class StepUpService {
     await this.auditService.log({
       action: AUDIT_ACTIONS.AUTH_2FA_CHALLENGE_FAILURE,
       userId: params.userId,
-      ...(params.tenantId === undefined ? {} : { tenantId: params.tenantId }),
       targetType: 'User',
       targetId: params.userId,
       success: false,

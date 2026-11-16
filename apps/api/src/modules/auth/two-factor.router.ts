@@ -97,8 +97,7 @@ export class TwoFactorRouter {
   }
 
   // ---------------------------------------------------------------------------
-  // Tenant-admin procedure. ALS-scoped: the service reads getTenantId()
-  // fail-closed, so an admin can only touch their own tenant.
+  // Admin procedure.
   // ---------------------------------------------------------------------------
 
   @Mutation({ input: resetMemberTwoFactorSchema, output: authAckOutput })

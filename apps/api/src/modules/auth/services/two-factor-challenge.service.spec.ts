@@ -33,7 +33,7 @@ const makeBlob = (overrides: Record<string, unknown> = {}) =>
   });
 
 /** What the mint gate reads for an account that may be handed a session. */
-const ELIGIBLE_ROW = { lockedUntil: null, membershipEndedAt: null };
+const ELIGIBLE_ROW = { lockedUntil: null, disabledAt: null };
 
 describe('TwoFactorChallengeService', () => {
   const buildCtx = async () => {
@@ -64,7 +64,7 @@ describe('TwoFactorChallengeService', () => {
   };
 
   describe('beginOrEstablish', () => {
-    const user = { id: 'u-1', email: 'a@b.c', role: 'USER', emailVerified: true, tenantId: 't-1' };
+    const user = { id: 'u-1', email: 'a@b.c', role: 'USER', emailVerified: true };
     const opts = { rememberMe: false, ip: '1.1.1.1', userAgent: 'ua' };
 
     it('no active factor: establishes the session directly (via no_factor)', async () => {
@@ -78,7 +78,7 @@ describe('TwoFactorChallengeService', () => {
       expect(mocks.shared.establishSession).toHaveBeenCalledWith(
         req,
         res,
-        expect.objectContaining({ userId: 'u-1', tenantId: 't-1', rememberMe: false }),
+        expect.objectContaining({ userId: 'u-1', rememberMe: false }),
       );
       expect(mocks.redis.multi).not.toHaveBeenCalled();
     });
@@ -152,7 +152,7 @@ describe('TwoFactorChallengeService', () => {
   });
 
   describe('beginOrEstablish: live account-state gate', () => {
-    const user = { id: 'u-1', email: 'a@b.c', role: 'USER', emailVerified: true, tenantId: 't-1' };
+    const user = { id: 'u-1', email: 'a@b.c', role: 'USER', emailVerified: true };
     const opts = { rememberMe: false, ip: '1.1.1.1', userAgent: 'ua' };
 
     it('re-reads the account by id, soft-delete excluded, before deciding anything', async () => {
@@ -164,7 +164,7 @@ describe('TwoFactorChallengeService', () => {
 
       expect(mocks.prisma.client.user.findFirst).toHaveBeenCalledWith({
         where: { id: 'u-1', deletedAt: null },
-        select: { lockedUntil: true, membershipEndedAt: true },
+        select: { lockedUntil: true, disabledAt: true },
       });
     });
 
@@ -173,8 +173,8 @@ describe('TwoFactorChallengeService', () => {
     // snapshot from a caller that checked NOTHING, which is what a new entry
     // point that forgets the list looks like: the seam alone must refuse it.
     it.each([
-      ['membership_ended', { lockedUntil: null, membershipEndedAt: new Date('2026-09-01') }, false],
-      ['account_locked', { lockedUntil: new Date('2099-01-01'), membershipEndedAt: null }, true],
+      ['account_disabled', { lockedUntil: null, disabledAt: new Date('2026-09-01') }, false],
+      ['account_locked', { lockedUntil: new Date('2099-01-01'), disabledAt: null }, true],
       ['account_deleted', null, false],
     ] as const)(
       'refuses %s from a caller that checked nothing: no session, no challenge',
@@ -197,7 +197,6 @@ describe('TwoFactorChallengeService', () => {
           expect.objectContaining({
             action: AUDIT_ACTIONS.AUTH_LOGIN_FAILURE,
             userId: 'u-1',
-            tenantId: 't-1',
             success: false,
             metadata: { reason, gate: 'session_mint' },
           }),
@@ -205,7 +204,7 @@ describe('TwoFactorChallengeService', () => {
       },
     );
 
-    it('control: an active member of the same shape gets a session', async () => {
+    it('control: an active account of the same shape gets a session', async () => {
       const { service, mocks, repo } = await buildCtx();
       const { req, res } = reqWithCookie();
       repo.findActiveNonRecovery.mockResolvedValue(null);
@@ -398,21 +397,21 @@ describe('TwoFactorChallengeService', () => {
 
     describe('account state changed during the challenge', () => {
       const primeValidTotp = (ctx: Awaited<ReturnType<typeof buildCtx>>) => {
-        ctx.mocks.redis.get.mockResolvedValue(makeBlob({ tenantId: 't-1' }));
+        ctx.mocks.redis.get.mockResolvedValue(makeBlob());
         primeAttemptCounter(ctx.mocks.redis, 1);
-        ctx.mocks.redis.getdel.mockResolvedValue(makeBlob({ tenantId: 't-1' }));
+        ctx.mocks.redis.getdel.mockResolvedValue(makeBlob());
         ctx.repo.findActiveTotp.mockResolvedValue({ totpSecretEnc: 'enc' });
         ctx.totp.verify.mockResolvedValue(true);
         ctx.mocks.user.findById.mockResolvedValue(userFixture({ id: 'u-1', emailVerified: true }));
       };
 
-      it('a member removed mid-challenge is refused even with a correct code', async () => {
+      it('an account disabled mid-challenge is refused even with a correct code', async () => {
         const ctx = await buildCtx();
         const { req, res } = reqWithCookie('rawtoken');
         primeValidTotp(ctx);
         ctx.mocks.prisma.client.user.findFirst.mockResolvedValue({
           lockedUntil: null,
-          membershipEndedAt: new Date('2026-09-19'),
+          disabledAt: new Date('2026-09-19'),
         });
 
         await expect(
@@ -428,8 +427,7 @@ describe('TwoFactorChallengeService', () => {
           expect.objectContaining({
             action: AUDIT_ACTIONS.AUTH_LOGIN_FAILURE,
             userId: 'u-1',
-            tenantId: 't-1',
-            metadata: { reason: 'membership_ended', gate: 'session_mint' },
+            metadata: { reason: 'account_disabled', gate: 'session_mint' },
           }),
         );
         expect(ctx.mocks.audit.log).not.toHaveBeenCalledWith(

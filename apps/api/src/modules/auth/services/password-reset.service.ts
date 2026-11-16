@@ -66,12 +66,12 @@ export class PasswordResetService {
       return;
     }
 
-    // A removed member must not be sent a reset link: they keep their account
-    // and their address, and the only barrier left after a successful reset
+    // A disabled account must not be sent a reset link: it keeps its data and
+    // its address, and the only barrier left after a successful reset
     // would be the login check. The refusal returns the SAME generic response
     // as an unknown address, so it never becomes an enumeration oracle.
     const eligibility = await this.userService.findPasswordResetEligibility(user.id);
-    if (eligibility === null || eligibility.membershipEnded) {
+    if (eligibility === null || eligibility.disabled) {
       await this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_PASSWORD_FORGOT,
         userId: user.id,
@@ -80,7 +80,7 @@ export class PasswordResetService {
         success: false,
         ipAddress: ip,
         metadata: {
-          reason: eligibility === null ? 'unknown_email' : 'membership_ended',
+          reason: eligibility === null ? 'unknown_email' : 'account_disabled',
         },
       });
       recordAuthOutcome({
@@ -161,14 +161,11 @@ export class PasswordResetService {
     // alone must not be sufficient to change the password (closes the
     // mailbox-only lockout attack). Requires a current TOTP or recovery code,
     // sharing the manage rate limit and audit reason of the challenge flow.
-    // The tenant is stamped explicitly because reset runs unauthenticated: see
-    // resolveAuditTenantId below for why a null there does not stay null.
     await this.stepUpService.assertSecondFactor({
       userId: tokenRecord.userId,
       code: factorCode,
       ip,
       context: 'password_reset',
-      tenantId: await this.resolveAuditTenantId(tokenRecord.userId),
       onRefused: () =>
         recordAuthOutcome({
           flow: 'password_reset',
@@ -197,12 +194,12 @@ export class PasswordResetService {
       // NOT_FOUND, so account state is not revealed) and rolls the consume
       // back; the dangling token dies with the row at purge anyway.
       const updated = await tx.user.updateMany({
-        // `membershipEndedAt` alongside the soft-delete filter, for the same
-        // reason: a removed member holding a live reset token must not be able
-        // to write a new credential onto a row that the login door refuses. Zero
+        // `disabledAt` alongside the soft-delete filter, for the same reason:
+        // a disabled account holding a live reset token must not be able to
+        // write a new credential onto a row that the login door refuses. Zero
         // rows throws INVALID_TOKEN, not NOT_FOUND, so the account's state is
         // not readable from the link.
-        where: { id: tokenRecord.userId, deletedAt: null, membershipEndedAt: null },
+        where: { id: tokenRecord.userId, deletedAt: null, disabledAt: null },
         data: {
           passwordHash,
           failedAttempts: 0,
@@ -232,7 +229,6 @@ export class PasswordResetService {
       this.auditService.log({
         action: AUDIT_ACTIONS.AUTH_PASSWORD_RESET,
         userId,
-        tenantId: await this.resolveAuditTenantId(userId),
         targetType: 'User',
         targetId: userId,
       }),
@@ -272,29 +268,5 @@ export class PasswordResetService {
       tokenRecord.userId,
     );
     return { valid: true, requiresTwoFactor: activeFactor !== null };
-  }
-
-  /**
-   * The organization an auth audit row belongs to.
-   *
-   * Reset runs unauthenticated, so AuthMiddleware never seeds the ALS and
-   * AuditService would stamp `tenantId: null`. A tenant-less row is attributed
-   * through the actor's CURRENT tenant by audit-read.repository, so it would
-   * silently move to whatever organization the account later joins. Stamping it here
-   * pins the row to the organization the reset actually happened in, and the read
-   * side's null arm goes back to covering only rows that genuinely belong to no
-   * organization (unknown-email failures, system crons).
-   *
-   * A direct projection rather than `userService.findById`, whose
-   * credential-free select does not carry `tenantId`. `user` is not a
-   * tenant-scoped model, so this read is legal with no ALS context; a
-   * soft-deleted account still answers, which is what an audit stamp wants.
-   */
-  private async resolveAuditTenantId(userId: string): Promise<string | null> {
-    const row = await this.prismaService.client.user.findUnique({
-      where: { id: userId },
-      select: { tenantId: true },
-    });
-    return row?.tenantId ?? null;
   }
 }

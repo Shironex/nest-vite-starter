@@ -40,15 +40,13 @@ export class AuthMiddleware implements TRPCMiddleware {
       throw new UnauthorizedError(AppErrorCode.UNAUTHORIZED, 'Invalid or expired session');
     }
 
-    // Populate userId + tenantId in ALS so AuditService, the Prisma tenant-scope
-    // extension, and the structured logger see the caller without having to drill
-    // them through tRPC ctx everywhere. workspaceId is not resolved yet.
+    // Populate userId in ALS so AuditService and the structured logger see the
+    // caller without having to drill it through tRPC ctx everywhere.
     //
     // A missing store is a WIRING defect, not a runtime condition, so it throws
     // rather than skipping. Skipping is unsafe precisely because it is quiet:
-    // the write vanishes, and the only downstream signal is every tenant-scoped
-    // query failing closed one layer further down, with a message that points at
-    // the Prisma extension rather than at the scope that was never opened.
+    // the write vanishes, and the only downstream signal is audit rows with no
+    // actor, far from the scope that was never opened.
     const store = requestContext.getStore();
     if (!store) {
       // The diagnostic stays server-side: a plain Error's message is copied onto
@@ -62,7 +60,6 @@ export class AuthMiddleware implements TRPCMiddleware {
       throw new InvariantError('Request context unavailable.');
     }
     store.userId = session.userId;
-    store.tenantId = session.tenantId ?? undefined;
 
     return next({
       ctx: {
@@ -74,7 +71,6 @@ export class AuthMiddleware implements TRPCMiddleware {
           emailVerified: session.emailVerified,
         },
         session: { id: session.sessionId, token: sessionToken },
-        tenantId: session.tenantId ?? undefined,
       },
     });
   }

@@ -84,12 +84,12 @@ export class AccountDeletionService {
       throw new UnauthorizedError(AppErrorCode.INVALID_CREDENTIALS, 'Password is incorrect');
     }
 
-    // Checked AFTER the password, so an unauthenticated guess cannot learn the
-    // shape of somebody else's organization, and in the SAME transaction as the write
-    // under the per-tenant membership lock: two admins deleting themselves in
-    // the same second would otherwise both read two live admins and both
-    // commit, leaving the organization with none, which is the state this guard exists
-    // to prevent and which has no in-app remedy.
+    // Checked AFTER the password, so an unauthenticated guess cannot learn who
+    // the admins are, and in the SAME transaction as the write under the admin
+    // set lock: two admins deleting themselves in the same second would
+    // otherwise both read two live admins and both commit, leaving the app
+    // with none, which is the state this guard exists to prevent and which has
+    // no in-app remedy (only the `user:promote` script).
     //
     // Zero rows means a concurrent request soft-deleted the row between the
     // credential read and this write. Idempotent: the outcome the caller asked

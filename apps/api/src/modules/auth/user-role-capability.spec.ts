@@ -30,18 +30,15 @@ const ROUTER_ROOT = join(__dirname, '..');
 const OUT_OF_SCOPE = new Set(['auth', 'ping']);
 
 /**
- * ADMIN-gated procedures out of total, per router. A change to any number is a change to what a colleague can do.
+ * ADMIN-gated procedures out of total, per router. A change to any number is a change to what a plain user can do.
  */
 const EXPECTED: Record<string, { gated: number; total: number }> = {
   audit: { gated: 1, total: 1 },
   dataExport: { gated: 0, total: 1 },
-  workspaces: { gated: 2, total: 3 },
   sessions: { gated: 0, total: 3 },
   twoFactor: { gated: 1, total: 7 },
-  // 9, not 8: user.tenant was added (the sidebar's organization identity block).
-  // Deliberately ungated: every colleague, any role, needs to see the name
-  // of the organization they are in, not just an ADMIN.
-  user: { gated: 6, total: 8 },
+  // The one ungated user procedure is `me`.
+  user: { gated: 6, total: 7 },
 };
 
 interface IRouterGating {

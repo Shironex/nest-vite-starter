@@ -31,7 +31,6 @@ import type { PrismaClient } from '@repo/database' with { 'resolution-mode': 'im
 import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import { AppErrorCode } from '@repo/shared/errors';
 import { raceAll } from '@test/concurrency';
-import { buildCanaryTenantScopeExtension } from '@test/tenant-scope-canary';
 import { esmImport } from '../../common/utils/esm-import';
 import { RedisKeys } from '../../common/redis/redis-keys';
 import type { PrismaService } from '../../common/database/prisma.service';
@@ -59,11 +58,10 @@ const res = {} as Response;
 const REAL_PASSWORD = 'owner-chose-this-1';
 const WRONG_PASSWORD = 'not-the-password-2';
 
-let unscoped: PrismaClient;
+let prisma: PrismaClient;
 let prismaService: PrismaService;
 let redis: Redis;
 
-const createdTenantIds = new Set<string>();
 const createdUserIds = new Set<string>();
 const passwordService = new PasswordService();
 
@@ -84,19 +82,18 @@ const buildSubject = () => {
    */
   const userService = {
     findCredentialByEmail: (email: string) =>
-      unscoped.user.findFirst({
+      prisma.user.findFirst({
         where: { email, deletedAt: null },
         select: {
           id: true,
           email: true,
           displayName: true,
           role: true,
-          tenantId: true,
           emailVerified: true,
           createdAt: true,
           passwordHash: true,
           lockedUntil: true,
-          membershipEndedAt: true,
+          disabledAt: true,
         },
       }),
   } as unknown as UserService;
@@ -143,15 +140,12 @@ const buildSubject = () => {
   return { login, lockout, attempt, verify, auditRows };
 };
 
-/** A live staff account with a real argon2 hash. */
+/** A live account with a real argon2 hash. */
 const makeAccount = async (password: string) => {
   const uid = randomUUID();
-  const tenant = await unscoped.tenant.create({ data: { name: `lab-${uid}`, slug: `lab-${uid}` } });
-  createdTenantIds.add(tenant.id);
-  const user = await unscoped.user.create({
+  const user = await prisma.user.create({
     data: {
       email: `lab-${uid}@example.test`,
-      tenantId: tenant.id,
       role: 'ADMIN',
       passwordHash: await passwordService.hash(password),
       emailVerified: true,
@@ -163,7 +157,7 @@ const makeAccount = async (password: string) => {
 };
 
 const lockoutRow = (userId: string) =>
-  unscoped.user.findFirstOrThrow({
+  prisma.user.findFirstOrThrow({
     where: { id: userId },
     select: { failedAttempts: true, lockoutCount: true, lockedUntil: true },
   });
@@ -177,10 +171,8 @@ const lockedRefusals = (results: PromiseSettledResult<unknown>[]): number =>
   ).length;
 
 beforeAll(async () => {
-  const { prisma } = (await esmImport('@repo/database')) as { prisma: PrismaClient };
-  unscoped = prisma;
-  const client = unscoped.$extends(buildCanaryTenantScopeExtension()) as unknown as PrismaClient;
-  prismaService = { client, unscoped } as unknown as PrismaService;
+  ({ prisma } = (await esmImport('@repo/database')) as { prisma: PrismaClient });
+  prismaService = { client: prisma } as unknown as PrismaService;
 
   const url = process.env.REDIS_URL;
   if (url === undefined) {
@@ -201,10 +193,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   if (createdUserIds.size > 0) {
-    await unscoped.user.deleteMany({ where: { id: { in: [...createdUserIds] } } });
-  }
-  if (createdTenantIds.size > 0) {
-    await unscoped.tenant.deleteMany({ where: { id: { in: [...createdTenantIds] } } });
+    await prisma.user.deleteMany({ where: { id: { in: [...createdUserIds] } } });
   }
   await redis.quit();
 });

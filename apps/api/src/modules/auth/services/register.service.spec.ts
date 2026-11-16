@@ -30,12 +30,10 @@ describe('RegisterService', () => {
       id: 'u-2',
       email: 'newuser@example.com',
       emailVerified: false,
-      role: 'ADMIN',
-      tenantId: 't-2',
+      role: 'USER',
     });
     const rawVerificationToken = 'a'.repeat(64);
     const tx = mockPrismaTransaction(mocks.prisma, buildPrismaTx());
-    tx.tenant.create.mockResolvedValue({ id: 't-2', name: 'newuser', slug: 'newuser-abcd1234' });
     tx.user.create.mockResolvedValue(created);
     mocks.token.createVerificationToken.mockResolvedValue(rawVerificationToken);
 
@@ -44,26 +42,22 @@ describe('RegisterService', () => {
     // The profile is projected from the row created in the transaction: no
     // second SELECT (getProfile), and no credential field may leak into the
     // response (mirrors login.service.ts).
-    const profile = userProfileFixture({ id: 'u-2', email: 'newuser@example.com', role: 'ADMIN' });
+    const profile = userProfileFixture({ id: 'u-2', email: 'newuser@example.com', role: 'USER' });
     expect(result).toEqual({ user: profile, requiresVerification: true, emailSent: true });
     expect(result.user).not.toHaveProperty('passwordHash');
     expect(mocks.user.getProfile).not.toHaveBeenCalled();
     expect(mocks.shared.validateTurnstile).toHaveBeenCalledWith('turnstile-ok', '127.0.0.1');
     expect(mocks.password.hash).toHaveBeenCalledWith(baseInput.password);
-    // Self-signup provisions a new organization (Tenant), owned by the new ADMIN user.
-    expect(tx.tenant.create).toHaveBeenCalledTimes(1);
-    // Email normalized to lowercase + trimmed; owner is ADMIN of the new tenant.
-    expect(tx.user.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          email: 'newuser@example.com',
-          passwordHash: 'hashed-pw',
-          displayName: 'New User',
-          role: 'ADMIN',
-          tenantId: 't-2',
-        }),
-      }),
-    );
+    // Email normalized to lowercase + trimmed. Signup creates a plain USER: the
+    // data carries no role, so the schema default applies, and nothing else is
+    // created beside the account.
+    expect(tx.user.create).toHaveBeenCalledWith({
+      data: {
+        email: 'newuser@example.com',
+        passwordHash: 'hashed-pw',
+        displayName: 'New User',
+      },
+    });
     // Token creation goes through the ONE shared TokenService path (which
     // deletes previous tokens, hashes, and applies the TTL - covered by
     // token.service.spec) and runs on the SAME tx as the user create.
@@ -72,20 +66,16 @@ describe('RegisterService', () => {
       'newuser@example.com',
       expect.stringContaining(`/auth/verify-email?token=${rawVerificationToken}`),
     );
-    // establishSession owns create-session + cookie + CSRF rotation; the
-    // owner's session carries the new tenant id.
+    // establishSession owns create-session + cookie + CSRF rotation.
     expect(mocks.shared.establishSession).toHaveBeenCalledWith(
       req,
       res,
-      expect.objectContaining({ userId: 'u-2', rememberMe: false, tenantId: 't-2' }),
+      expect.objectContaining({ userId: 'u-2', role: 'USER', rememberMe: false }),
     );
     expect(mocks.audit.log).toHaveBeenCalledWith(
       expect.objectContaining({
         action: AUDIT_ACTIONS.AUTH_REGISTER_SUCCESS,
         userId: 'u-2',
-        // Audit runs before AuthMiddleware sets the ALS tenant, so the new
-        // owner's tenant id is passed explicitly.
-        tenantId: 't-2',
         targetType: 'User',
         targetId: 'u-2',
       }),
@@ -155,19 +145,19 @@ describe('RegisterService', () => {
     expect(mocks.audit.log).not.toHaveBeenCalled();
   });
 
-  it('rethrows a P2002 slug-constraint collision rather than mislabeling it EMAIL_IN_USE', async () => {
+  it('rethrows a P2002 on another constraint rather than mislabeling it EMAIL_IN_USE', async () => {
     const { service, mocks } = await buildCtx();
     const { req, res } = expressMocks();
     mocks.user.findByEmail.mockResolvedValue(null);
     mocks.password.hash.mockResolvedValue('hashed-pw');
-    // The tx ALSO writes Tenant.slug (@unique). A slug collision is a P2002 whose
-    // target is the slug constraint, not email - it must surface as the original
-    // (unexpected internal) error, not the user-facing EMAIL_IN_USE.
+    // A P2002 whose reported target is some other constraint (the token's, say)
+    // must surface as the original (unexpected internal) error, not the
+    // user-facing EMAIL_IN_USE.
     mocks.prisma.client.$transaction.mockRejectedValue(
-      Object.assign(new Error('Unique constraint failed on the fields: (`slug`)'), {
+      Object.assign(new Error('Unique constraint failed on the fields: (`tokenHash`)'), {
         name: 'PrismaClientKnownRequestError',
         code: 'P2002',
-        meta: { target: ['slug'] },
+        meta: { target: ['tokenHash'] },
       }),
     );
 
@@ -199,8 +189,7 @@ describe('RegisterService', () => {
     mocks.user.findByEmail.mockResolvedValue(null);
     mocks.password.hash.mockResolvedValue('hashed-pw');
     const tx = mockPrismaTransaction(mocks.prisma, buildPrismaTx());
-    tx.tenant.create.mockResolvedValue({ id: 't-3', name: 'newuser', slug: 'newuser-x' });
-    tx.user.create.mockResolvedValue(userFixture({ id: 'u-3', role: 'ADMIN', tenantId: 't-3' }));
+    tx.user.create.mockResolvedValue(userFixture({ id: 'u-3' }));
     mocks.token.createVerificationToken.mockResolvedValue('b'.repeat(64));
     mocks.mail.sendVerificationEmail.mockRejectedValue(new Error('enqueue failed'));
 
@@ -222,8 +211,7 @@ describe('RegisterService', () => {
     mocks.user.findByEmail.mockResolvedValue(null);
     mocks.password.hash.mockResolvedValue('h');
     const tx = mockPrismaTransaction(mocks.prisma, buildPrismaTx());
-    tx.tenant.create.mockResolvedValue({ id: 't-1', name: 'newuser', slug: 'newuser-x' });
-    tx.user.create.mockResolvedValue(userFixture({ role: 'ADMIN', tenantId: 't-1' }));
+    tx.user.create.mockResolvedValue(userFixture());
     mocks.token.createVerificationToken.mockResolvedValue('c'.repeat(64));
 
     await service.register({ ...baseInput, displayName: undefined }, '1.2.3.4', 'ua', req, res);
@@ -239,8 +227,7 @@ describe('RegisterService', () => {
     mocks.user.findByEmail.mockResolvedValue(null);
     mocks.password.hash.mockResolvedValue('h');
     const tx = mockPrismaTransaction(mocks.prisma, buildPrismaTx());
-    tx.tenant.create.mockResolvedValue({ id: 't-9', name: 'newuser', slug: 'newuser-x' });
-    tx.user.create.mockResolvedValue(userFixture({ id: 'u-9', role: 'ADMIN', tenantId: 't-9' }));
+    tx.user.create.mockResolvedValue(userFixture({ id: 'u-9' }));
     const rawToken = 'd'.repeat(64);
     mocks.token.createVerificationToken.mockResolvedValue(rawToken);
 

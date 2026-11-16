@@ -92,23 +92,23 @@ describe('LockoutRepository', () => {
     expect(prisma.client.user.update).not.toHaveBeenCalled();
   });
 
-  it('fullReset zeroes everything, scoped to { id, tenantId }, and returns the count', async () => {
+  it('fullReset zeroes everything on the live row and returns the count', async () => {
     const { repo, prisma } = await buildSubject();
     prisma.client.user.updateMany.mockResolvedValue({ count: 1 });
-    const count = await repo.fullReset('u-1', 'tenant-a');
+    const count = await repo.fullReset('u-1');
     expect(prisma.client.user.updateMany).toHaveBeenCalledWith({
       // Live rows only, and in step with `getAdminUnlockState`: the snapshot the
       // audit entry reports has to describe the row this reset touches.
-      where: { id: 'u-1', tenantId: 'tenant-a', deletedAt: null },
+      where: { id: 'u-1', deletedAt: null },
       data: { failedAttempts: 0, lockoutCount: 0, lockedUntil: null },
     });
     expect(count).toBe(1);
   });
 
-  it('fullReset returns 0 when the target is not in the caller tenant (no row matched)', async () => {
+  it('fullReset returns 0 when no live row matched', async () => {
     const { repo, prisma } = await buildSubject();
     prisma.client.user.updateMany.mockResolvedValue({ count: 0 });
-    const count = await repo.fullReset('other-tenant-user', 'tenant-a');
+    const count = await repo.fullReset('gone-user');
     expect(count).toBe(0);
   });
 });
