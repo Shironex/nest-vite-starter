@@ -142,9 +142,6 @@
       "AuditLogTable > replaces the table with the placeholder the page supplied": 1,
       "AuditLogTable > shows the first field change as a before/after pair without expanding": 1
     },
-    "apps/web/src/features/auth/Auth.catalog.test.ts": {
-      "auth catalog > leaves no key empty, which would render a blank label or button": 1
-    },
     "apps/web/src/features/auth/components/AuthField/AuthField.test.tsx": {
       "AuthField > associates a validation message with the input and marks it invalid": 1,
       "AuthField > binds the label to the input so clicking the label focuses it": 1,
@@ -336,7 +333,7 @@
       "useAppSidebar > hides the admin-only entry from a signed-out reader": 1,
       "useAppSidebar > keeps the parent entry active on a nested route": 1,
       "useAppSidebar > marks the entry for the current route active": 1,
-      "useAppSidebar > translates the group labels and the landmark name": 1
+      "useAppSidebar > names the group labels and the landmark name": 1
     },
     "apps/web/src/features/layout/components/AppSidebar/AppSidebar.test.tsx": {
       "AppSidebar > exposes a named navigation landmark holding the links": 1,
@@ -401,8 +398,8 @@
       "isActivePath > does not match an unrelated route": 1,
       "isActivePath > matches a nested route": 1,
       "isActivePath > matches the route exactly": 1,
-      "NAV_GROUPS > keys every entry to a title the catalog actually carries": 1,
       "NAV_GROUPS > leaves the Workspaces screen open to every staff account": 1,
+      "NAV_GROUPS > reaches every page title from the nav or a route": 1,
       "NAV_GROUPS > ships no entry without a destination": 1
     },
     "apps/web/src/features/settings/components/DangerZoneSection/DangerZoneSection.test.tsx": {
@@ -467,7 +464,7 @@
       "DateField > carries the ref and aria-required a form field arrives with": 1,
       "DateField > draws the app locale month and day names in the popover": 1,
       "DateField > emits the wire shape the form already speaks": 1,
-      "DateField > names the calendar trigger from the catalog": 1,
+      "DateField > names the calendar trigger from the strings table": 1,
       "DateField > renders the value in the app locale order, mm/dd/yyyy for en-US": 1
     },
     "apps/web/src/features/shared/components/ListFilterPopover/ListFilterPopover.test.tsx": {
@@ -668,10 +665,7 @@
       "scrubEvent: identifiers denied at the Sentry boundary only > keeps organization and document identifiers, which name no person and carry the triage": 1,
       "scrubEvent: identifiers denied at the Sentry boundary only > redacts userId in extra, contexts, tags and request, including compound names": 1
     },
-    "apps/web/src/lib/i18n/i18n.namespace.test.tsx": {
-      "registerFeatureNamespace > re-renders a mounted component when its namespace registers after mount": 1
-    },
-    "apps/web/src/lib/i18n/i18n.test.ts": {
+    "apps/web/src/lib/format.test.ts": {
       "calendar dates > does not roll back across the UTC midnight boundary": 1,
       "calendar dates > refuses anything that is not a bare yyyy-MM-dd": 1,
       "calendar dates > renders a floating UTC midnight as the day that was stored": 1,
@@ -681,14 +675,11 @@
       "format > formats dates as MM/dd/yyyy": 1,
       "format > formats money through the shared formatMoney helper": 1,
       "format > formats numbers with the app locale separators": 1,
-      "format > returns an empty string for an unparseable date": 1,
-      "initI18n > defaults to English, the only bundled language": 1,
-      "initI18n > is idempotent: repeat calls return the same settled promise": 1,
-      "initI18n > resolves the shared namespaces": 1
+      "format > returns an empty string for an unparseable date": 1
     },
     "apps/web/src/lib/page-title.test.ts": {
       "pageTitle > covers the auth surfaces that have no nav entry": 1,
-      "pageTitle > names the page from the catalog and keeps the product on the end": 1,
+      "pageTitle > names the page from the strings table and keeps the product on the end": 1,
       "pageTitle > uses the same keys the topbar heading reads": 1
     },
     "apps/web/src/lib/qr.test.ts": {
@@ -709,6 +700,12 @@
       "pendingSkeletonForPath > maps /settings to the detail silhouette": 1,
       "pendingSkeletonForPath > maps /settings/security to the detail silhouette": 1,
       "pendingSkeletonForPath > maps /workspaces/f_1 to the detail silhouette": 1
+    },
+    "apps/web/src/lib/strings.test.ts": {
+      "errorStrings > carries a non-empty sentence for every code": 1,
+      "labelFor > does not resolve inherited object keys": 1,
+      "labelFor > falls back to the key, or to the given fallback, for an unknown one": 1,
+      "labelFor > returns the table entry for a known key": 1
     },
     "apps/web/src/lib/theme.test.ts": {
       "applyColorTheme > applies the default theme by removing data-theme": 1,
@@ -829,7 +826,7 @@
       "router defaults > bounces an expired session to a sign-in screen": 1,
       "router defaults > declares a default error component alongside the default pending one": 1,
       "router defaults > pairs reset with an invalidate, so the default retry re-runs the load": 1,
-      "router defaults > renders translated copy rather than the raw error message": 1
+      "router defaults > renders app copy rather than the raw error message": 1
     },
     "apps/web/src/test/shell-split.bundle.test.ts": {
       "the shells stay out of the entry chunk > keeps the staff layout drawing its shell while it waits": 1,

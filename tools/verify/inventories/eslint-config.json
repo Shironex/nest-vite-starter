@@ -46,10 +46,6 @@
       "base.js: async-safety and shell rules > no-timing-unsafe-compare flags an HMAC digest compared with ===": 1,
       "base.js: code-quality rules > no-elided-code-comments flags a placeholder standing in for deleted code": 1,
       "base.js: code-quality rules > no-swallowed-assertion flags an expect whose catch drops the failure": 1,
-      "react-architecture.js: no-hardcoded-ui-strings scope > leaves the named excludes alone": 1,
-      "react-architecture.js: no-hardcoded-ui-strings scope > polices a feature folder nobody listed": 1,
-      "react-architecture.js: no-hardcoded-ui-strings scope > polices auth, which has its own catalog now": 1,
-      "react-architecture.js: no-hardcoded-ui-strings scope > polices route files, which render copy too": 1,
       "react-architecture.js: React correctness rules > no-effect-derived-state flags state copied from props in an effect": 1,
       "react-architecture.js: React correctness rules > no-jsx-in-hooks flags a hook that renders": 1,
       "react-architecture.js: React correctness rules > prefer-lazy-state-init flags an eager JSON.parse initializer": 1,
@@ -137,11 +133,6 @@
       "single-semantic-module wiring > leaves other file kinds alone": 1,
       "single-semantic-module wiring > lets a .constants file mix constants and types, but not functions": 1,
       "single-semantic-module wiring > lets a .util file export functions with their types, but not constants": 1
-    },
-    "packages/eslint-config/tests/web-i18n-wiring.test.js": {
-      "translation-key-exists on apps/web > accepts real keys in the default namespace and in a feature namespace": 1,
-      "translation-key-exists on apps/web > reports the namespace used as a key segment in the default namespace": 1,
-      "translation-key-exists on apps/web > resolves an imported *_NS constant, so a key missing from that feature is reported": 1
     }
   }
 }
