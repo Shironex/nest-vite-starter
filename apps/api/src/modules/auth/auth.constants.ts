@@ -1,7 +1,7 @@
 /**
  * Name of the HTTP-only session cookie. Single source of truth shared by the
- * cookie writers (AuthSharedService), the tRPC AuthMiddleware, and the
- * Socket.io handshake guard (EventsGateway) so the name can never drift.
+ * cookie writers (AuthSharedService) and the tRPC AuthMiddleware, so the name
+ * can never drift.
  *
  * In production the name carries the `__Host-` prefix, which the browser only
  * accepts on a Secure, Path=/, no-Domain cookie. That binds the cookie to the

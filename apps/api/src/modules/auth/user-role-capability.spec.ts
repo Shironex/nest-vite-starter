@@ -36,7 +36,6 @@ const EXPECTED: Record<string, { gated: number; total: number }> = {
   audit: { gated: 1, total: 1 },
   dataExport: { gated: 0, total: 1 },
   workspaces: { gated: 2, total: 3 },
-  notifications: { gated: 0, total: 5 },
   sessions: { gated: 0, total: 3 },
   storage: { gated: 0, total: 3 },
   twoFactor: { gated: 1, total: 7 },

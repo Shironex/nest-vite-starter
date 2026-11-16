@@ -8,7 +8,6 @@ import type { BackoffOptions, JobsOptions } from 'bullmq';
  */
 export const QUEUE_NAMES = {
   EMAIL_DELIVERY: 'email-delivery',
-  NOTIFICATION_DISPATCH: 'notification-dispatch',
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];

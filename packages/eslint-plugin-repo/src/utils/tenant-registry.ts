@@ -89,14 +89,14 @@ export const TENANT_MODELS: readonly string[] = ['workspace', 'twoFactorPolicy']
  * never a glob over a directory: each exemption is for one sweep, not for
  * anything that later lands beside it.
  *
- * The two retention sweeps are exempt for the HAND-SCOPED half of the
- * rule (`HAND_SCOPED_MODELS`, above): each pages every tenant's expired AuditLog
- * / Notification rows by `createdAt` and deletes them by id, which is a system
- * job with no tenant and no user, so neither `tenantId` nor `userId` belongs in
- * its where. Both files touch ONLY their own hand-scoped model, so exempting the
- * file exempts nothing else.
+ * The audit retention sweep is exempt for the HAND-SCOPED half of the rule
+ * (`HAND_SCOPED_MODELS`, above): it pages every tenant's expired AuditLog rows
+ * by `createdAt` and deletes them by id, which is a system job with no tenant
+ * and no user, so neither `tenantId` nor `userId` belongs in its where. The
+ * file touches ONLY its own hand-scoped model, so exempting the file exempts
+ * nothing else.
  *
- * The purge's audit PII scrub (the scrub-on-purge policy) is a third case of the
+ * The purge's audit PII scrub (the scrub-on-purge policy) is a second case of the
  * same shape. It finds ONE purged user's AuditLog rows by that user's id, and it is
  * cross-tenant by design: a user's rows carry a null tenantId (writes made before
  * they authenticated) or a PREVIOUS organization's (an account that moved
@@ -106,7 +106,6 @@ export const TENANT_MODELS: readonly string[] = ['workspace', 'twoFactorPolicy']
  */
 export const TENANT_WHERE_ALLOW_IN: readonly string[] = [
   '**/modules/audit/audit-retention.service.ts',
-  '**/modules/notifications/notification-retention.service.ts',
   '**/modules/audit/audit-pii-scrub.service.ts',
 ];
 

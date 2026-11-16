@@ -31,7 +31,7 @@ describe('TwoFactorAdminResetService', () => {
 
       expect(mocks.secondFactor.deleteAllForUser).toHaveBeenCalledWith('m1');
       expect(mocks.trustedDevice.revokeAll).toHaveBeenCalledWith('m1');
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('m1');
+      expect(mocks.session.deleteAllUserSessions).toHaveBeenCalledWith('m1');
       expect(mocks.audit.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: AUDIT_ACTIONS.AUTH_2FA_ADMIN_RESET }),
       );

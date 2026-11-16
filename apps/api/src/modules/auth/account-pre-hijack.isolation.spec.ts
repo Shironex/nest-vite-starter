@@ -28,10 +28,7 @@ import { buildCanaryTenantScopeExtension } from '@test/tenant-scope-canary';
 import type { PrismaService } from '../../common/database/prisma.service';
 import type { CsrfService } from '../../common/security/csrf.service';
 import type { AuditService } from '../audit/audit.service';
-import type { EventsService } from '../events/events.service';
-import { SessionRevocationService } from '../events/session-revocation.service';
 import type { MailService } from '../mail/mail.service';
-import type { NotificationEventsService } from '../notifications/notification-events.service';
 import type { StorageService } from '../storage/storage.service';
 import { UserRepository } from '../user/user.repository';
 import { UserService } from '../user/user.service';
@@ -82,11 +79,6 @@ const makeTenant = async () => {
 const buildSubject = () => {
   const redis = new RedisMock() as unknown as Redis;
   const sessionService = new SessionService(redis);
-  const events = {
-    disconnectUser: jest.fn(),
-    disconnectSession: jest.fn(),
-  } as unknown as EventsService;
-  const sessionRevocation = new SessionRevocationService(sessionService, events);
   const audit = { log: jest.fn().mockResolvedValue(undefined) };
   const mail = {
     sendWelcomeEmail: jest.fn().mockResolvedValue(undefined),
@@ -97,9 +89,8 @@ const buildSubject = () => {
   const userService = new UserService(
     userRepository,
     {} as StorageService,
-    sessionRevocation,
+    sessionService,
     audit as unknown as AuditService,
-    {} as NotificationEventsService,
     prismaService,
     redis,
   );
@@ -154,7 +145,7 @@ const buildSubject = () => {
     audit as unknown as AuditService,
     prismaService,
     shared as unknown as AuthSharedService,
-    sessionRevocation,
+    sessionService,
   );
 
   const login = new LoginService(
@@ -162,8 +153,6 @@ const buildSubject = () => {
     sessionService,
     lockout,
     userService,
-    sessionRevocation,
-    events,
     { rotate: jest.fn() } as unknown as CsrfService,
     audit as unknown as AuditService,
     shared as unknown as AuthSharedService,

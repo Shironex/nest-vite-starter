@@ -133,38 +133,6 @@ export {
 } from './audit.js';
 
 export {
-  NOTIFICATION_LIST_DEFAULT_LIMIT,
-  NOTIFICATION_LIST_MAX_LIMIT,
-  notificationTypeSchema,
-  notificationItemOutput,
-  notificationListInput,
-  notificationListOutput,
-  notificationMarkReadInput,
-  notificationMarkReadOutput,
-  notificationMarkAllReadOutput,
-  NOTIFICATION_CATEGORIES,
-  ALL_NOTIFICATION_CATEGORIES,
-  DEFAULT_NOTIFICATION_CHANNELS,
-  notificationCategorySchema,
-  notificationChannelsSchema,
-  notificationChannelMatrixSchema,
-  notificationPreferencesOutput,
-  notificationPreferencesUpdateInput,
-  type NotificationType,
-  type NotificationItemOutput,
-  type NotificationListInput,
-  type NotificationListOutput,
-  type NotificationMarkReadInput,
-  type NotificationMarkReadOutput,
-  type NotificationMarkAllReadOutput,
-  type NotificationCategory,
-  type NotificationChannels,
-  type NotificationChannelMatrix,
-  type NotificationPreferencesOutput,
-  type NotificationPreferencesUpdateInput,
-} from './notifications.js';
-
-export {
   activeSessionsOutput,
   revokeSessionSchema,
   type ActiveSessionsOutput,

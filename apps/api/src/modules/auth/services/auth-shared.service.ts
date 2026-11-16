@@ -10,7 +10,6 @@ import { enforceFixedWindowLimit } from '../../../common/redis/rate-limit';
 import { CsrfService } from '../../../common/security/csrf.service';
 import { nowMs } from '../../../common/clock';
 import { getSessionCookieName } from '../auth.constants';
-import { EventsService } from '../../events/events.service';
 import { SessionService } from './session.service';
 import { TurnstileService } from './turnstile.service';
 
@@ -67,7 +66,6 @@ export class AuthSharedService {
     private readonly turnstileService: TurnstileService,
     private readonly sessionService: SessionService,
     private readonly csrfService: CsrfService,
-    private readonly eventsService: EventsService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {
     this.appUrl = this.configService.getOrThrow<string>('APP_URL');
@@ -86,13 +84,6 @@ export class AuthSharedService {
    * user landed between the caller's epoch capture and the mint; the cookie and
    * CSRF rotation below are then never reached, so a revoked login leaves no
    * trace of a session on the client.
-   *
-   * Also the place a max-sessions eviction's sockets are closed. The mint
-   * reports which sessions it evicted but cannot drop their sockets itself
-   * (SessionService -> EventsService would be a module cycle; see
-   * `enforceMaxSessions`), and an evicted session whose socket stays open keeps
-   * receiving tenant notifications until it happens to reconnect. AuthModule
-   * already imports EventsModule, so this is the nearest caller that can.
    */
   async establishSession(
     req: Request,
@@ -104,10 +95,6 @@ export class AuthSharedService {
       ...rest,
       tenantId: tenantId ?? undefined,
     });
-
-    for (const evictedSessionId of session.evictedSessionIds) {
-      this.eventsService.disconnectSession(evictedSessionId);
-    }
 
     const maxAge = session.expiresAt.getTime() - nowMs();
     this.setSessionCookie(req, res, session.token, maxAge);

@@ -10,7 +10,7 @@ import { TrustedDeviceService } from './trusted-device.service';
 import { EmailChangeService } from './email-change.service';
 import { UserService } from '../../user/user.service';
 import { MailService } from '../../mail/mail.service';
-import { SessionRevocationService } from '../../events/session-revocation.service';
+import { SessionService } from './session.service';
 import { PrismaService } from '../../../common/database/prisma.service';
 import { AuditService } from '../../audit/audit.service';
 import { SecondFactorRepository } from '../repositories/second-factor.repository';
@@ -29,7 +29,7 @@ export class PasswordResetService {
     private readonly tokenService: TokenService,
     private readonly userService: UserService,
     private readonly mailService: MailService,
-    private readonly sessionRevocation: SessionRevocationService,
+    private readonly sessionService: SessionService,
     private readonly prismaService: PrismaService,
     private readonly auditService: AuditService,
     private readonly shared: AuthSharedService,
@@ -218,9 +218,8 @@ export class PasswordResetService {
       return tokenRecord.userId;
     });
 
-    // Invalidate all sessions (Redis, outside DB transaction) and drop live
-    // sockets in one step.
-    await this.sessionRevocation.revokeAllAndDisconnect(userId);
+    // Invalidate all sessions (Redis, outside DB transaction).
+    await this.sessionService.deleteAllUserSessions(userId);
     // A password reset assumes a possible compromise, so pre-authorized browsers
     // are forgotten too (matches the password-change posture).
     await this.trustedDeviceService.revokeAll(userId);

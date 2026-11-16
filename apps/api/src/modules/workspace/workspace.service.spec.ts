@@ -37,20 +37,14 @@ interface ISubject {
   service: WorkspaceService;
   prisma: PrismaServiceMock;
   audit: { log: jest.Mock };
-  notificationEvents: { workspaceCreated: jest.Mock };
 }
 
 const buildSubject = (): ISubject => {
   const prisma = buildPrismaMock();
   const audit = { log: jest.fn().mockResolvedValue(undefined) };
-  const notificationEvents = { workspaceCreated: jest.fn().mockResolvedValue(undefined) };
   const repository = new WorkspaceRepository(prisma as unknown as PrismaService);
-  const service = new WorkspaceService(
-    repository,
-    audit as unknown as AuditService,
-    notificationEvents as unknown as ConstructorParameters<typeof WorkspaceService>[2],
-  );
-  return { service, prisma, audit, notificationEvents };
+  const service = new WorkspaceService(repository, audit as unknown as AuditService);
+  return { service, prisma, audit };
 };
 
 const inTenant = <T>(fn: () => Promise<T>): Promise<T> =>
@@ -211,17 +205,8 @@ describe('WorkspaceService', () => {
       );
     });
 
-    it('emits the workspace-created event AFTER the write (preferences gate inside)', async () => {
-      const { service, prisma, notificationEvents } = buildSubject();
-      prisma.client.workspace.create.mockResolvedValue(workspaceRow({ id: 'f-9' }));
-
-      await inTenant(() => service.create({ name: 'Northwind' }));
-
-      expect(notificationEvents.workspaceCreated).toHaveBeenCalledWith('Northwind');
-    });
-
     it('maps the @@unique([tenantId, name]) violation to the generic ConflictError', async () => {
-      const { service, prisma, audit, notificationEvents } = buildSubject();
+      const { service, prisma, audit } = buildSubject();
       prisma.client.workspace.create.mockRejectedValue(uniqueViolation(['tenantId', 'name']));
 
       await expect(inTenant(() => service.create({ name: 'Northwind' }))).rejects.toMatchObject({
@@ -231,8 +216,6 @@ describe('WorkspaceService', () => {
         ConflictError,
       );
       expect(audit.log).not.toHaveBeenCalled();
-      // A failed create must not broadcast anything.
-      expect(notificationEvents.workspaceCreated).not.toHaveBeenCalled();
     });
 
     it('fails closed without a tenant in the request context', async () => {

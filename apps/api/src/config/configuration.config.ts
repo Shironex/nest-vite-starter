@@ -144,11 +144,6 @@ export const validationSchema = Joi.object({
   // compliance trail overnight.
   AUDIT_LOG_RETENTION_DAYS: Joi.number().integer().min(30).default(365),
 
-  // Notification retention window for the notification-retention cron. The
-  // bell is a recent-items surface, so old rows (read or not) are swept.
-  // Floor of 7 days so a fat-fingered value cannot empty the bell overnight.
-  NOTIFICATION_RETENTION_DAYS: Joi.number().integer().min(7).default(90),
-
   // Grace window for the user-purge cron: soft-deleted accounts older than
   // this many days are hard-deleted (row + S3 objects). 0 means purge on the
   // next sweep; the default gives 30 days to reverse an accidental deletion.

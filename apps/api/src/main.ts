@@ -23,15 +23,12 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import type Redis from 'ioredis';
 import { DESKTOP_APP_ORIGIN } from '@repo/shared/constants';
 import { AppModule } from './app.module';
 import { CustomLogger, createAppLogger } from './modules/logger/logger.service';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { CsrfService } from './common/security/csrf.service';
 import { configureBodyParsers } from './common/http/body-parsers';
-import { REDIS_CLIENT } from './common/redis/redis.module';
-import { RedisIoAdapter } from './common/websocket/redis-io.adapter';
 import { installUnhandledRejectionPolicy } from './common/observability/unhandled-rejection';
 
 // Two years, in seconds.
@@ -118,14 +115,6 @@ async function bootstrap() {
   // loopback-fronted. See the deployment runbook.
   const trustProxy = configService.get<string>('TRUST_PROXY', 'loopback');
   app.set('trust proxy', trustProxy);
-
-  // Socket.io: pub/sub via Redis so events fan out across API replicas.
-  // Without this, an emit on replica A is invisible to clients on replica B.
-  // Sticky sessions still required at the proxy for long-poll fallback.
-  const redisClient = app.get<Redis>(REDIS_CLIENT);
-  const ioAdapter = new RedisIoAdapter(app, redisClient, configService);
-  await ioAdapter.connectToRedis();
-  app.useWebSocketAdapter(ioAdapter);
 
   // ---------------------------------------------------------------------------
   // Security headers (helmet: explicit config, not defaults)

@@ -53,8 +53,8 @@ half (the tenant gate for a caller-supplied `workspaceId`, and the tenant's Work
 list); creating or editing a Workspace stays behind its own `workspaces` router. It
 imports no feature module.
 
-Everything else is a **feature**: `user`, `storage`, `notifications`, `events`,
-`mail`, `data-export`, `health`, `help`, and AuthModule proper. `workspace` must not
+Everything else is a **feature**: `user`, `storage`, `mail`, `data-export`,
+`health`, and AuthModule proper. `workspace` must not
 import from any of them.
 
 `modules/auth` is both at once, and that is the load-bearing fact here. A router

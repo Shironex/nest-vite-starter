@@ -15,7 +15,7 @@ import { StepUpService } from './step-up.service';
 import { UserService } from '../../user/user.service';
 import { MailService } from '../../mail/mail.service';
 import { AuditService } from '../../audit/audit.service';
-import { SessionRevocationService } from '../../events/session-revocation.service';
+import { SessionService } from './session.service';
 import { PrismaService } from '../../../common/database/prisma.service';
 import {
   isPrismaUniqueConstraintError,
@@ -74,7 +74,7 @@ export class EmailChangeService {
     private readonly userService: UserService,
     private readonly mailService: MailService,
     private readonly auditService: AuditService,
-    private readonly sessionRevocation: SessionRevocationService,
+    private readonly sessionService: SessionService,
     private readonly prismaService: PrismaService,
     private readonly tokenService: TokenService,
     private readonly stepUpService: StepUpService,
@@ -259,7 +259,7 @@ export class EmailChangeService {
     // Revoke every session AND bump the epoch (deleteAllUserSessions does
     // both), the convention every credential-surgery flow follows. Trusted
     // 2FA devices survive deliberately: the second factor did not change.
-    await this.sessionRevocation.revokeAllAndDisconnect(pending.userId);
+    await this.sessionService.deleteAllUserSessions(pending.userId);
 
     await this.auditService.log({
       action: AUDIT_ACTIONS.AUTH_EMAIL_CHANGED,

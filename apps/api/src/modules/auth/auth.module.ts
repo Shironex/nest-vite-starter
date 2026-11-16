@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { UserModule } from '../user/user.module';
 import { MailModule } from '../mail/mail.module';
-import { EventsModule } from '../events/events.module';
 import { SecurityModule } from '../../common/security/security.module';
 import { IdempotencyModule } from '../../common/idempotency/idempotency.module';
 import { SessionModule } from './session.module';
@@ -41,10 +40,6 @@ import { TwoFactorRouter } from './two-factor.router';
  * standalone AuthMiddlewareModule, which UserModule imports directly. That
  * removes the circular dependency that previously required `forwardRef`.
  *
- * EventsModule is imported for EventsService.disconnectUser: the session
- * revocation flows (logoutAll, password change/reset) must also drop live
- * websockets. No cycle: EventsModule only imports SessionModule.
- *
  * IdempotencyModule provides the IdempotencyMiddleware that AuthRouter wires
  * method-level after auth on changePassword.
  */
@@ -52,7 +47,6 @@ import { TwoFactorRouter } from './two-factor.router';
   imports: [
     UserModule,
     MailModule,
-    EventsModule,
     SecurityModule,
     SessionModule,
     AuthMiddlewareModule,

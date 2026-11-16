@@ -474,33 +474,16 @@ describe('LoginService', () => {
       expect(mocks.csrf.rotate).toHaveBeenCalledWith(req, res);
       expect(mocks.audit.log).toHaveBeenCalledWith({ action: AUDIT_ACTIONS.AUTH_LOGOUT });
     });
-
-    it('closes THIS session sockets and leaves the user other devices alone', async () => {
-      const { service, mocks } = await buildCtx();
-      const { req, res } = expressMocks();
-      mocks.session.deleteSession.mockResolvedValue('sid-1');
-
-      await service.logout('sess-tok', req, res);
-
-      // Logout used to delete the Redis blob and nothing else, so a socket
-      // authenticated at handshake kept receiving tenant notifications until it
-      // happened to reconnect. On a shared office computer that is the
-      // difference between "I logged out" and the stream actually stopping.
-      expect(mocks.events.disconnectSession).toHaveBeenCalledWith('sid-1');
-      expect(mocks.events.disconnectUser).not.toHaveBeenCalled();
-    });
   });
 
   describe('logoutAll()', () => {
-    it('revokes all sessions + sockets for user, clears cookie, rotates CSRF, audits with userId', async () => {
+    it('revokes all sessions for user, clears cookie, rotates CSRF, audits with userId', async () => {
       const { service, mocks } = await buildCtx();
       const { req, res } = expressMocks();
 
       await service.logoutAll('u-1', req, res);
 
-      // One shared step revokes the Redis sessions AND drops live sockets
-      // (sockets keep their identity until reconnect).
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('u-1');
+      expect(mocks.session.deleteAllUserSessions).toHaveBeenCalledWith('u-1');
       expect(mocks.shared.clearSessionCookie).toHaveBeenCalledWith(res);
       expect(mocks.csrf.rotate).toHaveBeenCalledWith(req, res);
       expect(mocks.audit.log).toHaveBeenCalledWith(

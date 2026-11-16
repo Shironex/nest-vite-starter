@@ -330,8 +330,8 @@ export class SessionService {
     pipeline.del(RedisKeys.session(sessionId));
     await pipeline.exec();
 
-    // The id the caller needs to close this session's sockets. Returned rather
-    // than re-derived by the caller because `hashToken` is the one place that
+    // The id of the session that ended. Returned rather than re-derived by the
+    // caller because `hashToken` is the one place that
     // knows how a cookie token becomes a session id, and a second copy of that
     // rule would be a second thing to keep in step.
     return sessionId;
@@ -494,12 +494,8 @@ export class SessionService {
    * just-created session carries the newest createdAt, so it is only ever
    * evicted when everything else is newer.
    *
-   * Returns the ids it evicted, so the AUTH-side caller can close their live
-   * sockets. This service deliberately does not do that itself: EventsModule
-   * imports SessionModule (the gateway authenticates sockets through it), so a
-   * SessionService -> EventsService import would be a module cycle. That is the
-   * same constraint SessionRevocationService exists for, and reporting the ids
-   * keeps the eviction's knowledge here and the socket's over there.
+   * Returns the ids it evicted, so a caller can act on the sessions that a new
+   * login pushed out.
    */
   private async enforceMaxSessions(userId: string): Promise<string[]> {
     const active = await this.loadActiveSessions(userId);

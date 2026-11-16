@@ -5,7 +5,7 @@ const logger = createAppLogger('Detached');
 /** What a detached task is, for its failure log line. */
 export interface IDetachContext {
   /**
-   * A constant naming the work (`'websocket.authenticate'`, `'audit.write'`):
+   * A constant naming the work (`'mail.send'`, `'audit.write'`):
    * the key an operator searches the failure on. Never an interpolated value.
    */
   task: string;

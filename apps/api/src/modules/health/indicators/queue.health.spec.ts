@@ -42,18 +42,6 @@ describe('QueueHealthIndicator', () => {
     expect(up).not.toHaveBeenCalled();
   });
 
-  it('names the declared queues no scrape has reported on', () => {
-    // Absence must not read as health: a queue missing from the snapshot map
-    // contributes nothing to `failed`, so three healthy entries would otherwise
-    // look exactly like four.
-    const { indicator, up } = buildIndicator(new Map([[QUEUE_NAMES.EMAIL_DELIVERY, counts(0)]]));
-    indicator.isHealthy('queue');
-    expect(up).toHaveBeenCalledWith({
-      failed: { [QUEUE_NAMES.EMAIL_DELIVERY]: 0 },
-      unscraped: [QUEUE_NAMES.NOTIFICATION_DISPATCH],
-    });
-  });
-
   it('reports up with no queues scraped yet (empty snapshot), listing all of them', () => {
     // The first 15 seconds after boot, before the interval has fired once.
     const { indicator, up } = buildIndicator(new Map());
@@ -68,7 +56,7 @@ describe('QueueHealthIndicator', () => {
     indicator.isHealthy('queue');
     expect(down).toHaveBeenCalledWith({
       failed: { [QUEUE_NAMES.EMAIL_DELIVERY]: QUEUE_FAILED_ALERT_THRESHOLD },
-      unscraped: [QUEUE_NAMES.NOTIFICATION_DISPATCH],
+      unscraped: [],
       threshold: QUEUE_FAILED_ALERT_THRESHOLD,
     });
   });

@@ -86,18 +86,4 @@ describe('registerQueueWithDefaults', () => {
       defaultJobOptions: DEFAULTS.jobOptions,
     });
   });
-
-  it('is the same registration for every queue name, so a second queue cannot drift', () => {
-    const module = registerQueueWithDefaults(QUEUE_NAMES.NOTIFICATION_DISPATCH, DEFAULTS);
-    const provider = queueOptionsProvider(
-      module.providers ?? [],
-      QUEUE_NAMES.NOTIFICATION_DISPATCH,
-    );
-    const resolved: unknown = provider.useFactory({ getDependencyRef: () => ({}) });
-
-    expect(resolved).toMatchObject({
-      name: QUEUE_NAMES.NOTIFICATION_DISPATCH,
-      defaultJobOptions: DEFAULTS.jobOptions,
-    });
-  });
 });

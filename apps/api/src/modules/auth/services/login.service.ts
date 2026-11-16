@@ -8,8 +8,6 @@ import { SessionService } from './session.service';
 import { LockoutService } from './lockout.service';
 import { AuthSharedService } from './auth-shared.service';
 import { UserService, type IUserProfile } from '../../user/user.service';
-import { EventsService } from '../../events/events.service';
-import { SessionRevocationService } from '../../events/session-revocation.service';
 import { CsrfService } from '../../../common/security/csrf.service';
 import { AuditService } from '../../audit/audit.service';
 import { TwoFactorChallengeService, type ILoginResult } from './two-factor-challenge.service';
@@ -40,8 +38,6 @@ export class LoginService {
     private readonly sessionService: SessionService,
     private readonly lockoutService: LockoutService,
     private readonly userService: UserService,
-    private readonly sessionRevocation: SessionRevocationService,
-    private readonly eventsService: EventsService,
     private readonly csrfService: CsrfService,
     private readonly auditService: AuditService,
     private readonly shared: AuthSharedService,
@@ -329,19 +325,11 @@ export class LoginService {
   }
 
   /**
-   * Log out current session.
-   *
-   * Deleting the session blob is not the whole logout: a socket authenticated
-   * at handshake is never re-checked, so before the gateway had per-session
-   * rooms a logged-out tab (or any client that does not close its own socket)
-   * kept receiving this tenant's notifications until it happened to reconnect.
-   * On a shared office computer that is the difference between "I logged out"
-   * and the stream actually stopping. Dropping only THIS session's sockets, so
-   * the person's other devices stay connected.
+   * Log out current session. Only THIS session ends, so the person's other
+   * devices stay signed in.
    */
   async logout(sessionToken: string, req: Request, res: Response): Promise<void> {
-    const sessionId = await this.sessionService.deleteSession(sessionToken);
-    this.eventsService.disconnectSession(sessionId);
+    await this.sessionService.deleteSession(sessionToken);
     this.shared.clearSessionCookie(res);
     this.csrfService.rotate(req, res);
     await this.auditService.log({ action: AUDIT_ACTIONS.AUTH_LOGOUT });
@@ -351,9 +339,7 @@ export class LoginService {
    * Log out all sessions for a user.
    */
   async logoutAll(userId: string, req: Request, res: Response): Promise<void> {
-    // Live sockets keep their identity until reconnect, so a "log out all
-    // devices" also drops the websocket connections (one shared step).
-    await this.sessionRevocation.revokeAllAndDisconnect(userId);
+    await this.sessionService.deleteAllUserSessions(userId);
     this.shared.clearSessionCookie(res);
     this.csrfService.rotate(req, res);
     await this.auditService.log({

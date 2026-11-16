@@ -117,7 +117,7 @@ describe('SessionService', () => {
       expect(members.length).toBe(3);
     });
 
-    it('reports the ids it evicted, so the auth-side caller can close their sockets', async () => {
+    it('reports the ids it evicted to the caller', async () => {
       const { service } = await buildSubject();
       // A user nobody else seeded: ioredis-mock shares one global keyspace, so
       // a shared id would arrive already over the cap.
@@ -131,8 +131,7 @@ describe('SessionService', () => {
 
       const fourth = await service.createSession({ ...baseParams, userId, rememberMe: false });
 
-      // Reported rather than acted on here: EventsModule imports SessionModule,
-      // so a SessionService -> EventsService call would be a module cycle.
+      // Reported to the caller rather than acted on here.
       expect(fourth.evictedSessionIds).toEqual([evictable[0]]);
     });
 
@@ -277,7 +276,7 @@ describe('SessionService', () => {
       await expect(service.deleteSession('never-existed')).resolves.toEqual(expect.any(String));
     });
 
-    it('returns the session id it deleted, so the caller can close that session sockets', async () => {
+    it('returns the session id it deleted', async () => {
       const { service } = await buildSubject();
       const { token } = await service.createSession({ ...baseParams, rememberMe: false });
       const sessionId = createHash('sha256').update(token).digest('hex');

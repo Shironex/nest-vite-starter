@@ -57,12 +57,6 @@ const buildCtx = async () => {
     ],
   });
   const session = ctx.get(SessionService);
-  // The revocation chokepoint is mocked (it also drops websockets, which is
-  // out of scope here); point it at the real session revocation so a flow that
-  // revokes actually bumps the epoch.
-  ctx.mocks.sessionRevocation.revokeAllAndDisconnect.mockImplementation(async (id: string) =>
-    session.deleteAllUserSessions(id),
-  );
   // The seam's live account-state read: every account here is eligible, so
   // the only thing that can refuse a mint in this file is the epoch fence.
   ctx.mocks.prisma.client.user.findFirst.mockResolvedValue({

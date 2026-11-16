@@ -35,8 +35,6 @@ import { LockoutRepository } from '../src/modules/auth/repositories/lockout.repo
 import { UserService } from '../src/modules/user/user.service';
 import { UserRepository } from '../src/modules/user/user.repository';
 import { MailService } from '../src/modules/mail/mail.service';
-import { EventsService } from '../src/modules/events/events.service';
-import { SessionRevocationService } from '../src/modules/events/session-revocation.service';
 import { AuditService } from '../src/modules/audit/audit.service';
 import { CsrfService } from '../src/common/security/csrf.service';
 import { PrismaService } from '../src/common/database/prisma.service';
@@ -115,15 +113,6 @@ export interface AuthMocks {
     sendTwoFactorSupportResetContestEmail: jest.Mock;
     sendEmailChangeVerificationEmail: jest.Mock;
     sendEmailChangeRequestedEmail: jest.Mock;
-  };
-  events: {
-    notifyUser: jest.Mock;
-    disconnectUser: jest.Mock;
-    disconnectSession: jest.Mock;
-    setServer: jest.Mock;
-  };
-  sessionRevocation: {
-    revokeAllAndDisconnect: jest.Mock;
   };
   emailChange: {
     requestEmailChange: jest.Mock;
@@ -562,15 +551,6 @@ const buildAuthMocks = (
       sendEmailChangeVerificationEmail: jest.fn().mockResolvedValue(undefined),
       sendEmailChangeRequestedEmail: jest.fn().mockResolvedValue(undefined),
     },
-    events: {
-      notifyUser: jest.fn(),
-      disconnectUser: jest.fn(),
-      disconnectSession: jest.fn(),
-      setServer: jest.fn(),
-    },
-    sessionRevocation: {
-      revokeAllAndDisconnect: jest.fn().mockResolvedValue(undefined),
-    },
     emailChange: {
       requestEmailChange: jest.fn().mockResolvedValue(undefined),
       confirmEmailChange: jest.fn().mockResolvedValue(undefined),
@@ -709,8 +689,6 @@ export const createAuthTestModule = async (
       { provide: UserService, useValue: mocks.user },
       { provide: UserRepository, useValue: mocks.userRepository },
       { provide: MailService, useValue: mocks.mail },
-      { provide: EventsService, useValue: mocks.events },
-      { provide: SessionRevocationService, useValue: mocks.sessionRevocation },
       { provide: EmailChangeService, useValue: mocks.emailChange },
       { provide: AuditService, useValue: mocks.audit },
       { provide: AuthSharedService, useValue: mocks.shared },

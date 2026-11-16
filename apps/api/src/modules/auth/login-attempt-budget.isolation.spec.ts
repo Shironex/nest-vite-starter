@@ -37,8 +37,6 @@ import { RedisKeys } from '../../common/redis/redis-keys';
 import type { PrismaService } from '../../common/database/prisma.service';
 import type { CsrfService } from '../../common/security/csrf.service';
 import type { AuditService } from '../audit/audit.service';
-import type { EventsService } from '../events/events.service';
-import { SessionRevocationService } from '../events/session-revocation.service';
 import type { UserService } from '../user/user.service';
 import { LockoutRepository } from './repositories/lockout.repository';
 import type { AuthSharedService } from './services/auth-shared.service';
@@ -116,18 +114,11 @@ const buildSubject = () => {
     beginOrEstablish: jest.fn().mockResolvedValue({ kind: 'session', via: 'no_factor' }),
   } as unknown as TwoFactorChallengeService;
 
-  const events = {
-    disconnectSession: jest.fn(),
-    disconnectUser: jest.fn(),
-  } as unknown as EventsService;
-
   const login = new LoginService(
     passwordService,
     sessionService,
     lockout,
     userService,
-    new SessionRevocationService(sessionService, events),
-    events,
     { rotate: jest.fn() } as unknown as CsrfService,
     audit as unknown as AuditService,
     shared,

@@ -26,7 +26,6 @@ import { EMAIL_DELIVERY_JOB_NAMES, EMAIL_DELIVERY_QUEUE_NAME } from './email-del
 import { EMAIL_PROVIDER, type IEmailProvider } from '../providers/email-provider.interface';
 import { QueueObservabilityModule } from '../../../common/queue/queue-observability.module';
 import { QueueMetricsService } from '../../../common/queue/queue-metrics.service';
-import { NotificationDispatchModule } from '../../notifications/notification-dispatch/notification-dispatch.module';
 import { HealthModule } from '../../health/health.module';
 import { QueueHealthIndicator } from '../../health/indicators/queue.health';
 import { PrismaService } from '../../../common/database/prisma.service';
@@ -36,11 +35,6 @@ import { AuditService } from '../../audit/audit.service';
 
 // Stand in for the @Global PrismaModule / RedisModule / LoggerModule /
 // AuditModule so the cross-module graph resolves without booting real infra.
-// CustomLogger is needed because NotificationDispatchModule now pulls in
-// EventsModule (the processor emits after persisting) and EventsGateway
-// injects it; the real class is used since it has no constructor deps.
-// AuditService is needed because NotificationsModule provides
-// NotificationPreferencesService, which audits preference saves.
 // PrismaService/Redis/Audit are only constructed here, never exercised.
 @Global()
 @Module({
@@ -97,7 +91,6 @@ describe('email-delivery DI graph + job run (ioredis-mock)', () => {
         // separately in queue.module.spec.ts.)
         BullModule.forRoot({ connection: new RedisMock() as never }),
         MailModule,
-        NotificationDispatchModule,
         QueueObservabilityModule,
         HealthModule,
       ],

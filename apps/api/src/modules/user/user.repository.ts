@@ -348,14 +348,12 @@ export class UserRepository extends BaseRepository implements AvatarOwnerPort {
   async findRoleScoped(
     userId: string,
     tenantId: string,
-  ): Promise<{ id: string; role: string; email: string } | null> {
+  ): Promise<{ id: string; role: string } | null> {
     return this.client.user.findFirst({
       // Live rows only, matching listUsers: this probe backs the admin delete
       // surface.
       where: { id: userId, tenantId, ...this.notDeleted },
-      // email rides along for the admin-actions broadcast: the row is gone
-      // (soft-deleted) by the time the notification copy is built.
-      select: { id: true, role: true, email: true },
+      select: { id: true, role: true },
     });
   }
 

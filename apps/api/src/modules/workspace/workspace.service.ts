@@ -10,7 +10,6 @@ import type {
   WorkspaceUpdateOutput,
 } from '@repo/shared/schemas';
 import { AuditService } from '../audit/audit.service';
-import { NotificationEventsService } from '../notifications/notification-events.service';
 import { ConflictError, NotFoundError } from '../../common/errors/domain-error';
 import { WorkspaceRepository } from './workspace.repository';
 import { isPrismaUniqueViolation } from '../../common/database/prisma-error';
@@ -36,7 +35,6 @@ export class WorkspaceService {
   constructor(
     private readonly repository: WorkspaceRepository,
     private readonly auditService: AuditService,
-    private readonly notificationEvents: NotificationEventsService,
   ) {}
 
   async list(): Promise<WorkspaceListOutput> {
@@ -69,9 +67,6 @@ export class WorkspaceService {
       workspaceId: workspace.id,
       metadata: { name: workspace.name },
     });
-
-    // Fail-soft broadcast to staff who opted in (muted by default).
-    await this.notificationEvents.workspaceCreated(workspace.name);
 
     return workspace;
   }

@@ -12,21 +12,18 @@ const buildSubject = () => {
     deleteUserSessionById: jest.fn().mockResolvedValue(true),
     validateSession: jest.fn().mockResolvedValue(null),
     isRememberMeSession: jest.fn().mockReturnValue(false),
+    deleteAllUserSessions: jest.fn().mockResolvedValue(undefined),
   };
-  const sessionRevocation = { revokeAllAndDisconnect: jest.fn().mockResolvedValue(undefined) };
-  const eventsService = { disconnectUser: jest.fn(), disconnectSession: jest.fn() };
   const auditService = { log: jest.fn().mockResolvedValue(undefined) };
   const shared = {
     establishSession: jest.fn().mockResolvedValue({ token: 't', expiresAt: new Date() }),
   };
   const service = new SessionManagementService(
     sessionService as unknown as Deps[0],
-    sessionRevocation as unknown as Deps[1],
-    eventsService as unknown as Deps[2],
-    auditService as unknown as Deps[3],
-    shared as unknown as Deps[4],
+    auditService as unknown as Deps[1],
+    shared as unknown as Deps[2],
   );
-  return { service, sessionService, sessionRevocation, eventsService, auditService, shared };
+  return { service, sessionService, auditService, shared };
 };
 
 const sessionInfo = (sessionId: string, overrides: Partial<Record<string, unknown>> = {}) => ({
@@ -94,7 +91,7 @@ describe('SessionManagementService', () => {
 
   describe('revokeSession', () => {
     it('resolves the public handle back to the raw id and deletes it', async () => {
-      const { service, sessionService, eventsService, auditService } = buildSubject();
+      const { service, sessionService, auditService } = buildSubject();
       sessionService.getUserSessions.mockResolvedValue([
         sessionInfo('keep-id'),
         sessionInfo('drop-id'),
@@ -103,10 +100,6 @@ describe('SessionManagementService', () => {
       await service.revokeSession('u-1', sha256Hex('drop-id'), requestMeta);
 
       expect(sessionService.deleteUserSessionById).toHaveBeenCalledWith('u-1', 'drop-id');
-      // Only the revoked session's sockets: a user-wide drop would sign every
-      // other device out too.
-      expect(eventsService.disconnectSession).toHaveBeenCalledWith('drop-id');
-      expect(eventsService.disconnectUser).not.toHaveBeenCalled();
       expect(auditService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           action: AUDIT_ACTIONS.AUTH_SESSION_REVOKED,
@@ -116,8 +109,8 @@ describe('SessionManagementService', () => {
       );
     });
 
-    it('acks an unknown handle without deleting, disconnecting, or auditing', async () => {
-      const { service, sessionService, eventsService, auditService } = buildSubject();
+    it('acks an unknown handle without deleting or auditing', async () => {
+      const { service, sessionService, auditService } = buildSubject();
       sessionService.getUserSessions.mockResolvedValue([sessionInfo('keep-id')]);
 
       await expect(
@@ -125,32 +118,16 @@ describe('SessionManagementService', () => {
       ).resolves.toBeUndefined();
 
       expect(sessionService.deleteUserSessionById).not.toHaveBeenCalled();
-      expect(eventsService.disconnectSession).not.toHaveBeenCalled();
       expect(auditService.log).not.toHaveBeenCalled();
     });
 
-    it('skips disconnect and audit when the delete lost a race', async () => {
-      const { service, sessionService, eventsService, auditService } = buildSubject();
+    it('skips the audit when the delete lost a race', async () => {
+      const { service, sessionService, auditService } = buildSubject();
       sessionService.getUserSessions.mockResolvedValue([sessionInfo('drop-id')]);
       sessionService.deleteUserSessionById.mockResolvedValue(false);
 
       await service.revokeSession('u-1', sha256Hex('drop-id'), requestMeta);
-
-      expect(eventsService.disconnectSession).not.toHaveBeenCalled();
       expect(auditService.log).not.toHaveBeenCalled();
-    });
-
-    it('leaves the caller other sessions alone: one handle, one room', async () => {
-      const { service, sessionService, eventsService } = buildSubject();
-      sessionService.getUserSessions.mockResolvedValue([
-        sessionInfo('keep-id'),
-        sessionInfo('drop-id'),
-      ]);
-
-      await service.revokeSession('u-1', sha256Hex('drop-id'), requestMeta);
-
-      expect(eventsService.disconnectSession).toHaveBeenCalledTimes(1);
-      expect(eventsService.disconnectSession).not.toHaveBeenCalledWith('keep-id');
     });
   });
 
@@ -178,25 +155,25 @@ describe('SessionManagementService', () => {
     };
 
     it('fails closed with SESSION_EXPIRED when the current session is gone', async () => {
-      const { service, sessionRevocation, shared } = buildSubject();
+      const { service, sessionService, shared } = buildSubject();
 
       await expect(callIt(service)).rejects.toMatchObject({
         appCode: AppErrorCode.SESSION_EXPIRED,
       });
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(shared.establishSession).not.toHaveBeenCalled();
     });
 
     it('revokes everything FIRST, then re-issues from the current blob', async () => {
-      const { service, sessionService, sessionRevocation, shared } = buildSubject();
+      const { service, sessionService, shared } = buildSubject();
       sessionService.validateSession.mockResolvedValue(currentBlob);
 
       await callIt(service);
 
-      expect(sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('u-1');
+      expect(sessionService.deleteAllUserSessions).toHaveBeenCalledWith('u-1');
       // Order is the fence contract: the bump must land before the mint reads
       // the counter, or the replacement session fences itself out.
-      expect(sessionRevocation.revokeAllAndDisconnect.mock.invocationCallOrder[0]).toBeLessThan(
+      expect(sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]).toBeLessThan(
         shared.establishSession.mock.invocationCallOrder[0]!,
       );
 

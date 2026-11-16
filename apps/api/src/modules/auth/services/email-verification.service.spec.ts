@@ -66,14 +66,14 @@ describe('EmailVerificationService', () => {
       );
       mocks.token.validateToken.mockResolvedValue({ userId: 'u-1' });
       mocks.user.findById.mockResolvedValue(userFixture({ id: 'u-1' }));
-      mocks.sessionRevocation.revokeAllAndDisconnect.mockImplementation(async () => {
+      mocks.session.deleteAllUserSessions.mockImplementation(async () => {
         order.push('revoke');
       });
 
       await service.verifyEmail('raw-token', '1.2.3.4');
 
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledTimes(1);
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('u-1');
+      expect(mocks.session.deleteAllUserSessions).toHaveBeenCalledTimes(1);
+      expect(mocks.session.deleteAllUserSessions).toHaveBeenCalledWith('u-1');
       // The epoch bump must follow the committed state change it answers.
       expect(order).toEqual(['commit', 'revoke']);
     });
@@ -91,7 +91,7 @@ describe('EmailVerificationService', () => {
       expect(mocks.audit.log).not.toHaveBeenCalled();
       expect(mocks.mail.sendWelcomeEmail).not.toHaveBeenCalled();
       // A bad token proves nothing, so it must not log anyone out either.
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();
     });
 
     it('rate limit: surfaces TOO_MANY_REQUESTS from the per-IP limiter before any token work', async () => {

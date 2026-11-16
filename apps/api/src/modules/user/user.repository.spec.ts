@@ -454,22 +454,15 @@ describe('UserRepository guarded soft-delete writes', () => {
 describe('UserRepository admin-delete scoping', () => {
   it('findRoleScoped probes by { id, tenantId, kind: STAFF, deletedAt: null } with the minimal projection', async () => {
     const { repo, prisma } = await buildSubject();
-    prisma.client.user.findFirst.mockResolvedValue({
-      id: 'u-1',
-      role: 'USER',
-      email: 'u1@example.com',
-    });
+    prisma.client.user.findFirst.mockResolvedValue({ id: 'u-1', role: 'USER' });
 
     await expect(repo.findRoleScoped('u-1', 'tenant-a')).resolves.toEqual({
       id: 'u-1',
       role: 'USER',
-      email: 'u1@example.com',
     });
-    // email rides along for the admin-actions broadcast: the row is soft-
-    // deleted by the time the notification copy is built.
     expect(prisma.client.user.findFirst).toHaveBeenCalledWith({
       where: { id: 'u-1', tenantId: 'tenant-a', deletedAt: null },
-      select: { id: true, role: true, email: true },
+      select: { id: true, role: true },
     });
   });
 

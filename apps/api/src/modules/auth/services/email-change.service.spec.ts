@@ -290,7 +290,7 @@ describe('EmailChangeService', () => {
       );
 
       // Every session out (epoch bump lives in deleteAllUserSessions).
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('u-1');
+      expect(mocks.session.deleteAllUserSessions).toHaveBeenCalledWith('u-1');
 
       expect(mocks.audit.log).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -313,7 +313,7 @@ describe('EmailChangeService', () => {
         appCode: AppErrorCode.INVALID_TOKEN,
       });
       expect(mocks.prisma.client.$transaction).not.toHaveBeenCalled();
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(mocks.audit.log).not.toHaveBeenCalled();
     });
 
@@ -354,7 +354,7 @@ describe('EmailChangeService', () => {
       await expect(service.confirmEmailChange(rawToken, '9.9.9.9')).rejects.toMatchObject({
         appCode: AppErrorCode.EMAIL_IN_USE,
       });
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(mocks.audit.log).not.toHaveBeenCalled();
     });
 
@@ -379,7 +379,7 @@ describe('EmailChangeService', () => {
       await expect(service2.confirmEmailChange(rawToken, '9.9.9.9')).rejects.toMatchObject({
         appCode: AppErrorCode.INVALID_TOKEN,
       });
-      expect(mocks2.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(mocks2.session.deleteAllUserSessions).not.toHaveBeenCalled();
     });
   });
 

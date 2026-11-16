@@ -61,7 +61,7 @@ describe('QueueMetricsService resolution', () => {
   it('fails the boot when a declared queue was never registered', () => {
     // Silently skipping it would re-open the same blind spot, and the symptom
     // (a queue nobody watches) surfaces only when its jobs start failing.
-    const missing = QUEUE_NAMES.NOTIFICATION_DISPATCH;
+    const missing = QUEUE_NAMES.EMAIL_DELIVERY;
     const partial = allQueuesIdle().filter((queue) => queue.name !== missing);
 
     const service = new QueueMetricsService(containerWith(partial));
@@ -82,7 +82,6 @@ describe('QueueMetricsService.collect', () => {
   it('caches a snapshot and sets the failed gauge per queue', async () => {
     const service = boot([
       makeQueue(QUEUE_NAMES.EMAIL_DELIVERY, { waiting: 2, active: 1, failed: 3, delayed: 0 }),
-      makeQueue(QUEUE_NAMES.NOTIFICATION_DISPATCH, { ...idle }),
     ]);
 
     await service.collect();
@@ -96,24 +95,10 @@ describe('QueueMetricsService.collect', () => {
     expect(failedSetSpy).toHaveBeenCalledWith({ queue: QUEUE_NAMES.EMAIL_DELIVERY }, 3);
   });
 
-  it('is best-effort: a getJobCounts failure does not throw and leaves other queues collectable', async () => {
-    const service = boot([
-      makeQueue(QUEUE_NAMES.EMAIL_DELIVERY, new Error('redis down')),
-      makeQueue(QUEUE_NAMES.NOTIFICATION_DISPATCH, {
-        waiting: 1,
-        active: 0,
-        failed: 0,
-        delayed: 0,
-      }),
-    ]);
+  it('is best-effort: a getJobCounts failure does not throw and leaves no snapshot', async () => {
+    const service = boot([makeQueue(QUEUE_NAMES.EMAIL_DELIVERY, new Error('redis down'))]);
 
     await expect(service.collect()).resolves.toBeUndefined();
     expect(service.getSnapshot(QUEUE_NAMES.EMAIL_DELIVERY)).toBeUndefined();
-    expect(service.getSnapshot(QUEUE_NAMES.NOTIFICATION_DISPATCH)).toEqual({
-      waiting: 1,
-      active: 0,
-      failed: 0,
-      delayed: 0,
-    });
   });
 });

@@ -68,12 +68,7 @@ beforeAll(async () => {
   const prismaService = { client, unscoped } as unknown as PrismaService;
   const repository = new WorkspaceRepository(prismaService);
   const audit = { log: jest.fn().mockResolvedValue(undefined) } as unknown as AuditService;
-  // The broadcast is a fail-soft, muted-by-default notification, unit-tested in
-  // notification-events.service.spec.ts. This lane proves tenancy.
-  const notificationEventsStub = {
-    workspaceCreated: async () => undefined,
-  } as unknown as ConstructorParameters<typeof WorkspaceService>[2];
-  workspaceService = new WorkspaceService(repository, audit, notificationEventsStub);
+  workspaceService = new WorkspaceService(repository, audit);
   workspaceLookup = new WorkspaceLookupService(repository);
 });
 

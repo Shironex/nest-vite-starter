@@ -14,9 +14,8 @@ import { UserRepository } from './user.repository';
 import { PrismaService } from '../../common/database/prisma.service';
 import { storageOrphanCleanupFailuresTotal } from '../metrics/metrics.registry';
 import { StorageService } from '../storage/storage.service';
-import { SessionRevocationService } from '../events/session-revocation.service';
+import { SessionService } from '../auth/services/session.service';
 import { AuditService } from '../audit/audit.service';
-import { NotificationEventsService } from '../notifications/notification-events.service';
 
 export interface IUserProfile {
   id: string;
@@ -81,9 +80,8 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly storageService: StorageService,
-    private readonly sessionRevocation: SessionRevocationService,
+    private readonly sessionService: SessionService,
     private readonly auditService: AuditService,
-    private readonly notificationEvents: NotificationEventsService,
     private readonly prismaService: PrismaService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
   ) {}
@@ -282,13 +280,6 @@ export class UserService {
     // A cross-tenant miss above never reaches here; see revokeAuthState for
     // why the revoke must run before the cache clear.
     await this.revokeAuthState(targetUserId);
-
-    // Fail-soft broadcast to the OTHER admins who opted in (muted by
-    // default): a role grant is the tenant's security posture changing.
-    // `previous.email` rather than a second read: the probe above already
-    // carries it, under the tenant fence, and the address cannot have changed
-    // in between in any way this broadcast cares about.
-    await this.notificationEvents.adminRoleChanged({ targetEmail: previous.email, role });
   }
 
   /**
@@ -533,7 +524,7 @@ export class UserService {
 
   /**
    * Tear down every server-side authorization artifact for a user: all Redis
-   * sessions, all live websockets, and every role-keyed permission-cache
+   * sessions and every role-keyed permission-cache
    * entry. Shared by role change (updateRole) and the account-deletion flows;
    * the DB write that motivates the teardown must land BEFORE this runs.
    *
@@ -541,12 +532,9 @@ export class UserService {
    * FIRST, then clear the cache. If the cache were cleared first, an in-flight
    * request on a still-valid session could rebuild it from the stale state
    * between the clear and the revoke, repoisoning the entry for up to its TTL.
-   * The shared revocation step also drops live sockets: an already-connected
-   * socket keeps its identity until it reconnects, so revoking Redis sessions
-   * alone would leave the old privileges live on the websocket channel.
    */
   async revokeAuthState(userId: string): Promise<void> {
-    await this.sessionRevocation.revokeAllAndDisconnect(userId);
+    await this.sessionService.deleteAllUserSessions(userId);
 
     // Clear every role-keyed permission entry for the user (the cache is keyed
     // by userId:role) so no stale role's permission list survives. ALL_ROLES,
@@ -584,7 +572,7 @@ export class UserService {
    *     cannot slip through between the probe and the write.
    *
    * Teardown order copies updateRole: DB write first, then revokeAuthState
-   * (sessions + sockets + permission cache). The audit row lands last; the
+   * (sessions + permission cache). The audit row lands last; the
    * actor (admin) and request metadata come from the ALS context, the target
    * is explicit.
    */
@@ -628,9 +616,6 @@ export class UserService {
       targetType: 'User',
       targetId: targetUserId,
     });
-
-    // Fail-soft broadcast to the OTHER admins who opted in (muted by default).
-    await this.notificationEvents.adminUserDeleted({ targetEmail: target.email });
   }
 
   /**

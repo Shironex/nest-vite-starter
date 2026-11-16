@@ -14,7 +14,7 @@ import { TrustedDeviceService } from './trusted-device.service';
 import { EmailChangeService } from './email-change.service';
 import { UserService } from '../../user/user.service';
 import { MailService } from '../../mail/mail.service';
-import { SessionRevocationService } from '../../events/session-revocation.service';
+import { SessionService } from './session.service';
 import { AuditService } from '../../audit/audit.service';
 import { PrismaService } from '../../../common/database/prisma.service';
 
@@ -27,7 +27,7 @@ export class PasswordChangeService {
     private readonly tokenService: TokenService,
     private readonly userService: UserService,
     private readonly mailService: MailService,
-    private readonly sessionRevocation: SessionRevocationService,
+    private readonly sessionService: SessionService,
     private readonly auditService: AuditService,
     private readonly prismaService: PrismaService,
     private readonly shared: AuthSharedService,
@@ -107,10 +107,9 @@ export class PasswordChangeService {
       await this.tokenService.invalidateUserTokens(userId, TokenType.PASSWORD_RESET, tx);
     });
 
-    // Revoke every session (invalidates every device) and drop live sockets
-    // in one step. The caller's own socket reconnects with the fresh session
-    // created below.
-    await this.sessionRevocation.revokeAllAndDisconnect(userId);
+    // Revoke every session (invalidates every device). The caller gets the
+    // fresh session created below.
+    await this.sessionService.deleteAllUserSessions(userId);
     // A compromised-password episode should not leave pre-authorized browsers
     // behind, so trusted devices are forgotten on a password change too.
     await this.trustedDeviceService.revokeAll(userId);

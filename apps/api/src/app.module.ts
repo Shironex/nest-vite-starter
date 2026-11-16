@@ -23,12 +23,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { DataExportModule } from './modules/data-export/data-export.module';
 import { StorageModule } from './modules/storage/storage.module';
-import { EventsModule } from './modules/events/events.module';
 import { WorkspaceModule } from './modules/workspace/workspace.module';
 import { QueueModule } from './common/queue/queue.module';
 import { QueueObservabilityModule } from './common/queue/queue-observability.module';
-import { NotificationDispatchModule } from './modules/notifications/notification-dispatch/notification-dispatch.module';
-import { NotificationsModule } from './modules/notifications/notifications.module';
 import { RequestContextModule } from './common/context/request-context.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { SecurityModule } from './common/security/security.module';
@@ -68,8 +65,6 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
     // Every other cron reuses this registration, it does not re-register.
     ScheduleModule.forRoot(),
     QueueModule,
-    NotificationsModule,
-    NotificationDispatchModule,
     QueueObservabilityModule,
     RequestContextModule,
     AuditModule,
@@ -117,7 +112,6 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
     UserModule,
     DataExportModule,
     StorageModule,
-    EventsModule,
     WorkspaceModule,
   ],
   providers: [

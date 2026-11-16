@@ -161,9 +161,8 @@ describe('PasswordResetService', () => {
           lockedUntil: null,
         },
       });
-      // Sessions revoked AFTER transaction commits; live sockets dropped in
-      // the same shared step.
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('u-1');
+      // Sessions revoked AFTER transaction commits.
+      expect(mocks.session.deleteAllUserSessions).toHaveBeenCalledWith('u-1');
       expect(mocks.audit.log).toHaveBeenCalledWith(
         expect.objectContaining({
           action: AUDIT_ACTIONS.AUTH_PASSWORD_RESET,
@@ -230,7 +229,7 @@ describe('PasswordResetService', () => {
       expect(mocks.password.hash).not.toHaveBeenCalled();
       expect(tx.token.deleteMany).not.toHaveBeenCalled();
       expect(tx.user.updateMany).not.toHaveBeenCalled();
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(mocks.audit.log).not.toHaveBeenCalled();
     });
 
@@ -256,7 +255,7 @@ describe('PasswordResetService', () => {
       // No hashing, no update, no session invalidation.
       expect(mocks.password.hash).not.toHaveBeenCalled();
       expect(tx.user.updateMany).not.toHaveBeenCalled();
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();
     });
 
     it('soft-deleted user: the guarded write matches zero rows, throws INVALID_TOKEN, and revokes nothing', async () => {
@@ -286,7 +285,7 @@ describe('PasswordResetService', () => {
           where: { id: 'u-deleted', deletedAt: null, membershipEndedAt: null },
         }),
       );
-      expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(mocks.audit.log).not.toHaveBeenCalled();
       expect(mocks.mail.sendPasswordChangedEmail).not.toHaveBeenCalled();
     });

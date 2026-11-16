@@ -30,7 +30,7 @@ import { esmImport } from '../../common/utils/esm-import';
 import type { PrismaService } from '../../common/database/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { AuditPiiScrubService } from '../audit/audit-pii-scrub.service';
-import type { SessionRevocationService } from '../events/session-revocation.service';
+import type { SessionService } from '../auth/services/session.service';
 import type { MailService } from '../mail/mail.service';
 import type { StorageService } from '../storage/storage.service';
 import type { AuthSharedService } from '../auth/services/auth-shared.service';
@@ -106,7 +106,7 @@ const buildEmailChange = (audit: AuditService) => {
     userService as unknown as UserService,
     mail as unknown as MailService,
     audit,
-    { revokeAllAndDisconnect: jest.fn() } as unknown as SessionRevocationService,
+    { deleteAllUserSessions: jest.fn() } as unknown as SessionService,
     prismaService,
     { invalidateUserTokens: jest.fn() } as unknown as TokenService,
     { assertSecondFactor: jest.fn() } as unknown as StepUpService,

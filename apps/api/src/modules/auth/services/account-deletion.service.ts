@@ -38,7 +38,7 @@ export class AccountDeletionService {
    * hard-deletes the row and its S3 objects after USER_PURGE_GRACE_DAYS.
    *
    * Order: verify password -> soft delete -> audit (while the request context
-   * still carries the actor) -> revoke sessions/sockets/permission cache ->
+   * still carries the actor) -> revoke sessions/permission cache ->
    * clear the session cookie + rotate CSRF. The caller is logged out by
    * construction: their session is gone and the cookie is cleared.
    */
@@ -107,7 +107,7 @@ export class AccountDeletionService {
       userAgent,
     });
 
-    // Sessions + sockets + permission cache in the one shared teardown
+    // Sessions + permission cache in the one shared teardown
     // (DB write first, same order contract as updateRole).
     await this.userService.revokeAuthState(userId);
 

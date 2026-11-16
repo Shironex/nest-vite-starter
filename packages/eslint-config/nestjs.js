@@ -271,15 +271,7 @@ export const config = [
       // records THIS write, or anything about a mutation no entry point
       // reaches. An entry whose call graph it cannot fully read is skipped, not
       // reported.
-      'noctcore-prisma/mutation-entry-must-reach-audit': [
-        'error',
-        {
-          // Notification read state is deliberately unaudited: Notification
-          // .readAt already persists exactly the fact an audit row would.
-          // See the NotificationsService docblock.
-          ignoreEntries: ['NotificationsRouter.markRead', 'NotificationsRouter.markAllRead'],
-        },
-      ],
+      'noctcore-prisma/mutation-entry-must-reach-audit': 'error',
     },
   },
   {

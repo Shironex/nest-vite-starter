@@ -23,7 +23,6 @@ import { AppModule } from './app.module';
 import { PrismaService } from './common/database/prisma.service';
 import { REDIS_CLIENT } from './common/redis/redis.module';
 import { EMAIL_DELIVERY_QUEUE_NAME } from './modules/mail/email-delivery/email-delivery.constants';
-import { NOTIFICATION_DISPATCH_QUEUE_NAME } from './modules/notifications/notification-dispatch/notification-dispatch.constants';
 import { QueueMetricsService } from './common/queue/queue-metrics.service';
 import { QUEUE_NAMES } from './common/queue/queue.constants';
 
@@ -104,8 +103,9 @@ describe('AppModule (DI compile-smoke)', () => {
   it('constructs the real BullMQ queue providers on the mock connection', () => {
     // Proves the @InjectQueue wiring resolves: if a queue token were renamed or
     // a queue-owning module dropped its `exports: [BullModule]`, this fails.
-    expect(moduleRef.get(getQueueToken(EMAIL_DELIVERY_QUEUE_NAME))).toBeDefined();
-    expect(moduleRef.get(getQueueToken(NOTIFICATION_DISPATCH_QUEUE_NAME))).toBeDefined();
+    expect(moduleRef.get(getQueueToken(EMAIL_DELIVERY_QUEUE_NAME))).toMatchObject({
+      name: EMAIL_DELIVERY_QUEUE_NAME,
+    });
   });
 
   it('registers EVERY queue in QUEUE_NAMES somewhere in the graph', () => {

@@ -79,7 +79,7 @@ export class UserPurgeService {
     this.graceDays = this.configService.getOrThrow<number>('USER_PURGE_GRACE_DAYS');
   }
 
-  // 6AM: the 4AM and 5AM slots are taken by the audit and notification sweeps.
+  // 6AM: the 4AM slot is taken by the audit sweep.
   // The hour is wall-clock time in the app time zone (APP_TIME_ZONE).
   @Cron(CronExpression.EVERY_DAY_AT_6AM, { name: 'user-purge', timeZone: APP_TIME_ZONE })
   async handleCron(): Promise<void> {

@@ -70,8 +70,7 @@ describe('PasswordChangeService', () => {
       'PASSWORD_RESET',
       mocks.prisma.client,
     );
-    // Session revocation also drops live sockets (one shared step).
-    expect(mocks.sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('u-1');
+    expect(mocks.session.deleteAllUserSessions).toHaveBeenCalledWith('u-1');
     // A pending email change dies with the credential rotation: the tripwire
     // told a possible victim to change the password, so the change must
     // strand any attacker-held confirmation link.
@@ -129,7 +128,7 @@ describe('PasswordChangeService', () => {
     });
     expect(mocks.password.hash).not.toHaveBeenCalled();
     expect(mocks.user.updatePassword).not.toHaveBeenCalled();
-    expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+    expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();
   });
 
   it('throws PASSWORD_NOT_SET for an account with no password; never verifies, never writes', async () => {
@@ -149,7 +148,7 @@ describe('PasswordChangeService', () => {
     });
     expect(mocks.password.verify).not.toHaveBeenCalled();
     expect(mocks.user.updatePassword).not.toHaveBeenCalled();
-    expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+    expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();
   });
 
   it('propagates a failed transactional write; no session revoke, no mail', async () => {
@@ -163,7 +162,7 @@ describe('PasswordChangeService', () => {
     await expect(service.changePassword('u-1', 'old', 'new', 'ip', 'ua', req, res)).rejects.toThrow(
       'DB down',
     );
-    expect(mocks.sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+    expect(mocks.session.deleteAllUserSessions).not.toHaveBeenCalled();
     expect(mocks.mail.sendPasswordChangedEmail).not.toHaveBeenCalled();
   });
 
@@ -189,7 +188,7 @@ describe('PasswordChangeService', () => {
     mocks.password.hash.mockResolvedValue('h');
 
     const callOrder: string[] = [];
-    mocks.sessionRevocation.revokeAllAndDisconnect.mockImplementation(async () => {
+    mocks.session.deleteAllUserSessions.mockImplementation(async () => {
       callOrder.push('revokeAll');
     });
     mocks.shared.establishSession.mockImplementation(async () => {

@@ -69,11 +69,6 @@ export const storageOrphanCleanupFailuresTotal = new Counter({
   help: 'Total best-effort old-avatar S3 cleanup deletions that failed (objects orphaned in storage)',
 });
 
-export const notificationRetentionDeletedTotal = new Counter({
-  name: 'notification_retention_deleted_total',
-  help: 'Total Notification rows deleted by the scheduled notification-retention sweep',
-});
-
 export const userPurgeDeletedTotal = new Counter({
   name: 'user_purge_deleted_total',
   help: 'Total soft-deleted user rows hard-deleted by the scheduled user-purge sweep after the grace window',

@@ -7,7 +7,7 @@ import { AuthSharedService } from './auth-shared.service';
 import { UserService } from '../../user/user.service';
 import { MailService } from '../../mail/mail.service';
 import { AuditService } from '../../audit/audit.service';
-import { SessionRevocationService } from '../../events/session-revocation.service';
+import { SessionService } from './session.service';
 import { PrismaService } from '../../../common/database/prisma.service';
 
 /** Fixed window for verification-email resends. */
@@ -25,7 +25,7 @@ export class EmailVerificationService {
     private readonly auditService: AuditService,
     private readonly prismaService: PrismaService,
     private readonly shared: AuthSharedService,
-    private readonly sessionRevocation: SessionRevocationService,
+    private readonly sessionService: SessionService,
   ) {}
 
   /**
@@ -63,7 +63,7 @@ export class EmailVerificationService {
 
     // Redis, outside the DB transaction and only after it committed, the order
     // deleteAllUserSessions requires of every caller (as password reset does).
-    await this.sessionRevocation.revokeAllAndDisconnect(userId);
+    await this.sessionService.deleteAllUserSessions(userId);
 
     // The audit write and the user fetch are independent, so run them
     // concurrently rather than serially (see login.service.ts).

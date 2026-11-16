@@ -141,7 +141,7 @@ export class UserRouter {
    * Soft delete a user's account (admin only; hard-deleted by the purge cron
    * after the grace window). Scoped to the caller's tenant; refuses the
    * caller's own account (self-service auth.deleteAccount owns that) and
-   * refuses ADMIN targets. Revokes the target's sessions and sockets.
+   * refuses ADMIN targets. Revokes the target's sessions.
    */
   @Mutation({ input: adminDeleteUserInputSchema, output: accountDeletedOutput })
   @UseMiddlewares(AuthMiddleware, AdminMiddleware, IdempotencyMiddleware)

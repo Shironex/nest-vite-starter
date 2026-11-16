@@ -7,8 +7,6 @@ import { UnauthorizedError } from '../../../common/errors';
 import { sha256Hex } from '../../../common/utils/crypto';
 import { SessionService } from './session.service';
 import { AuthSharedService } from './auth-shared.service';
-import { SessionRevocationService } from '../../events/session-revocation.service';
-import { EventsService } from '../../events/events.service';
 import { AuditService } from '../../audit/audit.service';
 
 /**
@@ -29,8 +27,6 @@ import { AuditService } from '../../audit/audit.service';
 export class SessionManagementService {
   constructor(
     private readonly sessionService: SessionService,
-    private readonly sessionRevocation: SessionRevocationService,
-    private readonly eventsService: EventsService,
     private readonly auditService: AuditService,
     private readonly shared: AuthSharedService,
   ) {}
@@ -64,14 +60,6 @@ export class SessionManagementService {
    * handle that no longer resolves (revoked in another tab, expired, or not
    * the caller's at all) is already the desired end state, so it acks rather
    * than errors and the list refetch tells the rest of the story.
-   *
-   * Only the revoked session's sockets are dropped. This used to close every
-   * socket the user had, because the gateway had no per-session disconnect and
-   * "reconnect and re-authenticate" was the nearest available behavior; it
-   * meant signing one device out flickered every other device. The gateway now
-   * joins `session:<id>` at handshake, so the revoke targets exactly the
-   * session it names. Same revoke-then-disconnect pairing every other
-   * revocation flow uses.
    */
   async revokeSession(
     userId: string,
@@ -88,8 +76,6 @@ export class SessionManagementService {
     if (!deleted) {
       return;
     }
-
-    this.eventsService.disconnectSession(target.sessionId);
     await this.auditService.log({
       action: AUDIT_ACTIONS.AUTH_SESSION_REVOKED,
       userId,
@@ -138,7 +124,7 @@ export class SessionManagementService {
     }
 
     const rememberMe = this.sessionService.isRememberMeSession(current);
-    await this.sessionRevocation.revokeAllAndDisconnect(current.userId);
+    await this.sessionService.deleteAllUserSessions(current.userId);
 
     await this.shared.establishSession(req, res, {
       userId: current.userId,

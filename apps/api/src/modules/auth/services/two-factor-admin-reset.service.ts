@@ -9,7 +9,7 @@ import { RedisKeys } from '../../../common/redis/redis-keys';
 import { PrismaService } from '../../../common/database/prisma.service';
 import { AuditService } from '../../audit/audit.service';
 import { MailService } from '../../mail/mail.service';
-import { SessionRevocationService } from '../../events/session-revocation.service';
+import { SessionService } from './session.service';
 import { SecondFactorRepository } from '../repositories/second-factor.repository';
 import { TrustedDeviceService } from './trusted-device.service';
 
@@ -28,7 +28,7 @@ export class TwoFactorAdminResetService {
     private readonly prismaService: PrismaService,
     private readonly secondFactorRepository: SecondFactorRepository,
     private readonly trustedDeviceService: TrustedDeviceService,
-    private readonly sessionRevocation: SessionRevocationService,
+    private readonly sessionService: SessionService,
     private readonly auditService: AuditService,
     private readonly mailService: MailService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
@@ -71,7 +71,7 @@ export class TwoFactorAdminResetService {
     await this.secondFactorRepository.deleteAllForUser(targetUserId);
     await this.trustedDeviceService.revokeAll(targetUserId);
     await this.revokePendingChallenges(targetUserId);
-    await this.sessionRevocation.revokeAllAndDisconnect(targetUserId);
+    await this.sessionService.deleteAllUserSessions(targetUserId);
 
     await this.auditService.log({
       action: AUDIT_ACTIONS.AUTH_2FA_ADMIN_RESET,

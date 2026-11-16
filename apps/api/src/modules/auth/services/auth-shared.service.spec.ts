@@ -5,7 +5,6 @@ import { AuthSharedService } from './auth-shared.service';
 import { SessionService } from './session.service';
 import { TurnstileService } from './turnstile.service';
 import { CsrfService } from '../../../common/security/csrf.service';
-import { EventsService } from '../../events/events.service';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
 import { buildRedisChainMock } from '@test/test-module';
 import { expressMocks } from '@test/fixtures';
@@ -14,7 +13,6 @@ const buildSubject = async (nodeEnv: 'production' | 'development' | 'test') => {
   const turnstile = { validate: jest.fn() };
   const session = { createSession: jest.fn() };
   const csrf = { rotate: jest.fn() };
-  const events = { disconnectSession: jest.fn() };
   const values: Record<string, string> = { NODE_ENV: nodeEnv, APP_URL: 'http://app' };
   const config = {
     get: jest.fn((k: string) => values[k]),
@@ -39,7 +37,6 @@ const buildSubject = async (nodeEnv: 'production' | 'development' | 'test') => {
       { provide: TurnstileService, useValue: turnstile },
       { provide: SessionService, useValue: session },
       { provide: CsrfService, useValue: csrf },
-      { provide: EventsService, useValue: events },
       { provide: ConfigService, useValue: config },
       { provide: REDIS_CLIENT, useValue: redis },
     ],
@@ -49,7 +46,6 @@ const buildSubject = async (nodeEnv: 'production' | 'development' | 'test') => {
     turnstile,
     session,
     csrf,
-    events,
     redis,
     chain,
     mockLimiterCount,
@@ -189,39 +185,6 @@ describe('AuthSharedService', () => {
       await service.establishSession(req, res, { ...params, tenantId: null });
 
       expect(session.createSession).toHaveBeenCalledWith({ ...params, tenantId: undefined });
-    });
-
-    it('closes the sockets of every session the max-sessions cap evicted', async () => {
-      const { service, session, events } = await buildSubject('development');
-      const { req, res } = expressMocks();
-      session.createSession.mockResolvedValue({
-        token: 'tok-1',
-        expiresAt: new Date(Date.now() + 60_000),
-        evictedSessionIds: ['sid-old-1', 'sid-old-2'],
-      });
-
-      await service.establishSession(req, res, params);
-
-      // Per session, never user-wide: the surviving devices of the same person
-      // must stay connected. SessionService cannot do this itself (it would be
-      // a module cycle), so this is the nearest caller that can.
-      expect(events.disconnectSession).toHaveBeenCalledWith('sid-old-1');
-      expect(events.disconnectSession).toHaveBeenCalledWith('sid-old-2');
-      expect(events.disconnectSession).toHaveBeenCalledTimes(2);
-    });
-
-    it('closes nothing when the mint evicted nothing', async () => {
-      const { service, session, events } = await buildSubject('development');
-      const { req, res } = expressMocks();
-      session.createSession.mockResolvedValue({
-        token: 'tok-1',
-        expiresAt: new Date(Date.now() + 60_000),
-        evictedSessionIds: [],
-      });
-
-      await service.establishSession(req, res, params);
-
-      expect(events.disconnectSession).not.toHaveBeenCalled();
     });
   });
 

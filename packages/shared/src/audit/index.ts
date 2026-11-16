@@ -133,11 +133,6 @@ export const AUDIT_ACTIONS = {
   // metadata: { cutoff, retentionDays, deleted }: cutoff is the ISO instant
   // the predicate actually used, which is the value the day count only implies.
   AUDIT_RETENTION_SWEEP: 'audit.retention.sweep',
-
-  // notifications. The saved channel matrix rides in metadata:
-  // it is small, non-PII, and "who muted what, when" is the question this row
-  // answers when someone asks why a reminder never reached them.
-  NOTIFICATION_PREFERENCES_UPDATED: 'notifications.preferences.updated',
 } as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS];

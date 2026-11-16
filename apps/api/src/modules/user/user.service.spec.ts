@@ -4,9 +4,8 @@ import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { StorageService } from '../storage/storage.service';
-import { SessionRevocationService } from '../events/session-revocation.service';
+import { SessionService } from '../auth/services/session.service';
 import { AuditService } from '../audit/audit.service';
-import { NotificationEventsService } from '../notifications/notification-events.service';
 import { requestContext } from '../../common/context/request-context';
 import { storageOrphanCleanupFailuresTotal } from '../metrics/metrics.registry';
 import { REDIS_CLIENT } from '../../common/redis/redis.module';
@@ -53,12 +52,8 @@ const buildSubject = async () => {
     restoreMembership: jest.fn().mockResolvedValue(1),
   };
   const storage = { delete: jest.fn().mockResolvedValue(undefined) };
-  const sessionRevocation = { revokeAllAndDisconnect: jest.fn().mockResolvedValue(undefined) };
+  const sessionService = { deleteAllUserSessions: jest.fn().mockResolvedValue(undefined) };
   const audit = { log: jest.fn().mockResolvedValue(undefined) };
-  const notificationEvents = {
-    adminRoleChanged: jest.fn().mockResolvedValue(undefined),
-    adminUserDeleted: jest.fn().mockResolvedValue(undefined),
-  };
   const redis = { del: jest.fn().mockResolvedValue(1) };
   // The demotion guard runs its count and its write on one transaction; the
   // callback is invoked with the same mocked repo, so assertions are unchanged.
@@ -68,9 +63,8 @@ const buildSubject = async () => {
       UserService,
       { provide: UserRepository, useValue: repo },
       { provide: StorageService, useValue: storage },
-      { provide: SessionRevocationService, useValue: sessionRevocation },
+      { provide: SessionService, useValue: sessionService },
       { provide: AuditService, useValue: audit },
-      { provide: NotificationEventsService, useValue: notificationEvents },
       { provide: PrismaService, useValue: prisma },
       { provide: REDIS_CLIENT, useValue: redis },
     ],
@@ -79,9 +73,8 @@ const buildSubject = async () => {
     service: module.get(UserService),
     repo,
     storage,
-    sessionRevocation,
+    sessionService,
     audit,
-    notificationEvents,
     redis,
     prisma,
   };
@@ -540,20 +533,18 @@ describe('UserService', () => {
   describe('updateRole', () => {
     /** The pre-change row the audit `before` is taken from. */
     const existingStaffUser = (repo: { findRoleScoped: jest.Mock }, role = 'USER') =>
-      repo.findRoleScoped.mockResolvedValue({ id: 'u-1', role, email: 'target@example.com' });
+      repo.findRoleScoped.mockResolvedValue({ id: 'u-1', role });
 
-    it('updates the role (scoped to caller tenant), revokes sessions + live sockets, then clears every role-keyed permission entry', async () => {
-      const { service, repo, sessionRevocation, redis } = await buildSubject();
+    it('updates the role (scoped to caller tenant), revokes sessions, then clears every role-keyed permission entry', async () => {
+      const { service, repo, sessionService, redis } = await buildSubject();
       existingStaffUser(repo);
       repo.updateRoleScoped.mockResolvedValue(1);
 
       await withTenant(TENANT_A, () => service.updateRole('actor-1', 'u-1', 'ADMIN'));
 
       expect(repo.updateRoleScoped).toHaveBeenCalledWith('u-1', TENANT_A, 'ADMIN');
-      // The shared revocation step deletes the Redis sessions AND disconnects
-      // the user's websockets (which keep the old-role identity until
-      // reconnect).
-      expect(sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('u-1');
+      // The shared revocation step deletes the Redis sessions.
+      expect(sessionService.deleteAllUserSessions).toHaveBeenCalledWith('u-1');
       // The cache is keyed by userId:role, so clear EVERY role variant - no
       // stale role's permission list may survive the change.
       // Every role a User row can hold (ALL_ROLES): PermissionMiddleware caches
@@ -566,31 +557,15 @@ describe('UserService', () => {
       // BEFORE clearing the cache so an old-role session cannot rebuild
       // (repoison) the entry in the gap. The DB write lands first of all.
       expect(repo.updateRoleScoped.mock.invocationCallOrder[0]!).toBeLessThan(
-        sessionRevocation.revokeAllAndDisconnect.mock.invocationCallOrder[0]!,
+        sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!,
       );
-      expect(sessionRevocation.revokeAllAndDisconnect.mock.invocationCallOrder[0]!).toBeLessThan(
+      expect(sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!).toBeLessThan(
         redis.del.mock.invocationCallOrder[0]!,
       );
     });
 
-    it('broadcasts the role change to the other admins (preference-gated inside)', async () => {
-      const { service, repo, notificationEvents } = await buildSubject();
-      existingStaffUser(repo);
-      repo.updateRoleScoped.mockResolvedValue(1);
-
-      await withTenant(TENANT_A, () => service.updateRole('actor-1', 'u-1', 'ADMIN'));
-
-      expect(notificationEvents.adminRoleChanged).toHaveBeenCalledWith({
-        targetEmail: 'target@example.com',
-        role: 'ADMIN',
-      });
-      // The address comes from the pre-change probe, so the broadcast costs no
-      // second read of the same row.
-      expect(repo.findById).not.toHaveBeenCalled();
-    });
-
     it('audits the change with the old and new role, before the teardown', async () => {
-      const { service, repo, audit, sessionRevocation } = await buildSubject();
+      const { service, repo, audit, sessionService } = await buildSubject();
       existingStaffUser(repo, 'USER');
       repo.updateRoleScoped.mockResolvedValue(1);
 
@@ -606,7 +581,7 @@ describe('UserService', () => {
       // The DB row has already moved by then, so writing the row BEFORE the
       // revoke is what keeps a Redis outage from costing the trail entirely.
       expect(audit.log.mock.invocationCallOrder[0]!).toBeLessThan(
-        sessionRevocation.revokeAllAndDisconnect.mock.invocationCallOrder[0]!,
+        sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!,
       );
       // ...and after the write it describes.
       expect(repo.updateRoleScoped.mock.invocationCallOrder[0]!).toBeLessThan(
@@ -614,15 +589,15 @@ describe('UserService', () => {
       );
     });
 
-    it('does not revoke sessions or sockets when the role update throws', async () => {
-      const { service, repo, sessionRevocation } = await buildSubject();
+    it('does not revoke sessions when the role update throws', async () => {
+      const { service, repo, sessionService } = await buildSubject();
       existingStaffUser(repo);
       repo.updateRoleScoped.mockRejectedValue(new Error('DB down'));
 
       await expect(
         withTenant(TENANT_A, () => service.updateRole('actor-1', 'u-1', 'USER')),
       ).rejects.toThrow('DB down');
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
     });
 
     /**
@@ -636,7 +611,7 @@ describe('UserService', () => {
      * the tenant.
      */
     it("refuses to change the caller's own role, before it even reads the tenant", async () => {
-      const { service, repo, sessionRevocation, audit } = await buildSubject();
+      const { service, repo, sessionService, audit } = await buildSubject();
 
       await expect(
         withTenant(TENANT_A, () => service.updateRole('u-1', 'u-1', 'USER')),
@@ -644,7 +619,7 @@ describe('UserService', () => {
       expect(repo.findRoleScoped).not.toHaveBeenCalled();
       expect(repo.updateRoleScoped).not.toHaveBeenCalled();
       expect(audit.log).not.toHaveBeenCalled();
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
     });
 
     /**
@@ -653,7 +628,7 @@ describe('UserService', () => {
      * in-app way back from that state.
      */
     it('refuses to demote the last admin, and writes nothing', async () => {
-      const { service, repo, audit, sessionRevocation } = await buildSubject();
+      const { service, repo, audit, sessionService } = await buildSubject();
       existingStaffUser(repo, 'ADMIN');
       // Zero OTHER live admins: the target is the last one.
       repo.countLiveAdmins.mockResolvedValue(0);
@@ -663,7 +638,7 @@ describe('UserService', () => {
       ).rejects.toMatchObject({ code: 'FORBIDDEN' });
       expect(repo.updateRoleScoped).not.toHaveBeenCalled();
       expect(audit.log).not.toHaveBeenCalled();
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
     });
 
     it('demotes an admin while the organization still has another one', async () => {
@@ -753,7 +728,7 @@ describe('UserService', () => {
     });
 
     it('throws NOT_FOUND for a cross-tenant target and never writes, revokes or audits', async () => {
-      const { service, repo, sessionRevocation, redis, audit } = await buildSubject();
+      const { service, repo, sessionService, redis, audit } = await buildSubject();
       // Target lives in another organization: the scoped probe matches zero rows, so
       // the write is never attempted.
       repo.findRoleScoped.mockResolvedValue(null);
@@ -764,12 +739,12 @@ describe('UserService', () => {
       expect(repo.findRoleScoped).toHaveBeenCalledWith('other-tenant-user', TENANT_A);
       expect(repo.updateRoleScoped).not.toHaveBeenCalled();
       expect(redis.del).not.toHaveBeenCalled();
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(audit.log).not.toHaveBeenCalled();
     });
 
     it('throws NOT_FOUND and does not audit when the row moves between probe and write', async () => {
-      const { service, repo, sessionRevocation, audit } = await buildSubject();
+      const { service, repo, sessionService, audit } = await buildSubject();
       existingStaffUser(repo);
       // Deleted or re-tenanted in the gap: nothing changed, so nothing to log.
       repo.updateRoleScoped.mockResolvedValue(0);
@@ -778,11 +753,11 @@ describe('UserService', () => {
         withTenant(TENANT_A, () => service.updateRole('actor-1', 'u-1', 'ADMIN')),
       ).rejects.toMatchObject({ code: 'NOT_FOUND', message: AppErrorCode.NOT_FOUND });
       expect(audit.log).not.toHaveBeenCalled();
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
     });
 
     it('throws FORBIDDEN and never writes when there is no tenant in context', async () => {
-      const { service, repo, sessionRevocation } = await buildSubject();
+      const { service, repo, sessionService } = await buildSubject();
       // Called OUTSIDE requestContext.run: no active tenant -> fail closed.
       await expect(service.updateRole('actor-1', 'u-1', 'ADMIN')).rejects.toMatchObject({
         code: 'FORBIDDEN',
@@ -790,7 +765,7 @@ describe('UserService', () => {
       });
       expect(repo.findRoleScoped).not.toHaveBeenCalled();
       expect(repo.updateRoleScoped).not.toHaveBeenCalled();
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
     });
   });
 
@@ -805,10 +780,10 @@ describe('UserService', () => {
   });
 
   describe('adminDeleteUser', () => {
-    const target = { id: 'target-1', role: 'USER', email: 'target@example.com' };
+    const target = { id: 'target-1', role: 'USER' };
 
-    it('soft-deletes the tenant-scoped target, revokes sessions + sockets + permission cache, then audits', async () => {
-      const { service, repo, sessionRevocation, audit, redis } = await buildSubject();
+    it('soft-deletes the tenant-scoped target, revokes sessions + permission cache, then audits', async () => {
+      const { service, repo, sessionService, audit, redis } = await buildSubject();
       repo.findRoleScoped.mockResolvedValue(target);
       repo.softDeleteScopedNonAdmin.mockResolvedValue(1);
 
@@ -816,7 +791,7 @@ describe('UserService', () => {
 
       expect(repo.findRoleScoped).toHaveBeenCalledWith('target-1', TENANT_A);
       expect(repo.softDeleteScopedNonAdmin).toHaveBeenCalledWith('target-1', TENANT_A);
-      expect(sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('target-1');
+      expect(sessionService.deleteAllUserSessions).toHaveBeenCalledWith('target-1');
       expect(redis.del).toHaveBeenCalledWith(
         RedisKeys.permissions('target-1', 'USER'),
         RedisKeys.permissions('target-1', 'ADMIN'),
@@ -828,34 +803,22 @@ describe('UserService', () => {
       });
       // DB write first, then revoke, then cache clear (same contract as updateRole).
       expect(repo.softDeleteScopedNonAdmin.mock.invocationCallOrder[0]!).toBeLessThan(
-        sessionRevocation.revokeAllAndDisconnect.mock.invocationCallOrder[0]!,
+        sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!,
       );
-      expect(sessionRevocation.revokeAllAndDisconnect.mock.invocationCallOrder[0]!).toBeLessThan(
+      expect(sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!).toBeLessThan(
         redis.del.mock.invocationCallOrder[0]!,
       );
     });
 
-    it('broadcasts the deletion to the other admins using the pre-delete email', async () => {
-      const { service, repo, notificationEvents } = await buildSubject();
-      repo.findRoleScoped.mockResolvedValue(target);
-      repo.softDeleteScopedNonAdmin.mockResolvedValue(1);
-
-      await withTenant(TENANT_A, () => service.adminDeleteUser('target-1', 'admin-1'));
-
-      expect(notificationEvents.adminUserDeleted).toHaveBeenCalledWith({
-        targetEmail: 'target@example.com',
-      });
-    });
-
     it('throws FORBIDDEN and never reads or writes when there is no tenant in context', async () => {
-      const { service, repo, sessionRevocation, audit } = await buildSubject();
+      const { service, repo, sessionService, audit } = await buildSubject();
       await expect(service.adminDeleteUser('target-1', 'admin-1')).rejects.toMatchObject({
         code: 'FORBIDDEN',
         message: AppErrorCode.FORBIDDEN,
       });
       expect(repo.findRoleScoped).not.toHaveBeenCalled();
       expect(repo.softDeleteScopedNonAdmin).not.toHaveBeenCalled();
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(audit.log).not.toHaveBeenCalled();
     });
 
@@ -869,41 +832,41 @@ describe('UserService', () => {
     });
 
     it('throws NOT_FOUND for a cross-tenant or missing target (scoped probe returns null)', async () => {
-      const { service, repo, sessionRevocation } = await buildSubject();
+      const { service, repo, sessionService } = await buildSubject();
       repo.findRoleScoped.mockResolvedValue(null);
       await expect(
         withTenant(TENANT_A, () => service.adminDeleteUser('other-tenant-user', 'admin-1')),
       ).rejects.toMatchObject({ code: 'NOT_FOUND', message: AppErrorCode.NOT_FOUND });
       expect(repo.softDeleteScopedNonAdmin).not.toHaveBeenCalled();
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
     });
 
     it('throws FORBIDDEN for an ADMIN target (privilege-escalation guard) and never writes', async () => {
-      const { service, repo, sessionRevocation, audit } = await buildSubject();
+      const { service, repo, sessionService, audit } = await buildSubject();
       repo.findRoleScoped.mockResolvedValue({ id: 'target-2', role: 'ADMIN' });
       await expect(
         withTenant(TENANT_A, () => service.adminDeleteUser('target-2', 'admin-1')),
       ).rejects.toMatchObject({ code: 'FORBIDDEN', message: AppErrorCode.FORBIDDEN });
       expect(repo.softDeleteScopedNonAdmin).not.toHaveBeenCalled();
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(audit.log).not.toHaveBeenCalled();
     });
 
     it('throws NOT_FOUND when the guarded write matches zero rows (concurrent delete/promotion) and skips teardown', async () => {
-      const { service, repo, sessionRevocation, audit } = await buildSubject();
+      const { service, repo, sessionService, audit } = await buildSubject();
       repo.findRoleScoped.mockResolvedValue(target);
       repo.softDeleteScopedNonAdmin.mockResolvedValue(0);
       await expect(
         withTenant(TENANT_A, () => service.adminDeleteUser('target-1', 'admin-1')),
       ).rejects.toMatchObject({ code: 'NOT_FOUND', message: AppErrorCode.NOT_FOUND });
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
       expect(audit.log).not.toHaveBeenCalled();
     });
   });
 
   describe('removeMember', () => {
     it('ends the membership, audits it, and closes the sessions they hold', async () => {
-      const { service, repo, audit, sessionRevocation } = await buildSubject();
+      const { service, repo, audit, sessionService } = await buildSubject();
 
       await withTenant(TENANT_A, () => service.removeMember('u-1', 'u-2'));
 
@@ -911,16 +874,16 @@ describe('UserService', () => {
       expect(audit.log).toHaveBeenCalledWith(
         expect.objectContaining({ action: AUDIT_ACTIONS.MEMBER_REMOVED, targetId: 'u-2' }),
       );
-      expect(sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledWith('u-2');
+      expect(sessionService.deleteAllUserSessions).toHaveBeenCalledWith('u-2');
     });
 
     it('audits before the teardown, so a Redis failure cannot erase the trail', async () => {
-      const { service, audit, sessionRevocation } = await buildSubject();
+      const { service, audit, sessionService } = await buildSubject();
 
       await withTenant(TENANT_A, () => service.removeMember('u-1', 'u-2'));
 
       expect(audit.log.mock.invocationCallOrder[0]!).toBeLessThan(
-        sessionRevocation.revokeAllAndDisconnect.mock.invocationCallOrder[0]!,
+        sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!,
       );
     });
 
@@ -970,21 +933,21 @@ describe('UserService', () => {
 
     it('throws rather than reporting success when the guarded write matches nothing', async () => {
       // Promoted, deleted or already removed between the probe and the write.
-      const { service, repo, sessionRevocation } = await buildSubject();
+      const { service, repo, sessionService } = await buildSubject();
       repo.endMembership.mockResolvedValue(0);
 
       await expect(
         withTenant(TENANT_A, () => service.removeMember('u-1', 'u-2')),
       ).rejects.toMatchObject({ code: 'NOT_FOUND' });
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
     });
 
     it('a retry after a failed teardown revokes the sessions instead of answering NotFound', async () => {
       // The flag commits before revokeAuthState runs. If Redis blips there,
       // the admin's retry finds the member already removed; answering NotFound
       // would leave every session they still hold alive with no way to retry.
-      const { service, repo, audit, sessionRevocation } = await buildSubject();
-      sessionRevocation.revokeAllAndDisconnect.mockRejectedValueOnce(new Error('redis down'));
+      const { service, repo, audit, sessionService } = await buildSubject();
+      sessionService.deleteAllUserSessions.mockRejectedValueOnce(new Error('redis down'));
 
       await expect(withTenant(TENANT_A, () => service.removeMember('u-1', 'u-2'))).rejects.toThrow(
         'redis down',
@@ -1000,8 +963,8 @@ describe('UserService', () => {
 
       await withTenant(TENANT_A, () => service.removeMember('u-1', 'u-2'));
 
-      expect(sessionRevocation.revokeAllAndDisconnect).toHaveBeenCalledTimes(2);
-      expect(sessionRevocation.revokeAllAndDisconnect).toHaveBeenLastCalledWith('u-2');
+      expect(sessionService.deleteAllUserSessions).toHaveBeenCalledTimes(2);
+      expect(sessionService.deleteAllUserSessions).toHaveBeenLastCalledWith('u-2');
       // Idempotent: the removal happened once and is on the trail once.
       expect(audit.log).not.toHaveBeenCalled();
       expect(repo.endMembership).toHaveBeenCalledTimes(1);
@@ -1011,13 +974,13 @@ describe('UserService', () => {
       // The idempotent branch hangs off the tenant-scoped probe, so a removed
       // member of ANOTHER organization resolves to nothing and cannot be torn down
       // from here.
-      const { service, repo, sessionRevocation } = await buildSubject();
+      const { service, repo, sessionService } = await buildSubject();
       repo.findMemberScoped.mockResolvedValue(null);
 
       await expect(
         withTenant(TENANT_A, () => service.removeMember('u-1', 'u-elsewhere')),
       ).rejects.toMatchObject({ code: 'NOT_FOUND' });
-      expect(sessionRevocation.revokeAllAndDisconnect).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
     });
   });
 

@@ -27,7 +27,6 @@ const config = {
     '!**/@generated/**',
     // Permanently excluded: each needs the e2e harness, is a framework
     // passthrough, or is pure config, so a unit test would only mock it.
-    '!common/websocket/redis-io.adapter.ts',
     '!common/database/prisma.service.ts',
     // Covered by the integration isolation lane (tenant-isolation.isolation.spec.ts),
     // not the fast suite, which mocks PrismaService; same rationale as prisma.service.ts.
