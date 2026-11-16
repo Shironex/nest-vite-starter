@@ -45,7 +45,7 @@ const apiProxy = {
 };
 
 export default defineConfig({
-  base: './',
+  base: '/',
   plugins: [
     tanstackRouter({
       target: 'react',

@@ -30,8 +30,7 @@ import en from './locales/en.json';
  *   2. Widen `IFeatureCatalogs` with `readonly <lng>: () => Promise<{ default:
  *      ResourceKey }>` and pass `<lng>: () => import('./locales/<lng>.json')`
  *      from every `*.i18n.ts`. Keep it a dynamic `import()`: that is a
- *      build-time split point, so the new catalogs cost the entry graph nothing
- *      and still load from `file://` in the packaged Electron shell.
+ *      build-time split point, so the new catalogs cost the entry graph nothing.
  *   3. Add a `loadLanguage(lng)` here that imports the shared and the
  *      registered feature catalogs and calls `i18n.addResourceBundle` for each,
  *      and have `registerFeatureNamespace` attach a late-registered namespace to
@@ -67,7 +66,7 @@ const resources = {
 let initPromise: Promise<void> | null = null;
 
 /**
- * Idempotent: safe to call from `main.tsx`, the Storybook preview, and the
+ * Idempotent: safe to call from `main.tsx` and the
  * vitest setup file without double-initialising the singleton.
  */
 export function initI18n(): Promise<void> {
@@ -87,7 +86,7 @@ export function initI18n(): Promise<void> {
       returnNull: false,
       // The catalogs are bundled, so initialize synchronously: `i18n.t` is
       // usable the moment `initI18n()` has been called, which is what the
-      // Storybook preview and the vitest setup file rely on.
+      // vitest setup file relies on.
       initAsync: false,
       // Re-render `useTranslation` consumers when a bundle is ADDED, not only
       // when the language changes. A lazily loaded route registers its

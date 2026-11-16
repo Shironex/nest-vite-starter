@@ -145,8 +145,7 @@ describe('check-initial-bundle', () => {
 
     expect(first.code).toBe(0);
     expect(second.code).toBe(0);
-    // `vite build` uses a relative base for the Electron file:// shell but an
-    // absolute one for the preview-served e2e run. The budget must not move.
+    // The budget must not move between a relative and an absolute asset base.
     expect(sizeOf(first.output)).toBe(sizeOf(second.output));
   });
 

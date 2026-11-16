@@ -454,16 +454,13 @@ jobs:
           ADMIN_EMAIL: admin@example.com
           ADMIN_PASSWORD: P@ssw0rd!Change.Me
 
-      # Build the API (server + generated trpc client) via turbo, then build the
-      # web app with an ABSOLUTE base so deep-linked routes (e.g. /auth/login)
-      # load /assets/* correctly under `vite preview`'s SPA fallback. The default
-      # base is './' (required for the Electron file:// shell), which 404s the
-      # assets on a deep link when statically served.
-      - name: Build api and web (absolute base for preview)
+      # Build the API (server + generated trpc client) via turbo, then the web
+      # app, which `vite preview` serves for the e2e run.
+      - name: Build api and web
         if: steps.aff.outputs.run == 'true'
         run: |
           pnpm exec turbo build --filter=@repo/api
-          pnpm --filter @repo/web exec vite build --base=/
+          pnpm --filter @repo/web exec vite build
 
       # Cache Playwright browsers keyed on the @playwright/test version
       # (apps/web/package.json), the standard pattern.
