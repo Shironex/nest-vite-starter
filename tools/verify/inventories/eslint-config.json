@@ -128,7 +128,6 @@
       "single-semantic-module wiring > exempts a backlog file by exact path but not a new file beside it": 1,
       "single-semantic-module wiring > holds a .types file to type space": 1,
       "single-semantic-module wiring > keeps apps/api/src/modules/auth/auth.constants.ts on the backlog only while it still breaks the rule": 1,
-      "single-semantic-module wiring > keeps apps/web/src/features/audit/Audit.constants.ts on the backlog only while it still breaks the rule": 1,
       "single-semantic-module wiring > leaves other file kinds alone": 1,
       "single-semantic-module wiring > lets a .constants file mix constants and types, but not functions": 1,
       "single-semantic-module wiring > lets a .util file export functions with their types, but not constants": 1

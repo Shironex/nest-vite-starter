@@ -71,14 +71,9 @@
       "structured logging of Errors > still redacts secrets that ride alongside an Error": 1
     },
     "packages/shared/src/schemas/audit.test.ts": {
-      "auditActionSchema > accepts every canonical action, so no recorded event type is unfilterable": 1,
-      "auditActionSchema > refuses an action outside the vocabulary": 1,
-      "auditLogListInput > accepts the full structured filter set": 1,
+      "auditLogListInput > accepts a cursor and an explicit limit": 1,
       "auditLogListInput > fills the page limit from an absent input": 1,
-      "auditLogListInput > has no free-text search field, by design": 1,
-      "auditLogListInput > refuses a range longer than the scan bound": 1,
-      "auditLogListInput > refuses a range whose end precedes its start": 1,
-      "auditLogListInput > refuses an empty or oversized actions array": 1,
+      "auditLogListInput > strips filter and search keys rather than honoring them: the list has none": 1,
       "auditLogListOutput > carries action as a plain string so unknown historical actions still render": 1
     },
     "packages/shared/src/schemas/auth.test.ts": {
@@ -103,9 +98,9 @@
     },
     "packages/shared/src/schemas/list-pagination.test.ts": {
       "paginated list contracts > audit.list refuses a total rather than paying for one": 1,
-      "paginated list contracts > user.listUsers (settings members) accepts null, for a page cut from a cursor": 1,
-      "paginated list contracts > user.listUsers (settings members) carries both the cursor and the total": 1,
-      "paginated list contracts > user.listUsers (settings members) rejects a negative or fractional total": 1
+      "paginated list contracts > user.listUsers (admin users table) accepts null, for a page cut from a cursor": 1,
+      "paginated list contracts > user.listUsers (admin users table) carries both the cursor and the total": 1,
+      "paginated list contracts > user.listUsers (admin users table) rejects a negative or fractional total": 1
     },
     "packages/shared/src/schemas/user.test.ts": {
       "userProfileOutput > accepts a complete profile": 1,

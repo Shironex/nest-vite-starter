@@ -1,145 +1,110 @@
 {
   "suite": "web",
   "cases": {
-    "apps/web/src/features/admin/components/ChangeMemberRoleDialog/ChangeMemberRoleDialog.hooks.test.tsx": {
-      "useChangeMemberRoleDialog > demotes an admin back to user": 1,
-      "useChangeMemberRoleDialog > promotes a user to admin, invalidates the list, toasts, and closes": 1
-    },
-    "apps/web/src/features/admin/components/ChangeMemberRoleDialog/ChangeMemberRoleDialog.test.tsx": {
-      "ChangeMemberRoleDialog > offers the demotion to user for an administrator": 1,
-      "ChangeMemberRoleDialog > renders nothing when closed": 1,
-      "ChangeMemberRoleDialog > spells out the promotion from user to administrator and the sign-out": 1
-    },
-    "apps/web/src/features/admin/components/DeleteMemberDialog/DeleteMemberDialog.hooks.test.tsx": {
-      "useDeleteMemberDialog > deletes the member, invalidates the list, toasts, and closes": 1
-    },
-    "apps/web/src/features/admin/components/DeleteMemberDialog/DeleteMemberDialog.test.tsx": {
-      "DeleteMemberDialog > renders nothing when closed": 1,
-      "DeleteMemberDialog > warns that the whole account is deleted, not only disabled": 1
-    },
-    "apps/web/src/features/admin/components/MembersSection/MembersSection.hooks.test.tsx": {
-      "useMembersSection > holds one page and states the position against the total": 1,
-      "useMembersSection > replaces the open dialog when another action is chosen": 1,
-      "useMembersSection > REPLACES the page rather than accumulating it, and can walk back": 1,
-      "useMembersSection > replaces the table while the first page is loading, and when it is empty": 1,
-      "useMembersSection > tracks the dialog opened for a member and clears it on close": 1,
-      "useMembersSection failure > hides the pager while the load is failing, so it cannot page a broken list": 1,
-      "useMembersSection failure > offers a retry that refetches": 1,
-      "useMembersSection failure > reports a failed load as an error, not as an empty list": 1
-    },
-    "apps/web/src/features/admin/components/MembersSection/MembersSection.test.tsx": {
-      "MembersSection > marks only the locked member with the locked badge": 1,
-      "MembersSection > offers neither unlock nor delete for an unlocked admin": 1,
-      "MembersSection > offers unlock and delete for a locked regular user": 1,
-      "MembersSection > opens the change-role dialog for the chosen member": 1,
-      "MembersSection > opens the delete dialog for a regular member": 1,
-      "MembersSection > opens the reset dialog for the chosen member": 1,
-      "MembersSection > opens the unlock dialog for a locked member": 1,
-      "MembersSection > renders members with their 2FA status badges": 1,
-      "MembersSection > the two account states > labels each row with the state it is actually in": 1,
-      "MembersSection > the two account states > never offers to disable or delete an admin": 1,
-      "MembersSection > the two account states > offers disable to an active regular member": 1,
-      "MembersSection > the two account states > offers enable to a disabled account, and not disable again": 1,
-      "MembersSection > the two account states > opens the enable dialog for a disabled account": 1
-    },
-    "apps/web/src/features/admin/components/RemoveMemberDialog/RemoveMemberDialog.hooks.test.tsx": {
-      "useRemoveMemberDialog > leaves the dialog open on failure, so the admin sees what did not happen": 1,
-      "useRemoveMemberDialog > sends the member id, invalidates the list, toasts, and closes": 1
-    },
-    "apps/web/src/features/admin/components/RemoveMemberDialog/RemoveMemberDialog.test.tsx": {
-      "RemoveMemberDialog > names the person it is about and offers the action": 1,
-      "RemoveMemberDialog > renders nothing when closed": 1
-    },
-    "apps/web/src/features/admin/components/ResetMemberDialog/ResetMemberDialog.hooks.test.tsx": {
-      "useResetMemberDialog > resets the member, invalidates the list, toasts, and closes": 1
-    },
-    "apps/web/src/features/admin/components/ResetMemberDialog/ResetMemberDialog.test.tsx": {
-      "ResetMemberDialog > renders nothing when closed": 1,
-      "ResetMemberDialog > warns that the member is signed out and must re-enroll": 1
-    },
-    "apps/web/src/features/admin/components/RestoreMemberDialog/RestoreMemberDialog.hooks.test.tsx": {
-      "useRestoreMemberDialog > leaves the dialog open on failure, so the admin sees what did not happen": 1,
-      "useRestoreMemberDialog > sends the member id, invalidates the list, toasts, and closes": 1
-    },
-    "apps/web/src/features/admin/components/RestoreMemberDialog/RestoreMemberDialog.test.tsx": {
-      "RestoreMemberDialog > names the person it is about and offers the action": 1,
-      "RestoreMemberDialog > renders nothing when closed": 1
-    },
-    "apps/web/src/features/admin/components/UnlockMemberDialog/UnlockMemberDialog.hooks.test.tsx": {
-      "useUnlockMemberDialog > unlocks the member, invalidates the list, toasts, and closes": 1
-    },
-    "apps/web/src/features/admin/components/UnlockMemberDialog/UnlockMemberDialog.test.tsx": {
-      "UnlockMemberDialog > explains the lockout and that unlocking restores sign-in right away": 1,
-      "UnlockMemberDialog > renders nothing when closed": 1
-    },
-    "apps/web/src/features/audit/Audit.catalog.test.ts": {
-      "audit action groups > carries no group for a domain that is gone": 1,
-      "audit action groups > names every domain the dropdown groups by": 1,
+    "apps/web/src/features/admin/Admin.constants.test.ts": {
       "audit action labels > carries no label for an action that is gone": 1,
+      "audit action labels > labels a known target type and passes an unknown one through": 1,
       "audit action labels > names every action in the vocabulary": 1,
       "audit action labels > never leaves a label empty or equal to its own key": 1,
-      "audit target types > never leaves a target-type label empty": 1
+      "audit action labels > renders an unknown action as its raw name rather than failing": 1,
+      "auditActionTone > paints any row the server recorded as a failure danger": 1,
+      "auditActionTone > paints removals and revocations danger": 1,
+      "auditActionTone > paints successes success and states everything else": 1
     },
-    "apps/web/src/features/audit/Audit.diff.test.ts": {
-      "changedFieldNames > ignores non-list and non-string shapes instead of crashing the row": 1,
-      "changedFieldNames > reads the field-name list some writers record": 1,
-      "diffSnapshots > handles one-sided snapshots (creation and deletion shapes)": 1,
-      "diffSnapshots > keeps only the fields that actually changed": 1,
-      "diffSnapshots > returns no changes when neither side is snapshot-shaped": 1,
-      "diffSnapshots > sorts fields so the rendering is stable": 1,
-      "formatDiffValue > maps null and undefined to the empty marker": 1,
-      "formatDiffValue > renders primitives directly and structures as compact JSON": 1,
-      "metadataEntries > returns nothing for non-record metadata": 1,
-      "metadataEntries > surfaces metadata pairs minus the keys rendered elsewhere": 1
+    "apps/web/src/features/admin/components/AuditLogSection/AuditLogSection.hooks.test.tsx": {
+      "buildAuditLogRow > falls back to the email, then to the system actor": 1,
+      "buildAuditLogRow > leaves the target empty for an event that has none": 1,
+      "buildAuditLogRow > names the actor, labels the event and the target": 1,
+      "useAuditLogSection > asks for the first page with no filters and states the position": 1,
+      "useAuditLogSection > pages forward by the cursor the server handed back": 1,
+      "useAuditLogSection > reports a failed read as an error rather than an empty trail": 1,
+      "useAuditLogSection > reports an empty trail as empty, with no pager": 1
     },
-    "apps/web/src/features/audit/Audit.tone.test.ts": {
-      "auditActionTone: irreversible destruction is danger > puts it with the destructions it belongs beside": 1,
-      "auditActionTone: the rows that were already right > leaves every other pre-existing action on the tone it already had": 1,
-      "auditActionTone: the rows that were already right > still paints any row the server recorded as a failure danger": 1
+    "apps/web/src/features/admin/components/AuditLogSection/AuditLogSection.test.tsx": {
+      "AuditLogSection > lists who did what to whom, with no filter controls": 1,
+      "AuditLogSection > offers a retry when the read fails": 1,
+      "AuditLogSection > says so when the trail is empty": 1
     },
-    "apps/web/src/features/audit/components/AuditLogDetails/AuditLogDetails.test.tsx": {
-      "AuditLogDetails > falls back to changed-field chips when the writer recorded names only": 1,
-      "AuditLogDetails > renders every field change as a before/after pair": 1,
-      "AuditLogDetails > says so plainly when a row has nothing beyond its action": 1,
-      "AuditLogDetails > shows target, metadata and network context when present": 1
+    "apps/web/src/features/admin/components/ChangeUserRoleDialog/ChangeUserRoleDialog.hooks.test.tsx": {
+      "useChangeUserRoleDialog > demotes an admin back to user": 1,
+      "useChangeUserRoleDialog > promotes a user to admin, invalidates the list, toasts, and closes": 1
     },
-    "apps/web/src/features/audit/components/AuditLogFilters/AuditLogFilters.test.tsx": {
-      "AuditLogFilters > forwards date edits through the hook handlers": 1,
-      "AuditLogFilters > keeps four controls behind one button instead of across two rows": 1,
-      "AuditLogFilters > makes the 74 event types searchable rather than a scroll": 1,
-      "AuditLogFilters > offers to clear only when something is narrowed": 1
+    "apps/web/src/features/admin/components/ChangeUserRoleDialog/ChangeUserRoleDialog.test.tsx": {
+      "ChangeUserRoleDialog > offers the demotion to user for an administrator": 1,
+      "ChangeUserRoleDialog > renders nothing when closed": 1,
+      "ChangeUserRoleDialog > spells out the promotion from user to administrator and the sign-out": 1
     },
-    "apps/web/src/features/audit/components/AuditLogPage/AuditLogPage.hooks.test.tsx": {
-      "useAuditLogPage > builds display rows off the wire items": 1,
-      "useAuditLogPage > clears every filter at once, counting a date RANGE as one": 1,
-      "useAuditLogPage > distinguishes an empty trail from an over-filtered one": 1,
-      "useAuditLogPage > does not count the tab as a filter: it is where you are, not a narrowing": 1,
-      "useAuditLogPage > ignores a tab id outside the union": 1,
-      "useAuditLogPage > labels a system row and an unknown action without crashing the feed": 1,
-      "useAuditLogPage > lets the event-type filter and the tab override each other cleanly": 1,
-      "useAuditLogPage > never claims a total, because audit.list deliberately has none": 1,
-      "useAuditLogPage > REPLACES a page rather than accumulating it, and can walk back": 1,
-      "useAuditLogPage > returns to page one when a filter changes the cursor space": 1,
-      "useAuditLogPage > turns a tab into the action set it stands for, and back again": 1,
-      "useAuditLogPage > turns the calendar-day \"to\" filter into that day's last instant": 1,
-      "useAuditLogPage, first load against a refresh > is loading with no pager on the first load": 1,
-      "useAuditLogPage, first load against a refresh > keeps the rows and the pager while a filter change is fetched": 1
+    "apps/web/src/features/admin/components/DeleteUserDialog/DeleteUserDialog.hooks.test.tsx": {
+      "useDeleteUserDialog > deletes the user, invalidates the list, toasts, and closes": 1
     },
-    "apps/web/src/features/audit/components/AuditLogPage/AuditLogPage.test.tsx": {
-      "AuditLogPage > hands the pager down to the card, so it sits inside the surface footer": 1,
-      "AuditLogPage > keeps the narrowing behind the toolbar and hands the table its rows": 1,
-      "AuditLogPage > offers no \"show more\" button: the footer pages the feed now": 1,
-      "AuditLogPage > passes the failure down as the card state, rather than hiding the card": 1,
-      "AuditLogPage > splits the trail into two tabs, exactly one of them current": 1
+    "apps/web/src/features/admin/components/DeleteUserDialog/DeleteUserDialog.test.tsx": {
+      "DeleteUserDialog > renders nothing when closed": 1,
+      "DeleteUserDialog > warns that the whole account is deleted, not only disabled": 1
     },
-    "apps/web/src/features/audit/components/AuditLogTable/AuditLogTable.test.tsx": {
-      "AuditLogTable > draws prev/next with a position and never a page number": 1,
-      "AuditLogTable > expands a row in place and collapses it again": 1,
-      "AuditLogTable > hides the footer while the card is not showing rows": 1,
-      "AuditLogTable > renders one feed row with actor, action and timestamp": 1,
-      "AuditLogTable > renders skeleton rows while the first page loads": 1,
-      "AuditLogTable > replaces the table with the placeholder the page supplied": 1,
-      "AuditLogTable > shows the first field change as a before/after pair without expanding": 1
+    "apps/web/src/features/admin/components/DisableUserDialog/DisableUserDialog.hooks.test.tsx": {
+      "useDisableUserDialog > leaves the dialog open on failure, so the admin sees what did not happen": 1,
+      "useDisableUserDialog > sends the user id, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/DisableUserDialog/DisableUserDialog.test.tsx": {
+      "DisableUserDialog > names the person it is about and offers the action": 1,
+      "DisableUserDialog > renders nothing when closed": 1
+    },
+    "apps/web/src/features/admin/components/EnableUserDialog/EnableUserDialog.hooks.test.tsx": {
+      "useEnableUserDialog > leaves the dialog open on failure, so the admin sees what did not happen": 1,
+      "useEnableUserDialog > sends the user id, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/EnableUserDialog/EnableUserDialog.test.tsx": {
+      "EnableUserDialog > names the person it is about and offers the action": 1,
+      "EnableUserDialog > renders nothing when closed": 1
+    },
+    "apps/web/src/features/admin/components/ResetTwoFactorDialog/ResetTwoFactorDialog.hooks.test.tsx": {
+      "useResetTwoFactorDialog > resets the user, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/ResetTwoFactorDialog/ResetTwoFactorDialog.test.tsx": {
+      "ResetTwoFactorDialog > renders nothing when closed": 1,
+      "ResetTwoFactorDialog > warns that the user is signed out and must re-enroll": 1
+    },
+    "apps/web/src/features/admin/components/RevokeSessionsDialog/RevokeSessionsDialog.hooks.test.tsx": {
+      "useRevokeSessionsDialog > leaves the dialog open on failure, so the admin sees what did not happen": 1,
+      "useRevokeSessionsDialog > sends the user id, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/RevokeSessionsDialog/RevokeSessionsDialog.test.tsx": {
+      "RevokeSessionsDialog > names the person it is about and offers the action": 1,
+      "RevokeSessionsDialog > renders nothing when closed": 1
+    },
+    "apps/web/src/features/admin/components/UnlockUserDialog/UnlockUserDialog.hooks.test.tsx": {
+      "useUnlockUserDialog > unlocks the user, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/UnlockUserDialog/UnlockUserDialog.test.tsx": {
+      "UnlockUserDialog > explains the lockout and that unlocking restores sign-in right away": 1,
+      "UnlockUserDialog > renders nothing when closed": 1
+    },
+    "apps/web/src/features/admin/components/UsersSection/UsersSection.hooks.test.tsx": {
+      "useUsersSection > holds one page and states the position against the total": 1,
+      "useUsersSection > replaces the open dialog when another action is chosen": 1,
+      "useUsersSection > REPLACES the page rather than accumulating it, and can walk back": 1,
+      "useUsersSection > replaces the table while the first page is loading, and when it is empty": 1,
+      "useUsersSection > tracks the dialog opened for a user and clears it on close": 1,
+      "useUsersSection failure > hides the pager while the load is failing, so it cannot page a broken list": 1,
+      "useUsersSection failure > offers a retry that refetches": 1,
+      "useUsersSection failure > reports a failed load as an error, not as an empty list": 1
+    },
+    "apps/web/src/features/admin/components/UsersSection/UsersSection.test.tsx": {
+      "UsersSection > marks only the locked user with the locked badge": 1,
+      "UsersSection > offers neither unlock nor delete for an unlocked admin": 1,
+      "UsersSection > offers unlock and delete for a locked regular user": 1,
+      "UsersSection > opens the change-role dialog for the chosen user": 1,
+      "UsersSection > opens the delete dialog for a regular user": 1,
+      "UsersSection > opens the reset dialog for the chosen user": 1,
+      "UsersSection > opens the sign-out-everywhere dialog for another user": 1,
+      "UsersSection > opens the unlock dialog for a locked user": 1,
+      "UsersSection > renders users with their 2FA status badges": 1,
+      "UsersSection > the signed-in admin's own row > is marked as you and offers nothing the self guards refuse": 1,
+      "UsersSection > the two account states > labels each row with the state it is actually in": 1,
+      "UsersSection > the two account states > never offers to disable or delete an admin": 1,
+      "UsersSection > the two account states > offers disable to an active regular user": 1,
+      "UsersSection > the two account states > offers enable to a disabled account, and not disable again": 1,
+      "UsersSection > the two account states > opens the enable dialog for a disabled account": 1
     },
     "apps/web/src/features/auth/components/AuthField/AuthField.test.tsx": {
       "AuthField > associates a validation message with the input and marks it invalid": 1,
@@ -276,57 +241,17 @@
     "apps/web/src/features/dashboard/components/DashboardPage/DashboardPage.test.tsx": {
       "DashboardPage > greets the signed-in user in English": 1,
       "DashboardPage > leaves the top-level heading to the app shell topbar": 1,
-      "DashboardPage > publishes the date into the topbar rather than the page body": 1
-    },
-    "apps/web/src/features/landing/components/LandingCta/LandingCta.test.tsx": {
-      "LandingCta > renders the closing heading and routes the CTA to register": 1
-    },
-    "apps/web/src/features/landing/components/LandingFaq/LandingFaq.test.tsx": {
-      "LandingFaq > collapses an open question when it is clicked again": 1,
-      "LandingFaq > opens the clicked question and closes the previously open one": 1,
-      "LandingFaq > starts with the first question expanded and the rest collapsed": 1,
-      "LandingFaq > wires every question to the panel it controls": 1
-    },
-    "apps/web/src/features/landing/components/LandingFeatures/LandingFeatures.test.tsx": {
-      "LandingFeatures > anchors the section so the nav link can reach it": 1,
-      "LandingFeatures > gives the signature cell the inverted surface and the first cell the brand tint": 1,
-      "LandingFeatures > renders all six cells under a level-2 section heading": 1
-    },
-    "apps/web/src/features/landing/components/LandingFooter/LandingFooter.test.tsx": {
-      "LandingFooter > omits the legal links until those routes exist": 1,
-      "LandingFooter > renders a labeled footer nav with the section anchors": 1
-    },
-    "apps/web/src/features/landing/components/LandingHero/LandingHero.test.tsx": {
-      "LandingHero > draws every sample avatar as a tint plate with its own ink": 1,
-      "LandingHero > hides the sample rows from assistive tech": 1,
-      "LandingHero > points the primary CTA at the real register route": 1,
-      "LandingHero > renders the page h1 as a single level-1 heading": 1
-    },
-    "apps/web/src/features/landing/components/LandingNav/LandingNav.test.tsx": {
-      "LandingNav > closes the mobile menu after following a link": 1,
-      "LandingNav > links every section anchor": 1,
-      "LandingNav > renders the wordmark and both auth CTAs": 1,
-      "LandingNav > starts with the mobile menu collapsed and toggles it open": 1
+      "DashboardPage > publishes the date into the topbar rather than the page body": 1,
+      "DashboardPage > shows a start-here card in place of invented tiles": 1
     },
     "apps/web/src/features/landing/components/LandingPage/LandingPage.test.tsx": {
+      "LandingPage > carries no marketing sections: no pricing, FAQ or invented social proof": 1,
       "LandingPage > exposes the landmarks the skip link and screen readers rely on": 1,
-      "LandingPage > invents no social proof: no customer logos and no testimonial": 1,
-      "LandingPage > renders every marketing section in order": 1,
-      "LandingPage > renders exactly one h1 and no skipped heading levels": 1
-    },
-    "apps/web/src/features/landing/components/LandingPricing/LandingPricing.test.tsx": {
-      "LandingPricing > marks only the Team plan as featured": 1,
-      "LandingPricing > renders the three plans": 1,
-      "LandingPricing > sends every plan to the register route": 1,
-      "LandingPricing > ships no mailto CTA, which would be a dead link until a real address exists": 1,
-      "LandingPricing > states no price until pricing is actually decided": 1
-    },
-    "apps/web/src/features/landing/components/LandingSteps/LandingSteps.test.tsx": {
-      "LandingSteps > renders the three onboarding steps in order": 1,
-      "LandingSteps > uses an ordered list so the sequence survives without the numerals": 1
+      "LandingPage > names the product from PRODUCT_NAME in its only h1": 1,
+      "LandingPage > offers sign in and account creation, from the header and the hero": 1
     },
     "apps/web/src/features/layout/components/AppSidebar/AppSidebar.hooks.test.tsx": {
-      "useAppSidebar > adds the admin-only audit log for an admin": 1,
+      "useAppSidebar > adds the admin-only admin page for an admin": 1,
       "useAppSidebar > does not activate /settings from /compliance/settings": 1,
       "useAppSidebar > exposes only entries backed by a real route": 1,
       "useAppSidebar > hides the admin-only entry from a signed-out reader": 1,
@@ -383,7 +308,7 @@
       "isActivePath > does not match an unrelated route": 1,
       "isActivePath > matches a nested route": 1,
       "isActivePath > matches the route exactly": 1,
-      "NAV_GROUPS > gates the audit log to admins": 1,
+      "NAV_GROUPS > gates the admin page to admins": 1,
       "NAV_GROUPS > reaches every page title from the nav or a route": 1,
       "NAV_GROUPS > ships no entry without a destination": 1
     },
@@ -451,16 +376,6 @@
       "DateField > emits the wire shape the form already speaks": 1,
       "DateField > names the calendar trigger from the strings table": 1,
       "DateField > renders the value in the app locale order, mm/dd/yyyy for en-US": 1
-    },
-    "apps/web/src/features/shared/components/ListFilterPopover/ListFilterPopover.test.tsx": {
-      "ListFilterPopover > badges the active count, so a filtered list never looks unfiltered": 1,
-      "ListFilterPopover > closes on clear, so the unfiltered rows are actually visible": 1,
-      "ListFilterPopover > keeps the filters closed until the trigger is pressed": 1,
-      "ListFilterPopover > offers no reset while nothing is active": 1
-    },
-    "apps/web/src/features/shared/components/ListSearchField/ListSearchField.test.tsx": {
-      "ListSearchField > hands the caller a plain string rather than the event": 1,
-      "ListSearchField > is reachable by its accessible name, with no visible label in the toolbar": 1
     },
     "apps/web/src/features/shared/components/PasswordStrength/PasswordStrength.test.tsx": {
       "PasswordStrength > lists every requirement": 1,
@@ -615,10 +530,10 @@
       "loginPathForExpiredSession > refuses to bounce /auth/reset-password, which is already a sign-in surface": 1,
       "loginPathForExpiredSession > refuses to bounce /auth/two-factor, which is already a sign-in surface": 1,
       "loginPathForExpiredSession > sends / to the sign-in path": 1,
-      "loginPathForExpiredSession > sends /audit to the sign-in path": 1,
+      "loginPathForExpiredSession > sends /admin to the sign-in path": 1,
       "loginPathForExpiredSession > sends /dashboard to the sign-in path": 1,
       "loginPathForExpiredSession > sends /settings to the sign-in path": 1,
-      "pendingSkeletonForPath > maps /audit to the list silhouette": 1,
+      "pendingSkeletonForPath > maps /admin to the list silhouette": 1,
       "pendingSkeletonForPath > maps /dashboard to the cards silhouette": 1,
       "pendingSkeletonForPath > maps /settings to the detail silhouette": 1,
       "pendingSkeletonForPath > maps /settings/security to the detail silhouette": 1,
@@ -669,12 +584,12 @@
       "/_authenticated sidebar > re-expands, so the control is not one way": 1,
       "/_authenticated sidebar > records the collapse in the store, so it survives a reload": 1
     },
-    "apps/web/src/routes/_authenticated/audit.test.tsx": {
-      "/_authenticated/audit route > announces a load failure and offers a retry": 1,
-      "/_authenticated/audit route > bounces a USER to the dashboard instead of a 403 screen": 1,
-      "/_authenticated/audit route > lets an ADMIN through": 1,
-      "/_authenticated/audit route > mounts the audit screen": 1,
-      "/_authenticated/audit route > renders a skeleton rather than a blank frame while loading": 1
+    "apps/web/src/routes/_authenticated/admin.test.tsx": {
+      "/_authenticated/admin route > announces a load failure and offers a retry": 1,
+      "/_authenticated/admin route > bounces a USER to the dashboard instead of a 403 screen": 1,
+      "/_authenticated/admin route > lets an ADMIN through": 1,
+      "/_authenticated/admin route > mounts the users table and the audit list": 1,
+      "/_authenticated/admin route > renders a skeleton rather than a blank frame while loading": 1
     },
     "apps/web/src/routes/_authenticated/settings/index.test.tsx": {
       "/_authenticated/settings/ route search > drops a non-string section": 1,

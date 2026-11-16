@@ -370,16 +370,15 @@
       "eraseRegisteredPii > reports \"nothing to do\" for payloads without a registered key": 1
     },
     "apps/api/src/modules/audit/audit-read.repository.spec.ts": {
-      "AuditReadRepository > ANDs every filter": 1,
       "AuditReadRepository > maps the user relation onto the wire actor and keeps system rows null": 1,
       "AuditReadRepository > omits cursor args entirely on the first page": 1,
       "AuditReadRepository > orders newest first with the id tiebreaker and pages by keyset cursor": 1,
+      "AuditReadRepository > reads the whole trail with no where clause and only the listed columns": 1,
       "AuditReadRepository > returns a null nextCursor on the final page": 1,
-      "AuditReadRepository > sends no clause at all when no filter is set: an admin reads the whole trail": 1,
       "AuditReadRepository > slices the probe row off and mints its predecessor as nextCursor": 1
     },
     "apps/api/src/modules/audit/audit-read.service.spec.ts": {
-      "AuditReadService > hands the filters to the repository unchanged": 1
+      "AuditReadService > hands the page request to the repository unchanged": 1
     },
     "apps/api/src/modules/audit/audit-retention.service.spec.ts": {
       "AuditRetentionService durable record > does not write the row when the sweep threw": 1,
@@ -781,9 +780,9 @@
       "TurnstileService > when siteverify stalls > stays pending until the deadline fires, then fails closed": 1
     },
     "apps/api/src/modules/auth/services/two-factor-admin-reset.service.spec.ts": {
-      "TwoFactorAdminResetService > resetMemberTwoFactor > refuses a target that is not a live account (fail closed)": 1,
-      "TwoFactorAdminResetService > resetMemberTwoFactor > refuses to reset the caller themselves": 1,
-      "TwoFactorAdminResetService > resetMemberTwoFactor > wipes factors + trust + pendings, revokes sessions, audits and emails the member": 1
+      "TwoFactorAdminResetService > resetUserTwoFactor > refuses a target that is not a live account (fail closed)": 1,
+      "TwoFactorAdminResetService > resetUserTwoFactor > refuses to reset the caller themselves": 1,
+      "TwoFactorAdminResetService > resetUserTwoFactor > wipes factors + trust + pendings, revokes sessions, audits and emails the member": 1
     },
     "apps/api/src/modules/auth/services/two-factor-challenge.service.spec.ts": {
       "TwoFactorChallengeService > beginOrEstablish > active factor + trusted device: skips the challenge (session via trusted_device)": 1,
@@ -846,7 +845,7 @@
       "TwoFactorRouter (wiring) > beginEnrollment passes userId + password + ip/ua and returns the setup payload": 1,
       "TwoFactorRouter (wiring) > disable passes password + code and returns { success: true }": 1,
       "TwoFactorRouter (wiring) > regenerateRecoveryCodes passes the password and returns codes": 1,
-      "TwoFactorRouter (wiring) > resetMemberTwoFactor passes caller id, target id + ip/ua": 1,
+      "TwoFactorRouter (wiring) > resetUserTwoFactor passes caller id, target id + ip/ua": 1,
       "TwoFactorRouter (wiring) > revokeTrustedDevices delegates and returns { success: true }": 1,
       "TwoFactorRouter (wiring) > status delegates to the service with the caller id": 1
     },
@@ -1045,11 +1044,12 @@
     },
     "apps/api/src/modules/user/user.router.spec.ts": {
       "UserRouter (wiring) > adminDeleteUser() delegates target + caller id to userService.adminDeleteUser": 1,
+      "UserRouter (wiring) > disableUser() delegates target + caller id to userService.disableUser": 1,
+      "UserRouter (wiring) > enableUser() delegates the target to userService.enableUser": 1,
       "UserRouter (wiring) > listUsers() forwards an explicit cursor + limit": 1,
       "UserRouter (wiring) > listUsers() forwards the zod-defaulted pagination input to userService.listUsers": 1,
       "UserRouter (wiring) > me() delegates to userService.getProfile(user.id)": 1,
-      "UserRouter (wiring) > removeMember() delegates target + caller id to userService.disableUser": 1,
-      "UserRouter (wiring) > restoreMember() delegates the target to userService.enableUser": 1,
+      "UserRouter (wiring) > revokeUserSessions() delegates target + caller id to userService.revokeUserSessions": 1,
       "UserRouter (wiring) > unlockUser() delegates to lockoutService.adminUnlock": 1,
       "UserRouter (wiring) > updateUserRole() delegates target + caller id to userService.updateRole": 1
     },
@@ -1082,6 +1082,9 @@
       "UserService > normalizeEmail > normalizes \"\" → \"\"": 1,
       "UserService > normalizeEmail > normalizes \"already@lc.com\" → \"already@lc.com\"": 1,
       "UserService > normalizeEmail > normalizes \"MIXED@CASE.COM\" → \"mixed@case.com\"": 1,
+      "UserService > revokeUserSessions > audits, then signs the target out of every session without touching the account": 1,
+      "UserService > revokeUserSessions > refuses the caller's own account before it reads anything": 1,
+      "UserService > revokeUserSessions > throws NOT_FOUND for a missing target and never audits or revokes": 1,
       "UserService > softDeleteById > delegates to repo.softDelete and returns the count without throwing on zero rows": 1,
       "UserService > softDeleteSelfKeepingOneAdmin > does not take the lock for a non-admin, who cannot strand anyone": 1,
       "UserService > softDeleteSelfKeepingOneAdmin > refuses inside the lock when the deletion would strand other users": 1,
