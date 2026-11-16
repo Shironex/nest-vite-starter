@@ -1,0 +1,114 @@
+# OpenTelemetry Collector (contrib) configuration.
+#
+# Current state (Slice B): collector is wired and running but the API does NOT
+# yet push OTLP signals to it. Slice D will add @opentelemetry/sdk-node to the
+# API and configure OTLP_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317.
+#
+# Data flow (once Slice D ships):
+#   API → (OTLP gRPC) → otel-collector → traces  → Tempo
+#                                       → metrics → Prometheus (remote-write)
+#                                       → logs    → Loki (via loki exporter)
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: '0.0.0.0:4317'
+      http:
+        endpoint: '0.0.0.0:4318'
+        # CORS for browser-side OTLP (web SPA, Slice D)
+        cors:
+          allowed_origins:
+            - 'http://localhost:5173'
+            - 'http://localhost:3000'
+
+processors:
+  # Batch spans/metrics/logs before exporting, reduces network chattiness
+  batch:
+    send_batch_size: 1024
+    timeout: 5s
+
+  # Drop high-cardinality attributes before they reach storage.
+  # The API's prom-client histograms are already cardinality-safe (Slice A),
+  # but OTLP traces from Slice D could inadvertently include userId / requestId
+  # as span attributes. Keep them as span attributes (searchable in Tempo) but
+  # ensure they are NOT promoted to Prometheus metric labels.
+  attributes/drop_high_cardinality:
+    actions:
+      # Keep userId as a span attribute in Tempo but strip from metric labels
+      - key: http.client_ip
+        action: delete
+      - key: http.user_agent
+        action: delete
+
+  # Memory limiter, prevents OOM if the API bursts unexpectedly
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 200
+    spike_limit_mib: 50
+
+exporters:
+  # Traces → Tempo (OTLP gRPC)
+  otlp/tempo:
+    endpoint: 'tempo:4317'
+    tls:
+      insecure: true
+
+  # Metrics → Prometheus (remote write)
+  prometheusremotewrite:
+    endpoint: 'http://prometheus:9090/api/v1/write'
+    tls:
+      insecure: true
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  # Logs → Loki
+  loki:
+    endpoint: 'http://loki:3100/loki/api/v1/push'
+    # Map OTLP resource/log attributes to Loki labels (low-cardinality only)
+    default_labels_enabled:
+      exporter: false
+      job: true
+    labels:
+      attributes:
+        compose_service: ''
+        level: ''
+      resource:
+        service.name: 'service_name'
+        service.version: 'service_version'
+
+  # Collector self-metrics to stdout for debugging (remove in prod if noisy)
+  debug:
+    verbosity: basic
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+extensions:
+  health_check:
+    endpoint: '0.0.0.0:13133'
+  pprof:
+    endpoint: '127.0.0.1:1777'
+  zpages:
+    endpoint: '127.0.0.1:55679'
+
+service:
+  extensions: [health_check, pprof, zpages]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, attributes/drop_high_cardinality, batch]
+      exporters: [otlp/tempo]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [prometheusremotewrite]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [loki]
+
+  telemetry:
+    metrics:
+      address: '0.0.0.0:8888'
+    logs:
+      level: warn

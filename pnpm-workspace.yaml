@@ -1,0 +1,30 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# If you run pnpm with a minimum release age (the `minimumReleaseAge` setting,
+# a supply-chain gate worth enabling in your user config), the @noctcore/*
+# ESLint rule packages this repo's lint config depends on are exempt: they are
+# released together with the rules this repo adopts, and a lint-meta rule
+# (`noctcore-packages-current`) keeps them current. The gate stays in force for
+# every other dependency.
+minimumReleaseAgeExclude:
+  - '@noctcore/*'
+
+# eslint-plugin-react 7.37.5 is the latest published release (2025-04-03) and
+# still caps its eslint peer at ^9.7, so ESLint 10 falls outside the declared
+# range. The rules themselves run fine against ESLint 10; only the peer
+# declaration is stale, and there is no newer release to move to. Scope the
+# allowance to eslint-plugin-react's own eslint peer so a genuine peer conflict
+# from any other package still surfaces. Remove once eslint-plugin-react ships a
+# release that declares ESLint 10 support.
+# eslint-plugin-jsx-a11y 6.10.2 is the latest published release (2024-10-26) and
+# caps its eslint peer at ^9, the same stale-peer situation as
+# eslint-plugin-react below. Its rules run against ESLint 10; only the
+# declaration is behind. Scoped to that package's own eslint peer so a real peer
+# conflict elsewhere still surfaces. Remove once it declares ESLint 10 support.
+
+peerDependencyRules:
+  allowedVersions:
+    'eslint-plugin-jsx-a11y>eslint': '10'
+    'eslint-plugin-react>eslint': '10'

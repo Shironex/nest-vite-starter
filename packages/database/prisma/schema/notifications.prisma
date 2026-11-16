@@ -1,0 +1,66 @@
+// ---------------------------------------------------------------------------
+// In-app notification feed and per-user delivery preferences.
+// ---------------------------------------------------------------------------
+
+// Notification: persisted in-app notification feed backing the web bell. The
+// DATABASE is the source of truth for the bell; Socket.io NOTIFICATION events
+// are delivery only, never storage: the notification-dispatch worker writes
+// the row FIRST and emits after, so a page refresh rehydrates exactly what was
+// delivered. Deleting a user cascades their feed away (the future user-purge
+// job relies on this FK).
+//
+// jobId records the BullMQ job that created the row. Its unique index is what
+// makes the worker's persist idempotent under retry: attempt 2 finds attempt
+// 1's row by jobId and only re-emits, instead of inserting a duplicate.
+// Nullable because rows created outside the queue (tests, seeds) have no job.
+//
+// type is TEXT on purpose; the 'info'|'success'|'warning'|'error' union is
+// enforced at the app boundaries (dispatch job schema in, tRPC output out).
+//
+// tenantId mirrors AuditLog: a plain nullable scope column with NO FK,
+// populated from the producer's request context when present and absent for
+// system-generated notifications (crons, workers outside a tenant context).
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  tenantId  String?
+  type      String
+  title     String
+  message   String
+  jobId     String?   @unique
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Unread-count lookup: { userId, readAt: null }.
+  @@index([userId, readAt])
+  // Bell hydrate: newest-first page per user, index-ordered.
+  @@index([userId, createdAt(sort: Desc)])
+  // Retention sweep deletes by createdAt < cutoff.
+  @@index([createdAt])
+}
+
+// NotificationPreference: per-user notification channel matrix.
+// One row per user, created lazily on first save; no row means the defaults,
+// which are each category's declared default, so existing users see no
+// change and no backfill is needed.
+//
+// channels is a zod-validated { [NotificationCategory]: { inApp, digest } }
+// map. Json rather than rows because it is read whole, written whole, and
+// never queried by its contents. Every read
+// goes through NotificationPreferencesService.resolveChannels, so a category
+// added after the row was saved falls back to its default instead of vanishing.
+//
+// USER-scoped config like SecondFactor, NOT tenant-scoped domain data: it is
+// deliberately absent from TENANT_SCOPED_MODELS and every query is keyed by
+// userId. onDelete: Cascade rides the existing user-deletion + purge lifecycle.
+model NotificationPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  channels  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

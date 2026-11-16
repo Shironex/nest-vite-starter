@@ -1,0 +1,193 @@
+---
+import { PRODUCT_NAME } from '@repo/shared/constants';
+
+import Icon from './Icon.astro';
+---
+
+<section class="foot" aria-label="About these docs">
+  <div class="foot__top">
+    <div class="foot__brand">
+      <!-- The same lockup the app rails render (NavRailBrand, BrandPanel):
+           the product initial on the brand plate, not a generic file icon. -->
+      <span class="foot__mark" aria-hidden="true">{PRODUCT_NAME.charAt(0)}</span>
+      <span class="foot__wordmark">{PRODUCT_NAME} Docs</span>
+    </div>
+
+    <p class="foot__blurb">
+      The durable knowledge layer for this monorepo. Authored as Markdown,
+      rendered with Astro Starlight, searchable with Pagefind.
+    </p>
+
+    <div class="foot__contribute">
+      <span class="sst-eyebrow">Contribute a page</span>
+      <div class="foot__chips">
+        <code class="foot__path">src/content/docs/&lt;section&gt;/*.md</code>
+        <a
+          class="foot__repo"
+          href="https://github.com/Shironex/nest-vite-saas-starter"
+        >
+          <Icon name="file-text" size={14} />
+          Shironex/nest-vite-saas-starter
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot__bottom">
+    <span class="foot__fine">
+      Static, searchable, and offline-first. No backend required to read or search
+      the docs.
+    </span>
+    <span class="foot__badges">
+      <span class="foot__badge">Static</span>
+      <span class="foot__badge foot__badge--brand">Pagefind</span>
+      <span class="foot__badge">Mermaid</span>
+    </span>
+  </div>
+</section>
+
+<style>
+  .foot {
+    display: flex;
+    flex-direction: column;
+    gap: 1.375rem;
+    padding-block: 2.5rem 1rem;
+    border-top: 1px solid var(--sst-border);
+  }
+
+  .foot__top {
+    display: grid;
+    gap: 1rem 2rem;
+  }
+
+  @media (min-width: 52rem) {
+    .foot__top {
+      grid-template-columns: 1fr auto;
+      align-items: start;
+    }
+
+    .foot__contribute {
+      grid-row: 1 / span 2;
+      grid-column: 2;
+      align-items: flex-end;
+      text-align: right;
+    }
+  }
+
+  .foot__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .foot__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 7px;
+    background: var(--sst-brand);
+    color: var(--sst-brand-fg);
+    /* type-display-wordmark, the ramp step the app's own mark glyph uses. */
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    line-height: 1;
+    letter-spacing: -0.3px;
+  }
+
+  .foot__wordmark {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: -0.02em;
+    color: var(--sst-text);
+  }
+
+  .foot__blurb {
+    margin: 0;
+    max-width: 52ch;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--sst-text-muted);
+  }
+
+  .foot__contribute {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .foot__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .foot__path {
+    padding: 0.1875rem 0.625rem;
+    border-radius: 999px;
+    background: var(--sst-subtle);
+    border: 1px solid var(--sst-border);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--sst-text-muted);
+  }
+
+  .foot__repo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.3125rem 0.75rem;
+    border-radius: 999px;
+    background: var(--sst-subtle);
+    border: 1px solid var(--sst-border);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--sst-text-secondary);
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .foot__repo:hover {
+    border-color: var(--sst-brand);
+    color: var(--sst-brand-ink);
+  }
+
+  .foot__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--sst-border);
+  }
+
+  .foot__fine {
+    flex: 1;
+    min-width: 16rem;
+    font-size: 0.75rem;
+    color: var(--sst-text-tertiary);
+  }
+
+  .foot__badges {
+    display: inline-flex;
+    gap: 0.5rem;
+  }
+
+  .foot__badge {
+    padding: 0.1875rem 0.5rem;
+    border-radius: 999px;
+    background: var(--sst-subtle);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--sst-text-muted);
+  }
+
+  .foot__badge--brand {
+    background: var(--sst-brand-50);
+    color: var(--sst-brand-ink);
+  }
+</style>

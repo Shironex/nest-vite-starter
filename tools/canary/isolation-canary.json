@@ -1,0 +1,39 @@
+{
+  "$comment": [
+    "Expectations for `pnpm canary:isolation`. Each key of `mutants` is a model the tenant-scope",
+    "extension isolates (plus `all`, which isolates nothing), and `mustFail` names the isolation-lane",
+    "cases that MUST go red once that model is no longer scoped. A named case that stays green is a",
+    "surviving mutant: the lane cannot see that model leaking, which is a hole in the lane.",
+    "Names are jest full names (the describe chain plus the title), so renaming a case here is caught",
+    "as \"no such case in the run\" rather than silently weakening the canary.",
+    "Every model in TENANT_SCOPED_MODELS must have an entry (lint:meta rule isolation-canary-coverage)."
+  ],
+  "controlPrefix": "control:",
+  "mutants": {
+    "workspace": {
+      "why": "The first scoped model and the one every other tenant read hangs off.",
+      "mustFail": [
+        "tenant isolation (live DB, app-layer extension is the only boundary) T1 scoped read isolation: findMany returns only the active tenant rows",
+        "tenant isolation (live DB, app-layer extension is the only boundary) T2 scoped findUnique by cross-tenant id resolves to null",
+        "every model the extension isolates has a cross-tenant case workspace C1 a row of tenant A is invisible to a scoped read under tenant B"
+      ]
+    },
+    "twoFactorPolicy": {
+      "why": "Per-organization 2FA policy: read at login and by the enforcement cron.",
+      "mustFail": [
+        "tenant isolation (live DB, app-layer extension is the only boundary) two-factor policy isolation P1 a policy created for tenant A is invisible to tenant B",
+        "tenant isolation (live DB, app-layer extension is the only boundary) two-factor policy isolation P2 fail-closed: a policy query with no tenant in context throws",
+        "every model the extension isolates has a cross-tenant case twoFactorPolicy C1 a row of tenant A is invisible to a scoped read under tenant B"
+      ]
+    },
+    "all": {
+      "why": "The registry never loaded at all: the accessor-mapping refactor that makes every lookup miss.",
+      "mustFail": [
+        "every model the extension isolates has a cross-tenant case workspace C1 a row of tenant A is invisible to a scoped read under tenant B",
+        "every model the extension isolates has a cross-tenant case twoFactorPolicy C1 a row of tenant A is invisible to a scoped read under tenant B",
+        "tenant isolation (live DB, app-layer extension is the only boundary) T1 scoped read isolation: findMany returns only the active tenant rows",
+        "tenant isolation (live DB, app-layer extension is the only boundary) two-factor policy isolation P1 a policy created for tenant A is invisible to tenant B"
+      ]
+    }
+  }
+}

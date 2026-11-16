@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@repo/tsconfig/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "declaration": true,
+    // `check-types` is `tsc --noEmit`, which reuses nothing between runs unless
+    // `incremental` is on. The build is tsup, so nothing else writes this file
+    // and the two cannot invalidate each other. Under node_modules, so it is
+    // gitignored and a reinstall discards it.
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsc/check-types.tsbuildinfo"
+  },
+  "include": ["src", "generated", "prisma"]
+}

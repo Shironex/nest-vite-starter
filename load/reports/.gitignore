@@ -1,0 +1,4 @@
+# Generated load-test output (k6 web-dashboard HTML, raw + summary JSON, and the
+# rebuilt gallery index). Keep the directory in git, ignore its contents.
+*
+!.gitignore

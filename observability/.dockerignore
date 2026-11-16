@@ -1,0 +1,11 @@
+# Prevents accidental inclusion of observability configs in API/web Docker builds
+# if the build context is accidentally set to the repo root including this dir.
+# Normally the API/web Dockerfiles use 'context: .' from the repo root and
+# the root .dockerignore already excludes observability data volumes.
+
+# Local override files (never commit these)
+*.override.yml
+*.local.yml
+
+# Grafana exported dashboard backups
+grafana/dashboards/*.backup.json

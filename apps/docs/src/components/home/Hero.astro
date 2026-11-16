@@ -1,0 +1,358 @@
+---
+import Icon from './Icon.astro';
+
+// Decorative search-preview rows (static markup, mirrors the Pagefind
+// palette). Each mirrors a real section entry page.
+interface Result {
+  icon: 'building' | 'shield' | 'layout-dashboard' | 'history';
+  title: string;
+  section: string;
+  active?: boolean;
+}
+
+const results: Result[] = [
+  { icon: 'building', title: 'Monorepo Overview', section: 'Architecture' },
+  { icon: 'shield', title: 'Auth and Sessions', section: 'Backend', active: true },
+  { icon: 'layout-dashboard', title: 'Web Architecture', section: 'Frontend & Desktop' },
+  { icon: 'history', title: 'CI/CD Pipeline', section: 'Operations' },
+];
+---
+
+<section class="hero" aria-labelledby="hero-heading">
+  <div class="hero__copy">
+    <span class="hero__overline">
+      <span class="hero__dot" aria-hidden="true"></span>
+      Open source · Starter Docs
+    </span>
+
+    <h1 id="hero-heading" class="sst-display hero__headline">
+      How this SaaS starter is built, and how to extend it.
+    </h1>
+
+    <p class="hero__tagline">
+      Architecture, backend, frontend, and operations, written to stay useful on
+      their own.
+    </p>
+
+    <div class="hero__actions">
+      <a class="hero__btn hero__btn--primary" href="/architecture/monorepo-overview/">
+        Start with the architecture
+        <Icon name="arrow-right" size={16} />
+      </a>
+      <a class="hero__btn hero__btn--secondary" href="/operations/ci-cd/">
+        <Icon name="book-open" size={16} />
+        Browse operations runbooks
+      </a>
+    </div>
+
+    <p class="hero__note">
+      <Icon name="circle-check" size={16} class="hero__check" />
+      Static and searchable. A full-text Pagefind index is bundled at build time,
+      with no backend.
+    </p>
+  </div>
+
+  <!-- Decorative preview of the real Pagefind palette (Cmd+K opens the live one). -->
+  <div class="hero__card" role="presentation" aria-hidden="true">
+    <div class="hero__card-search">
+      <Icon name="search" size={16} class="hero__card-search-icon" />
+      <span class="hero__card-query">auth sessions</span>
+      <span class="sst-kbd">⌘K</span>
+    </div>
+
+    <div class="hero__card-body">
+      <span class="hero__card-label">Pages</span>
+      <ul class="hero__results">
+        {
+          results.map((r) => (
+            <li class={`hero__result${r.active ? ' hero__result--active' : ''}`}>
+              <span class="hero__result-icon">
+                <Icon name={r.icon} size={16} />
+              </span>
+              <span class="hero__result-text">
+                <span class="hero__result-title">{r.title}</span>
+                <span class="hero__result-section">{r.section}</span>
+              </span>
+              <Icon name="chevron-right" size={16} class="hero__result-chevron" />
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="hero__card-footer">
+      <span class="hero__hint"><span class="sst-kbd">↑↓</span> Navigate</span>
+      <span class="hero__hint"><span class="sst-kbd">↵</span> Open</span>
+      <span class="hero__hint"><span class="sst-kbd">esc</span> Close</span>
+      <span class="hero__pagefind">Pagefind</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-block: 3.5rem 3.5rem;
+    align-items: center;
+  }
+
+  @media (min-width: 62rem) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr) 28.75rem;
+      gap: 3.5rem;
+    }
+  }
+
+  .hero__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .hero__overline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: var(--sst-brand-50);
+    border: 1px solid var(--sst-brand-200);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.6875rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--sst-brand-ink);
+  }
+
+  .hero__dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 999px;
+    background: var(--sst-brand);
+  }
+
+  .hero__headline {
+    font-size: clamp(2.25rem, 4.5vw, 2.75rem);
+    max-width: 20ch;
+  }
+
+  .hero__tagline {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--sst-text-secondary);
+    max-width: 46ch;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+  }
+
+  .hero__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5625rem 0.875rem;
+    border-radius: 10px;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1;
+    transition:
+      transform 0.15s ease,
+      background-color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .hero__btn--primary {
+    background: var(--sst-brand);
+    color: var(--sst-brand-fg);
+    border: 1px solid var(--sst-brand);
+  }
+
+  .hero__btn--secondary {
+    background: var(--sst-surface);
+    color: var(--sst-text);
+    border: 1px solid var(--sst-border-strong);
+  }
+
+  .hero__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--sst-text-muted);
+    max-width: 44ch;
+  }
+
+  .hero__check {
+    color: var(--sst-success);
+    flex-shrink: 0;
+    margin-top: 0.0625rem;
+  }
+
+  /* Search-preview card. */
+  .hero__card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--sst-border);
+    border-radius: 16px;
+    background: var(--sst-surface);
+    box-shadow: var(--sst-shadow-card);
+    overflow: hidden;
+  }
+
+  .hero__card-search {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--sst-border);
+  }
+
+  .hero__card-search-icon {
+    color: var(--sst-text-tertiary);
+    flex-shrink: 0;
+  }
+
+  .hero__card-query {
+    flex: 1;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--sst-text);
+  }
+
+  .hero__card-body {
+    padding: 0.625rem 0.625rem 0.375rem;
+  }
+
+  .hero__card-label {
+    display: block;
+    padding: 0.25rem 0.625rem 0.5rem;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--sst-text-tertiary);
+  }
+
+  .hero__results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .hero__result {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+  }
+
+  .hero__result--active {
+    background: var(--sst-brand-50);
+    border-color: var(--sst-brand-200);
+  }
+
+  .hero__result-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    background: var(--sst-subtle);
+    color: var(--sst-text-secondary);
+    flex-shrink: 0;
+  }
+
+  .hero__result--active .hero__result-icon {
+    background: var(--sst-brand);
+    color: var(--sst-brand-fg);
+  }
+
+  .hero__result-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hero__result-title {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--sst-text);
+  }
+
+  .hero__result--active .hero__result-title {
+    color: var(--sst-brand-ink);
+  }
+
+  .hero__result-section {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--sst-text-muted);
+  }
+
+  .hero__result-chevron {
+    color: var(--sst-text-tertiary);
+    flex-shrink: 0;
+  }
+
+  .hero__card-footer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--sst-border);
+  }
+
+  .hero__hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--sst-text-muted);
+  }
+
+  .hero__pagefind {
+    margin-left: auto;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--sst-text-tertiary);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .hero__btn--primary:hover {
+      background: var(--sst-brand-hover);
+      border-color: var(--sst-brand-hover);
+    }
+
+    .hero__btn--secondary:hover {
+      border-color: var(--sst-brand);
+      color: var(--sst-brand-ink);
+    }
+  }
+</style>

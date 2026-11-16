@@ -1,0 +1,5 @@
+# Generated tRPC types (nestjs-trpc CLI output)
+src/@generated/
+
+# Winston log files (legacy: Winston is no longer wired; logs go to stdout)
+logs/

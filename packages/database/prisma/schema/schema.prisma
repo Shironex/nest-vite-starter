@@ -1,0 +1,17 @@
+// ---------------------------------------------------------------------------
+// Generator and datasource. Prisma loads every .prisma file in this folder;
+// keeping this one minimal means "where is the datasource" has one answer.
+// ---------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client"
+  // Relative to THIS FILE, which now sits one level deeper than the old
+  // prisma/schema.prisma. Without the extra ../ the client lands in
+  // prisma/generated/ and every import of ../generated/prisma breaks on a
+  // clean checkout, while a stale copy at the old path hides it locally.
+  output   = "../../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

@@ -1,0 +1,18 @@
+import { cn } from '@repo/ui/lib/utils';
+
+interface ISectionProps extends React.HTMLAttributes<HTMLElement> {
+  /** Adds vertical padding between sections */
+  spacing?: 'sm' | 'md' | 'lg';
+}
+
+const spacingMap = {
+  sm: 'py-8 md:py-12',
+  md: 'py-12 md:py-16',
+  lg: 'py-16 md:py-24',
+} as const;
+
+function Section({ className, spacing = 'md', ...props }: ISectionProps) {
+  return <section data-slot="section" className={cn(spacingMap[spacing], className)} {...props} />;
+}
+
+export { Section };

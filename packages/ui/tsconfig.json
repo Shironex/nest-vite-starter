@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@repo/tsconfig/react.json",
+  "compilerOptions": {
+    // See packages/database/tsconfig.json. @repo/ui has no build step at all, so
+    // `check-types` is the only thing that ever writes this file.
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsc/check-types.tsbuildinfo"
+  },
+  "include": ["src", ".storybook", "vitest.config.ts"]
+}

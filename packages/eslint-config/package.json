@@ -1,0 +1,43 @@
+{
+  "name": "@repo/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "exports": {
+    "./base": "./base.js",
+    "./react": "./react.js",
+    "./react-architecture": "./react-architecture.js",
+    "./nestjs": "./nestjs.js"
+  },
+  "dependencies": {
+    "@eslint/js": "^10.0.1",
+    "@noctcore/eslint-plugin-architecture": "^0.3.4",
+    "@noctcore/eslint-plugin-async-safety": "^0.4.2",
+    "@noctcore/eslint-plugin-code-quality": "^0.3.2",
+    "@noctcore/eslint-plugin-contracts": "^0.7.2",
+    "@noctcore/eslint-plugin-observability": "^0.3.4",
+    "@noctcore/eslint-plugin-prisma": "^0.5.2",
+    "@noctcore/eslint-plugin-react": "^0.4.2",
+    "@noctcore/eslint-plugin-security": "^0.4.2",
+    "@repo/eslint-plugin-repo": "workspace:*",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-turbo": "^2.10.13",
+    "typescript-eslint": "^8.70.0"
+  },
+  "peerDependencies": {
+    "eslint": "^10.0.0",
+    "typescript": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^8.70.0",
+    "@typescript-eslint/rule-tester": "^8.70.0",
+    "vitest": "^5.0.1"
+  }
+}

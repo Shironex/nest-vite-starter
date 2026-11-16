@@ -1,0 +1,4 @@
+{
+  "$comment": "THE audit PII registry. Two readers, one file: packages/shared/src/audit/index.ts imports it as AUDIT_PII_FIELDS (what the purge scrub erases), and packages/eslint-config/nestjs.js reads it for the observability/audit-pii-declared rule's registeredFields (what lint demands be declared). It is JSON rather than a TS export because the lint config cannot import from @repo/shared: that package already depends on @repo/eslint-config, so the reverse edge is a workspace cycle turbo refuses to schedule. Adding a key here changes what gets ERASED, not merely what lints.",
+  "fields": ["newEmail", "email"]
+}

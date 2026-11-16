@@ -1,0 +1,65 @@
+# Loki single-binary configuration: filesystem storage (no S3/object store).
+# Appropriate for a single host. See docs/observability/README.md §Retention.
+#
+# Do NOT enable memberlist / ring / distributed mode here: single-binary only.
+# Ref: https://grafana.com/docs/loki/latest/setup/install/docker/
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  log_level: warn
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  # Retention, configurable via LOKI_RETENTION_PERIOD env var.
+  # Default: 744h = 31 days. Set "336h" for 14d, "168h" for 7d.
+  retention_period: ${LOKI_RETENTION_PERIOD:-744h}
+  # Prevent high-cardinality label explosions.
+  # Labels to reject: userId, requestId, traceId (use structured fields instead)
+  max_label_names_per_series: 15
+  max_label_value_length: 2048
+  # Ingestion rate limits, generous for a single API
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+
+compactor:
+  working_directory: /loki/compactor
+  # Retention enforcement runs during compaction
+  retention_enabled: true
+  delete_request_store: filesystem
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /loki/rules-temp
+  ring:
+    kvstore:
+      store: inmemory
+
+analytics:
+  reporting_enabled: false

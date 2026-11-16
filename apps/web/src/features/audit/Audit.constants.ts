@@ -1,0 +1,101 @@
+import { AUDIT_ACTIONS, type AuditAction } from '@repo/shared/audit';
+import type { StatusTone } from '@repo/ui/status-pill';
+import type { AuditQuickFilter } from './Audit.types';
+
+/**
+ * The action sets behind the one-click chips. Each ORs every flavor of its
+ * question so "show me the failed sign-ins" is one click, not five dropdown
+ * round-trips.
+ */
+export const AUDIT_QUICK_FILTER_ACTIONS: Record<AuditQuickFilter, readonly AuditAction[]> = {
+  failedLogins: [
+    AUDIT_ACTIONS.AUTH_LOGIN_FAILURE,
+    AUDIT_ACTIONS.AUTH_LOGIN_LOCKED,
+    AUDIT_ACTIONS.AUTH_2FA_CHALLENGE_FAILURE,
+    AUDIT_ACTIONS.AUTH_2FA_LOCKED,
+    AUDIT_ACTIONS.OAUTH_FAILURE,
+  ],
+};
+
+/**
+ * The event-type dropdown, grouped by the action's domain prefix so ~50
+ * entries stay scannable. Derived from the canonical vocabulary: a new action
+ * in `@repo/shared/audit` appears here without a second list to maintain (its
+ * label falls back to the raw action name until the catalog learns it).
+ */
+export const AUDIT_ACTION_GROUPS: readonly { key: string; actions: readonly AuditAction[] }[] =
+  (() => {
+    const groups = new Map<string, AuditAction[]>();
+    for (const action of Object.values(AUDIT_ACTIONS)) {
+      const domain = action.split('.')[0] ?? action;
+      const bucket = groups.get(domain);
+      if (bucket) {
+        bucket.push(action);
+      } else {
+        groups.set(domain, [action]);
+      }
+    }
+    return [...groups.entries()].map(([key, actions]) => ({ key, actions }));
+  })();
+
+/**
+ * i18n key for an action label. Dots would nest in i18next (and `auth.logout`
+ * is both a leaf and a prefix of `auth.logout.all`), so catalog keys flatten
+ * them to underscores. Callers pass `defaultValue: action` so an action the
+ * catalog does not know yet renders as its raw name instead of a bare key.
+ */
+export function auditActionLabelKey(action: string): string {
+  return `actions.${action.replaceAll('.', '_')}`;
+}
+
+/** Same flattening for the targetType label lookup. */
+export function auditTargetLabelKey(targetType: string): string {
+  return `targetTypes.${targetType}`;
+}
+
+const DANGER_MARKERS = [
+  '.failure',
+  '.locked',
+  '.deleted',
+  '.admin_deleted',
+  '.purged',
+  '.revoked',
+  '.disabled',
+  '.terminated',
+  '.unlink',
+];
+
+/**
+ * Sensitive ACCESS, not an error: the row records that somebody was shown
+ * something, and the screen states it rather than celebrating it. Exact action
+ * names, checked before the success markers, which is what lets an exact match
+ * beat a suffix. None of the platform's actions is one yet.
+ */
+const WARNING_MARKERS: readonly string[] = [];
+
+const SUCCESS_MARKERS = [
+  '.created',
+  '.success',
+  '.enabled',
+  '.verified',
+  '.rehired',
+  '.handled',
+  '.renewed',
+  'oauth.signup',
+  'oauth.link',
+];
+
+/**
+ * Map an action onto the shared pill vocabulary. A failed row is always
+ * danger; sensitive access is warning (not an error); creations and successes
+ * are success; everything else is stated, not alerted on. `.unhandled` is
+ * checked before the success markers so it does not match `.handled` by suffix.
+ */
+export function auditActionTone(action: string, success: boolean): StatusTone {
+  if (!success) return 'danger';
+  if (action.endsWith('.unhandled')) return 'neutral';
+  if (DANGER_MARKERS.some((marker) => action.includes(marker))) return 'danger';
+  if (WARNING_MARKERS.some((marker) => action === marker)) return 'warning';
+  if (SUCCESS_MARKERS.some((marker) => action.includes(marker))) return 'success';
+  return 'neutral';
+}

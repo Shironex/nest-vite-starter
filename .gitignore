@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+*.tsbuildinfo
+storybook-static/
+
+# Turborepo
+.turbo/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Vite / Next.js
+.next/
+.swc/
+
+# Test coverage
+coverage/
+
+# Lighthouse CI output
+.lighthouseci/
+
+# Playwright output
+playwright-report/
+test-results/
+
+# Playwright storage state, written by the e2e setup project. Each file holds a
+# live session cookie for a seeded account, so it is a credential, not an
+# artifact, and it is re-minted on every run anyway.
+apps/web/e2e/.auth/
+
+# Per-worktree verification state (tools/verify): sandbox descriptors, which
+# carry the bound container ports and their credentials, and the JSON evidence
+# `pnpm verify` writes. Both are local to one worktree and one run.
+.agent-state/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+.mcp.json
+# Claude Code: settings.json IS tracked, because it carries the project hooks
+# (scripts/hooks) that give every checkout the same edit-time guard. Everything
+# else under .claude stays local: settings.local.json is machine-specific
+# permission state. Add `!.claude/skills/` here if you want to track project
+# skills.
+.claude/*
+!.claude/settings.json
+
+# act (local CI via nektos/act). .actrc, .env.act and .secrets.example are tracked;
+# the real secrets/vars and run artifacts are not.
+.secrets
+.vars
+.artifacts/
+event.json
+payload.json

@@ -1,0 +1,4 @@
+# Build the internal ESLint plugin before lint-staged so eslint --fix sees an
+# up-to-date dist (lint-staged bypasses turbo, so ^build never fires here).
+pnpm --filter @repo/eslint-plugin-repo build
+npx lint-staged

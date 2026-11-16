@@ -1,0 +1,69 @@
+// ---------------------------------------------------------------------------
+// Tenancy: the Organization (Tenant) and the workspaces it holds (Workspace).
+// The sole isolation boundary; TENANT_SCOPED_MODELS in the API is the
+// registry of what the Prisma extension scopes.
+// ---------------------------------------------------------------------------
+
+// Tenant: the organization, the licensee. Top of the 3-tier model
+// (Tenant -> Workspace -> domain rows). One Tenant owns many Workspaces and Users.
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // The user the organization was provisioned around. Deliberately a column rather than
+  // a fifth Role value: it is read by three guards and nothing else, and folding
+  // it into `role` would make "promote to owner" a type-correct operation that
+  // nothing should ever offer.
+  //
+  // SetNull, and the reason is the purge cron rather than anything about
+  // ownership: UserPurgeService hard-deletes users through `user.deleteMany`, so
+  // Restrict would fail every owner's purge, every night, silently and forever
+  // deferred. SetNull lets the row go.
+  //
+  // Nullable is a PERMANENT population, not a migration artifact. Nothing deletes
+  // an orphan Tenant, so an organization whose only ADMIN self-deleted keeps its row and
+  // backfills to NULL. Every guard therefore treats a null owner as "the owner
+  // rule does not apply here", never as an impossible state.
+  ownerId String? @unique
+  owner   User?   @relation("TenantOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  users           User[]
+  workspaces      Workspace[]
+  // Pending staff invitations INTO this organization whose invitee already has an
+  // account elsewhere. Cascade, so deleting an organization takes its open invitations.
+  staffInvites    Token[]          @relation("StaffInviteTenant")
+  twoFactorPolicy TwoFactorPolicy?
+}
+
+// Workspace: a workspace inside an organization. Scoped under a Tenant.
+// Name is unique per tenant (two organizations may each have a "Marketing" workspace).
+model Workspace {
+  id         String   @id @default(cuid())
+  tenantId   String
+  name       String
+  // Registered address. All nullable: a workspace may be created before its
+  // details are known.
+  street     String?
+  postalCode String?
+  city       String?
+  // The registered legal name. Distinct from `name`, which is the organization's
+  // working label for the workspace and may be an informal short form; this is
+  // the name that belongs on formal documents. Nullable for the same reason as
+  // the address.
+  legalName  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  // Target for the composite (tenantId, workspaceId) foreign key a Workspace-scoped
+  // table declares. Without it a row could name a Workspace belonging to a
+  // different organization and Postgres would accept it: the single-column FK only
+  // checks the Workspace exists.
+  @@unique([tenantId, id])
+  @@index([tenantId])
+}

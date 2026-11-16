@@ -1,0 +1,58 @@
+{
+  "suite": "e2e",
+  "cases": {
+    "apps/web/e2e/app-shell-headings.spec.ts": {
+      "App shell headings › /audit has exactly one h1, carrying the page title": 1,
+      "App shell headings › /dashboard has exactly one h1, carrying the page title": 1,
+      "App shell headings › /settings has exactly one h1, carrying the page title": 1,
+      "App shell headings › /workspaces has exactly one h1, carrying the page title": 1
+    },
+    "apps/web/e2e/auth-login.spec.ts": {
+      "Authentication (real login) › logs in with a seeded user and reaches the authenticated dashboard": 1,
+      "Authentication (real login) › rejects a wrong password and stays on the login page with an error": 1
+    },
+    "apps/web/e2e/auth.setup.ts": {
+      "sign in as the seeded admin": 1
+    },
+    "apps/web/e2e/auth.spec.ts": {
+      "Authentication › should have a back to home link on login page": 1,
+      "Authentication › should navigate from login to register": 1,
+      "Authentication › should navigate from register to login": 1,
+      "Authentication › should redirect unauthenticated users to login": 1,
+      "Authentication › should show login form fields": 1,
+      "Authentication › should show login page with correct heading": 1,
+      "Authentication › should show register form fields": 1,
+      "Authentication › should show register page with correct heading": 1,
+      "Authentication › should show validation errors on empty submit": 1
+    },
+    "apps/web/e2e/form-reflow.spec.ts": {
+      "Blur-validation reflow › the change-password submit survives blurring an empty field": 1,
+      "Blur-validation reflow › the delete-account cancel survives blurring the password field": 1,
+      "Blur-validation reflow › the enroll wizard Continue button stays put when the password blurs": 1
+    },
+    "apps/web/e2e/help-tour.spec.ts": {
+      "Guided tours › auto-start for a user who has answered none of them": 1
+    },
+    "apps/web/e2e/navigation.spec.ts": {
+      "Navigation › should display features section": 1,
+      "Navigation › should display hero section": 1,
+      "Navigation › should expand a FAQ answer": 1,
+      "Navigation › should have navigation links for unauthenticated users": 1,
+      "Navigation › should navigate to login from landing page": 1,
+      "Navigation › should navigate to register from landing page": 1,
+      "Navigation › should not offer a theme toggle on the marketing page": 1,
+      "Navigation › should show landing page with correct title": 1
+    },
+    "apps/web/e2e/staff-invite.spec.ts": {
+      "Staff invitations › an admin invites a colleague, who receives a link to a usable form": 1
+    },
+    "apps/web/e2e/two-factor.spec.ts": {
+      "Two-factor authentication (real enroll + challenge) › as the seeded admin › an admin resets a member's two-factor from the members tab": 1,
+      "Two-factor authentication (real enroll + challenge) › enrolls, then gates the next login behind a TOTP challenge": 1,
+      "Two-factor authentication (real enroll + challenge) › logs in with a backup recovery code when the authenticator is unavailable": 1,
+      "Two-factor authentication (real enroll + challenge) › trusting the browser skips the challenge on the next login": 1,
+      "Two-factor challenge form (no backend required) › the backup-code toggle survives the blur-validation reflow": 1,
+      "Two-factor challenge form (no backend required) › the trust checkbox checks on the first press": 1
+    }
+  }
+}

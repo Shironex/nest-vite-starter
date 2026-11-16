@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@repo/tsconfig/base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // See tsconfig.app.json: `tsBuildInfoFile` needs `incremental` for the
+    // `tsc --noEmit -p` form `check-types` uses.
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo"
+  },
+  // The app's build-tooling configs. Not just vite's: playwright.config.ts was
+  // covered by nothing, so a type error in it reached CI as a mid-run e2e
+  // failure instead of a typecheck failure.
+  //
+  // "types" is deliberately left unset, matching tsconfig.e2e.json: @repo/web has
+  // no @types/node dependency, so pinning "types": ["node"] fails with TS2688,
+  // while unset lets tsc auto-load the ambient node types that vite and
+  // @playwright/test already pull in transitively, which is what `__dirname`
+  // and `process.env` here need.
+  "include": ["vite.config.ts", "playwright.config.ts"]
+}

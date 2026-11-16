@@ -1,0 +1,36 @@
+{
+  "name": "@repo/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "lint": "eslint .",
+    "check-types": "astro sync && astro check"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.1",
+    "@astrojs/mdx": "^8.0.1",
+    "@astrojs/starlight": "^0.42.1",
+    "@astrojs/starlight-tailwind": "^5.0.0",
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/spline-sans-mono": "^5.3.0",
+    "@repo/shared": "workspace:*",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.3.2",
+    "mermaid": "^12.0.0",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@repo/eslint-config": "workspace:*",
+    "@typescript-eslint/parser": "8.70.0",
+    "eslint-plugin-astro": "^3.1.0",
+    "globals": "^17.12.0",
+    "typescript": "~5.9.3",
+    "unist-util-visit": "^5.1.0"
+  }
+}

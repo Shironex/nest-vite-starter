@@ -1,0 +1,366 @@
+/* Starlight + Tailwind v4 bridge. The @layer order and the three imports below
+   are the exact incantation from the Starlight "CSS & Tailwind" guide. */
+@layer base, starlight, theme, components, utilities;
+
+@import '@astrojs/starlight-tailwind';
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* SaaS Starter type system and a baseline accent/neutral ramp.
+   Fonts: Bricolage Grotesque (display), Instrument Sans (UI/body), Spline Sans
+   Mono (code). The accent ramp is SaaS Starter blue and the gray ramp is the SaaS Starter
+   slate neutrals, so starlight-tailwind derives a sane baseline; the exact
+   surface values are pinned by the explicit --sl-color-* overrides below. */
+@theme {
+  --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Spline Sans Mono Variable', ui-monospace, 'SFMono-Regular', monospace;
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-accent-50: #eef1fd;
+  --color-accent-100: #e4e9fc;
+  --color-accent-200: #c5cdf3;
+  --color-accent-300: #9fabec;
+  --color-accent-400: #7285e4;
+  --color-accent-500: #4f68ec;
+  --color-accent-600: #3450db;
+  --color-accent-700: #2a3fb8;
+  --color-accent-800: #26357f;
+  --color-accent-900: #222f66;
+  --color-accent-950: #161d40;
+
+  --color-gray-50: #f8f9fb;
+  --color-gray-100: #f2f4f8;
+  --color-gray-200: #e9ebf1;
+  --color-gray-300: #dadde6;
+  --color-gray-400: #a6adbe;
+  --color-gray-500: #8a91a3;
+  --color-gray-600: #6a7182;
+  --color-gray-700: #4a5164;
+  --color-gray-800: #2b3140;
+  --color-gray-900: #171b26;
+  --color-gray-950: #0e1016;
+}
+
+/* ---------------------------------------------------------------------------
+   SaaS Starter palette -> Starlight design tokens.
+
+   Starlight is dark-by-default: the dark theme lives in :root and the light
+   theme overrides under :root[data-theme='light'] (its documented convention).
+   Every semantic --sl-color-* is pinned to an exact SaaS Starter hex so the whole
+   chrome (nav, sidebar, article body, TOC, code blocks) reads as SaaS Starter.
+--------------------------------------------------------------------------- */
+
+/* Dark theme (default). */
+:root {
+  /* Accent (SaaS Starter blue, dark mode). */
+  --sl-color-accent-low: #1b2138;
+  --sl-color-accent: #4f68ec;
+  --sl-color-accent-high: #b3c0f7;
+
+  /* Neutral ramp: white = brightest text, black = page background. */
+  --sl-color-white: #f3f5f9;
+  --sl-color-gray-1: #e4e8f0;
+  --sl-color-gray-2: #b4bac7;
+  --sl-color-gray-3: #8b93a3;
+  --sl-color-gray-4: #6e7686;
+  --sl-color-gray-5: #39404f;
+  --sl-color-gray-6: #1a1f2b;
+  --sl-color-gray-7: #141821;
+  --sl-color-black: #0e1016;
+
+  /* Semantic surfaces and text. */
+  --sl-color-text: #b4bac7;
+  --sl-color-text-accent: #b3c0f7;
+  --sl-color-bg: #0e1016;
+  --sl-color-bg-nav: #171b26;
+  --sl-color-bg-sidebar: #0e1016;
+  --sl-color-bg-inline-code: #1f2431;
+  --sl-color-hairline: #272c39;
+  --sl-color-hairline-light: #272c39;
+  --sl-color-hairline-shade: #171b26;
+
+  /* SaaS Starter landing tokens (dark). Consumed by the home/* components; they flip
+     with the theme because they are re-declared under [data-theme='light']. */
+  --sst-brand: #4f68ec;
+  /* Darkens on hover rather than brightening: this is a fill under white text
+     (.hero__btn--primary), and the old #6a80f2 put white at 3.51:1. Mirrors
+     color/brand/primary-hover in packages/ui globals.css, which is the source of
+     truth; scripts/check-contrast.mjs asserts the two stay equal. There is no
+     --sst-brand-ink-hover because nothing here uses the token as ink. */
+  --sst-brand-hover: #4054c6;
+  --sst-brand-fg: #ffffff;
+  /* Brand color in its ink role, mirrors color/brand/ink. The Dark primary
+     tops out at 4.64:1 against anything, so it cannot carry small text here
+     either. scripts/check-contrast.mjs records the measured ratios. */
+  --sst-brand-ink: #7e94f2;
+  --sst-brand-50: #1b2138;
+  --sst-brand-100: #222a44;
+  --sst-brand-200: #33406a;
+  --sst-bg: #0e1016;
+  --sst-surface: #171b26;
+  --sst-hover: #1f2431;
+  --sst-subtle: #1a1f2b;
+  --sst-text: #f3f5f9;
+  --sst-text-secondary: #b4bac7;
+  --sst-text-muted: #8b93a3;
+  --sst-text-tertiary: #6e7686;
+  --sst-text-placeholder: #5e6675;
+  --sst-border: #272c39;
+  --sst-border-strong: #39404f;
+  --sst-success: #3dd68c;
+  --sst-success-bg: #132a20;
+  --sst-purple: #b57be0;
+  --sst-purple-bg: #241833;
+
+  /* Signature (Architecture) cell is dark in both themes. */
+  --sst-signature-bg: #141a28;
+  --sst-signature-border: #262d40;
+  --sst-signature-surface: rgba(255, 255, 255, 0.06);
+  --sst-signature-text: #f3f5f9;
+  --sst-signature-muted: #9aa3b8;
+
+  --sst-shadow-card: 0 14px 36px -10px rgba(0, 0, 0, 0.55);
+  --sst-shadow-signature: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* Light theme overrides. */
+:root[data-theme='light'] {
+  /* Accent (SaaS Starter blue, light mode). */
+  --sl-color-accent-low: #e4e9fc;
+  --sl-color-accent: #3450db;
+  --sl-color-accent-high: #26307a;
+
+  /* Neutral ramp inverts: white = darkest text, black = surface/background. */
+  --sl-color-white: #171b26;
+  --sl-color-gray-1: #2b3140;
+  --sl-color-gray-2: #4a5164;
+  --sl-color-gray-3: #6a7182;
+  --sl-color-gray-4: #8a91a3;
+  --sl-color-gray-5: #dadde6;
+  --sl-color-gray-6: #f2f4f8;
+  --sl-color-gray-7: #f8f9fb;
+  --sl-color-black: #ffffff;
+
+  /* Semantic surfaces and text. */
+  --sl-color-text: #4a5164;
+  --sl-color-text-accent: #3450db;
+  --sl-color-bg: #f8f9fb;
+  --sl-color-bg-nav: #ffffff;
+  --sl-color-bg-sidebar: #f8f9fb;
+  --sl-color-bg-inline-code: #f2f4f8;
+  --sl-color-hairline: #e9ebf1;
+  --sl-color-hairline-light: #e9ebf1;
+  --sl-color-hairline-shade: #f2f4f8;
+
+  /* SaaS Starter landing tokens (light). */
+  --sst-brand: #3450db;
+  --sst-brand-hover: #2a3fb8;
+  --sst-brand-fg: #ffffff;
+  --sst-brand-ink: #3450db; /* Light needs no split, the primary already reads */
+  --sst-brand-50: #eef1fd;
+  --sst-brand-100: #e4e9fc;
+  --sst-brand-200: #c5cdf3;
+  --sst-bg: #f8f9fb;
+  --sst-surface: #ffffff;
+  --sst-hover: #f4f5f9;
+  --sst-subtle: #f2f4f8;
+  --sst-text: #171b26;
+  --sst-text-secondary: #4a5164;
+  --sst-text-muted: #6a7182;
+  --sst-text-tertiary: #8a91a3;
+  --sst-text-placeholder: #a6adbe;
+  --sst-border: #e9ebf1;
+  --sst-border-strong: #dadde6;
+  --sst-success: #1b7c4d;
+  --sst-success-bg: #e4f6ec;
+  --sst-purple: #8a3fc0;
+  --sst-purple-bg: #f1e4fa;
+
+  --sst-signature-bg: #151a24;
+  --sst-signature-border: #262d3a;
+  --sst-signature-surface: rgba(255, 255, 255, 0.1);
+  --sst-signature-text: #f3f5f9;
+  --sst-signature-muted: #8c99b2;
+
+  --sst-shadow-card: 0 14px 36px -10px rgba(23, 28, 38, 0.12);
+  --sst-shadow-signature: 0 16px 40px -12px rgba(13, 15, 23, 0.35);
+}
+
+/* A slightly roomier reading column, and the wordmark in the display face. */
+:root {
+  --sl-content-width: 48rem;
+}
+
+.site-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ---------------------------------------------------------------------------
+   Landing layout. The custom splash content (home/* components) is stacked
+   inside a single .docs-landing wrapper. The :has() rule lets that content
+   break out of Starlight's narrow reading column so the bento can breathe.
+--------------------------------------------------------------------------- */
+.sl-container:has(.docs-landing),
+.sl-markdown-content:has(.docs-landing) {
+  max-width: none;
+}
+
+.docs-landing {
+  --sst-landing-max: 74rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: var(--font-sans);
+}
+
+.docs-landing > * {
+  width: 100%;
+  max-width: var(--sst-landing-max);
+  margin-inline: auto;
+}
+
+/* Splash pages have no sidebar; trim Starlight's default top offset so the hero
+   sits close to the nav. */
+.docs-landing {
+  margin-top: -1rem;
+}
+
+/* Landing primitives shared by the home/* components. Kept global (under
+   .docs-landing) so the eyebrow, keycap, tag chip, and display face read
+   identically across the hero, bento, value band, and footer. */
+.docs-landing .sst-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--sst-text);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.docs-landing .sst-eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--sst-brand-ink);
+}
+
+.docs-landing .sst-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  padding: 0.0625rem 0.375rem;
+  border: 1px solid var(--sst-border);
+  border-radius: 6px;
+  background: var(--sst-surface);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.3;
+  color: var(--sst-text-muted);
+}
+
+.docs-landing .sst-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  background: var(--sst-subtle);
+  border: 1px solid var(--sst-border);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--sst-text-muted);
+  white-space: nowrap;
+}
+
+.docs-landing a.sst-tag,
+.docs-landing a {
+  text-decoration: none;
+}
+
+/* Client-rendered Mermaid diagrams. Centered in a subtle surface card that
+   scrolls horizontally on small screens rather than overflowing the page. */
+.mermaid {
+  display: flex;
+  justify-content: center;
+  margin-block: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.75rem;
+  background: var(--sl-color-gray-6);
+  overflow-x: auto;
+}
+
+.mermaid:empty {
+  min-height: 3rem;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Branding line appended by the Footer override. */
+.docs-footer-note {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--sl-color-gray-5);
+  font-size: var(--sl-text-xs);
+  line-height: 1.5;
+  color: var(--sl-color-gray-3);
+}
+
+/* Minimal motion. Starlight is an MPA, so the entrance plays once per page
+   load. Everything below is gated on the reader not preferring reduced
+   motion; without that preference the site stays fully static. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes docs-enter {
+    from {
+      opacity: 0;
+      transform: translateY(0.4rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Article body and landing ease in on load. */
+  .sl-markdown-content,
+  .docs-landing {
+    animation: docs-enter 0.35s ease-out both;
+  }
+
+  /* Mermaid renders asynchronously in the browser; fading the finished SVG in
+     hides the empty-to-diagram pop. */
+  .mermaid svg {
+    animation: docs-enter 0.3s ease-out both;
+  }
+
+  /* Sidebar entries nudge right on hover; the current-page highlight fades
+     rather than snapping. */
+  .sidebar-content a {
+    transition:
+      transform 0.15s ease,
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .sidebar-content a:hover {
+    transform: translateX(2px);
+  }
+
+  /* In-content links shift color smoothly. */
+  .sl-markdown-content a {
+    transition: color 0.15s ease;
+  }
+}

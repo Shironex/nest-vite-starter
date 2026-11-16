@@ -1,0 +1,74 @@
+# The Compose project name is PINNED rather than derived from the directory.
+#
+# Compose defaults the project name to the working directory's name, while the
+# `container_name` entries below are fixed literals. Run from a git worktree
+# (worktree managers often place them under a separate root) an unpinned
+# `docker compose up -d` therefore creates a SEPARATE project with brand new
+# empty volumes whose containers claim those same literal names. Postgres comes
+# back healthy, on the same port, under the same name, with none of the dev
+# data in it, which looks exactly like data loss and is not: the original
+# volumes are untouched and still bound to this project name.
+#
+# Pinning it makes every checkout, worktree and script address one stack.
+name: nest-vite-saas-starter
+
+services:
+  postgres:
+    image: postgres:17-alpine@sha256:f02121de6f74d30d8a94cd1d9584125e2178d7e6c377d8130112d4e52d867995
+    container_name: saas-starter-postgres
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: saas_starter
+    volumes:
+      - saas-starter-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine@sha256:520775a41a63e77e06c73e35d2fd9cc15921a609516818796b4ecbb813078bc7
+    container_name: saas-starter-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - saas-starter-redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest@sha256:74d609a42ec279aa63c6b4622a6fa9b5408d1ad5b1d76a1c4be40a265ce0863d
+    container_name: saas-starter-mailpit
+    restart: unless-stopped
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  s3:
+    image: ghcr.io/clockwisesoftware/s3rver:latest@sha256:51774e8e3bd4ebd04646f5ddfb6937c348ec3a5ae3af25e3fe0756c905dcca96
+    container_name: saas-starter-s3
+    restart: unless-stopped
+    ports:
+      - '4569:4569'
+    environment:
+      BUCKETS: saas-starter-uploads
+    volumes:
+      - saas-starter-s3-data:/data
+
+volumes:
+  saas-starter-pgdata:
+  saas-starter-redis-data:
+  saas-starter-s3-data:

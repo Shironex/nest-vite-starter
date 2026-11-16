@@ -1,0 +1,607 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege GITHUB_TOKEN: every job here only reads the repo.
+permissions:
+  contents: read
+
+# Supply-chain pins (lint-meta: github-actions-sha-pinned, service-image-digest-pin,
+# github-actions-runner-pinned). Actions are pinned by commit SHA with a `# vN` comment,
+# service images by `tag@sha256:<digest>`, runners by named image. Dependabot proposes
+# action bumps; to bump a pin by hand, resolve the tag to its commit
+# (`gh api repos/<owner>/<repo>/git/matching-refs/tags/<tag>`, dereferencing an annotated
+# tag) or an image to its index digest (`docker buildx imagetools inspect <image>`).
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  # prisma.config.ts requires DATABASE_URL even for `prisma generate`, which
+  # runs as a turbo dependency of build/lint/check-types/test. Provide a dummy
+  # value at workflow scope so every job inherits it; jobs that need a real
+  # connection (test-api, test-e2e, build) override it at step level.
+  DATABASE_URL: postgresql://prisma:prisma@localhost:5432/generate
+  # Turbo path filtering: on pull_request, run turbo tasks only for packages
+  # affected vs the PR base; on push/workflow_dispatch run the full graph.
+  # base.sha is always a reachable commit with fetch-depth: 0, so --affected
+  # never errors on a missing ref. Jobs still run on every event so required
+  # status checks always report; --affected only no-ops the turbo work.
+  TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
+  TURBO_AFFECTED: ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+jobs:
+  quality:
+    name: Lint & Type Check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          # Full history so turbo --affected can diff against the PR base SHA.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.33.2
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      # Runs here rather than in a job of its own: the gate takes about a second,
+      # and a dedicated job would pay for a checkout and an install to reach it.
+      # Placed directly after install so nothing that can fail later suppresses
+      # it.
+      - run: pnpm audit --prod --audit-level=high
+
+      - run: pnpm build:packages
+
+      # Direct turbo invocation so --affected is parsed by turbo (not forwarded
+      # to eslint/tsc). $TURBO_AFFECTED is `--affected` on PRs, empty otherwise.
+      - run: pnpm exec turbo lint $TURBO_AFFECTED
+
+      - run: pnpm exec turbo check-types $TURBO_AFFECTED
+
+      # tools/** is not a workspace, so its type check is the root task
+      # //#check-types:tools, reached above only as a dependency of a package's
+      # check-types. Under --affected a PR that touches nothing but tools/ runs
+      # no package task, so the root task never runs; check it directly on PRs.
+      # Push runs (and pre-push) take the full graph above, which includes it.
+      - if: github.event_name == 'pull_request'
+        run: pnpm check-types:tools
+
+      - run: pnpm lint:meta
+
+      - run: pnpm lint:tools
+
+      - run: pnpm test:lint-meta
+
+      - run: pnpm check:lint-meta-docs
+
+      - run: pnpm --filter @repo/api knip
+
+      - run: pnpm --filter @repo/web knip
+
+      - name: Test internal ESLint plugin
+        run: pnpm --filter @repo/eslint-plugin-repo test
+
+      # The inventory compares the JUnit report the step above just wrote
+      # against tools/verify/inventories/. A deleted, skipped, duplicated or
+      # merge-damaged case fails here even when the suite itself was green.
+      # No services, about a second.
+      - name: Internal ESLint plugin test inventory
+        run: pnpm verify:inventory --from-report --suite=eslint-plugin-repo
+
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    needs: quality
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.33.2
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec turbo build $TURBO_AFFECTED
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+  test-api:
+    name: API Tests
+    runs-on: ubuntu-24.04
+    needs: quality
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17-alpine@sha256:f02121de6f74d30d8a94cd1d9584125e2178d7e6c377d8130112d4e52d867995
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine@sha256:520775a41a63e77e06c73e35d2fd9cc15921a609516818796b4ecbb813078bc7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          # Full history so turbo --affected can diff against the PR base SHA.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.33.2
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+
+      # The export conformance lane validates a real generated package
+      # against the ministry's real XSD with xmllint, and treats a missing binary
+      # as a FAILURE rather than a skip (a conformance lane that silently
+      # degrades into "we did not check" is worse than no lane). xmllint is NOT
+      # preinstalled on the GitHub ubuntu runner images and the upstream request
+      # to add libxml2-utils was declined, so it has to be installed here.
+      # `unzip` IS in the image's vital packages, so it needs no step.
+      - name: Install libxml2-utils (xmllint) for the export conformance lane
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      # Path filter (Task 6): skip the expensive suite on PRs that do not affect
+      # @repo/api (or its deps), while the job still runs so the required status
+      # check reports green. Push/dispatch always runs; a probe failure falls
+      # back to running (fail-safe).
+      - name: Detect affected (api)
+        id: aff
+        run: bash scripts/ci/affected.sh test --filter=@repo/api
+
+      - name: Build packages
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm build:packages
+
+      # Gate A: apply committed migrations, then fail if the applied history
+      # diverges from the migrations folder or a migration is still pending.
+      - name: Apply migrations
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm --filter @repo/database db:migrate:deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+      - name: Prisma migration status (Gate A)
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm --filter @repo/database db:migrate:status
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+      # Gate B: the schema edited without a migration. Prisma 7 removed
+      # --to-schema-datamodel and --from-migrations needs a shadow DB, so we
+      # diff the now-migrated live DB against the schema (--from-config-datasource).
+      - name: Prisma schema-vs-migrations drift (Gate B)
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm --filter @repo/database db:migrate:check
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      # The security lane: one file per audit finding, reconciled case by case
+      # against apps/api/security-spec/findings.json. No path filter on purpose:
+      # the change that regresses a finding is the one that does not look like
+      # it touches the api. The prepare step only runs when the path filter
+      # above already skipped the build and the migrations.
+      - name: Prepare the security lane (only when the api path filter skipped)
+        if: steps.aff.outputs.run != 'true'
+        run: pnpm build:packages && pnpm --filter @repo/database db:migrate:deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      - name: Security spec and findings manifest
+        run: pnpm check:security
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          REDIS_URL: redis://localhost:6379
+          ENCRYPTION_KEY: 6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81
+
+      - name: Run API tests with coverage ratchet
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm --filter @repo/api test:cov:check
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          REDIS_URL: redis://localhost:6379
+          # ENCRYPTION_KEY is Joi-required(); jest's setup-env.ts seeds a key
+          # for specs, but pass one here too so a future AppModule-boot test
+          # never fails the suite at config validation. CI-only throwaway key.
+          ENCRYPTION_KEY: 6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81
+
+      # The isolation lane: the *.isolation.spec.ts specs that prove the
+      # tenant-scope extension is a real boundary (there is no Postgres RLS) and
+      # that the raw statements actually execute against a real engine. It runs
+      # HERE because this job already has migrated Postgres and Redis up.
+      #
+      # `tsconfig.build.json` excludes `**/*.spec.ts`, so a spec that stops
+      # compiling is invisible to a build-only type check. Running the lane here
+      # is one guard; api `check-types` also compiles `tsconfig.spec.json`
+      # (every spec plus `test/`), so the quality job's `turbo check-types`
+      # fails on it too.
+      - name: API unit test inventory
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm verify:inventory --from-report --suite=api
+
+      - name: Run API isolation lane (live Postgres)
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm --filter @repo/api test:integration
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+          REDIS_URL: redis://localhost:6379
+          ENCRYPTION_KEY: 6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81
+
+      - name: Isolation lane test inventory
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm verify:inventory --from-report --suite=isolation
+
+  test-web:
+    name: Web Tests & Budgets
+    runs-on: ubuntu-24.04
+    needs: quality
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          # Full history so turbo --affected can diff against the PR base SHA.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.33.2
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+
+      # Path filter (Task 6): skip the web suite + budgets on PRs that do not
+      # affect @repo/web (or its deps; api trpc changes affect web). Job still
+      # runs and reports green. Push/dispatch always runs; probe failure -> run.
+      - name: Detect affected (web)
+        id: aff
+        run: bash scripts/ci/affected.sh test --filter=@repo/web
+
+      - name: Build packages
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm build:packages
+
+      # Vitest sizes its worker pool as `max(cpuCount - 1, 1)`. On a small
+      # hosted runner that resolves to a single worker and the suite runs
+      # serially. The cores are idle enough to carry a worker each, and the
+      # value is set here rather than in vitest.config.ts so local runs keep
+      # their own default.
+      - name: Run Web tests with coverage ratchet
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm --filter @repo/web test:cov:check
+        env:
+          VITEST_MAX_WORKERS: '2'
+
+      - name: Web test inventory
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm verify:inventory --from-report --suite=web
+
+      # The byte budget goes through turbo, which builds @repo/web first (and
+      # fires @repo/api#generate:trpc, which web's tsc needs), so the gate can
+      # never measure a stale dist. scripts/run-web-budget.mjs also sets the
+      # placeholder VITE_SENTRY_DSN that makes the lazy Sentry chunk part of the
+      # build, so local runs and CI measure the same bundle.
+      - name: Build web and check bundle size budget
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm size:check
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+      # Lighthouse: a11y / best-practices / SEO are hard assertions; the perf
+      # budget is warning-only until a runner-stable baseline exists.
+      # Lighthouse needs a real Chrome install, which the local `act` runner
+      # image does not have, and its perf scores are runner-dependent anyway.
+      # Skip it under act (env.ACT is set); it still runs on GitHub, the
+      # true-parity gate, where Chrome is present. See docs/local-ci.md.
+      - name: Lighthouse budgets
+        if: ${{ steps.aff.outputs.run == 'true' && !env.ACT }}
+        run: pnpm lighthouse
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+
+  test-e2e:
+    name: E2E Tests
+    runs-on: ubuntu-24.04
+    needs: quality
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine@sha256:f02121de6f74d30d8a94cd1d9584125e2178d7e6c377d8130112d4e52d867995
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine@sha256:520775a41a63e77e06c73e35d2fd9cc15921a609516818796b4ecbb813078bc7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      # Object storage and a mail catcher, both MIRRORING docker-compose.yml
+      # rather than configured independently: same images, same bucket, same
+      # ports. A CI service that differs from the local one produces the failure
+      # mode where the suite passes in exactly one of the two places.
+      #
+      # Neither is optional: the journeys follow invitations through the mail
+      # they were actually sent, which is the only automated proof that an
+      # invited user receives a link that works.
+      #
+      # No `--health-cmd` on either: a service health check runs INSIDE the
+      # container and neither image is guaranteed to carry a shell or curl. The
+      # readiness gate is an explicit step below instead, polled from the runner,
+      # which fails loudly rather than letting the api race them on startup.
+      s3:
+        image: ghcr.io/clockwisesoftware/s3rver:latest@sha256:51774e8e3bd4ebd04646f5ddfb6937c348ec3a5ae3af25e3fe0756c905dcca96
+        ports:
+          - 4569:4569
+        env:
+          BUCKETS: saas-starter-uploads
+        # Pins the working directory the image already declares. Redundant on
+        # GitHub, and NOT redundant under `act`, which starts a service
+        # container with the workspace path as its working directory: this
+        # image's command is the relative `node server.js` from /app, so under
+        # act it resolved against the repo instead and the container exited 1
+        # before anything could reach port 4569.
+        options: --workdir /app
+      mailpit:
+        image: axllent/mailpit:latest@sha256:74d609a42ec279aa63c6b4622a6fa9b5408d1ad5b1d76a1c4be40a265ce0863d
+        ports:
+          - 1025:1025
+          - 8025:8025
+        env:
+          MP_SMTP_AUTH_ACCEPT_ANY: 1
+          MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          # Full history so turbo --affected can diff against the PR base SHA.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.33.2
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+
+      # Path filter (Task 6): skip the e2e stack on PRs that do not affect
+      # @repo/web or @repo/api. Job still runs and reports green. Push/dispatch
+      # always runs; probe failure -> run.
+      #
+      # @repo/api is in the filter because @repo/web has no package dependency
+      # on it: an api-only PR comes back "not affected" for @repo/web alone, and
+      # this job carries the built-API boot proof that used to be its own
+      # boot-smoke job. Dropping that job without widening this probe would have
+      # silently lost boot coverage on exactly the PRs that change the api.
+      - name: Detect affected (e2e)
+        id: aff
+        run: bash scripts/ci/affected.sh test:e2e --filter=@repo/web --filter=@repo/api
+
+      - name: Build packages
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm build:packages
+
+      - name: Apply migrations
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm --filter @repo/database db:migrate:deploy
+
+      # Seed the accounts the e2e logs in as. Migrations create the schema but no
+      # rows, so without this there is no user to authenticate.
+      #
+      # NODE_ENV being unset at the job level (it is only set on the Start API
+      # step) does double duty: the seed's NODE_ENV=production guard does not
+      # trip, AND the dev/e2e block runs, which is what provisions the member
+      # fixture and the per-spec-family fixture users. Those carry no env vars;
+      # they are literals shared with apps/web/e2e/support/auth.ts, so only the
+      # admin credentials need passing here, and they MUST match the defaults in
+      # that same file.
+      - name: Seed admin user
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm --filter @repo/database db:seed
+        env:
+          ADMIN_EMAIL: admin@example.com
+          ADMIN_PASSWORD: P@ssw0rd!Change.Me
+
+      # Build the API (server + generated trpc client) via turbo, then build the
+      # web app with an ABSOLUTE base so deep-linked routes (e.g. /auth/login)
+      # load /assets/* correctly under `vite preview`'s SPA fallback. The default
+      # base is './' (required for the Electron file:// shell), which 404s the
+      # assets on a deep link when statically served.
+      - name: Build api and web (absolute base for preview)
+        if: steps.aff.outputs.run == 'true'
+        run: |
+          pnpm exec turbo build --filter=@repo/api
+          pnpm --filter @repo/web exec vite build --base=/
+
+      # Cache Playwright browsers keyed on the @playwright/test version
+      # (apps/web/package.json), the standard pattern.
+      - name: Cache Playwright browsers
+        if: steps.aff.outputs.run == 'true'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('apps/web/package.json') }}
+
+      # Split on the cache result. `--with-deps` runs apt-get update and pulls a
+      # set of font packages every time it is invoked, which cost 30s on a run
+      # whose browser cache had already hit. Those packages back scripts this
+      # suite never renders, and no spec asserts on appearance (screenshots are
+      # captured only on failure, as diagnostics). On a cache hit the browser is
+      # therefore only verified; a stale or corrupt cache still fails loudly
+      # here rather than inside a spec.
+      - name: Install Playwright browsers and OS deps (cache miss)
+        if: ${{ steps.aff.outputs.run == 'true' && steps.playwright-cache.outputs.cache-hit != 'true' }}
+        run: pnpm --filter @repo/web exec playwright install --with-deps chromium
+
+      - name: Verify cached Playwright browser (cache hit)
+        if: ${{ steps.aff.outputs.run == 'true' && steps.playwright-cache.outputs.cache-hit == 'true' }}
+        run: pnpm --filter @repo/web exec playwright install chromium
+
+      # Start the API (built, dummy SMTP/S3/Turnstile/CSRF env; the e2e specs
+      # never exercise those transports) and the built web app served by vite
+      # preview (which proxies /trpc -> :3000). Both backgrounded; wait for each
+      # to listen before running Playwright.
+      # Both new services, polled from the runner. The bucket is asserted by NAME
+      # rather than the endpoint merely answering: s3rver creates its buckets
+      # from BUCKETS at startup and answers the list API either way, so a drift
+      # between that value and the api's S3_BUCKET would otherwise surface as
+      # every upload failing halfway through a journey instead of here.
+      - name: Wait for S3 and the mail catcher
+        if: steps.aff.outputs.run == 'true'
+        run: |
+          up=0
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:4569/ | grep -q 'saas-starter-uploads' \
+              && curl -sf 'http://localhost:8025/api/v1/messages?limit=1' > /dev/null; then
+              up=1; echo "s3 + mailpit up"; break
+            fi
+            echo "waiting for s3 + mailpit ($i)"; sleep 2
+          done
+          if [ "$up" -ne 1 ]; then
+            echo "s3 (bucket saas-starter-uploads) or mailpit never became ready"
+            curl -s http://localhost:4569/ || true
+            exit 1
+          fi
+
+      # This is also the app boot smoke, which used to be a job of its own: it
+      # boots the REAL built entrypoint (node apps/api/dist/src/main.js) against
+      # live postgres+redis and waits for GET /health/ready, the gate that
+      # catches the two boot defects unit tests cannot see (a DI abort where
+      # Nest never finishes booting, and a wrong launch path ending in
+      # MODULE_NOT_FOUND). The static launch-path-parity lint:meta rule guards
+      # the path references; this proves the built artifact actually starts.
+      # /health/ready rather than /health because /health answers before the
+      # dependencies are wired, so it would pass a boot that cannot serve.
+      - name: Start API
+        if: steps.aff.outputs.run == 'true'
+        run: |
+          node apps/api/dist/src/main.js > /tmp/api.log 2>&1 &
+          api_pid=$!
+          up=0
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/health/ready > /dev/null; then up=1; echo "api ready"; break; fi
+            if ! kill -0 "$api_pid" 2>/dev/null; then echo "api exited during boot"; break; fi
+            echo "waiting for api ($i)"; sleep 2
+          done
+          if [ "$up" -ne 1 ]; then echo "=== api log ==="; cat /tmp/api.log || true; exit 1; fi
+        env:
+          PORT: '3000'
+          NODE_ENV: production
+          APP_URL: http://localhost:5173
+          # The API's OWN public origin, distinct from APP_URL (the SPA origin).
+          # Joi-required under NODE_ENV=production so a deployment cannot
+          # silently mint OAuth redirect URIs against localhost, and absent here
+          # since the day it became required, which is why both of these steps
+          # died at config validation before reaching a single assertion.
+          API_PUBLIC_URL: http://localhost:3000
+          SMTP_HOST: localhost
+          SMTP_PORT: '1025'
+          TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+          CSRF_SECRET: ci-e2e-csrf-secret-not-used-by-these-specs-0000
+          # METRICS_BASIC_AUTH is Joi-required under NODE_ENV=production (the
+          # /metrics endpoint fails closed). Synthetic CI-only credential; the
+          # e2e specs never scrape /metrics.
+          METRICS_BASIC_AUTH: ci-metrics-user:ci-metrics-not-a-real-credential
+          # ENCRYPTION_KEY is Joi-required(): this step boots the real validated
+          # API, so it fails closed at startup without a valid key. CI-only.
+          ENCRYPTION_KEY: 6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81
+          S3_ENDPOINT: http://localhost:4569
+          S3_REGION: us-east-1
+          S3_BUCKET: saas-starter-uploads
+          S3_ACCESS_KEY: S3RVER
+          S3_SECRET_KEY: S3RVER
+
+      - name: Start web (built app via vite preview)
+        if: steps.aff.outputs.run == 'true'
+        run: |
+          pnpm --filter @repo/web exec vite preview --port 5173 --strictPort > /tmp/web.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5173 > /dev/null && { echo "web up"; break; }
+            echo "waiting for web ($i)"; sleep 2
+          done
+
+      # CI runs the suite directly rather than through `pnpm e2e:lane`, and
+      # playwright.config.ts declares no junit reporter, so the inventory's
+      # report is requested on the command line here.
+      #
+      # On failure the api log is printed IN THIS STEP, not a later one: the
+      # api writes only to /tmp/api.log, which the runner discards, and
+      # `gh run view --log-failed` shows failed steps only. Without this a 500
+      # from the api reached the report as a UI symptom with no cause left
+      # anywhere.
+      - name: Run Playwright e2e
+        if: steps.aff.outputs.run == 'true'
+        run: |
+          pnpm --filter @repo/web test:e2e -- --reporter=list,junit || {
+            status=$?
+            echo "=== api log, last 400 lines ==="
+            tail -n 400 /tmp/api.log || true
+            exit "$status"
+          }
+        env:
+          PLAYWRIGHT_JUNIT_OUTPUT_NAME: ${{ github.workspace }}/apps/web/playwright-report/e2e-lane.junit.xml
+
+      - name: E2e test inventory
+        if: steps.aff.outputs.run == 'true'
+        run: pnpm verify:inventory --from-report --suite=e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7

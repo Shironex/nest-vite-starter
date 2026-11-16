@@ -1,0 +1,17 @@
+{
+  "greeting": {
+    "title": "Good day, {{name}}",
+    "subtitle": "Here is what is happening in your organization today.",
+    "fallbackName": "there"
+  },
+  "activity": {
+    "title": "Activity feed",
+    "subtitle": "The latest events in the system",
+    "empty": "No recent activity",
+    "emptyHint": "Events from the app show up here as they arrive.",
+    "loadError": "Could not load the activity",
+    "testNotification": "Send a test notification",
+    "testNotificationSent": "Test notification sent",
+    "testNotificationFailed": "Failed to send the test notification"
+  }
+}

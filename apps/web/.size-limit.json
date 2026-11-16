@@ -1,0 +1,17 @@
+[
+  {
+    "name": "All emitted JS (brotli): total app weight, NOT a per-user download. It goes UP when a route is split correctly, so it is a runaway-growth alarm, not a budget to optimize against. The gate users feel is check-initial-bundle.mjs; the gates that bound a visit are the two route entries below. The ceiling carries ~30 kB of headroom for the Sentry chunk, which only exists in a build made with VITE_SENTRY_DSN set. CI and `pnpm size:check` (scripts/run-web-budget.mjs) both build with a placeholder DSN, so the chunk is measured; a build without one tree-shakes the import away and reads ~30 kB lower.",
+    "path": "dist/assets/*.js",
+    "limit": "600 kB"
+  },
+  {
+    "name": "All emitted CSS (brotli): the same total-app ceiling as the JS entry above, not a per-user download. The app stylesheet is ~18 kB of it; the remainder is lazily loaded stylesheets that never reach first paint, so this number and the first-paint gate move independently.",
+    "path": "dist/assets/*.css",
+    "limit": "19 kB"
+  },
+  {
+    "name": "Sign-in route chunks (brotli): every chunk the router codegen names for /auth/login. It bounds what the sign-in screen itself contributes on top of the shell, which is the half of the visit the first-paint gate does not measure. NOT the route's full transitive cost: a walk of the static imports puts /auth/login at ~42 kB beyond the shell, and expressing that needs an import walk rather than a file glob.",
+    "path": "dist/assets/login-*.js",
+    "limit": "4 kB"
+  }
+]

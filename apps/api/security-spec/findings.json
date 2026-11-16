@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "findings": [
+    {
+      "id": "SEC-001",
+      "title": "A removed staff member signs back into their old organization with Google: the OAuth path never checks membershipEndedAt",
+      "status": "fixed",
+      "spec": "security-spec/oauth-removed-member.security-spec.ts",
+      "alsoCoveredBy": ["apps/api/src/modules/auth/oauth/oauth-removed-member.isolation.spec.ts"],
+      "cases": [
+        {
+          "name": "SEC-001 the Google door refuses a removed member > control: an active member with a linked Google account is authenticated",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-001 the Google door refuses a removed member > refuses the removed member on the linked path and audits membership_ended",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-001 the Google door refuses a removed member > refuses the removed member on the auto-link path and writes no link row",
+          "expect": "pass"
+        }
+      ]
+    },
+    {
+      "id": "SEC-002",
+      "title": "Account pre-hijack: an attacker's password and session survive the victim verifying the address and linking Google",
+      "status": "fixed",
+      "spec": "security-spec/account-pre-hijack.security-spec.ts",
+      "alsoCoveredBy": ["apps/api/src/modules/auth/account-pre-hijack.isolation.spec.ts"],
+      "cases": [
+        {
+          "name": "SEC-002 a password account never gains a Google link from a login > control: a passwordless, factorless, double-verified account is auto-linked",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-002 a password account never gains a Google link from a login > refuses the pre-hijacked account: LINK_BLOCKED, no link row, no session",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-002 a password account never gains a Google link from a login > refuses while the address is still unverified on our side, without an oracle",
+          "expect": "pass"
+        }
+      ]
+    },
+    {
+      "id": "SEC-003",
+      "title": "A Google-signup owner is listed as a pending invite, and 'withdraw invitation' would hard-delete the account, and countLiveAdmins counted pending invitees",
+      "status": "fixed",
+      "spec": "security-spec/pending-invite-predicate.security-spec.ts",
+      "alsoCoveredBy": [
+        "apps/api/src/modules/auth/staff-invite/pending-invite-predicate.isolation.spec.ts"
+      ],
+      "cases": [
+        {
+          "name": "SEC-003 an open invitation is the pending pair, everywhere > control: a Google-signup admin counts as an admin and is listed active",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-003 an open invitation is the pending pair, everywhere > the last-admin guard does not count a pending ADMIN invitee",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-003 an open invitation is the pending pair, everywhere > revoke refuses the Google-signup owner and deletes nothing",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-003 an open invitation is the pending pair, everywhere > control: revoke still withdraws a real pending invitation and audits it",
+          "expect": "pass"
+        }
+      ]
+    },
+    {
+      "id": "SEC-004",
+      "title": "Log redaction fails open past the depth cap and never scrubs message strings",
+      "status": "fixed",
+      "spec": "security-spec/log-redaction-boundary.security-spec.ts",
+      "alsoCoveredBy": [
+        "packages/shared/src/logger/redaction-boundary.test.ts",
+        "packages/shared/src/logger/redact.test.ts"
+      ],
+      "cases": [
+        {
+          "name": "SEC-004 log redaction fails closed at every boundary > control: correlation fields and ordinary context still come through",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-004 log redaction fails closed at every boundary > replaces a subtree past the depth cap instead of returning it",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-004 log redaction fails closed at every boundary > scrubs secret shapes out of free text, which no key name describes",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-004 log redaction fails closed at every boundary > scrubs a string leaf whose key looks innocent",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-004 log redaction fails closed at every boundary > keeps raw error text out of the tRPC log MESSAGE, on a data field instead",
+          "expect": "pass"
+        }
+      ]
+    },
+    {
+      "id": "SEC-005",
+      "title": "Raw SQL is an unguarded door past the tenant extension: lint $queryRaw and $executeRaw as an escape hatch",
+      "status": "fixed",
+      "spec": "security-spec/raw-sql-allowlist.security-spec.ts",
+      "alsoCoveredBy": ["tools/lint-meta/rules/config/required-rules-at-error.test.ts"],
+      "cases": [
+        {
+          "name": "SEC-005 raw SQL never leaves the allowlist > control: the resolved config reports an unguarded raw query in a fixture",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-005 raw SQL never leaves the allowlist > no file under src reaches past the tenant boundary with raw SQL",
+          "expect": "pass"
+        }
+      ]
+    },
+    {
+      "id": "SEC-006",
+      "title": "An API error on the web's batched tRPC GET shipped the procedure inputs (record ids, search terms) to Sentry in request.url and request.query_string",
+      "status": "fixed",
+      "spec": "security-spec/sentry-trpc-input-redaction.security-spec.ts",
+      "alsoCoveredBy": ["apps/api/src/common/observability/sentry-scrub.spec.ts"],
+      "cases": [
+        {
+          "name": "SEC-006 no Sentry event carries a batched tRPC input or an identifier query value > control: the registered beforeSend keeps the procedure path and the batch flag",
+          "expect": "pass"
+        },
+        {
+          "name": "SEC-006 no Sentry event carries a batched tRPC input or an identifier query value > request.url, request.query_string and the message leave with no procedure input",
+          "expect": "pass"
+        }
+      ]
+    }
+  ]
+}

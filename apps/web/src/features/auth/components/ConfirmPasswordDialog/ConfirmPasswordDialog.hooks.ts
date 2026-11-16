@@ -1,0 +1,70 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { toast } from '@repo/ui/sonner';
+import { confirmPasswordSchema } from '@repo/shared/schemas';
+import type { ConfirmPasswordInput } from '@repo/shared/schemas';
+import { AppErrorCode } from '@repo/shared/errors';
+import { trpc } from '@/lib/trpc';
+import { getAppErrorCode, translateAppError } from '@/lib/trpc-errors';
+import type {
+  IConfirmPasswordDialogProps,
+  IConfirmPasswordDialogView,
+} from './ConfirmPasswordDialog.types';
+
+/**
+ * The sudo prompt (SPEC section 8): re-prove the password to grant this
+ * session a 300 s sudo window in Redis. The grant is a server-side flag, so
+ * nothing about it is stored here; the only client-visible outcome is
+ * `onConfirmed`.
+ */
+export function useConfirmPasswordDialog({
+  onOpenChange,
+  onConfirmed,
+}: IConfirmPasswordDialogProps): IConfirmPasswordDialogView {
+  const { t } = useTranslation();
+  const [hasNoPassword, setHasNoPassword] = useState(false);
+
+  const form = useForm<ConfirmPasswordInput>({
+    resolver: zodResolver(confirmPasswordSchema),
+    mode: 'onBlur',
+    defaultValues: { password: '' },
+  });
+
+  const confirmMutation = useMutation({
+    ...trpc.auth.confirmPassword.mutationOptions(),
+    onSuccess: () => {
+      form.reset();
+      // Confirmed BEFORE closing: closing is what makes the caller drop its
+      // pending action, so this ordering is the contract, not a nicety.
+      onConfirmed();
+      onOpenChange(false);
+    },
+    onError: (error) => {
+      const code = getAppErrorCode(error);
+      if (code === AppErrorCode.INVALID_CREDENTIALS) {
+        // Field-level copy like DisableDialog: the catalog sentence for this
+        // code mentions the e-mail address, which is wrong under a lone
+        // password field.
+        form.setError('password', { message: t('auth.sudo.invalidPassword') });
+      } else if (code === AppErrorCode.PASSWORD_NOT_SET) {
+        // An OAuth-only account (null password hash). No retry can succeed,
+        // so the dialog swaps its body instead of erroring the field.
+        setHasNoPassword(true);
+      } else if (code === AppErrorCode.RATE_LIMITED) {
+        // 5 attempts per 300 s per user; the catalog copy fits verbatim.
+        form.setError('password', { message: t('errors:RATE_LIMITED') });
+      } else {
+        toast.error(translateAppError(error) ?? t('errors.unexpected'));
+      }
+    },
+  });
+
+  function onSubmit(data: ConfirmPasswordInput) {
+    confirmMutation.mutate(data);
+  }
+
+  return { form, onSubmit, isPending: confirmMutation.isPending, hasNoPassword };
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@repo/tsconfig/react.json",
+  "compilerOptions": {
+    // "types" is deliberately left unset. @repo/web has no @types/node dependency,
+    // so pinning "types": ["node"] fails with TS2688 "Cannot find type definition
+    // file for 'node'". Unset, tsc auto-loads the ambient node types that
+    // @playwright/test already pulls in transitively, which is what the specs need
+    // for process.env. Adding the dependency just to name it here would touch the
+    // lockfile for no extra safety.
+
+    // See tsconfig.app.json: `tsBuildInfoFile` needs `incremental` for the
+    // `tsc --noEmit -p` form `check-types` uses.
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.e2e.tsbuildinfo"
+
+    // No "paths" either. Playwright transpiles specs against apps/web/tsconfig.json,
+    // which declares no path mapping, so an "@/..." import would typecheck here and
+    // then fail to resolve at run time. Specs reach into src with relative imports.
+  },
+  "include": ["e2e"]
+}

@@ -1,0 +1,127 @@
+{
+  "name": "@repo/shared",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./schemas": {
+      "import": {
+        "types": "./dist/schemas/index.d.ts",
+        "default": "./dist/schemas/index.js"
+      },
+      "require": {
+        "types": "./dist/schemas/index.d.cts",
+        "default": "./dist/schemas/index.cjs"
+      }
+    },
+    "./types": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/types/index.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.cts",
+        "default": "./dist/types/index.cjs"
+      }
+    },
+    "./constants": {
+      "import": {
+        "types": "./dist/constants/index.d.ts",
+        "default": "./dist/constants/index.js"
+      },
+      "require": {
+        "types": "./dist/constants/index.d.cts",
+        "default": "./dist/constants/index.cjs"
+      }
+    },
+    "./errors": {
+      "import": {
+        "types": "./dist/errors/index.d.ts",
+        "default": "./dist/errors/index.js"
+      },
+      "require": {
+        "types": "./dist/errors/index.d.cts",
+        "default": "./dist/errors/index.cjs"
+      }
+    },
+    "./logger": {
+      "import": {
+        "types": "./dist/logger/index.d.ts",
+        "default": "./dist/logger/index.js"
+      },
+      "require": {
+        "types": "./dist/logger/index.d.cts",
+        "default": "./dist/logger/index.cjs"
+      }
+    },
+    "./permissions": {
+      "import": {
+        "types": "./dist/permissions/index.d.ts",
+        "default": "./dist/permissions/index.js"
+      },
+      "require": {
+        "types": "./dist/permissions/index.d.cts",
+        "default": "./dist/permissions/index.cjs"
+      }
+    },
+    "./events": {
+      "import": {
+        "types": "./dist/events/index.d.ts",
+        "default": "./dist/events/index.js"
+      },
+      "require": {
+        "types": "./dist/events/index.d.cts",
+        "default": "./dist/events/index.cjs"
+      }
+    },
+    "./money": {
+      "import": {
+        "types": "./dist/money/index.d.ts",
+        "default": "./dist/money/index.js"
+      },
+      "require": {
+        "types": "./dist/money/index.d.cts",
+        "default": "./dist/money/index.cjs"
+      }
+    },
+    "./audit": {
+      "import": {
+        "types": "./dist/audit/index.d.ts",
+        "default": "./dist/audit/index.js"
+      },
+      "require": {
+        "types": "./dist/audit/index.d.cts",
+        "default": "./dist/audit/index.cjs"
+      }
+    },
+    "./desktop": {
+      "import": {
+        "types": "./dist/desktop/index.d.ts",
+        "default": "./dist/desktop/index.js"
+      },
+      "require": {
+        "types": "./dist/desktop/index.d.cts",
+        "default": "./dist/desktop/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/tsconfig": "workspace:*",
+    "eslint": "^10.10.0",
+    "tsup": "^8.5.1",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.1"
+  }
+}

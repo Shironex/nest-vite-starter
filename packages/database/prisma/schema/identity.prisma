@@ -1,0 +1,341 @@
+// ---------------------------------------------------------------------------
+// Identity: accounts, the tokens that authenticate them, linked OAuth
+// providers, RBAC, and second factors.
+// ---------------------------------------------------------------------------
+
+// USER and ADMIN are the member roles of an organization. A new role is added here and
+// mirrored in ROLES (@repo/shared/permissions); shared-enum-parity.spec.ts keeps
+// the two in step.
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  // Staff-initiated invitation into an existing organization. Rides the same Token
+  // table as the two flows above so the single-use consume, the hourly expiry
+  // sweep and the hashed-at-rest storage are one implementation, not three.
+  // Its TTL lives in STAFF_INVITE_TOKEN_TTL_MS (@repo/shared/constants), not
+  // here: expiresAt is stamped per row by TokenService.
+  STAFF_INVITE
+}
+
+// Second-factor kind. One table holds every factor type: the login
+// challenge and the settings list both want "all factors for this user" in one
+// query, and adding WebAuthn later is columns + an enum value, never a new
+// table. WEBAUTHN is reserved with NO v1 code path: every query filters by
+// `type`, so a reserved value can never leak into a TOTP path.
+enum SecondFactorType {
+  TOTP
+  RECOVERY_CODE
+  WEBAUTHN
+}
+
+// Lifecycle of a factor row. PENDING = provisioned but not yet verified (TOTP
+// enrollment step 1); ACTIVE = confirmed. There is deliberately no REVOKED:
+// disable/reset HARD-DELETE the rows and the who/when history lives in AuditLog.
+enum SecondFactorStatus {
+  PENDING
+  ACTIVE
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  displayName       String?
+  avatarUrl         String?
+  // Nullable since OAuth sign-in: an account provisioned through the Google
+  // callback has NO password at all. Null means "OAuth-only, no password set",
+  // never "any password matches" - every credential-verifying path (login,
+  // password change, account deletion, the 2FA sudo gate) treats null as a
+  // failed verification. Password reset is the one path that ACCEPTS a null
+  // hash: it doubles as set-password for an OAuth-only user.
+  passwordHash      String?
+  role              Role      @default(USER)
+  emailVerified     Boolean   @default(false)
+  failedAttempts    Int       @default(0)
+  lockoutCount      Int       @default(0)
+  lockedUntil       DateTime?
+  deletedAt         DateTime?
+  // Set when a member is removed from the organization without deleting their account.
+  // Deliberately NOT modeled as `tenantId = null`: the tenantId comment below
+  // explains that a null-tenant user fails every fail-closed tenant-scoped
+  // operation AND is invisible to every admin list, which is a worse state than
+  // either alternative. Keeping tenantId intact makes the removal visible in the
+  // members list and reversible.
+  //
+  // Enforced at LOGIN and by revokeAuthState, never in auth.middleware, which
+  // reads the session blob and never touches the database; a clause there would
+  // put a per-request read on the hottest path in the app.
+  // The DB-token side door needs the same clause and is easy to miss:
+  // password reset.
+  membershipEndedAt DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Tenant link is nullable so the existing seeded admin row backfills safely
+  // (greenfield) and the seed assigns it; registration will create an organization per
+  // signup later. User.email stays globally unique: it is the login identifier.
+  // onDelete: Restrict so a Tenant cannot be deleted while users reference it;
+  // SET NULL would strand those users with tenantId NULL, which every
+  // fail-closed tenant-scoped operation refuses to manage.
+  tenantId String?
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  // Back-relation for Tenant.ownerId. A user owns at most one organization because
+  // tenantId is singular; the @unique on the owning side keeps it that way.
+  ownedTenant Tenant? @relation("TenantOwner")
+
+  tokens                 Token[]
+  oauthAccounts          OAuthAccount[]
+  rolePermissions        RolePermission[]
+  auditLogs              AuditLog[]
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
+  tourProgress           TourProgress?
+  secondFactors          SecondFactor[]
+
+  // No explicit @@index([email]): the @unique above already maintains a
+  // unique B-tree index on email, which findByEmail uses. A second index
+  // would only add write amplification.
+
+  // SQL-only partial index "User_deletedAt_idx" ON ("deletedAt") WHERE
+  // "deletedAt" IS NOT NULL (in the 0_init baseline): serves the daily
+  // user-purge sweep's deletedAt-only predicate, which the composite index
+  // above cannot (its leading column is tenantId). Prisma cannot express
+  // partial indexes, so it is documented here and lives in the migration.
+
+  // The admin user list filters by { tenantId, deletedAt: null } and orders by
+  // createdAt DESC, id DESC (keyset pagination). The index covers both the
+  // filter and the order-by, so the read is index-ordered instead of a
+  // full-table scan plus sort.
+  @@index([tenantId, deletedAt, createdAt(sort: Desc), id(sort: Desc)])
+  // The last-admin and live-member guards count over { tenantId, deletedAt:
+  // null, membershipEndedAt: null }; the members list reads membershipEndedAt
+  // for its status column. This index answers those counts without touching
+  // the table.
+  @@index([tenantId, deletedAt, membershipEndedAt])
+}
+
+model Token {
+  id        String    @id @default(cuid())
+  userId    String
+  type      TokenType
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  // Set ONLY on a STAFF_INVITE minted against an account that already belongs to
+  // a DIFFERENT organization. On the ordinary path the
+  // pending User row already carries both the target tenant and the role, so
+  // these stay null and acceptance reads the row; on the collision path there is
+  // no pending row to read, because the invitee's existing account is the one
+  // being invited and it still belongs to somebody else.
+  //
+  // Nullable rather than always-populated, deliberately. Writing the role on the
+  // ordinary path too would give it two homes: an admin may re-grade a PENDING
+  // member through the ordinary role surface, and a token that also remembered a
+  // role would silently undo that at acceptance. One source per branch, and the
+  // branch is decided by whether these are set.
+  //
+  // Cascade on the tenant: an invitation into an organization that no longer exists is
+  // not an invitation, and leaving the row would make acceptance fail on a
+  // foreign key instead of on a missing token.
+  staffInviteTenantId String?
+  staffInviteRole     Role?
+
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  staffInviteTenant Tenant? @relation("StaffInviteTenant", fields: [staffInviteTenantId], references: [id], onDelete: Cascade)
+
+  // No explicit @@index([token]): the @unique above already maintains a
+  // unique B-tree index on token, which the lookup uses. A second index
+  // would only add write amplification.
+  @@index([userId, type])
+  // SQL-only PARTIAL index "Token_staffInviteTenantId_idx" ON
+  // ("staffInviteTenantId") WHERE "staffInviteTenantId" IS NOT NULL (in the
+  // 0_init baseline): the tenant cascade has to find these rows, and deleting a
+  // organization is the worst moment for a sequential scan of every token in the
+  // product. Partial, because the column is null on all but open collision
+  // invitations. Declared in SQL because Prisma has no partial-index syntax, and
+  // a plain @@index here would build a second, fuller index beside it.
+  // Hourly token-cleanup sweeps `deleteMany({ where: { expiresAt: { lt: now } } })`;
+  // without this index that is a full-table scan that grows with the table.
+  @@index([expiresAt])
+}
+
+// An external identity (Google today, more providers later) linked to a User.
+// Identity is ALWAYS the (provider, providerAccountId) pair: providerAccountId
+// is the IdP's immutable subject id, so a user renaming their Google mailbox
+// keeps the same link. `email` here is a SNAPSHOT of the claim at link time,
+// refreshed on each login for support/debugging; it is never a lookup key,
+// because trusting it as one would let a re-registered address at the IdP take
+// over an existing account.
+//
+// No token columns: v1 requests no offline access, so there is nothing to store
+// after the callback finishes verifying the id_token.
+//
+// Deliberately OUTSIDE the tenant-scope `$extends` boundary (absent from
+// TENANT_SCOPED_MODELS, like Token): the callback resolves this row BEFORE any
+// session exists, so a tenant-scoped read would fail closed on every sign-in.
+// Isolation still holds - the row is only ever reachable through its owning
+// User, which the callback resolves by IdP subject, never by client input.
+model OAuthAccount {
+  id                String  @id @default(cuid())
+  provider          String
+  providerAccountId String
+  email             String
+  emailVerified     Boolean
+  userId            String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  // Touched on every sign-in through this identity, so the Connected Accounts
+  // panel can show "last used" and an operator can spot a dormant link.
+  lastUsedAt DateTime @updatedAt
+
+  // The identity key. Unique across the table, NOT per user: one Google account
+  // must never be linked to two SaaS Starter users, or either could sign in as the
+  // other.
+  @@unique([provider, providerAccountId])
+  // "Which providers has this user linked?" - the Connected Accounts list and
+  // the unlink invariant (refuse the last credential) both read by userId.
+  @@index([userId])
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  rolePermissions RolePermission[]
+}
+
+// Role-wide grants (userId NULL) are deduped by a PARTIAL unique index that
+// Prisma cannot express: "RolePermission_role_permission_global_key" ON
+// (role, "permissionId") WHERE "userId" IS NULL (see the
+// index_and_fk_correctness migration). Postgres treats NULLs as distinct, so
+// the @@unique below does NOT prevent duplicate { role, permissionId,
+// userId: NULL } rows on its own.
+model RolePermission {
+  id           String   @id @default(cuid())
+  role         Role
+  permissionId String
+  userId       String?
+  createdAt    DateTime @default(now())
+
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId, userId])
+  // The permission lookup filters `OR [{ role, userId: null }, { userId }]`.
+  // The role arm rides the leading column of the unique index above; this
+  // index covers the user-specific arm so it isn't a full table scan.
+  @@index([userId])
+}
+
+// SecondFactor: one type-discriminated table for every second factor.
+// It is USER-scoped credential data, like Token (NOT tenant-scoped domain
+// data), so it is intentionally absent from TENANT_SCOPED_MODELS and its
+// repository lives in the auth module. onDelete: Cascade means the existing
+// user-deletion + purge lifecycle cleans factors for free (no purge-cron change).
+//
+// Payloads are sparse-nullable by type:
+//   - TOTP:          `totpSecretEnc` = EncryptionService v1 wire-format string of
+//                    the base32 secret; `codeHash`/`usedAt` are null.
+//   - RECOVERY_CODE: one row per code; `codeHash` = sha256 hex of the normalized
+//                    code, `usedAt` marks single-use redemption; `totpSecretEnc`
+//                    is null.
+//   - WEBAUTHN:      reserved; columns (credentialId, publicKey, signCount, ...)
+//                    are an additive future migration, no v1 rows.
+//
+// "2FA enabled" is DERIVED, not a column: EXISTS a row with status=ACTIVE and
+// type != RECOVERY_CODE. One indexed query on the login hot path, zero drift.
+model SecondFactor {
+  id     String             @id @default(cuid())
+  userId String
+  type   SecondFactorType
+  status SecondFactorStatus @default(PENDING)
+
+  totpSecretEnc String?
+  codeHash      String?
+  usedAt        DateTime?
+
+  friendlyName String?
+  activatedAt  DateTime?
+  lastUsedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // SQL-only partial UNIQUE index "SecondFactor_active_totp_per_user_key" ON
+  // ("userId") WHERE "type" = 'TOTP' AND "status" = 'ACTIVE' (in the
+  // 0_init baseline): enforces at most one ACTIVE TOTP factor per user, which the
+  // @@unique above cannot (codeHash is NULL for TOTP, so those rows never
+  // collide). Prevents a two-tab enrollment race from minting two active secrets
+  // + two recovery-code batches. Prisma cannot express partial indexes, so it
+  // lives in the migration and is documented here (same pattern as
+  // User_deletedAt_idx).
+
+  // Recovery-code redemption is a point lookup by (userId, codeHash). codeHash
+  // is null for TOTP rows; Postgres treats NULLs as distinct, so multiple
+  // TOTP/pending rows never collide on this unique index.
+  @@unique([userId, codeHash])
+  // Serves the login "does this user have an active non-recovery factor" check,
+  // the settings factor list, and recovery-code lookup prefiltering.
+  @@index([userId, type, status])
+}
+
+// TwoFactorPolicy: per-Organization (Tenant) 2FA enforcement (T01/T07). Its own table
+// (not columns on Tenant) so policy writes are a separate auditable mutation
+// surface and future knobs land here. Rows are created lazily per tenant
+// (default required=false), so existing tenants need no backfill. Unlike
+// SecondFactor, this IS tenant-keyed: it joins TENANT_SCOPED_MODELS in Step 5
+// so reads/writes fail closed without tenant context.
+model TwoFactorPolicy {
+  id          String    @id @default(cuid())
+  tenantId    String    @unique
+  required    Boolean   @default(false)
+  // When set, members without an active factor are blocked after this instant.
+  graceEndsAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+// TourProgress: which guided tours a person has already been shown.
+// The direct sibling of NotificationPreference, and deliberately so: one row
+// per user, created lazily on the first write, defaults (an empty map) when
+// absent, every read resolved through one static seam. No row means no tour has
+// ever been seen, which is exactly the state every existing account is in, so
+// there is nothing to backfill.
+//
+// tours is a zod-validated map of tourId -> { completedAt, version, dismissed }.
+// Json rather than rows for the same reason as NotificationPreference.channels:
+// it is read whole, written whole, and never queried by its contents. The
+// consequence that matters is that the NINTH tour needs no migration: a tour
+// is a client-side registry entry, and the server only ever stores the id it is
+// handed.
+//
+// That also means the server does NOT know which ids are real, which is why the
+// read is tolerant by construction: an id that was renamed or removed stays in
+// the blob, is returned, and is ignored by the client registry that no longer
+// knows it. A read must never 500 on a value an older version wrote.
+//
+// USER-scoped config, NOT tenant-scoped domain data: absent from
+// TENANT_SCOPED_MODELS and every query keyed by userId, exactly like
+// NotificationPreference and SecondFactor.
+// onDelete: Cascade rides the existing user-deletion and purge lifecycle.
+model TourProgress {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  tours     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

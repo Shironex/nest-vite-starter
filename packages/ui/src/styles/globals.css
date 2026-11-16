@@ -1,0 +1,1315 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* SaaS Starter typefaces, self hosted through fontsource so the Electron shell and any
+   air gapped deployment render correctly with no request to fonts.googleapis.com.
+   All three ship latin + latin-ext, which covers the accented Latin alphabets. */
+@import '@fontsource-variable/instrument-sans'; /* UI / body, wght 400-700 */
+@import '@fontsource-variable/bricolage-grotesque'; /* display / wordmark, wght 200-800 */
+@import '@fontsource-variable/spline-sans-mono'; /* mono / numbers, wght 300-700 */
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================
+   FOUNDATION - not theme dependent
+   Radius, spacing, elevation and font stacks have a single value in the design
+   (no Light/Dark variant), so they live on :root and apply under every theme.
+   ============================================ */
+:root {
+  /* Design "space/N", the 4px ramp. Tailwind's own numeric scale already matches,
+     so p-4 / gap-4 is space/4. These exist for direct var() use.
+     Note: space/7 has no variable in the design source today, 28px is filled in
+     so the ramp has no hole. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+
+  /* Design effect styles shadow/sm..xl. Tinted to the text hue (#171b26), never
+     pure black. Mapped onto Tailwind's --shadow-* scale in @theme inline. */
+  --elevation-sm: 0 1px 2px rgb(23 27 38 / 0.06);
+  --elevation-md: 0 4px 12px rgb(23 27 38 / 0.08), 0 1px 3px rgb(23 27 38 / 0.06);
+  --elevation-lg: 0 12px 28px rgb(23 27 38 / 0.12), 0 2px 6px rgb(23 27 38 / 0.06);
+  --elevation-xl: 0 24px 48px rgb(23 27 38 / 0.16);
+
+  /* Font stacks. Kept as plain custom properties (not only @theme entries) so the
+     type-* utilities below can reference them directly. */
+  --font-sans-stack:
+    'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-display-stack: 'Bricolage Grotesque Variable', 'Instrument Sans Variable', sans-serif;
+  --font-mono-stack: 'Spline Sans Mono Variable', ui-monospace, monospace;
+}
+
+/* ============================================
+   STARTER - the default theme (SaaS Starter brand palette)
+   One variable collection with a Light and a Dark mode. The design source
+   authors these as hex, they are converted to oklch here to match the
+   convention every other theme in this file uses. The source hex is kept in a
+   trailing comment so a value can be checked against the design without a lookup.
+   ============================================ */
+:root,
+[data-theme='starter'] {
+  /* shadcn semantic layer, this is what @repo/ui components consume */
+  --background: oklch(0.9819 0.0029 264.54); /* color/bg/app #f8f9fb */
+  --foreground: oklch(0.2233 0.0224 269.03); /* color/text/primary #171b26 */
+
+  --card: oklch(1 0 0); /* color/bg/surface #ffffff */
+  --card-foreground: oklch(0.2233 0.0224 269.03);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2233 0.0224 269.03);
+
+  --primary: oklch(0.5025 0.2134 268.41); /* color/brand/primary #3450db */
+  --primary-foreground: oklch(1 0 0); /* color/brand/primary-fg #ffffff */
+
+  --secondary: oklch(0.9668 0.0058 264.53); /* color/bg/subtle #f2f4f8 */
+  --secondary-foreground: oklch(0.4362 0.0327 269.16); /* color/text/secondary #4a5164 */
+
+  --muted: oklch(0.9668 0.0058 264.53); /* color/bg/subtle #f2f4f8 */
+  --muted-foreground: oklch(0.5487 0.0278 267.71); /* color/text/muted #6a7182 */
+
+  --accent: oklch(0.9594 0.0164 274.82); /* color/brand/tint-50 #eef1fd */
+  --accent-foreground: oklch(0.5025 0.2134 268.41); /* color/brand/primary #3450db */
+
+  /* Same design variable as --danger-strong below, retyped for shadcn. The two
+     MUST hold the same value: `text-destructive` is still the ink on a dozen
+     form errors, so if only one of them is retuned the other keeps shipping the
+     old ratio. check-contrast.mjs asserts the pair rather than trusting this
+     comment. */
+  --destructive: oklch(0.5256 0.1968 22.29); /* color/danger/strong #c21c31 */
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.9403 0.0083 271.33); /* color/border/default #e9ebf1 */
+  --input: oklch(0.9403 0.0083 271.33);
+  --ring: oklch(0.5025 0.2134 268.41);
+
+  /* Data-viz series ramp, named by hue family. chart-2/3/5 deliberately KEEP the
+     earlier semantic values rather than tracking --success/--warning/--danger:
+     a series fill is non-text, so its bar is 3:1 against the surface plus
+     separation from its neighbors, and darkening the whole ramp toward the text
+     AA line would cost inter-series distinguishability to buy contrast a chart
+     does not need. Nothing consumes chart-2..5 yet, so this is a starting point,
+     not a regression. */
+  --chart-1: oklch(0.5025 0.2134 268.41); /* brand */
+  --chart-2: oklch(0.5609 0.126 156.48); /* green series */
+  --chart-3: oklch(0.5771 0.1135 82.75); /* amber series */
+  --chart-4: oklch(0.5272 0.196 307.66); /* purple */
+  --chart-5: oklch(0.6256 0.1933 23.03); /* red series */
+
+  --sidebar: oklch(1 0 0); /* color/bg/surface #ffffff */
+  --sidebar-foreground: oklch(0.2233 0.0224 269.03);
+  --sidebar-primary: oklch(0.5025 0.2134 268.41);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9594 0.0164 274.82);
+  --sidebar-accent-foreground: oklch(0.5025 0.2134 268.41);
+  --sidebar-border: oklch(0.9403 0.0083 271.33);
+  --sidebar-ring: oklch(0.5025 0.2134 268.41);
+
+  --radius: 0.625rem; /* radius/lg 10px, the rest of the scale derives from it */
+
+  /* design token layer: one custom property per design color variable (34).
+     Names mirror color/<group>/<name> so the design source maps 1:1 onto code. */
+  --brand: oklch(0.5025 0.2134 268.41); /* color/brand/primary #3450db */
+  --brand-hover: oklch(0.4359 0.1907 268.91); /* color/brand/primary-hover #2a3fb8 */
+  --brand-fg: oklch(1 0 0); /* color/brand/primary-fg #ffffff */
+  /* Brand color in its ink role, see the contrast pairs asserted
+     by scripts/check-contrast.mjs. Light mode can reuse the primary
+     because it is dark enough to read on every tint, so the two values are
+     identical here and only diverge in Dark. */
+  --brand-ink: oklch(0.5025 0.2134 268.41); /* color/brand/ink #3450db */
+  /* The ink's hover partner. Light mode can reuse the fill hover for the same
+     reason the ink reuses the primary, so this is byte-identical to
+     --brand-hover here and only diverges in Dark. */
+  --brand-ink-hover: oklch(0.4359 0.1907 268.91); /* color/brand/ink-hover #2a3fb8 */
+  --brand-tint: oklch(0.9594 0.0164 274.82); /* color/brand/tint #eef1fd */
+  --brand-50: oklch(0.9594 0.0164 274.82); /* color/brand/tint-50 #eef1fd */
+  --brand-100: oklch(0.9359 0.0262 274.11); /* color/brand/tint-100 #e4e9fc */
+  --brand-200: oklch(0.8545 0.0536 275.86); /* color/brand/tint-200 #c5cdf3 */
+
+  --bg-app: oklch(0.9819 0.0029 264.54); /* color/bg/app #f8f9fb */
+  --surface: oklch(1 0 0); /* color/bg/surface #ffffff */
+  --surface-hover: oklch(0.9705 0.0054 274.97); /* color/bg/hover #f4f5f9 */
+  --surface-subtle: oklch(0.9668 0.0058 264.53); /* color/bg/subtle #f2f4f8 */
+
+  --text-primary: oklch(0.2233 0.0224 269.03); /* color/text/primary #171b26 */
+  --text-secondary: oklch(0.4362 0.0327 269.16); /* color/text/secondary #4a5164 */
+  --text-muted: oklch(0.5487 0.0278 267.71); /* color/text/muted #6a7182 */
+  --text-tertiary: oklch(0.6569 0.0279 268.7); /* color/text/tertiary #8a91a3 */
+  --text-placeholder: oklch(0.7475 0.0257 267.86); /* color/text/placeholder #a6adbe */
+
+  --border-default: oklch(0.9403 0.0083 271.33); /* color/border/default #e9ebf1 */
+  --border-strong: oklch(0.8979 0.0127 271.27); /* color/border/strong #dadde6 */
+
+  /* Semantic inks, retuned for text contrast. Light mode carries every one of these
+     as TEXT on its own pale tint (StatusPill draws `bg-success-bg text-success`
+     across the list and agenda screens), and that tint is the DARKEST
+     background any of them lands on, darker even than `--surface-subtle`, so it
+     is the tint that sets the ceiling, not the app background.
+
+     Each L below is the value that clears 4.5:1 on its own `-bg` partner with
+     the margin `pnpm check:contrast` asserts. Note these tokens also serve a
+     FILL role (white initials on `bg-success` in LandingHero, `fill-warning` on
+     the gantt milestone), and in Light the ink role is the STRICTER of the two:
+     white-on-fill needs luminance at or below 0.183, ink-on-tint needs 0.161.
+     Satisfying the ink therefore satisfies the fill, so one value does both jobs
+     and no ink/fill split is needed here, unlike --brand and --brand-ink. That
+     asymmetry is a property of Light, where both roles want a darker value; in
+     Dark they pull apart, which is why the Dark fills below cannot carry white.
+
+     Hues are held to the original degree except warning, see its note. */
+  --success: oklch(0.5216 0.115 156.48); /* color/success/fg #1b7c4d */
+  --success-bg: oklch(0.9571 0.0231 161.74); /* color/success/bg #e4f6ec */
+  --danger: oklch(0.5518 0.1933 23.03); /* color/danger/fg #ca2c38 */
+  --danger-strong: oklch(0.5256 0.1968 22.29); /* color/danger/strong #c21c31 */
+  /* Ink for text sitting ON the `--danger-strong` FILL, which is the destructive
+     Button and Badge. Not a new color: Light is the same white as `--brand-fg`,
+     Dark is the same value as `--surface`. It exists because the fill flips role
+     between the modes and its ink has to flip with it. Light #c21c31 under white
+     is 5.99:1; Dark #f04a54 under white is only 3.61:1, which is the AA failure
+     `bg-destructive text-white` shipped, so Dark takes the near-black surface
+     instead and reaches 4.76:1. The comment above the semantic tones already
+     states the rule ("the Dark fills below cannot carry white"); this token is
+     how the destructive fill obeys it. check-contrast.mjs asserts both. */
+  --danger-strong-fg: oklch(1 0 0); /* color/brand/primary-fg #ffffff */
+  --danger-bg: oklch(0.9546 0.0196 13.63); /* color/danger/bg #fdebec */
+  /* Rotated 82.75 -> 70 degrees, the one hue that had to move. At the lightness
+     AA demands on `--warning-bg`, hue 82.75 computes to #8e6700, which reads as
+     olive rather than amber; 70 degrees lands on a burnt amber that still reads
+     as the warning family. Chroma rises to hold saturation at the lower L. */
+  --warning: oklch(0.5444 0.118 70); /* color/warning/fg #9b6100 */
+  --warning-bg: oklch(0.9647 0.0381 90.65); /* color/warning/bg #fdf3d7 */
+  --purple: oklch(0.5272 0.196 307.66); /* color/purple/fg #8a3fc0 */
+  --purple-bg: oklch(0.9356 0.0324 311.74); /* color/purple/bg #f1e4fa */
+
+  /* Cool gray ramp. Only 100-700 exist upstream, so neutral-50/800/900/950
+     are NOT part of this design system, do not reach for them. */
+  --neutral-100: oklch(0.9068 0.0257 268.83); /* color/neutral/100 #d9e0f2 */
+  --neutral-200: oklch(0.8592 0.0298 264.41); /* color/neutral/200 #c7d1e5 */
+  --neutral-300: oklch(0.8048 0.0265 268.79); /* color/neutral/300 #b8bfd1 */
+  --neutral-400: oklch(0.7226 0.0366 261.91); /* color/neutral/400 #99a6bd */
+  --neutral-500: oklch(0.6811 0.0399 263.52); /* color/neutral/500 #8c99b2 */
+  --neutral-600: oklch(0.6384 0.0373 263.46); /* color/neutral/600 #808ca3 */
+  --neutral-700: oklch(0.5983 0.0412 263.46); /* color/neutral/700 #738099 */
+
+  /* Scrollbar thumb. Not a new color: it is color/neutral/600, reused under a
+     semantic name so the base rule reads as intent rather than as a ramp step.
+     The track is deliberately absent: it stays transparent, so the bar floats
+     on whichever surface it is over instead of cutting a gray gutter into it.
+
+     Chosen for WCAG 1.4.11 non-text contrast, 3:1, against every surface a
+     scroll container can sit on: 3.39:1 on --surface, 3.22:1 on --bg-app,
+     3.08:1 on --surface-subtle. The step below (neutral-500) measures 2.61:1 on
+     subtle and would fail there, which is exactly the drawer-over-sheet corner
+     where the user most needs to see which pane scrolls. check-contrast.mjs
+     asserts all three. */
+  --scrollbar-thumb: oklch(0.6384 0.0373 263.46); /* color/neutral/600 #808ca3 */
+}
+
+.dark,
+[data-theme='starter'].dark {
+  --background: oklch(0.1738 0.0129 270.57); /* color/bg/app #0e1016 */
+  --foreground: oklch(0.9698 0.0057 264.53); /* color/text/primary #f3f5f9 */
+
+  --card: oklch(0.2233 0.0224 269.03); /* color/bg/surface #171b26 */
+  --card-foreground: oklch(0.9698 0.0057 264.53);
+
+  --popover: oklch(0.2233 0.0224 269.03);
+  --popover-foreground: oklch(0.9698 0.0057 264.53);
+
+  --primary: oklch(0.5731 0.2 270.66); /* color/brand/primary #4f68ec */
+  --primary-foreground: oklch(1 0 0); /* color/brand/primary-fg #ffffff */
+
+  --secondary: oklch(0.24 0.0243 267); /* color/bg/subtle #1a1f2b */
+  --secondary-foreground: oklch(0.7882 0.0196 265.95); /* color/text/secondary #b4bac7 */
+
+  --muted: oklch(0.24 0.0243 267); /* color/bg/subtle #1a1f2b */
+  --muted-foreground: oklch(0.662 0.0255 264.39); /* color/text/muted #8b93a3 */
+
+  --accent: oklch(0.254 0.0444 271.82); /* color/brand/tint-50 #1b2138 */
+  /* The accent pair is brand ink on a brand tint, so the foreground follows
+     color/brand/ink rather than color/brand/primary. Light needs no such split,
+     see the Dark --brand-ink comment below. */
+  --accent-foreground: oklch(0.69 0.1401 272.47); /* color/brand/ink #7e94f2 */
+
+  --destructive: oklch(0.6467 0.2019 21.63); /* color/danger/strong #f04a54 */
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.294 0.0248 268.42); /* color/border/default #272c39 */
+  --input: oklch(0.294 0.0248 268.42);
+  --ring: oklch(0.5731 0.2 270.66);
+
+  --chart-1: oklch(0.5731 0.2 270.66); /* brand */
+  --chart-2: oklch(0.7794 0.1655 157.29); /* success */
+  --chart-3: oklch(0.8071 0.1446 87.01); /* warning */
+  --chart-4: oklch(0.6815 0.1547 309.33); /* purple */
+  --chart-5: oklch(0.7056 0.1683 20.22); /* danger */
+
+  --sidebar: oklch(0.2233 0.0224 269.03); /* color/bg/surface #171b26 */
+  --sidebar-foreground: oklch(0.9698 0.0057 264.53);
+  --sidebar-primary: oklch(0.5731 0.2 270.66);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.254 0.0444 271.82);
+  --sidebar-accent-foreground: oklch(0.69 0.1401 272.47); /* color/brand/ink #7e94f2 */
+  --sidebar-border: oklch(0.294 0.0248 268.42);
+  --sidebar-ring: oklch(0.5731 0.2 270.66);
+
+  /* design token layer, Dark mode */
+  --brand: oklch(0.5731 0.2 270.66); /* color/brand/primary #4f68ec */
+  /* Darker than the resting primary, not lighter. White on the old #6a80f2
+     measured 3.51:1: contrast against white is 1.05 / (luminance + 0.05), so it
+     FALLS as the fill brightens, and resting already sits at 0.176 luminance
+     against a 0.183 ceiling. Brightening had nowhere to go. This is the exact
+     proportional mirror of Light's hover treatment (L x0.867, C x0.894, hue
+     +0.5), so both modes now darken by the same relative step. */
+  --brand-hover: oklch(0.4972 0.1787 271.16); /* color/brand/primary-hover #4054c6 */
+  --brand-fg: oklch(1 0 0); /* color/brand/primary-fg #ffffff */
+  /* Brand color in its ink role. The Dark primary has a relative luminance of
+     0.176, so its best possible contrast against ANY color is 4.64:1 (white)
+     or 4.52:1 (black). It therefore cannot carry small text on a tint no matter
+     what the tint is, which is why the ink is a separate token rather than a
+     re-tuned tint. Chosen so text-on-tint measures 5.60:1, matching Light's
+     5.62:1. scripts/check-contrast.mjs asserts both. */
+  --brand-ink: oklch(0.69 0.1401 272.47); /* color/brand/ink #7e94f2 */
+  /* The ink's hover partner, and the second half of the fill/ink hover split.
+     This holds the value --brand-hover used to carry in Dark, because the fill
+     had to darken to clear AA under white and ink has to move the other way. */
+  --brand-ink-hover: oklch(0.6384 0.1711 272.47); /* color/brand/ink-hover #6a80f2 */
+  --brand-tint: oklch(0.254 0.0444 271.82); /* color/brand/tint #1b2138 */
+  --brand-50: oklch(0.254 0.0444 271.82); /* color/brand/tint-50 #1b2138 */
+  --brand-100: oklch(0.2907 0.049 270.14); /* color/brand/tint-100 #222a44 */
+  --brand-200: oklch(0.381 0.0739 269.64); /* color/brand/tint-200 #33406a */
+
+  --bg-app: oklch(0.1738 0.0129 270.57); /* color/bg/app #0e1016 */
+  --surface: oklch(0.2233 0.0224 269.03); /* color/bg/surface #171b26 */
+  --surface-hover: oklch(0.2614 0.0256 268.25); /* color/bg/hover #1f2431 */
+  --surface-subtle: oklch(0.24 0.0243 267); /* color/bg/subtle #1a1f2b */
+
+  --text-primary: oklch(0.9698 0.0057 264.53); /* color/text/primary #f3f5f9 */
+  --text-secondary: oklch(0.7882 0.0196 265.95); /* color/text/secondary #b4bac7 */
+  --text-muted: oklch(0.662 0.0255 264.39); /* color/text/muted #8b93a3 */
+  --text-tertiary: oklch(0.5647 0.0266 264.34); /* color/text/tertiary #6e7686 */
+  --text-placeholder: oklch(0.5088 0.0258 263.08); /* color/text/placeholder #5e6675 */
+
+  --border-default: oklch(0.294 0.0248 268.42); /* color/border/default #272c39 */
+  --border-strong: oklch(0.3712 0.0275 265.39); /* color/border/strong #39404f */
+
+  --success: oklch(0.7794 0.1655 157.29); /* color/success/fg #3dd68c */
+  --success-bg: oklch(0.2624 0.0351 164.04); /* color/success/bg #132a20 */
+  --danger: oklch(0.7056 0.1683 20.22); /* color/danger/fg #f76e73 */
+  --danger-strong: oklch(0.6467 0.2019 21.63); /* color/danger/strong #f04a54 */
+  --danger-strong-fg: oklch(0.2233 0.0224 269.03); /* color/bg/surface #171b26 */
+  --danger-bg: oklch(0.2329 0.0408 13.09); /* color/danger/bg #2e1518 */
+  --warning: oklch(0.8071 0.1446 87.01); /* color/warning/fg #e8b93e */
+  --warning-bg: oklch(0.264 0.035 88.16); /* color/warning/bg #2c2410 */
+  --purple: oklch(0.6815 0.1547 309.33); /* color/purple/fg #b57be0 */
+  --purple-bg: oklch(0.2384 0.0523 303.16); /* color/purple/bg #241833 */
+
+  --neutral-100: oklch(0.2946 0.0305 268.55); /* color/neutral/100 #262c3c */
+  --neutral-200: oklch(0.342 0.0331 268.1); /* color/neutral/200 #31384a */
+  --neutral-300: oklch(0.4093 0.0357 265.9); /* color/neutral/300 #414a5e */
+  --neutral-400: oklch(0.4747 0.0378 265.8); /* color/neutral/400 #525c72 */
+  --neutral-500: oklch(0.5456 0.0395 267.31); /* color/neutral/500 #667088 */
+  --neutral-600: oklch(0.6176 0.0316 261.42); /* color/neutral/600 #7b8699 */
+  --neutral-700: oklch(0.6877 0.0334 263.44); /* color/neutral/700 #909bb0 */
+
+  /* Dark takes color/neutral/500, one step lower on the ramp than Light takes,
+     because the Dark ramp runs the other way: the same ordinal would be too
+     bright here and read as a highlight rather than a scrollbar. 3.47:1 on
+     --surface, 3.84:1 on --bg-app, 3.32:1 on --surface-subtle. */
+  --scrollbar-thumb: oklch(0.5456 0.0395 267.31); /* color/neutral/500 #667088 */
+}
+
+/* ============================================
+   VIOLET THEME - the shadcn default palette
+   Was :root before SaaS Starter took over as the default theme.
+   ============================================ */
+[data-theme='violet'] {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+
+  --primary: oklch(0.541 0.281 293.009);
+  --primary-foreground: oklch(0.985 0 0);
+
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+
+  --accent: oklch(0.943 0.029 294.588);
+  --accent-foreground: oklch(0.446 0.306 293.071);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.541 0.281 293.009);
+
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-primary: oklch(0.541 0.281 293.009);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.967 0.001 286.375);
+  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-ring: oklch(0.541 0.281 293.009);
+}
+
+[data-theme='violet'].dark {
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+
+  --card: oklch(0.141 0.005 285.823);
+  --card-foreground: oklch(0.985 0 0);
+
+  --popover: oklch(0.141 0.005 285.823);
+  --popover-foreground: oklch(0.985 0 0);
+
+  --primary: oklch(0.735 0.183 293.541);
+  --primary-foreground: oklch(0.205 0.006 285.885);
+
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground: oklch(0.985 0 0);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.274 0.006 286.033);
+  --input: oklch(0.274 0.006 286.033);
+  --ring: oklch(0.735 0.183 293.541);
+
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+
+  --sidebar: oklch(0.141 0.005 285.823);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.735 0.183 293.541);
+  --sidebar-primary-foreground: oklch(0.205 0.006 285.885);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.274 0.006 286.033);
+  --sidebar-ring: oklch(0.735 0.183 293.541);
+}
+
+/* ============================================
+   OCEAN THEME: Calm, professional blues
+   ============================================ */
+[data-theme='ocean'] {
+  --background: oklch(0.98 0.005 230);
+  --foreground: oklch(0.17 0.03 235);
+
+  --card: oklch(0.99 0.003 230);
+  --card-foreground: oklch(0.17 0.03 235);
+
+  --popover: oklch(0.99 0.003 230);
+  --popover-foreground: oklch(0.17 0.03 235);
+
+  --primary: oklch(0.55 0.2 230);
+  --primary-foreground: oklch(0.98 0 0);
+
+  --secondary: oklch(0.95 0.015 230);
+  --secondary-foreground: oklch(0.25 0.04 235);
+
+  --muted: oklch(0.95 0.015 230);
+  --muted-foreground: oklch(0.55 0.03 230);
+
+  --accent: oklch(0.92 0.04 230);
+  --accent-foreground: oklch(0.45 0.18 230);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.91 0.015 230);
+  --input: oklch(0.91 0.015 230);
+  --ring: oklch(0.55 0.2 230);
+
+  --chart-1: oklch(0.55 0.2 230);
+  --chart-2: oklch(0.6 0.15 200);
+  --chart-3: oklch(0.45 0.1 250);
+  --chart-4: oklch(0.7 0.12 210);
+  --chart-5: oklch(0.65 0.18 190);
+
+  --sidebar: oklch(0.97 0.008 230);
+  --sidebar-foreground: oklch(0.17 0.03 235);
+  --sidebar-primary: oklch(0.55 0.2 230);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.95 0.015 230);
+  --sidebar-accent-foreground: oklch(0.25 0.04 235);
+  --sidebar-border: oklch(0.91 0.015 230);
+  --sidebar-ring: oklch(0.55 0.2 230);
+}
+
+[data-theme='ocean'].dark {
+  --background: oklch(0.18 0.03 235);
+  --foreground: oklch(0.95 0.01 230);
+
+  --card: oklch(0.18 0.03 235);
+  --card-foreground: oklch(0.95 0.01 230);
+
+  --popover: oklch(0.18 0.03 235);
+  --popover-foreground: oklch(0.95 0.01 230);
+
+  --primary: oklch(0.72 0.14 230);
+  --primary-foreground: oklch(0.18 0.03 235);
+
+  --secondary: oklch(0.26 0.03 235);
+  --secondary-foreground: oklch(0.95 0.01 230);
+
+  --muted: oklch(0.26 0.03 235);
+  --muted-foreground: oklch(0.68 0.03 230);
+
+  --accent: oklch(0.26 0.03 235);
+  --accent-foreground: oklch(0.95 0.01 230);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.3 0.03 235);
+  --input: oklch(0.3 0.03 235);
+  --ring: oklch(0.72 0.14 230);
+
+  --chart-1: oklch(0.55 0.2 230);
+  --chart-2: oklch(0.65 0.15 200);
+  --chart-3: oklch(0.7 0.12 250);
+  --chart-4: oklch(0.6 0.18 210);
+  --chart-5: oklch(0.58 0.2 190);
+
+  --sidebar: oklch(0.18 0.03 235);
+  --sidebar-foreground: oklch(0.95 0.01 230);
+  --sidebar-primary: oklch(0.72 0.14 230);
+  --sidebar-primary-foreground: oklch(0.18 0.03 235);
+  --sidebar-accent: oklch(0.26 0.03 235);
+  --sidebar-accent-foreground: oklch(0.95 0.01 230);
+  --sidebar-border: oklch(0.3 0.03 235);
+  --sidebar-ring: oklch(0.72 0.14 230);
+}
+
+/* ============================================
+   FOREST THEME: Natural, earthy greens
+   ============================================ */
+[data-theme='forest'] {
+  --background: oklch(0.98 0.008 150);
+  --foreground: oklch(0.17 0.04 150);
+
+  --card: oklch(0.99 0.005 150);
+  --card-foreground: oklch(0.17 0.04 150);
+
+  --popover: oklch(0.99 0.005 150);
+  --popover-foreground: oklch(0.17 0.04 150);
+
+  --primary: oklch(0.55 0.17 155);
+  --primary-foreground: oklch(0.98 0 0);
+
+  --secondary: oklch(0.95 0.02 150);
+  --secondary-foreground: oklch(0.25 0.04 150);
+
+  --muted: oklch(0.95 0.02 150);
+  --muted-foreground: oklch(0.55 0.03 150);
+
+  --accent: oklch(0.92 0.04 150);
+  --accent-foreground: oklch(0.45 0.15 155);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.91 0.02 150);
+  --input: oklch(0.91 0.02 150);
+  --ring: oklch(0.55 0.17 155);
+
+  --chart-1: oklch(0.55 0.17 155);
+  --chart-2: oklch(0.6 0.12 130);
+  --chart-3: oklch(0.45 0.1 170);
+  --chart-4: oklch(0.7 0.15 140);
+  --chart-5: oklch(0.65 0.13 160);
+
+  --sidebar: oklch(0.97 0.01 150);
+  --sidebar-foreground: oklch(0.17 0.04 150);
+  --sidebar-primary: oklch(0.55 0.17 155);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.95 0.02 150);
+  --sidebar-accent-foreground: oklch(0.25 0.04 150);
+  --sidebar-border: oklch(0.91 0.02 150);
+  --sidebar-ring: oklch(0.55 0.17 155);
+}
+
+[data-theme='forest'].dark {
+  --background: oklch(0.18 0.03 150);
+  --foreground: oklch(0.95 0.015 150);
+
+  --card: oklch(0.18 0.03 150);
+  --card-foreground: oklch(0.95 0.015 150);
+
+  --popover: oklch(0.18 0.03 150);
+  --popover-foreground: oklch(0.95 0.015 150);
+
+  --primary: oklch(0.72 0.17 150);
+  --primary-foreground: oklch(0.18 0.03 150);
+
+  --secondary: oklch(0.26 0.03 150);
+  --secondary-foreground: oklch(0.95 0.015 150);
+
+  --muted: oklch(0.26 0.03 150);
+  --muted-foreground: oklch(0.68 0.04 150);
+
+  --accent: oklch(0.26 0.03 150);
+  --accent-foreground: oklch(0.95 0.015 150);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.3 0.03 150);
+  --input: oklch(0.3 0.03 150);
+  --ring: oklch(0.72 0.17 150);
+
+  --chart-1: oklch(0.55 0.17 155);
+  --chart-2: oklch(0.65 0.12 130);
+  --chart-3: oklch(0.7 0.1 170);
+  --chart-4: oklch(0.6 0.15 140);
+  --chart-5: oklch(0.58 0.13 160);
+
+  --sidebar: oklch(0.18 0.03 150);
+  --sidebar-foreground: oklch(0.95 0.015 150);
+  --sidebar-primary: oklch(0.72 0.17 150);
+  --sidebar-primary-foreground: oklch(0.18 0.03 150);
+  --sidebar-accent: oklch(0.26 0.03 150);
+  --sidebar-accent-foreground: oklch(0.95 0.015 150);
+  --sidebar-border: oklch(0.3 0.03 150);
+  --sidebar-ring: oklch(0.72 0.17 150);
+}
+
+/* ============================================
+   AMBER THEME: Warm, inviting amber/orange
+   ============================================ */
+[data-theme='amber'] {
+  --background: oklch(0.98 0.01 80);
+  --foreground: oklch(0.2 0.03 55);
+
+  --card: oklch(0.99 0.007 80);
+  --card-foreground: oklch(0.2 0.03 55);
+
+  --popover: oklch(0.99 0.007 80);
+  --popover-foreground: oklch(0.2 0.03 55);
+
+  --primary: oklch(0.65 0.18 65);
+  --primary-foreground: oklch(0.98 0 0);
+
+  --secondary: oklch(0.95 0.02 80);
+  --secondary-foreground: oklch(0.3 0.04 55);
+
+  --muted: oklch(0.95 0.02 80);
+  --muted-foreground: oklch(0.55 0.04 70);
+
+  --accent: oklch(0.92 0.05 80);
+  --accent-foreground: oklch(0.5 0.16 65);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.91 0.025 80);
+  --input: oklch(0.91 0.025 80);
+  --ring: oklch(0.65 0.18 65);
+
+  --chart-1: oklch(0.65 0.18 65);
+  --chart-2: oklch(0.6 0.15 40);
+  --chart-3: oklch(0.5 0.1 90);
+  --chart-4: oklch(0.75 0.12 50);
+  --chart-5: oklch(0.7 0.16 75);
+
+  --sidebar: oklch(0.97 0.012 80);
+  --sidebar-foreground: oklch(0.2 0.03 55);
+  --sidebar-primary: oklch(0.65 0.18 65);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.95 0.02 80);
+  --sidebar-accent-foreground: oklch(0.3 0.04 55);
+  --sidebar-border: oklch(0.91 0.025 80);
+  --sidebar-ring: oklch(0.65 0.18 65);
+}
+
+[data-theme='amber'].dark {
+  --background: oklch(0.18 0.02 55);
+  --foreground: oklch(0.95 0.015 80);
+
+  --card: oklch(0.18 0.02 55);
+  --card-foreground: oklch(0.95 0.015 80);
+
+  --popover: oklch(0.18 0.02 55);
+  --popover-foreground: oklch(0.95 0.015 80);
+
+  --primary: oklch(0.78 0.15 80);
+  --primary-foreground: oklch(0.18 0.02 55);
+
+  --secondary: oklch(0.26 0.025 55);
+  --secondary-foreground: oklch(0.95 0.015 80);
+
+  --muted: oklch(0.26 0.025 55);
+  --muted-foreground: oklch(0.68 0.04 70);
+
+  --accent: oklch(0.26 0.025 55);
+  --accent-foreground: oklch(0.95 0.015 80);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.3 0.025 55);
+  --input: oklch(0.3 0.025 55);
+  --ring: oklch(0.78 0.15 80);
+
+  --chart-1: oklch(0.65 0.18 65);
+  --chart-2: oklch(0.6 0.15 40);
+  --chart-3: oklch(0.7 0.1 90);
+  --chart-4: oklch(0.75 0.12 50);
+  --chart-5: oklch(0.68 0.16 75);
+
+  --sidebar: oklch(0.18 0.02 55);
+  --sidebar-foreground: oklch(0.95 0.015 80);
+  --sidebar-primary: oklch(0.78 0.15 80);
+  --sidebar-primary-foreground: oklch(0.18 0.02 55);
+  --sidebar-accent: oklch(0.26 0.025 55);
+  --sidebar-accent-foreground: oklch(0.95 0.015 80);
+  --sidebar-border: oklch(0.3 0.025 55);
+  --sidebar-ring: oklch(0.78 0.15 80);
+}
+
+/* ============================================
+   ROSE THEME: Elegant pink/magenta
+   ============================================ */
+[data-theme='rose'] {
+  --background: oklch(0.98 0.007 350);
+  --foreground: oklch(0.17 0.02 340);
+
+  --card: oklch(0.99 0.004 350);
+  --card-foreground: oklch(0.17 0.02 340);
+
+  --popover: oklch(0.99 0.004 350);
+  --popover-foreground: oklch(0.17 0.02 340);
+
+  --primary: oklch(0.6 0.22 350);
+  --primary-foreground: oklch(0.98 0 0);
+
+  --secondary: oklch(0.95 0.015 350);
+  --secondary-foreground: oklch(0.25 0.03 340);
+
+  --muted: oklch(0.95 0.015 350);
+  --muted-foreground: oklch(0.55 0.03 350);
+
+  --accent: oklch(0.92 0.04 350);
+  --accent-foreground: oklch(0.5 0.2 350);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.91 0.018 350);
+  --input: oklch(0.91 0.018 350);
+  --ring: oklch(0.6 0.22 350);
+
+  --chart-1: oklch(0.6 0.22 350);
+  --chart-2: oklch(0.55 0.18 330);
+  --chart-3: oklch(0.5 0.12 10);
+  --chart-4: oklch(0.7 0.15 340);
+  --chart-5: oklch(0.65 0.2 0);
+
+  --sidebar: oklch(0.97 0.009 350);
+  --sidebar-foreground: oklch(0.17 0.02 340);
+  --sidebar-primary: oklch(0.6 0.22 350);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.95 0.015 350);
+  --sidebar-accent-foreground: oklch(0.25 0.03 340);
+  --sidebar-border: oklch(0.91 0.018 350);
+  --sidebar-ring: oklch(0.6 0.22 350);
+}
+
+[data-theme='rose'].dark {
+  --background: oklch(0.18 0.03 340);
+  --foreground: oklch(0.95 0.01 350);
+
+  --card: oklch(0.18 0.03 340);
+  --card-foreground: oklch(0.95 0.01 350);
+
+  --popover: oklch(0.18 0.03 340);
+  --popover-foreground: oklch(0.95 0.01 350);
+
+  --primary: oklch(0.75 0.16 350);
+  --primary-foreground: oklch(0.18 0.03 340);
+
+  --secondary: oklch(0.26 0.03 340);
+  --secondary-foreground: oklch(0.95 0.01 350);
+
+  --muted: oklch(0.26 0.03 340);
+  --muted-foreground: oklch(0.68 0.03 350);
+
+  --accent: oklch(0.26 0.03 340);
+  --accent-foreground: oklch(0.95 0.01 350);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.3 0.03 340);
+  --input: oklch(0.3 0.03 340);
+  --ring: oklch(0.75 0.16 350);
+
+  --chart-1: oklch(0.6 0.22 350);
+  --chart-2: oklch(0.55 0.18 330);
+  --chart-3: oklch(0.7 0.12 10);
+  --chart-4: oklch(0.65 0.15 340);
+  --chart-5: oklch(0.58 0.2 0);
+
+  --sidebar: oklch(0.18 0.03 340);
+  --sidebar-foreground: oklch(0.95 0.01 350);
+  --sidebar-primary: oklch(0.75 0.16 350);
+  --sidebar-primary-foreground: oklch(0.18 0.03 340);
+  --sidebar-accent: oklch(0.26 0.03 340);
+  --sidebar-accent-foreground: oklch(0.95 0.01 350);
+  --sidebar-border: oklch(0.3 0.03 340);
+  --sidebar-ring: oklch(0.75 0.16 350);
+}
+
+/* ============================================
+   LIME THEME: Fresh, energetic chartreuse
+   ============================================ */
+[data-theme='lime'] {
+  --background: oklch(0.98 0.015 130);
+  --foreground: oklch(0.17 0.03 130);
+
+  --card: oklch(0.99 0.01 130);
+  --card-foreground: oklch(0.17 0.03 130);
+
+  --popover: oklch(0.99 0.01 130);
+  --popover-foreground: oklch(0.17 0.03 130);
+
+  --primary: oklch(0.7 0.2 130);
+  --primary-foreground: oklch(0.17 0.03 130);
+
+  --secondary: oklch(0.95 0.025 130);
+  --secondary-foreground: oklch(0.25 0.04 130);
+
+  --muted: oklch(0.95 0.025 130);
+  --muted-foreground: oklch(0.55 0.04 130);
+
+  --accent: oklch(0.92 0.05 130);
+  --accent-foreground: oklch(0.45 0.15 130);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.91 0.025 130);
+  --input: oklch(0.91 0.025 130);
+  --ring: oklch(0.7 0.2 130);
+
+  --chart-1: oklch(0.7 0.2 130);
+  --chart-2: oklch(0.6 0.15 110);
+  --chart-3: oklch(0.5 0.12 150);
+  --chart-4: oklch(0.75 0.18 120);
+  --chart-5: oklch(0.65 0.15 140);
+
+  --sidebar: oklch(0.97 0.018 130);
+  --sidebar-foreground: oklch(0.17 0.03 130);
+  --sidebar-primary: oklch(0.7 0.2 130);
+  --sidebar-primary-foreground: oklch(0.17 0.03 130);
+  --sidebar-accent: oklch(0.95 0.025 130);
+  --sidebar-accent-foreground: oklch(0.25 0.04 130);
+  --sidebar-border: oklch(0.91 0.025 130);
+  --sidebar-ring: oklch(0.7 0.2 130);
+}
+
+[data-theme='lime'].dark {
+  --background: oklch(0.18 0.03 130);
+  --foreground: oklch(0.95 0.02 130);
+
+  --card: oklch(0.18 0.03 130);
+  --card-foreground: oklch(0.95 0.02 130);
+
+  --popover: oklch(0.18 0.03 130);
+  --popover-foreground: oklch(0.95 0.02 130);
+
+  --primary: oklch(0.8 0.18 130);
+  --primary-foreground: oklch(0.18 0.03 130);
+
+  --secondary: oklch(0.26 0.03 130);
+  --secondary-foreground: oklch(0.95 0.02 130);
+
+  --muted: oklch(0.26 0.03 130);
+  --muted-foreground: oklch(0.68 0.04 130);
+
+  --accent: oklch(0.26 0.03 130);
+  --accent-foreground: oklch(0.95 0.02 130);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.3 0.03 130);
+  --input: oklch(0.3 0.03 130);
+  --ring: oklch(0.8 0.18 130);
+
+  --chart-1: oklch(0.7 0.2 130);
+  --chart-2: oklch(0.6 0.15 110);
+  --chart-3: oklch(0.72 0.12 150);
+  --chart-4: oklch(0.65 0.18 120);
+  --chart-5: oklch(0.58 0.15 140);
+
+  --sidebar: oklch(0.18 0.03 130);
+  --sidebar-foreground: oklch(0.95 0.02 130);
+  --sidebar-primary: oklch(0.8 0.18 130);
+  --sidebar-primary-foreground: oklch(0.18 0.03 130);
+  --sidebar-accent: oklch(0.26 0.03 130);
+  --sidebar-accent-foreground: oklch(0.95 0.02 130);
+  --sidebar-border: oklch(0.3 0.03 130);
+  --sidebar-ring: oklch(0.8 0.18 130);
+}
+
+/* ============================================
+   SLATE THEME: Minimal, desaturated
+   ============================================ */
+[data-theme='slate'] {
+  --background: oklch(0.98 0.003 260);
+  --foreground: oklch(0.17 0.015 260);
+
+  --card: oklch(0.99 0.002 260);
+  --card-foreground: oklch(0.17 0.015 260);
+
+  --popover: oklch(0.99 0.002 260);
+  --popover-foreground: oklch(0.17 0.015 260);
+
+  --primary: oklch(0.5 0.04 260);
+  --primary-foreground: oklch(0.98 0 0);
+
+  --secondary: oklch(0.95 0.005 260);
+  --secondary-foreground: oklch(0.25 0.015 260);
+
+  --muted: oklch(0.95 0.005 260);
+  --muted-foreground: oklch(0.55 0.015 260);
+
+  --accent: oklch(0.93 0.01 260);
+  --accent-foreground: oklch(0.4 0.04 260);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.91 0.005 260);
+  --input: oklch(0.91 0.005 260);
+  --ring: oklch(0.5 0.04 260);
+
+  --chart-1: oklch(0.5 0.04 260);
+  --chart-2: oklch(0.55 0.03 230);
+  --chart-3: oklch(0.45 0.02 280);
+  --chart-4: oklch(0.65 0.03 250);
+  --chart-5: oklch(0.6 0.035 270);
+
+  --sidebar: oklch(0.97 0.004 260);
+  --sidebar-foreground: oklch(0.17 0.015 260);
+  --sidebar-primary: oklch(0.5 0.04 260);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.95 0.005 260);
+  --sidebar-accent-foreground: oklch(0.25 0.015 260);
+  --sidebar-border: oklch(0.91 0.005 260);
+  --sidebar-ring: oklch(0.5 0.04 260);
+}
+
+[data-theme='slate'].dark {
+  --background: oklch(0.18 0.01 260);
+  --foreground: oklch(0.95 0.005 260);
+
+  --card: oklch(0.18 0.01 260);
+  --card-foreground: oklch(0.95 0.005 260);
+
+  --popover: oklch(0.18 0.01 260);
+  --popover-foreground: oklch(0.95 0.005 260);
+
+  --primary: oklch(0.7 0.03 260);
+  --primary-foreground: oklch(0.18 0.01 260);
+
+  --secondary: oklch(0.26 0.01 260);
+  --secondary-foreground: oklch(0.95 0.005 260);
+
+  --muted: oklch(0.26 0.01 260);
+  --muted-foreground: oklch(0.68 0.015 260);
+
+  --accent: oklch(0.26 0.01 260);
+  --accent-foreground: oklch(0.95 0.005 260);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.3 0.01 260);
+  --input: oklch(0.3 0.01 260);
+  --ring: oklch(0.7 0.03 260);
+
+  --chart-1: oklch(0.5 0.04 260);
+  --chart-2: oklch(0.55 0.03 230);
+  --chart-3: oklch(0.65 0.02 280);
+  --chart-4: oklch(0.6 0.03 250);
+  --chart-5: oklch(0.58 0.035 270);
+
+  --sidebar: oklch(0.18 0.01 260);
+  --sidebar-foreground: oklch(0.95 0.005 260);
+  --sidebar-primary: oklch(0.7 0.03 260);
+  --sidebar-primary-foreground: oklch(0.18 0.01 260);
+  --sidebar-accent: oklch(0.26 0.01 260);
+  --sidebar-accent-foreground: oklch(0.95 0.005 260);
+  --sidebar-border: oklch(0.3 0.01 260);
+  --sidebar-ring: oklch(0.7 0.03 260);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* SaaS Starter design tokens. Every design color variable gets a Tailwind utility,
+     named after the variable so the design source maps 1:1 onto code.
+     These are defined on :root, so they resolve under every theme, not only SaaS Starter. */
+  --color-brand: var(--brand); /* color/brand/primary */
+  --color-brand-hover: var(--brand-hover); /* color/brand/primary-hover */
+  --color-brand-fg: var(--brand-fg); /* color/brand/primary-fg */
+  --color-brand-ink: var(--brand-ink); /* color/brand/ink */
+  --color-brand-ink-hover: var(--brand-ink-hover); /* color/brand/ink-hover */
+  --color-brand-tint: var(--brand-tint); /* color/brand/tint */
+  --color-brand-50: var(--brand-50); /* color/brand/tint-50 */
+  --color-brand-100: var(--brand-100); /* color/brand/tint-100 */
+  --color-brand-200: var(--brand-200); /* color/brand/tint-200 */
+
+  --color-bg: var(--bg-app); /* color/bg/app */
+  --color-surface: var(--surface); /* color/bg/surface */
+  --color-hover: var(--surface-hover); /* color/bg/hover */
+  --color-subtle: var(--surface-subtle); /* color/bg/subtle */
+
+  --color-text: var(--text-primary); /* color/text/primary */
+  --color-text-secondary: var(--text-secondary); /* color/text/secondary */
+  --color-text-muted: var(--text-muted); /* color/text/muted */
+  --color-text-tertiary: var(--text-tertiary); /* color/text/tertiary */
+  --color-text-placeholder: var(--text-placeholder); /* color/text/placeholder */
+
+  /* color/border/default is already exposed as --color-border above */
+  --color-border-strong: var(--border-strong); /* color/border/strong */
+
+  --color-success: var(--success); /* color/success/fg */
+  --color-success-bg: var(--success-bg); /* color/success/bg */
+  --color-danger: var(--danger); /* color/danger/fg */
+  --color-danger-strong: var(--danger-strong); /* color/danger/strong */
+  --color-danger-strong-fg: var(--danger-strong-fg); /* ink on the danger fill */
+  --color-danger-bg: var(--danger-bg); /* color/danger/bg */
+  --color-warning: var(--warning); /* color/warning/fg */
+  --color-warning-bg: var(--warning-bg); /* color/warning/bg */
+  --color-purple: var(--purple); /* color/purple/fg */
+  --color-purple-bg: var(--purple-bg); /* color/purple/bg */
+
+  /* color/neutral/100-700. Deliberately overrides Tailwind's stock neutral ramp
+     for these seven steps. neutral-50/800/900/950 are not design tokens. */
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+  --color-neutral-600: var(--neutral-600);
+  --color-neutral-700: var(--neutral-700);
+
+  /* Design "radius/*". Derived from --radius (10px = radius/lg) so a theme can
+     still retune the whole scale from one value. */
+  --radius-sm: calc(var(--radius) - 4px); /* radius/sm 6px */
+  --radius-md: calc(var(--radius) - 2px); /* radius/md 8px */
+  --radius-lg: var(--radius); /* radius/lg 10px */
+  --radius-xl: calc(var(--radius) + 2px); /* radius/xl 12px */
+  --radius-2xl: calc(var(--radius) + 6px); /* radius/2xl 16px */
+  --radius-full: 999px; /* radius/full */
+
+  /* Design effect styles "shadow/*", overriding Tailwind's default elevation. */
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+  --shadow-xl: var(--elevation-xl);
+
+  --font-sans: var(--font-sans-stack);
+  --font-display: var(--font-display-stack);
+  --font-mono: var(--font-mono-stack);
+}
+
+/* ============================================
+   TYPE RAMP - the 12 SaaS Starter text styles
+   One utility per design text style, carrying family, weight, size, line height
+   and tracking together, so a screen never needs a one off font size.
+   The design authors line height as a percentage of the font size and tracking as a
+   percentage too, which map onto a unitless line-height and em tracking.
+   ============================================ */
+@utility type-display-hero {
+  font-family: var(--font-display-stack);
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+}
+
+@utility type-display-large {
+  font-family: var(--font-display-stack);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.14;
+  letter-spacing: -0.01em;
+}
+
+@utility type-display-wordmark {
+  font-family: var(--font-display-stack);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: -0.3px;
+}
+
+/*
+ * Not a design text style. The dashboard stat tiles set their figure in
+ * Instrument Sans Bold 28px, and the published ramp has no 28px
+ * slot and nothing in Instrument Sans at 700, so the dashboard re-skin reached
+ * for type-display-large instead: 32px Bricolage Grotesque, one step too large
+ * and in the wrong family. The design text uses AUTO line height rather than an
+ * authored percentage, so 1.214 is the font's own natural leading at this size,
+ * which is what AUTO resolves to. 28px x 1.214 = 34.0px, matching the 34px text
+ * box the design reports. Fold it into the design ramp when convenient.
+ */
+@utility type-stat-figure {
+  font-family: var(--font-sans-stack);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.214;
+  letter-spacing: 0;
+}
+
+@utility type-heading-h1 {
+  font-family: var(--font-sans-stack);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.26;
+  letter-spacing: -0.004em;
+}
+
+@utility type-heading-h2 {
+  font-family: var(--font-sans-stack);
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.3;
+  letter-spacing: -0.002em;
+}
+
+@utility type-heading-h3 {
+  font-family: var(--font-sans-stack);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.38;
+  letter-spacing: 0;
+}
+
+@utility type-body-regular {
+  font-family: var(--font-sans-stack);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+@utility type-body-medium {
+  font-family: var(--font-sans-stack);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+/*
+ * Not a design text style. The design uses 14px SemiBold for the active nav item
+ * and for emphasized body runs, but the published ramp jumps straight from
+ * Body/Medium (14px/500) to Heading/H3 (15px/600), leaving no slot for it. The
+ * app shell hit this first. Defined here so consumers reach for a utility
+ * instead of pairing type-body-medium with a hand picked font-semibold, which
+ * is how one off typography starts. Fold it into the design ramp when convenient.
+ */
+@utility type-body-strong {
+  font-family: var(--font-sans-stack);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+
+@utility type-body-small {
+  font-family: var(--font-sans-stack);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+@utility type-label-caption {
+  font-family: var(--font-sans-stack);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+/* The design style leaves textCase as ORIGINAL and designers type the caps by
+   hand. The utility applies them, which is what the style is for. */
+@utility type-label-overline {
+  font-family: var(--font-sans-stack);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@utility type-mono-small {
+  font-family: var(--font-mono-stack);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans-stack);
+  }
+
+  /*
+   * Scrollbars, declared once for the whole app.
+   *
+   * One declaration reaches all 26 overflow containers across packages/ui and
+   * apps/web without any of them opting in, and reaches the next one for free.
+   * That is the whole reason this lives in the token layer rather than in
+   * DoubleSheetBody and DetailDrawerBody, which is where the report came from:
+   * a drawer under a sheet gave the user two browser-default bars sitting on
+   * top of a designed surface.
+   *
+   * The two properties are NOT symmetric and the split below is deliberate.
+   * `scrollbar-color` inherits, so declaring it once on the root carries it to
+   * every descendant. `scrollbar-width` does NOT inherit. Measured, not
+   * assumed: with both set on `:root`, a nested scroller computes the inherited
+   * color but `scrollbar-width: auto`. So the width goes on the universal
+   * selector. Setting only the root is the quiet half-fix here, themed bars at
+   * the browser's default thickness.
+   *
+   * Tailwind v4 spells these as `scrollbar-thin` / `scrollbar-thumb-*` /
+   * `scrollbar-track-*`, which set exactly these two properties. The utilities
+   * are how a container opts OUT (`scrollbar-none`, `scrollbar-auto`) or
+   * retunes locally; nothing has to opt in.
+   *
+   * The track is transparent rather than a tone: a filled track draws a gray
+   * gutter down the edge of every panel, which is the browser-chrome look the
+   * report was about. The thumb alone is what signals "this scrolls".
+   *
+   * These two properties also leave the platform's overlay behavior alone. On
+   * a macOS trackpad the bar stays hidden until the user scrolls, and it still
+   * takes no layout space; only its width and color change. That is why they
+   * are the unconditional path and `::-webkit-scrollbar` is not: defining ANY
+   * `::-webkit-scrollbar` rule switches WebKit off overlay scrollbars and pins
+   * a permanent bar into the layout.
+   */
+  * {
+    scrollbar-width: thin;
+  }
+
+  :root {
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  /*
+   * The legacy half. Firefox has only ever had the standard properties, so this
+   * is for WebKit and Blink builds that predate them (Chrome < 121,
+   * Safari < 18.2). The @supports guard is load-bearing rather than
+   * belt-and-braces: without it this block would run in current Chrome and
+   * Safari too and cost them their overlay scrollbars, which is the regression
+   * the rule above exists to avoid.
+   *
+   * The inset comes from a transparent border plus `background-clip`, so the
+   * thumb reads as a rounded 6px pill inside a 10px lane instead of a bar
+   * welded to the panel edge.
+   */
+  @supports not (scrollbar-color: auto) {
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--scrollbar-thumb);
+      background-clip: content-box;
+      border: 2px solid transparent;
+      border-radius: var(--radius-full);
+    }
+
+    ::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+  }
+}

@@ -1,0 +1,1247 @@
+{
+  "suite": "web",
+  "cases": {
+    "apps/web/src/features/admin/components/ChangeMemberRoleDialog/ChangeMemberRoleDialog.hooks.test.tsx": {
+      "useChangeMemberRoleDialog > demotes an admin back to user": 1,
+      "useChangeMemberRoleDialog > promotes a user to admin, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/ChangeMemberRoleDialog/ChangeMemberRoleDialog.test.tsx": {
+      "ChangeMemberRoleDialog > offers the demotion to user for an administrator": 1,
+      "ChangeMemberRoleDialog > renders nothing when closed": 1,
+      "ChangeMemberRoleDialog > spells out the promotion from user to administrator and the sign-out": 1
+    },
+    "apps/web/src/features/admin/components/DeleteMemberDialog/DeleteMemberDialog.hooks.test.tsx": {
+      "useDeleteMemberDialog > deletes the member, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/DeleteMemberDialog/DeleteMemberDialog.test.tsx": {
+      "DeleteMemberDialog > renders nothing when closed": 1,
+      "DeleteMemberDialog > warns that the whole account is deleted, not just the organization membership": 1
+    },
+    "apps/web/src/features/admin/components/InviteMemberDialog/InviteMemberDialog.hooks.test.tsx": {
+      "useInviteMemberDialog > clears a previous undelivered warning when a new attempt starts": 1,
+      "useInviteMemberDialog > keeps the dialog open and names the address when the mail never went out": 1,
+      "useInviteMemberDialog > reports a refusal without closing, so the typed address survives": 1,
+      "useInviteMemberDialog > sends the invitation, refreshes the list, toasts, and closes": 1,
+      "useInviteMemberDialog > starts on the narrower role": 1
+    },
+    "apps/web/src/features/admin/components/InviteMemberDialog/InviteMemberDialog.test.tsx": {
+      "InviteMemberDialog > asks for an address and a role, and says how long the link lasts": 1,
+      "InviteMemberDialog > defaults to the narrower role, so making an admin is always deliberate": 1,
+      "InviteMemberDialog > explains what each role can do, rather than naming it and stopping": 1,
+      "InviteMemberDialog > renders nothing when closed": 1
+    },
+    "apps/web/src/features/admin/components/MembersSection/MembersSection.hooks.test.tsx": {
+      "useMembersSection > holds one page and states the position against the total": 1,
+      "useMembersSection > opens and closes the withdraw-by-address dialog, which has no member": 1,
+      "useMembersSection > replaces the open dialog when another action is chosen": 1,
+      "useMembersSection > REPLACES the page rather than accumulating it, and can walk back": 1,
+      "useMembersSection > replaces the table while the first page is loading, and when it is empty": 1,
+      "useMembersSection > tracks the dialog opened for a member and clears it on close": 1,
+      "useMembersSection current user > exposes the signed-in admin's id, so their own row can hide actions aimed at them": 1,
+      "useMembersSection current user > reads null while the profile is still loading": 1,
+      "useMembersSection failure > hides the pager while the load is failing, so it cannot page a broken list": 1,
+      "useMembersSection failure > offers a retry that refetches": 1,
+      "useMembersSection failure > reports a failed load as an error, not as an empty list": 1
+    },
+    "apps/web/src/features/admin/components/MembersSection/MembersSection.test.tsx": {
+      "MembersSection > inviting > offers the invite action even when the organization has no other members": 1,
+      "MembersSection > inviting > opens the invite dialog": 1,
+      "MembersSection > marks only the locked member with the locked badge": 1,
+      "MembersSection > offers neither unlock nor delete for an unlocked admin": 1,
+      "MembersSection > offers unlock and delete for a locked regular user": 1,
+      "MembersSection > opens the change-role dialog for the chosen member": 1,
+      "MembersSection > opens the delete dialog for a regular member": 1,
+      "MembersSection > opens the reset dialog for the chosen member": 1,
+      "MembersSection > opens the unlock dialog for a locked member": 1,
+      "MembersSection > renders members with their 2FA status badges": 1,
+      "MembersSection > the three membership states > labels each row with the state it is actually in": 1,
+      "MembersSection > the three membership states > marks the owner, and only the owner": 1,
+      "MembersSection > the three membership states > never offers to remove or delete the owner": 1,
+      "MembersSection > the three membership states > never offers withdraw on a Google-signup owner, even labeled pending": 1,
+      "MembersSection > the three membership states > never offers withdraw on an owner row, whatever else it says": 1,
+      "MembersSection > the three membership states > never offers withdraw on the current user's own row": 1,
+      "MembersSection > the three membership states > offers a pending invitee only the one thing that applies to them": 1,
+      "MembersSection > the three membership states > offers removal to an active regular member": 1,
+      "MembersSection > the three membership states > offers restore to a removed member, and not removal again": 1,
+      "MembersSection > the three membership states > opens the restore dialog for a removed member": 1,
+      "MembersSection > the three membership states > opens the withdraw dialog for a pending invitee": 1,
+      "MembersSection > withdrawing an invitation by address > offers it even when the table is empty, since the invitation it reaches has no row": 1,
+      "MembersSection > withdrawing an invitation by address > opens the withdraw-by-address dialog": 1
+    },
+    "apps/web/src/features/admin/components/RemoveMemberDialog/RemoveMemberDialog.hooks.test.tsx": {
+      "useRemoveMemberDialog > leaves the dialog open on failure, so the admin sees what did not happen": 1,
+      "useRemoveMemberDialog > sends the member id, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/RemoveMemberDialog/RemoveMemberDialog.test.tsx": {
+      "RemoveMemberDialog > names the person it is about and offers the action": 1,
+      "RemoveMemberDialog > renders nothing when closed": 1
+    },
+    "apps/web/src/features/admin/components/ResetMemberDialog/ResetMemberDialog.hooks.test.tsx": {
+      "useResetMemberDialog > resets the member, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/ResetMemberDialog/ResetMemberDialog.test.tsx": {
+      "ResetMemberDialog > renders nothing when closed": 1,
+      "ResetMemberDialog > warns that the member is signed out and must re-enroll": 1
+    },
+    "apps/web/src/features/admin/components/RestoreMemberDialog/RestoreMemberDialog.hooks.test.tsx": {
+      "useRestoreMemberDialog > leaves the dialog open on failure, so the admin sees what did not happen": 1,
+      "useRestoreMemberDialog > sends the member id, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/RestoreMemberDialog/RestoreMemberDialog.test.tsx": {
+      "RestoreMemberDialog > names the person it is about and offers the action": 1,
+      "RestoreMemberDialog > renders nothing when closed": 1
+    },
+    "apps/web/src/features/admin/components/RevokeInviteDialog/RevokeInviteDialog.hooks.test.tsx": {
+      "useRevokeInviteDialog > leaves the dialog open on failure, so the admin sees what did not happen": 1,
+      "useRevokeInviteDialog > sends the member id, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/RevokeInviteDialog/RevokeInviteDialog.test.tsx": {
+      "RevokeInviteDialog > names the person it is about and offers the action": 1,
+      "RevokeInviteDialog > renders nothing when closed": 1
+    },
+    "apps/web/src/features/admin/components/UnlockMemberDialog/UnlockMemberDialog.hooks.test.tsx": {
+      "useUnlockMemberDialog > unlocks the member, invalidates the list, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/UnlockMemberDialog/UnlockMemberDialog.test.tsx": {
+      "UnlockMemberDialog > explains the lockout and that unlocking restores sign-in right away": 1,
+      "UnlockMemberDialog > renders nothing when closed": 1
+    },
+    "apps/web/src/features/admin/components/WithdrawInviteByEmailDialog/WithdrawInviteByEmailDialog.hooks.test.tsx": {
+      "useWithdrawInviteByEmailDialog > refreshes no list: the invitation it reaches was never a row": 1,
+      "useWithdrawInviteByEmailDialog > reports a refusal and stays open with the address intact": 1,
+      "useWithdrawInviteByEmailDialog > says the same thing for an address with an open invitation and one without": 1,
+      "useWithdrawInviteByEmailDialog > sends the typed address, toasts, and closes": 1
+    },
+    "apps/web/src/features/admin/components/WithdrawInviteByEmailDialog/WithdrawInviteByEmailDialog.test.tsx": {
+      "WithdrawInviteByEmailDialog > asks for an address and says which invitations it reaches": 1,
+      "WithdrawInviteByEmailDialog > does not send an address that is not one": 1,
+      "WithdrawInviteByEmailDialog > renders nothing when closed": 1,
+      "WithdrawInviteByEmailDialog > sends a valid address": 1,
+      "WithdrawInviteByEmailDialog > states plainly what withdrawing does, and what it leaves alone": 1
+    },
+    "apps/web/src/features/audit/Audit.catalog.test.ts": {
+      "audit action groups > carries no group for a domain that is gone": 1,
+      "audit action groups > names every domain the dropdown groups by": 1,
+      "audit action labels > carries no label for an action that is gone": 1,
+      "audit action labels > names every action in the vocabulary": 1,
+      "audit action labels > never leaves a label empty or equal to its own key": 1,
+      "audit target types > never leaves a target-type label empty": 1,
+      "audit target types > resolves a label for every target type the notification work introduced": 1
+    },
+    "apps/web/src/features/audit/Audit.diff.test.ts": {
+      "changedFieldNames > ignores non-list and non-string shapes instead of crashing the row": 1,
+      "changedFieldNames > reads the field-name list some writers record": 1,
+      "diffSnapshots > handles one-sided snapshots (creation and deletion shapes)": 1,
+      "diffSnapshots > keeps only the fields that actually changed": 1,
+      "diffSnapshots > returns no changes when neither side is snapshot-shaped": 1,
+      "diffSnapshots > sorts fields so the rendering is stable": 1,
+      "formatDiffValue > maps null and undefined to the empty marker": 1,
+      "formatDiffValue > renders primitives directly and structures as compact JSON": 1,
+      "metadataEntries > returns nothing for non-record metadata": 1,
+      "metadataEntries > surfaces metadata pairs minus the keys rendered elsewhere": 1
+    },
+    "apps/web/src/features/audit/Audit.tone.test.ts": {
+      "auditActionTone: irreversible destruction is danger > puts it with the destructions it belongs beside": 1,
+      "auditActionTone: the rows that were already right > leaves every other pre-existing action on the tone it already had": 1,
+      "auditActionTone: the rows that were already right > still paints any row the server recorded as a failure danger": 1
+    },
+    "apps/web/src/features/audit/components/AuditLogDetails/AuditLogDetails.test.tsx": {
+      "AuditLogDetails > falls back to changed-field chips when the writer recorded names only": 1,
+      "AuditLogDetails > renders every field change as a before/after pair": 1,
+      "AuditLogDetails > says so plainly when a row has nothing beyond its action": 1,
+      "AuditLogDetails > shows target, metadata and network context when present": 1
+    },
+    "apps/web/src/features/audit/components/AuditLogFilters/AuditLogFilters.test.tsx": {
+      "AuditLogFilters > forwards date edits through the hook handlers": 1,
+      "AuditLogFilters > keeps four controls behind one button instead of across two rows": 1,
+      "AuditLogFilters > makes the 74 event types searchable rather than a scroll": 1,
+      "AuditLogFilters > offers to clear only when something is narrowed": 1
+    },
+    "apps/web/src/features/audit/components/AuditLogPage/AuditLogPage.hooks.test.tsx": {
+      "useAuditLogPage > builds display rows off the wire items": 1,
+      "useAuditLogPage > clears every filter at once, counting a date RANGE as one": 1,
+      "useAuditLogPage > distinguishes an empty trail from an over-filtered one": 1,
+      "useAuditLogPage > does not count the tab as a filter: it is where you are, not a narrowing": 1,
+      "useAuditLogPage > ignores a tab id outside the union": 1,
+      "useAuditLogPage > labels a system row and an unknown action without crashing the feed": 1,
+      "useAuditLogPage > lets the event-type filter and the tab override each other cleanly": 1,
+      "useAuditLogPage > never claims a total, because audit.list deliberately has none": 1,
+      "useAuditLogPage > REPLACES a page rather than accumulating it, and can walk back": 1,
+      "useAuditLogPage > returns to page one when a filter changes the cursor space": 1,
+      "useAuditLogPage > turns a tab into the action set it stands for, and back again": 1,
+      "useAuditLogPage > turns the calendar-day \"to\" filter into that day's last instant": 1,
+      "useAuditLogPage, first load against a refresh > is loading with no pager on the first load": 1,
+      "useAuditLogPage, first load against a refresh > keeps the rows and the pager while a filter change is fetched": 1
+    },
+    "apps/web/src/features/audit/components/AuditLogPage/AuditLogPage.test.tsx": {
+      "AuditLogPage > hands the pager down to the card, so it sits inside the surface footer": 1,
+      "AuditLogPage > keeps the narrowing behind the toolbar and hands the table its rows": 1,
+      "AuditLogPage > offers no \"show more\" button: the footer pages the feed now": 1,
+      "AuditLogPage > passes the failure down as the card state, rather than hiding the card": 1,
+      "AuditLogPage > splits the trail into two tabs, exactly one of them current": 1
+    },
+    "apps/web/src/features/audit/components/AuditLogTable/AuditLogTable.test.tsx": {
+      "AuditLogTable > draws prev/next with a position and never a page number": 1,
+      "AuditLogTable > expands a row in place and collapses it again": 1,
+      "AuditLogTable > hides the footer while the card is not showing rows": 1,
+      "AuditLogTable > renders one feed row with actor, action and timestamp": 1,
+      "AuditLogTable > renders skeleton rows while the first page loads": 1,
+      "AuditLogTable > replaces the table with the placeholder the page supplied": 1,
+      "AuditLogTable > shows the first field change as a before/after pair without expanding": 1
+    },
+    "apps/web/src/features/auth/Auth.catalog.test.ts": {
+      "auth catalog > leaves no key empty, which would render a blank label or button": 1
+    },
+    "apps/web/src/features/auth/components/AuthField/AuthField.test.tsx": {
+      "AuthField > associates a validation message with the input and marks it invalid": 1,
+      "AuthField > binds the label to the input so clicking the label focuses it": 1,
+      "AuthField > forwards the input attributes it is given": 1,
+      "AuthField > renders a label action next to the label": 1,
+      "AuthField > renders children under the input": 1
+    },
+    "apps/web/src/features/auth/components/AuthLayout/AuthLayout.test.tsx": {
+      "AuthLayout > omits the header block when neither title nor description is given": 1,
+      "AuthLayout > renders children": 1,
+      "AuthLayout > renders the description when provided": 1,
+      "AuthLayout > renders the title when provided": 1
+    },
+    "apps/web/src/features/auth/components/AuthSubmit/AuthSubmit.test.tsx": {
+      "AuthSubmit > closes and explains itself while the captcha is still working": 1,
+      "AuthSubmit > is a plain enabled submit when no captcha reports in": 1,
+      "AuthSubmit > keeps the action name but refuses the click when the captcha failed": 1,
+      "AuthSubmit > says the verification expired rather than failing silently": 1,
+      "AuthSubmit > stays disabled and busy while the submit is in flight": 1
+    },
+    "apps/web/src/features/auth/components/BrandPanel/BrandPanel.test.tsx": {
+      "BrandPanel > exposes no headings, so the form column owns the page h1": 1,
+      "BrandPanel > hides the decorative product scene from assistive technology": 1,
+      "BrandPanel > keeps the foot line audible and makes no customer-count claim": 1,
+      "BrandPanel > renders the wordmark and the marketing headline": 1
+    },
+    "apps/web/src/features/auth/components/ConfirmEmailChange/ConfirmEmailChange.hooks.test.tsx": {
+      "useConfirmEmailChange > confirms exactly once on arrival and reports success": 1,
+      "useConfirmEmailChange > passes a real server response through with its own sentence": 1,
+      "useConfirmEmailChange > re-confirms when the token changes, because the guard is keyed by token": 1,
+      "useConfirmEmailChange > retries the same token and clears the previous failure": 1,
+      "useConfirmEmailChange > says the address was taken in the meantime when it is already in use": 1,
+      "useConfirmEmailChange > sends a consumed or expired link back to settings rather than offering a retry": 1,
+      "useConfirmEmailChange > shows the network sentence for a transport failure": 1
+    },
+    "apps/web/src/features/auth/components/ConfirmEmailChange/ConfirmEmailChange.test.tsx": {
+      "ConfirmEmailChange > explains an incomplete link when there is no token, without confirming anything": 1,
+      "ConfirmEmailChange > on failure shows the hook-mapped message and offers retry": 1,
+      "ConfirmEmailChange > on success says every session is out and routes to sign-in": 1,
+      "ConfirmEmailChange > shows the in-progress state while the token confirms": 1
+    },
+    "apps/web/src/features/auth/components/ConfirmPasswordDialog/ConfirmPasswordDialog.hooks.test.tsx": {
+      "useConfirmPasswordDialog > confirms BEFORE closing, so the caller still holds its pending action": 1,
+      "useConfirmPasswordDialog > pins a wrong password to the field and keeps the dialog open": 1,
+      "useConfirmPasswordDialog > pins the rate-limit sentence to the field on RATE_LIMITED": 1,
+      "useConfirmPasswordDialog > swaps to the set-a-password-first state on PASSWORD_NOT_SET": 1
+    },
+    "apps/web/src/features/auth/components/ConfirmPasswordDialog/ConfirmPasswordDialog.test.tsx": {
+      "ConfirmPasswordDialog > closes from the cancel button without submitting": 1,
+      "ConfirmPasswordDialog > renders nothing while closed": 1,
+      "ConfirmPasswordDialog > renders the password form with the localized sudo copy": 1,
+      "ConfirmPasswordDialog > replaces the form with the password-reset route for an OAuth-only account": 1
+    },
+    "apps/web/src/features/auth/components/ConnectedAccountsSection/ConnectedAccountsSection.hooks.test.tsx": {
+      "useConnectedAccountsSection > announces ?oauth_linked= once and strips it from the URL": 1,
+      "useConnectedAccountsSection > ignores an unknown oauth_linked value instead of announcing it": 1,
+      "useConnectedAccountsSection > never discovers providers in the Electron shell, so no link buttons": 1,
+      "useConnectedAccountsSection > offers a link action for an enabled provider with no linked row": 1,
+      "useConnectedAccountsSection > renders two rows for two linked Google accounts, keyed by row id": 1,
+      "useConnectedAccountsSection > runs the sudo dialog BEFORE the link navigation, then leaves the page": 1,
+      "useConnectedAccountsSection > surfaces the last-credential refusal with the catalog sentence": 1,
+      "useConnectedAccountsSection > treats FORBIDDEN as the normal re-prompt flow and retries the same row": 1,
+      "useConnectedAccountsSection > unlinks the addressed row and refreshes the list": 1
+    },
+    "apps/web/src/features/auth/components/ConnectedAccountsSection/ConnectedAccountsSection.test.tsx": {
+      "ConnectedAccountsSection > holds every unlink action while one is in flight": 1,
+      "ConnectedAccountsSection > mounts the sudo dialog when the view opens it": 1,
+      "ConnectedAccountsSection > renders a row per linked account, e-mails telling twin providers apart": 1,
+      "ConnectedAccountsSection > shows the empty state alongside the link actions": 1,
+      "ConnectedAccountsSection > shows the load-failure line instead of an empty state on error": 1,
+      "ConnectedAccountsSection > shows the loading line before the first answer": 1,
+      "ConnectedAccountsSection > unlinks the row whose button was pressed, by row id": 1
+    },
+    "apps/web/src/features/auth/components/EmailChangeSection/EmailChangeSection.hooks.test.tsx": {
+      "useEmailChangeSection > closing the dialog abandons the pending submission": 1,
+      "useEmailChangeSection > exposes the session email, and 2FA/OAuth-driven flags": 1,
+      "useEmailChangeSection > FORBIDDEN opens the sudo dialog and onSudoConfirmed retries the SAME submission": 1,
+      "useEmailChangeSection > maps EMAIL_IN_USE onto the address field and TWO_FACTOR_INVALID_CODE onto the code field": 1,
+      "useEmailChangeSection > passes a present factor code through": 1,
+      "useEmailChangeSection > submits the new address, strips an empty factor code, and records where the link went": 1,
+      "useEmailChangeSection > surfaces other failures as a toast": 1
+    },
+    "apps/web/src/features/auth/components/EmailChangeSection/EmailChangeSection.test.tsx": {
+      "EmailChangeSection > announces where the confirmation link went after a successful request": 1,
+      "EmailChangeSection > collects a 2FA code when a factor is active": 1,
+      "EmailChangeSection > disables the submit while the request is in flight": 1,
+      "EmailChangeSection > explains that OAuth links do not follow the address, only when one is linked": 1,
+      "EmailChangeSection > hides the 2FA code field until the account has an active factor": 1,
+      "EmailChangeSection > mounts the sudo dialog only when the hook opens it": 1,
+      "EmailChangeSection > shows the current address and the new-address field": 1,
+      "EmailChangeSection > submits through the hook callback": 1
+    },
+    "apps/web/src/features/auth/components/ForgotPasswordForm/ForgotPasswordForm.test.tsx": {
+      "ForgotPasswordForm > announces the confirmation as a focusable status region after submit": 1,
+      "ForgotPasswordForm > renders the email input": 1,
+      "ForgotPasswordForm > renders the submit button": 1
+    },
+    "apps/web/src/features/auth/components/FormError/FormError.test.tsx": {
+      "FormError > prepends a caller-supplied className": 1,
+      "FormError > renders the message inside a role=\"alert\" region with the destructive classes": 1
+    },
+    "apps/web/src/features/auth/components/FormSuccess/FormSuccess.test.tsx": {
+      "FormSuccess > prepends a caller-supplied className": 1,
+      "FormSuccess > renders the message inside a role=\"status\" region with the success classes": 1
+    },
+    "apps/web/src/features/auth/components/LoginForm/LoginForm.hooks.test.tsx": {
+      "useLoginForm landing > honors an explicit redirect over the account default": 1,
+      "useLoginForm landing > lands an account on the app home": 1,
+      "useLoginForm landing > sends a 2FA challenge to the challenge screen whatever the account is": 1
+    },
+    "apps/web/src/features/auth/components/LoginForm/LoginForm.test.tsx": {
+      "LoginForm > offers the OAuth providers alongside the password form": 1,
+      "LoginForm > renders the email input": 1,
+      "LoginForm > renders the sign in button": 1
+    },
+    "apps/web/src/features/auth/components/OAuthButtons/OAuthButtons.hooks.test.tsx": {
+      "useOAuthButtons > bounds discovery with a timeout and hides the surface when it stalls": 1,
+      "useOAuthButtons > carries a safe redirect target through to the start endpoint": 1,
+      "useOAuthButtons > drops provider keys this build has no branding for": 1,
+      "useOAuthButtons > hides the surface on a body with no providers key": 1,
+      "useOAuthButtons > hides the surface on a network failure": 1,
+      "useOAuthButtons > hides the surface on a non-2xx answer": 1,
+      "useOAuthButtons > hides the surface on a providers value that is not an array": 1,
+      "useOAuthButtons > refuses //evil.example as a return target": 1,
+      "useOAuthButtons > refuses /\\evil.example as a return target": 1,
+      "useOAuthButtons > refuses dashboard as a return target": 1,
+      "useOAuthButtons > refuses https://evil.example as a return target": 1,
+      "useOAuthButtons > renders the discovered provider with the localized call to action": 1,
+      "useOAuthButtons > starts the flow as a full-page navigation, defaulting the return target": 1,
+      "useOAuthButtons > stays empty and never asks in the Electron shell": 1
+    },
+    "apps/web/src/features/auth/components/OAuthButtons/OAuthButtons.test.tsx": {
+      "OAuthButtons > does not submit the form it is embedded in": 1,
+      "OAuthButtons > keeps Google's normative color pairs above WCAG AA in both modes": 1,
+      "OAuthButtons > renders a Google button carrying the unaltered four-colour mark": 1,
+      "OAuthButtons > renders nothing when the provider list is empty": 1,
+      "OAuthButtons > starts the flow for the clicked provider": 1
+    },
+    "apps/web/src/features/auth/components/OAuthErrorAlert/OAuthErrorAlert.test.tsx": {
+      "OAuthErrorAlert > has a real English sentence for every code": 1,
+      "OAuthErrorAlert > renders nothing for a non-string value": 1,
+      "OAuthErrorAlert > renders nothing for an unknown code": 1,
+      "OAuthErrorAlert > renders nothing for no error param at all": 1,
+      "OAuthErrorAlert > renders the alert banner for oauth_account_exists": 1,
+      "OAuthErrorAlert > renders the alert banner for oauth_failed": 1,
+      "OAuthErrorAlert > renders the alert banner for oauth_link_blocked": 1,
+      "OAuthErrorAlert > renders the alert banner for oauth_signup_disabled": 1,
+      "OAuthErrorAlert > renders the alert banner for oauth_state_expired": 1,
+      "OAuthErrorAlert > tells the user the flow expired rather than that it failed": 1
+    },
+    "apps/web/src/features/auth/components/RegisterForm/RegisterForm.test.tsx": {
+      "RegisterForm > holds the submit closed and named while the captcha has no token": 1,
+      "RegisterForm > offers the OAuth providers alongside the email signup": 1,
+      "RegisterForm > renders the email field": 1
+    },
+    "apps/web/src/features/auth/components/ResetPasswordForm/ResetPasswordForm.hooks.test.tsx": {
+      "useResetPasswordForm > flags a wrong second-factor code on the code field and reveals it": 1,
+      "useResetPasswordForm > probes the token state on mount and reveals the code field for a 2FA account": 1,
+      "useResetPasswordForm > shows the request-new-link message on an invalid or expired token": 1,
+      "useResetPasswordForm > surfaces any other server error as a generic message": 1,
+      "useResetPasswordForm > toasts and disables the button on a successful reset": 1
+    },
+    "apps/web/src/features/auth/components/ResetPasswordForm/ResetPasswordForm.test.tsx": {
+      "ResetPasswordForm > renders the new-password field and submit button": 1,
+      "ResetPasswordForm > replaces the form with in-page copy when the link carries no token": 1,
+      "ResetPasswordForm > shows the second-factor code field when the account requires 2FA": 1
+    },
+    "apps/web/src/features/auth/components/StaffInviteCard/StaffInviteCard.hooks.test.tsx": {
+      "useStaffInviteCard > calls a spent link invalid": 1,
+      "useStaffInviteCard > carries the two facts the form cannot be built without": 1,
+      "useStaffInviteCard > probes once on mount, without consuming the invitation": 1,
+      "useStaffInviteCard > puts a bad 2FA code on the field, not in a banner": 1,
+      "useStaffInviteCard > re-asks on retry": 1,
+      "useStaffInviteCard > sends no factorCode at all rather than an empty one": 1,
+      "useStaffInviteCard > sends the password and then routes to sign-in, never into the app": 1,
+      "useStaffInviteCard > separates \"we could not ask\" from \"the link is dead\"": 1,
+      "useStaffInviteCard > takes the form away when the link dies mid-attempt": 1,
+      "useStaffInviteCard > treats a rejected token as invalid rather than as a failure to ask": 1
+    },
+    "apps/web/src/features/auth/components/StaffInviteCard/StaffInviteCard.test.tsx": {
+      "StaffInviteCard > asks for a code when the account carries an active factor": 1,
+      "StaffInviteCard > asks for no 2FA code on an account that has no second factor": 1,
+      "StaffInviteCard > offers a password field, and says the next step is signing in": 1,
+      "StaffInviteCard > offers a retry when it could not ask, rather than declaring the link dead": 1,
+      "StaffInviteCard > replaces the form for a spent link, and points at how to get a new one": 1,
+      "StaffInviteCard > says nothing about moving an account on the ordinary path": 1,
+      "StaffInviteCard > warns that accepting closes the current organization, ABOVE the password field": 1
+    },
+    "apps/web/src/features/auth/components/TurnstileField/TurnstileField.test.tsx": {
+      "TurnstileField > renders without crashing": 1
+    },
+    "apps/web/src/features/auth/components/VerifyEmail/VerifyEmail.hooks.test.tsx": {
+      "useVerifyEmail > reads the token and the send outcome off the URL rather than a prop": 1,
+      "useVerifyWithToken > names a spent or expired link instead of echoing the server": 1,
+      "useVerifyWithToken > passes a real server response through with its own sentence": 1,
+      "useVerifyWithToken > re-verifies when the token changes, because the guard is keyed by token": 1,
+      "useVerifyWithToken > retries the same token and clears the previous failure": 1,
+      "useVerifyWithToken > shows the network sentence for a transport failure": 1,
+      "useVerifyWithToken > verifies exactly once on arrival and reports success": 1
+    },
+    "apps/web/src/features/auth/components/VerifyEmail/VerifyEmail.test.tsx": {
+      "VerifyEmail > confirms success when a token verifies": 1,
+      "VerifyEmail > offers retry and resend when verification fails": 1,
+      "VerifyEmail > points at resend when the verification email could not be sent": 1,
+      "VerifyEmail > shows the \"check your email\" prompt when there is no token": 1
+    },
+    "apps/web/src/features/dashboard/components/ActivityFeed/ActivityFeed.hooks.test.tsx": {
+      "useActivityFeed > confirms a test notification the server acknowledged": 1,
+      "useActivityFeed > formats each notification into a display-ready row": 1,
+      "useActivityFeed > is not empty while the history read is still in flight": 1,
+      "useActivityFeed > maps every severity onto a state tone rather than defaulting to neutral": 1,
+      "useActivityFeed > reports empty only once the read resolves with nothing": 1,
+      "useActivityFeed > surfaces a refused test notification instead of claiming success": 1,
+      "useActivityFeed > translates its copy rather than returning raw keys": 1
+    },
+    "apps/web/src/features/dashboard/components/ActivityFeed/ActivityFeed.test.tsx": {
+      "ActivityFeed > hides the test-notification control outside development": 1,
+      "ActivityFeed > keeps the live region mounted so an arriving row is announced": 1,
+      "ActivityFeed > renders a title, a message and a relative time per row": 1,
+      "ActivityFeed > reports a failed read instead of showing it as no activity": 1,
+      "ActivityFeed > sends a test notification from the development control": 1,
+      "ActivityFeed > shows skeletons while the history read is in flight, not the empty copy": 1,
+      "ActivityFeed > shows the empty state only once the read has resolved with nothing": 1
+    },
+    "apps/web/src/features/dashboard/components/DashboardPage/DashboardPage.hooks.test.tsx": {
+      "useDashboardPage > falls back to the email HANDLE, not the whole address": 1,
+      "useDashboardPage > greets by display name when the profile has one": 1,
+      "useDashboardPage > never renders \"undefined\" while user.me is still in flight": 1,
+      "useDashboardPage > publishes an English long date for the topbar, capitalized": 1,
+      "useDashboardPage > translates the subtitle rather than returning a raw key": 1
+    },
+    "apps/web/src/features/dashboard/components/DashboardPage/DashboardPage.test.tsx": {
+      "DashboardPage > carries the data-tour anchors its guided tour points at": 1,
+      "DashboardPage > greets the signed-in user in English": 1,
+      "DashboardPage > leaves the top-level heading to the app shell topbar": 1,
+      "DashboardPage > publishes the date into the topbar rather than the page body": 1,
+      "DashboardPage > renders the greeting and the activity feed": 1
+    },
+    "apps/web/src/features/desktop/components/TitleBar/TitleBar.test.tsx": {
+      "TitleBar > renders the app title link": 1,
+      "TitleBar > renders the Close button": 1,
+      "TitleBar > renders the Maximize button when not maximized": 1,
+      "TitleBar > renders the Minimize button": 1
+    },
+    "apps/web/src/features/desktop/components/UpdateBanner/UpdateBanner.test.tsx": {
+      "UpdateBanner > offers a manual download action when an update is available": 1,
+      "UpdateBanner > renders the dismiss button": 1,
+      "UpdateBanner > renders the restart button when update is downloaded": 1,
+      "UpdateBanner > renders the version label in the status text": 1
+    },
+    "apps/web/src/features/help/components/HelpToursSection/HelpToursSection.hooks.test.tsx": {
+      "useHelpToursSection > ignores a replay for an id the registry does not have": 1,
+      "useHelpToursSection > ignores a stored tour the registry no longer knows": 1,
+      "useHelpToursSection > lists every registered tour, seen or not": 1,
+      "useHelpToursSection > replays by recording the request and navigating to the tour route": 1,
+      "useHelpToursSection > resets every tour at once": 1,
+      "useHelpToursSection > separates a completed tour from one that was closed halfway": 1
+    },
+    "apps/web/src/features/help/components/HelpToursSection/HelpToursSection.test.tsx": {
+      "HelpToursSection > lists every tour with its screen and its status": 1,
+      "HelpToursSection > names each replay control after its tour, so two rows are distinguishable": 1,
+      "HelpToursSection > offers a replay on a completed tour as well as an unseen one": 1,
+      "HelpToursSection > resets every tour at once": 1,
+      "HelpToursSection > shows the read failure instead of an empty table": 1
+    },
+    "apps/web/src/features/help/components/TourLauncher/TourLauncher.hooks.test.tsx": {
+      "useTourLauncher > auto-starts once for a user who has never answered": 1,
+      "useTourLauncher > does not auto-start while a modal is open, and still offers the tour later": 1,
+      "useTourLauncher > does not auto-start while the progress read is still in flight": 1,
+      "useTourLauncher > ignores a replay request aimed at a different screen": 1,
+      "useTourLauncher > never auto-starts a tour the user has already answered": 1,
+      "useTourLauncher > offers nothing on a screen with no tour, and does not even probe for anchors": 1,
+      "useTourLauncher > offers nothing when the screen has a tour but none of its anchors are there": 1,
+      "useTourLauncher > offers the tour registered for the current route": 1,
+      "useTourLauncher > records a dismissal, so a closed tour is not re-offered either": 1,
+      "useTourLauncher > records nothing when the tour turned out to be unrunnable": 1,
+      "useTourLauncher > runs a replay requested from elsewhere, and clears the request so it cannot re-arm": 1
+    },
+    "apps/web/src/features/help/components/TourLauncher/TourLauncher.test.tsx": {
+      "TourLauncher > carries the app-help anchor, so the orientation tour can point at itself": 1,
+      "TourLauncher > marks itself busy while a tour runs, and stays focusable": 1,
+      "TourLauncher > renders a named control, so a screen reader is not offered a bare icon": 1,
+      "TourLauncher > renders nothing when the screen has no runnable tour": 1,
+      "TourLauncher > starts the tour on click": 1
+    },
+    "apps/web/src/features/help/Help.bundle.test.ts": {
+      "driver.js stays off the first-paint graph > is never imported statically anywhere in apps/web": 1,
+      "driver.js stays off the first-paint graph > is reached only through a dynamic import, and so is its stylesheet": 1
+    },
+    "apps/web/src/features/help/Help.catalog.test.ts": {
+      "help catalog > carries a name, a title and a body for every registered step": 1,
+      "help catalog > carries no copy for a tour the registry does not have": 1,
+      "help catalog > keeps the progress placeholders driver.js expands": 1,
+      "help catalog > leaves no key with an empty string, which renders as a silently blank popover": 1
+    },
+    "apps/web/src/features/help/Help.engine.test.ts": {
+      "canRunTour > is false when no anchor is present, which is what hides the help button": 1,
+      "canRunTour > is true while at least one anchor is present": 1,
+      "isModalOpen > is false on a screen with no dialog": 1,
+      "isModalOpen > is false once the dialog closes, so the next visit can still be offered the tour": 1,
+      "isModalOpen > is true for an alertdialog too, since a confirm is just as blocking": 1,
+      "isModalOpen > is true while a Radix dialog is open, which is what suppresses the auto-start": 1,
+      "reduced motion > animates when the user has not asked for reduced motion": 1,
+      "reduced motion > reads the media query": 1,
+      "reduced motion > turns the animation off entirely rather than shortening it": 1,
+      "resolveSteps > keeps the original index, so a skip cannot shift the copy onto the wrong step": 1,
+      "resolveSteps > reports a dropped step with its tour id and anchor": 1,
+      "runTour > does not start, and reports unavailable, when no anchor is on the screen": 1,
+      "runTour > drives only the steps whose anchors resolved, with their own copy": 1,
+      "runTour > falls back to the active element when the caller names no origin": 1,
+      "runTour > keeps keyboard control on, because a tour a keyboard user cannot leave is worse than none": 1,
+      "runTour > names the close control, which driver.js ships without an accessible name": 1,
+      "runTour > reads an escape, which never reaches onCloseClick, as dismissed": 1,
+      "runTour > resolves completed when the done button ends the tour": 1,
+      "runTour > resolves dismissed when the close control ends it": 1,
+      "runTour > restores focus to the origin the caller named": 1,
+      "the pre-flight budget > is a whole-tour budget, not a per-step one: every anchor is waited for in parallel": 1,
+      "waitForAnchor > resolves an anchor that is already in the DOM without waiting": 1,
+      "waitForAnchor > resolves an anchor that mounts late": 1,
+      "waitForAnchor > resolves null on timeout rather than throwing, because a missing anchor is ordinary": 1
+    },
+    "apps/web/src/features/help/Help.seed.test.ts": {
+      "the e2e seed and the tour registry agree > answers every registered tour": 1,
+      "the e2e seed and the tour registry agree > holds one fixture account back so an auto-start is still proved": 1
+    },
+    "apps/web/src/features/help/Help.tours.test.ts": {
+      "derived copy keys > keys a step by its tour and its anchor, so an author writes no key at all": 1,
+      "findTourForRoute > answers null on a screen with no tour, which is how the help button stays hidden": 1,
+      "findTourForRoute > is segment-aware, so /settings never claims /compliance/settings": 1,
+      "findTourForRoute > matches a child route, where the parent screen is still mounted": 1,
+      "findTourForRoute > matches the screen itself": 1,
+      "findTourForRoute > prefers the deepest match": 1,
+      "getTourById > answers null for a tour id the registry no longer knows": 1,
+      "getTourById > resolves a registered tour": 1,
+      "the tour registry > gives every tour an id the wire contract accepts": 1,
+      "the tour registry > has at least one step in every tour, because an empty tour is not a tour": 1,
+      "the tour registry > has no duplicate anchors inside one tour": 1,
+      "the tour registry > has no duplicate ids, which would make two tours share one progress entry": 1,
+      "tourAnchorSelector > selects on the data attribute, never on a class or on structure": 1
+    },
+    "apps/web/src/features/landing/components/LandingCta/LandingCta.test.tsx": {
+      "LandingCta > renders the closing heading and routes the CTA to register": 1
+    },
+    "apps/web/src/features/landing/components/LandingFaq/LandingFaq.test.tsx": {
+      "LandingFaq > collapses an open question when it is clicked again": 1,
+      "LandingFaq > opens the clicked question and closes the previously open one": 1,
+      "LandingFaq > starts with the first question expanded and the rest collapsed": 1,
+      "LandingFaq > wires every question to the panel it controls": 1
+    },
+    "apps/web/src/features/landing/components/LandingFeatures/LandingFeatures.test.tsx": {
+      "LandingFeatures > anchors the section so the nav link can reach it": 1,
+      "LandingFeatures > gives the signature cell the inverted surface and the first cell the brand tint": 1,
+      "LandingFeatures > renders all six cells under a level-2 section heading": 1
+    },
+    "apps/web/src/features/landing/components/LandingFooter/LandingFooter.test.tsx": {
+      "LandingFooter > omits the legal links until those routes exist": 1,
+      "LandingFooter > renders a labeled footer nav with the section anchors": 1
+    },
+    "apps/web/src/features/landing/components/LandingHero/LandingHero.test.tsx": {
+      "LandingHero > draws every sample avatar as a tint plate with its own ink": 1,
+      "LandingHero > hides the sample rows from assistive tech": 1,
+      "LandingHero > points the primary CTA at the real register route": 1,
+      "LandingHero > renders the page h1 as a single level-1 heading": 1
+    },
+    "apps/web/src/features/landing/components/LandingNav/LandingNav.test.tsx": {
+      "LandingNav > closes the mobile menu after following a link": 1,
+      "LandingNav > links every section anchor": 1,
+      "LandingNav > renders the wordmark and both auth CTAs": 1,
+      "LandingNav > starts with the mobile menu collapsed and toggles it open": 1
+    },
+    "apps/web/src/features/landing/components/LandingPage/LandingPage.test.tsx": {
+      "LandingPage > exposes the landmarks the skip link and screen readers rely on": 1,
+      "LandingPage > invents no social proof: no customer logos and no testimonial": 1,
+      "LandingPage > renders every marketing section in order": 1,
+      "LandingPage > renders exactly one h1 and no skipped heading levels": 1
+    },
+    "apps/web/src/features/landing/components/LandingPricing/LandingPricing.test.tsx": {
+      "LandingPricing > marks only the Team plan as featured": 1,
+      "LandingPricing > renders the three plans": 1,
+      "LandingPricing > sends every plan to the register route": 1,
+      "LandingPricing > ships no mailto CTA, which would be a dead link until a real address exists": 1,
+      "LandingPricing > states no price until pricing is actually decided": 1
+    },
+    "apps/web/src/features/landing/components/LandingSteps/LandingSteps.test.tsx": {
+      "LandingSteps > renders the four onboarding steps in order": 1,
+      "LandingSteps > uses an ordered list so the sequence survives without the numerals": 1
+    },
+    "apps/web/src/features/layout/components/AppSidebar/AppSidebar.hooks.test.tsx": {
+      "useAppSidebar > adds the admin-only audit log for an admin": 1,
+      "useAppSidebar > does not activate /settings from /compliance/settings": 1,
+      "useAppSidebar > exposes only entries backed by a real route": 1,
+      "useAppSidebar > hides the admin-only entry from a signed-out reader": 1,
+      "useAppSidebar > keeps the parent entry active on a nested route": 1,
+      "useAppSidebar > marks the entry for the current route active": 1,
+      "useAppSidebar > translates the group labels and the landmark name": 1
+    },
+    "apps/web/src/features/layout/components/AppSidebar/AppSidebar.test.tsx": {
+      "AppSidebar > carries the data-tour anchor the orientation tour points at": 1,
+      "AppSidebar > exposes a named navigation landmark holding the links": 1,
+      "AppSidebar > marks only the active entry with aria-current": 1,
+      "AppSidebar > renders each group under its own heading": 1,
+      "AppSidebar > renders every nav item supplied by the hook": 1,
+      "AppSidebar > renders the app brand label": 1,
+      "AppSidebar > renders the organization identity block in the footer slot": 1,
+      "AppSidebar > ships no disabled placeholder entries": 1
+    },
+    "apps/web/src/features/layout/components/AppTopbar/AppTopbar.hooks.test.tsx": {
+      "useAppTopbar > falls back to the product name outside the nav": 1,
+      "useAppTopbar > leaves the subtitle empty until a page publishes one": 1,
+      "useAppTopbar > prefers the deepest matching entry": 1,
+      "useAppTopbar > resolves a nested route to its parent entry": 1,
+      "useAppTopbar > surfaces whatever the mounted page published": 1,
+      "useAppTopbar > uses the route page title, which can differ from the sidebar label": 1
+    },
+    "apps/web/src/features/layout/components/AppTopbar/AppTopbar.test.tsx": {
+      "AppTopbar > carries the data-tour anchors the orientation tour points at": 1,
+      "AppTopbar > is a banner landmark": 1,
+      "AppTopbar > keeps the sidebar trigger, connection status and notifications": 1,
+      "AppTopbar > omits the subtitle line when the route supplies none": 1,
+      "AppTopbar > renders the page title for the current route": 1,
+      "AppTopbar > renders the subtitle when the route supplies one": 1,
+      "AppTopbar > renders the title as the one and only h1": 1
+    },
+    "apps/web/src/features/layout/components/ConnectionIndicator/ConnectionIndicator.test.tsx": {
+      "ConnectionIndicator > announces the disconnected state via a focusable status region": 1
+    },
+    "apps/web/src/features/layout/components/OrganizationIdentity/OrganizationIdentity.hooks.test.tsx": {
+      "useOrganizationIdentity > derives the name and two-letter initials from the organization name": 1,
+      "useOrganizationIdentity > falls back to a translated placeholder when the organization has no name": 1,
+      "useOrganizationIdentity > falls back to the translated placeholder when the lookup fails": 1,
+      "useOrganizationIdentity > reports pending until the query resolves": 1
+    },
+    "apps/web/src/features/layout/components/OrganizationIdentity/OrganizationIdentity.test.tsx": {
+      "OrganizationIdentity > renders no interactive elements": 1,
+      "OrganizationIdentity > renders the fallback name when the lookup failed": 1,
+      "OrganizationIdentity > renders the initials in the avatar glyph": 1,
+      "OrganizationIdentity > renders the organization name": 1,
+      "OrganizationIdentity > reserves the footer with a skeleton while the identity is pending": 1
+    },
+    "apps/web/src/features/layout/components/UserMenu/UserMenu.hooks.test.tsx": {
+      "useUserMenu > clears the CSRF token and query cache then routes to login on logout": 1,
+      "useUserMenu > derives the display name, email and initials": 1,
+      "useUserMenu > drops the avatar URL when the lookup failed so the initials show": 1,
+      "useUserMenu > falls back to the email when the profile has no display name": 1,
+      "useUserMenu > names the icon-only trigger with the current user": 1,
+      "useUserMenu > resolves the stored avatar through the shared hook": 1,
+      "useUserMenu > returns null until the profile has loaded": 1,
+      "useUserMenu > routes to settings from the menu action": 1,
+      "useUserMenu > surfaces a toast when logout fails": 1
+    },
+    "apps/web/src/features/layout/components/UserMenu/UserMenu.test.tsx": {
+      "UserMenu > gives the icon-only trigger an accessible name carrying the user": 1,
+      "UserMenu > keeps the initials when there is no picture to show": 1,
+      "UserMenu > renders nothing until the user profile has loaded": 1,
+      "UserMenu > renders the user initials in the trigger": 1,
+      "UserMenu > routes to settings from the menu": 1,
+      "UserMenu > runs the logout handler from the menu": 1,
+      "UserMenu > shows the identity and both actions once opened": 1,
+      "UserMenu > shows the resolved avatar picture in the trigger": 1
+    },
+    "apps/web/src/features/layout/Layout.nav.test.ts": {
+      "findNavItemForPath > finds the entry owning the route": 1,
+      "findNavItemForPath > prefers the deepest match when two entries overlap": 1,
+      "findNavItemForPath > returns null outside the nav": 1,
+      "isActivePath > does not match a sibling that merely shares a prefix": 1,
+      "isActivePath > does not match an unrelated route": 1,
+      "isActivePath > matches a nested route": 1,
+      "isActivePath > matches the route exactly": 1,
+      "NAV_GROUPS > keys every entry to a title the catalog actually carries": 1,
+      "NAV_GROUPS > leaves the Workspaces screen open to every staff account": 1,
+      "NAV_GROUPS > ships no entry without a destination": 1
+    },
+    "apps/web/src/features/notifications/components/NotificationBell/NotificationBell.test.tsx": {
+      "NotificationBell > caps the badge label at 9+": 1,
+      "NotificationBell > does not render a badge when unreadCount is 0": 1,
+      "NotificationBell > renders the trigger button before the list query resolves": 1,
+      "NotificationBell > shows the unread count from the hydrated query data": 1
+    },
+    "apps/web/src/features/notifications/components/NotificationItem/NotificationItem.test.tsx": {
+      "NotificationItem > applies opacity-60 class when the notification is read": 1,
+      "NotificationItem > clicking an already-read item does not fire the mutation": 1,
+      "NotificationItem > clicking an unread item fires the markRead mutation with the id": 1,
+      "NotificationItem > hides the unread indicator when the notification is read": 1,
+      "NotificationItem > renders the notification title and message": 1,
+      "NotificationItem > shows the unread indicator when the notification is unread": 1
+    },
+    "apps/web/src/features/settings/components/DangerZoneSection/DangerZoneSection.test.tsx": {
+      "DangerZoneSection > disables the confirm button while the deletion is pending": 1,
+      "DangerZoneSection > marks the cancel button type=\"button\" so it cannot submit the surrounding form": 1,
+      "DangerZoneSection > renders the confirmation dialog with a password field when open": 1,
+      "DangerZoneSection > renders the destructive card with the grace-window copy and the trigger button": 1
+    },
+    "apps/web/src/features/settings/components/DataExportSection/DataExportSection.hooks.test.tsx": {
+      "useDataExportSection > downloads the export as a date-stamped json file": 1,
+      "useDataExportSection > surfaces the panel copy rather than the raw message when the export fails": 1
+    },
+    "apps/web/src/features/settings/components/DataExportSection/DataExportSection.test.tsx": {
+      "DataExportSection > describes what the export contains before offering the download": 1,
+      "DataExportSection > disables the button while the export is being prepared": 1,
+      "DataExportSection > fires the download action on click": 1,
+      "DataExportSection > renders the error line as an alert when the export fails": 1
+    },
+    "apps/web/src/features/settings/components/NotificationsSection/NotificationsSection.test.tsx": {
+      "NotificationsSection > reflects the defaults: event categories muted": 1,
+      "NotificationsSection > renders one row per category with the English copy": 1,
+      "NotificationsSection > renders only the WIRED channels: one in-app switch per event row": 1,
+      "NotificationsSection > saves the WHOLE matrix with exactly the flipped flag changed": 1,
+      "NotificationsSection > shows the load-error copy when the read fails": 1,
+      "NotificationsSection > surfaces a failed save as an error toast": 1
+    },
+    "apps/web/src/features/settings/components/PasswordSection/PasswordSection.test.tsx": {
+      "PasswordSection > renders the current password field": 1,
+      "PasswordSection > renders the submit button": 1
+    },
+    "apps/web/src/features/settings/components/ProfileSection/ProfileSection.test.tsx": {
+      "ProfileSection > falls back to initials when the avatar URL lookup fails": 1,
+      "ProfileSection > hides the initials while the avatar URL is loading": 1,
+      "ProfileSection > renders the display name": 1,
+      "ProfileSection > renders the email address": 1,
+      "ProfileSection > shows the role in the card": 1,
+      "ProfileSection > shows the Verified badge when emailVerified is true": 1
+    },
+    "apps/web/src/features/settings/components/SessionsSection/SessionsSection.hooks.test.tsx": {
+      "useSessionsSection > closes the dialog on a failed sign-out-others too, with an error toast": 1,
+      "useSessionsSection > maps sessions into display rows: device label, dates, current flag": 1,
+      "useSessionsSection > names Edge over Chrome, the desktop shell over its embedded Chrome, and unknowns safely": 1,
+      "useSessionsSection > refetches the list even when a revoke fails: stale rows are the likely cause": 1,
+      "useSessionsSection > reports no other sessions when this device is the only one": 1,
+      "useSessionsSection > revokes by opaque id, toasts, and refetches the list": 1,
+      "useSessionsSection > signs out others: toasts, closes the dialog, and refetches": 1
+    },
+    "apps/web/src/features/settings/components/SessionsSection/SessionsSection.test.tsx": {
+      "SessionsSection > badges the current device and gives it NO revoke button": 1,
+      "SessionsSection > confirms sign-out-others through the dialog before firing": 1,
+      "SessionsSection > hides the sign-out-others action when this device is the only session": 1,
+      "SessionsSection > renders a row per session with the device, ip, and date lines": 1,
+      "SessionsSection > revokes the row whose button was pressed, by its opaque id": 1,
+      "SessionsSection > shows the load-failure line instead of rows on error": 1
+    },
+    "apps/web/src/features/settings/components/SettingsShell/SettingsShell.test.tsx": {
+      "SettingsShell > falls back to the first row when the selected section disappears": 1,
+      "SettingsShell > follows a changed initial section while mounted": 1,
+      "SettingsShell > keeps a manual selection while the initial section is unchanged": 1,
+      "SettingsShell > mounts only the selected panel": 1,
+      "SettingsShell > opens the first section and marks its row current": 1,
+      "SettingsShell > opens the requested initial section instead of the first row": 1,
+      "SettingsShell > renders nothing when there is no section to show": 1,
+      "SettingsShell > swaps the panel when another row is pressed": 1
+    },
+    "apps/web/src/features/settings/components/ThemeSection/ThemeSection.test.tsx": {
+      "ThemeSection > renders the card title": 1,
+      "ThemeSection > renders the theme label": 1
+    },
+    "apps/web/src/features/settings/components/UpdatesSection/UpdatesSection.test.tsx": {
+      "UpdatesSection > renders a skeleton while the version is loading": 1,
+      "UpdatesSection > renders the card title": 1,
+      "UpdatesSection > renders the check for updates button": 1,
+      "UpdatesSection > renders the current version label": 1,
+      "UpdatesSection > renders Unknown when the version could not be read": 1
+    },
+    "apps/web/src/features/shared/components/DateField/DateField.test.tsx": {
+      "DateField > carries the ref and aria-required a form field arrives with": 1,
+      "DateField > draws the app locale month and day names in the popover": 1,
+      "DateField > emits the wire shape the form already speaks": 1,
+      "DateField > names the calendar trigger from the catalog": 1,
+      "DateField > renders the value in the app locale order, mm/dd/yyyy for en-US": 1
+    },
+    "apps/web/src/features/shared/components/FileUploadZone/FileUploadZone.hooks.test.tsx": {
+      "useFileUploadZone > clears the upload list": 1,
+      "useFileUploadZone > deduplicates a second pick of the same in-flight filename": 1,
+      "useFileUploadZone > derives maxSizeMb from maxSize": 1,
+      "useFileUploadZone > falls back to the panel copy for an untranslatable failure": 1,
+      "useFileUploadZone > handles a drop by clearing drag state and processing the files": 1,
+      "useFileUploadZone > marks the upload as errored when storage returns a non-2xx status": 1,
+      "useFileUploadZone > opens the native file picker on click": 1,
+      "useFileUploadZone > processes files from the input change and resets the input value": 1,
+      "useFileUploadZone > rejects a file that exceeds maxSize": 1,
+      "useFileUploadZone > rejects an unsupported file type before any upload request": 1,
+      "useFileUploadZone > reports the translated appCode when the request-policy mutation rejects": 1,
+      "useFileUploadZone > respects maxFiles by only taking the first N files": 1,
+      "useFileUploadZone > toggles isDragOver on drag over and leave": 1,
+      "useFileUploadZone > uploads a valid file: requests a policy, POSTs it, and reports completion": 1
+    },
+    "apps/web/src/features/shared/components/FileUploadZone/FileUploadZone.test.tsx": {
+      "buildPresignedPostFormData > appends every policy field before the file and the file LAST under \"file\"": 1,
+      "FileUploadZone > renders separate rows for re-uploads of the same filename (keyed by id)": 1,
+      "FileUploadZone > renders the current avatar when currentImageUrl is provided": 1,
+      "FileUploadZone > renders the dropzone as an accessible button": 1,
+      "FileUploadZone > renders the dropzone with the browse prompt": 1,
+      "FileUploadZone > shows the max size derived from the hook": 1
+    },
+    "apps/web/src/features/shared/components/ListFilterPopover/ListFilterPopover.test.tsx": {
+      "ListFilterPopover > badges the active count, so a filtered list never looks unfiltered": 1,
+      "ListFilterPopover > closes on clear, so the unfiltered rows are actually visible": 1,
+      "ListFilterPopover > keeps the filters closed until the trigger is pressed": 1,
+      "ListFilterPopover > offers no reset while nothing is active": 1
+    },
+    "apps/web/src/features/shared/components/ListSearchField/ListSearchField.test.tsx": {
+      "ListSearchField > hands the caller a plain string rather than the event": 1,
+      "ListSearchField > is reachable by its accessible name, with no visible label in the toolbar": 1
+    },
+    "apps/web/src/features/shared/components/PasswordStrength/PasswordStrength.test.tsx": {
+      "PasswordStrength > lists every requirement": 1,
+      "PasswordStrength > marks a requirement met once the password satisfies it": 1
+    },
+    "apps/web/src/features/shared/CursorPages.hooks.test.ts": {
+      "useCarriedTotal > carries a zero, because zero is a counted answer": 1,
+      "useCarriedTotal > holds the first page total across pages that report null": 1,
+      "useCarriedTotal > reports nothing until the first page answers": 1,
+      "useCarriedTotal > takes the new number as soon as a first page recounts": 1,
+      "useCursorPages > cannot be walked back past page one": 1,
+      "useCursorPages > opens on page one with no cursor and nowhere to go back to": 1,
+      "useCursorPages > refuses to advance past the last page": 1,
+      "useCursorPages > remembers the cursor that opened each page, so back is a pop not a query": 1,
+      "useCursorPages > returns to page one on reset, because a cursor belongs to one filter set": 1
+    },
+    "apps/web/src/features/two-factor/components/DisableDialog/DisableDialog.hooks.test.tsx": {
+      "useDisableDialog > closes the dialog and toasts on success": 1,
+      "useDisableDialog > flags a wrong password on the password field": 1
+    },
+    "apps/web/src/features/two-factor/components/DisableDialog/DisableDialog.test.tsx": {
+      "DisableDialog > renders nothing when closed": 1,
+      "DisableDialog > warns that recovery codes and trusted devices are lost when open": 1
+    },
+    "apps/web/src/features/two-factor/components/EnrollOnlyScreen/EnrollOnlyScreen.hooks.test.tsx": {
+      "useEnrollOnlyScreen > lands on the dashboard once enrollment completes": 1,
+      "useEnrollOnlyScreen > logs out to the login route": 1
+    },
+    "apps/web/src/features/two-factor/components/EnrollOnlyScreen/EnrollOnlyScreen.test.tsx": {
+      "EnrollOnlyScreen > renders the enrollment wizard and a sign-out button": 1
+    },
+    "apps/web/src/features/two-factor/components/EnrollWizard/EnrollWizard.hooks.test.tsx": {
+      "useEnrollWizard > walks password -> confirm -> codes and finishes": 1
+    },
+    "apps/web/src/features/two-factor/components/EnrollWizard/EnrollWizard.test.tsx": {
+      "EnrollWizard > starts on the password-confirmation step": 1
+    },
+    "apps/web/src/features/two-factor/components/GraceBanner/GraceBanner.hooks.test.tsx": {
+      "useGraceBanner > has no deadline label when grace has no end date": 1,
+      "useGraceBanner > hides once enforcement has kicked in": 1,
+      "useGraceBanner > hides when already enabled": 1,
+      "useGraceBanner > shows with the deadline in the app locale during grace": 1
+    },
+    "apps/web/src/features/two-factor/components/GraceBanner/GraceBanner.test.tsx": {
+      "GraceBanner > nags during the grace window with a link to the security row": 1,
+      "GraceBanner > renders nothing when 2FA is not required": 1
+    },
+    "apps/web/src/features/two-factor/components/OrgTwoFactorPolicyCard/OrgTwoFactorPolicyCard.hooks.test.tsx": {
+      "useOrgTwoFactorPolicyCard > confirming enable calls setTenantPolicy(required: true) and toasts": 1,
+      "useOrgTwoFactorPolicyCard > derives status text from the tenant policy query": 1,
+      "useOrgTwoFactorPolicyCard > formats the grace deadline in the app locale": 1,
+      "useOrgTwoFactorPolicyCard > turning the switch off disables immediately without a confirm": 1,
+      "useOrgTwoFactorPolicyCard > turning the switch on asks for confirmation before mutating": 1
+    },
+    "apps/web/src/features/two-factor/components/OrgTwoFactorPolicyCard/OrgTwoFactorPolicyCard.test.tsx": {
+      "OrgTwoFactorPolicyCard > renders an off state when 2FA is not required": 1,
+      "OrgTwoFactorPolicyCard > shows the deadline and an enforcing badge once past grace": 1,
+      "OrgTwoFactorPolicyCard > toggling the switch calls onToggle with the next value": 1,
+      "OrgTwoFactorPolicyCard badge while loading > shows a placeholder rather than claiming the policy is off": 1
+    },
+    "apps/web/src/features/two-factor/components/RecoveryCodesPanel/RecoveryCodesPanel.hooks.test.tsx": {
+      "useRecoveryCodesPanel > copies the newline-joined codes and flips the copied flag": 1,
+      "useRecoveryCodesPanel > downloads the codes as a text file": 1
+    },
+    "apps/web/src/features/two-factor/components/RecoveryCodesPanel/RecoveryCodesPanel.test.tsx": {
+      "RecoveryCodesPanel > offers copy and download actions": 1,
+      "RecoveryCodesPanel > renders every code": 1
+    },
+    "apps/web/src/features/two-factor/components/RegenerateDialog/RegenerateDialog.hooks.test.tsx": {
+      "useRegenerateDialog > flags a wrong password": 1,
+      "useRegenerateDialog > reveals the new codes on success, then clears them on done": 1
+    },
+    "apps/web/src/features/two-factor/components/RegenerateDialog/RegenerateDialog.test.tsx": {
+      "RegenerateDialog > starts on the password step when opened": 1
+    },
+    "apps/web/src/features/two-factor/components/SecurityCard/SecurityCard.hooks.test.tsx": {
+      "useSecurityCard > closes the enroll dialog and refetches on completion": 1,
+      "useSecurityCard > revokes trusted devices and invalidates status": 1
+    },
+    "apps/web/src/features/two-factor/components/SecurityCard/SecurityCard.test.tsx": {
+      "SecurityCard > does not claim to list active sessions": 1,
+      "SecurityCard > offers to enable 2FA when it is off": 1,
+      "SecurityCard > shows management actions and the low-codes nag when enabled": 1,
+      "SecurityCard status badge while loading > shows a placeholder rather than claiming 2FA is off": 1,
+      "SecurityCard status badge while loading > states the real value once the status arrives": 1
+    },
+    "apps/web/src/features/two-factor/components/TwoFactorChallenge/TwoFactorChallenge.hooks.test.tsx": {
+      "useTwoFactorChallenge > bounces to login when the challenge expired": 1,
+      "useTwoFactorChallenge > lands on the dashboard when nothing asked for a redirect": 1,
+      "useTwoFactorChallenge > navigates to the redirect target on success": 1,
+      "useTwoFactorChallenge > shows an inline error for an invalid code": 1,
+      "useTwoFactorChallenge > toggles recovery mode and clears the code": 1
+    },
+    "apps/web/src/features/two-factor/components/TwoFactorChallenge/TwoFactorChallenge.test.tsx": {
+      "TwoFactorChallenge > drops the previous mode validation message when toggling": 1,
+      "TwoFactorChallenge > renders the authentication-code field and verify button": 1,
+      "TwoFactorChallenge > the segmented code field > carries the attributes SMS and authenticator autofill rely on": 1,
+      "TwoFactorChallenge > the segmented code field > drops the strip in backup-code mode, where codes are not six digits": 1,
+      "TwoFactorChallenge > the segmented code field > fills every segment when a whole code arrives at once": 1,
+      "TwoFactorChallenge > the segmented code field > hides the decorative strip from assistive technology": 1,
+      "TwoFactorChallenge > the segmented code field > is a single labeled input, not six anonymous boxes": 1,
+      "TwoFactorChallenge > toggles to the backup-code variant": 1
+    },
+    "apps/web/src/features/workspace/components/WorkspaceFormDialog/WorkspaceFormDialog.hooks.test.tsx": {
+      "useWorkspaceFormDialog (create) > carries an Idempotency-Key so a double submit cannot create two rows": 1,
+      "useWorkspaceFormDialog (create) > closes, toasts and hands the saved row back on success": 1,
+      "useWorkspaceFormDialog (create) > leaves the statutory name out entirely when it is blank, like its siblings": 1,
+      "useWorkspaceFormDialog (create) > omits blank optional fields rather than sending empty strings": 1,
+      "useWorkspaceFormDialog (create) > pins a duplicate name to the name field": 1,
+      "useWorkspaceFormDialog (create) > refuses a blank name without calling the server": 1,
+      "useWorkspaceFormDialog (create) > sends the statutory legal name": 1,
+      "useWorkspaceFormDialog (edit) > can set a statutory name on a Workspace that never had one": 1,
+      "useWorkspaceFormDialog (edit) > re-seeds when pointed at a different workspace": 1,
+      "useWorkspaceFormDialog (edit) > seeds the form from the row being edited, NULL columns as blanks": 1,
+      "useWorkspaceFormDialog (edit) > sends null for a blanked field so the column is cleared, not kept": 1
+    },
+    "apps/web/src/features/workspace/components/WorkspaceFormDialog/WorkspaceFormDialog.test.tsx": {
+      "WorkspaceFormDialog > announces an inline error and marks the input invalid": 1,
+      "WorkspaceFormDialog > locks the submit while the write is in flight": 1,
+      "WorkspaceFormDialog > renders every registration field with an accessible label": 1,
+      "WorkspaceFormDialog > routes typing to the field-change handler": 1,
+      "WorkspaceFormDialog > submits and cancels through the hook handlers": 1,
+      "WorkspaceFormDialog > ties only the error to the statutory name input when it is invalid": 1
+    },
+    "apps/web/src/features/workspace/components/WorkspaceListPage/WorkspaceListPage.hooks.test.tsx": {
+      "useWorkspaceListPage > does not repeat a legal name identical to the working name": 1,
+      "useWorkspaceListPage > loads first, then shows every workspace with a display string per cell": 1,
+      "useWorkspaceListPage > narrows by name or city": 1,
+      "useWorkspaceListPage > opens create blank and edit seeded with the row, and clears both on close": 1,
+      "useWorkspaceListPage > points an ADMIN at the add button and a USER at their administrator": 1,
+      "useWorkspaceListPage > reports a failed load and refetches on retry": 1,
+      "useWorkspaceListPage > tells a filtered empty list apart from an organization with no workspaces": 1
+    },
+    "apps/web/src/features/workspace/components/WorkspaceListPage/WorkspaceListPage.test.tsx": {
+      "WorkspaceListPage > announces a load failure and retries on request": 1,
+      "WorkspaceListPage > mounts the shared dialog in the mode the hook asks for, seeded with the row": 1,
+      "WorkspaceListPage > offers add and per-row edit to an ADMIN, naming the workspace on the button": 1,
+      "WorkspaceListPage > offers no write affordance to a USER": 1,
+      "WorkspaceListPage > renders one row per workspace with its details": 1,
+      "WorkspaceListPage > replaces the table with the empty state rather than a bare header row": 1,
+      "WorkspaceListPage > shows the loading line while the first load is in flight": 1
+    },
+    "apps/web/src/features/workspace/components/WorkspaceSelect/WorkspaceSelect.hooks.test.tsx": {
+      "useWorkspaceSelect > exposes the tenant workspaces once loaded": 1,
+      "useWorkspaceSelect > reports an empty roster so the caller can prompt for the first workspace": 1,
+      "useWorkspaceSelect > resolves the selected row from the list, so the edit dialog can seed from it": 1,
+      "useWorkspaceSelect > selects a freshly saved workspace, so the user is not left re-picking": 1,
+      "useWorkspaceSelect > walks the dialog through create, edit and closed states": 1
+    },
+    "apps/web/src/features/workspace/components/WorkspaceSelect/WorkspaceSelect.test.tsx": {
+      "WorkspaceSelect > hides the create affordance unless it is allowed": 1,
+      "WorkspaceSelect > keeps edit hidden without the create/manage affordance gate": 1,
+      "WorkspaceSelect > keeps the dialog unmounted while closed": 1,
+      "WorkspaceSelect > labels the trigger so the picker is reachable by name": 1,
+      "WorkspaceSelect > mounts the dialog in the mode the hook is holding": 1,
+      "WorkspaceSelect > offers a way back from a failed load": 1,
+      "WorkspaceSelect > offers edit only when a workspace is selected": 1,
+      "WorkspaceSelect > opens the create dialog when creation is allowed": 1,
+      "WorkspaceSelect > points a fresh organization at creating its first workspace": 1,
+      "WorkspaceSelect > surfaces a load failure instead of rendering an empty picker silently": 1,
+      "WorkspaceSelect as a form control > announces a mandatory picker as required": 1,
+      "WorkspaceSelect as a form control > forwards a ref to the trigger, so a rejected field can be focused": 1,
+      "WorkspaceSelect as a form control > passes a hand-wired error id through to the trigger": 1,
+      "WorkspaceSelect as a form control > passes what FormControl injects through to the trigger": 1,
+      "WorkspaceSelect as a form control > says nothing about required when the picker is a filter": 1
+    },
+    "apps/web/src/hooks/use-avatar-url.test.tsx": {
+      "useAvatarUrl > reports a failed lookup without a URL": 1,
+      "useAvatarUrl > resolves a stored S3 key to its presigned download URL": 1,
+      "useAvatarUrl > returns no URL and no lookup for \"\"": 1,
+      "useAvatarUrl > returns no URL and no lookup for null": 1,
+      "useAvatarUrl > returns no URL and no lookup for undefined": 1,
+      "useAvatarUrl > uses an http(s) URL as is, without a lookup": 1
+    },
+    "apps/web/src/hooks/use-idempotency-key.test.tsx": {
+      "useIdempotencyKey > gives two concurrent forms different keys": 1,
+      "useIdempotencyKey > keeps reset referentially stable so it can be passed straight to onSuccess": 1,
+      "useIdempotencyKey > keeps the same key across re-renders, so a retry reuses it": 1,
+      "useIdempotencyKey > mints a fresh key on reset, so the next submission is new work": 1,
+      "useIdempotencyKey > mints a key up front": 1
+    },
+    "apps/web/src/lib/api-path.test.ts": {
+      "toApiPath > refuses a backslash the browser reads as a slash": 1,
+      "toApiPath > refuses a relative path with no leading slash": 1,
+      "toApiPath > refuses a scheme-relative path": 1,
+      "toApiPath > refuses a userinfo-shaped path": 1,
+      "toApiPath > refuses an absolute URL": 1,
+      "toApiPath > refuses an embedded newline": 1,
+      "toApiPath > refuses an embedded space": 1,
+      "toApiPath > refuses an empty string": 1,
+      "toApiPath > returns a same-origin api path unchanged": 1
+    },
+    "apps/web/src/lib/avatar.test.ts": {
+      "getDownloadUrlFromResult > returns the downloadUrl string when present": 1,
+      "getDownloadUrlFromResult > returns undefined for non-object input": 1,
+      "getDownloadUrlFromResult > returns undefined for null input": 1,
+      "getDownloadUrlFromResult > returns undefined when downloadUrl is missing": 1,
+      "getDownloadUrlFromResult > returns undefined when downloadUrl is not a string": 1,
+      "getInitials > falls back to first two chars of email when name is empty string": 1,
+      "getInitials > falls back to first two chars of email when name is null": 1,
+      "getInitials > handles email starting with a number": 1,
+      "getInitials > returns first letters of first and last name": 1,
+      "getInitials > returns first letters of multi-word names (capped at 2)": 1,
+      "getInitials > returns first two letters for single-word name": 1,
+      "getInitials > uppercases the initials": 1,
+      "isHttpUrl > returns false for empty string": 1,
+      "isHttpUrl > returns false for ftp URLs": 1,
+      "isHttpUrl > returns false for non-URL strings": 1,
+      "isHttpUrl > returns false for relative paths": 1,
+      "isHttpUrl > returns true for http URLs": 1,
+      "isHttpUrl > returns true for https URLs": 1
+    },
+    "apps/web/src/lib/csrf.test.ts": {
+      "CSRF token fetch timeout > rejects a stalled token fetch and retries on the next mutation": 1,
+      "fetchWithCsrfRetry > does not retry on a 403 that is not csrf-related": 1,
+      "fetchWithCsrfRetry > does not retry on a non-403 response": 1,
+      "fetchWithCsrfRetry > retries once on a 403 whose nested error.message mentions csrf, with a fresh token": 1,
+      "lazy CSRF token fetching > mints again after resetCsrfToken, so a post-login mutation is not stale": 1,
+      "lazy CSRF token fetching > mints no token for a HEAD request": 1,
+      "lazy CSRF token fetching > mints no token for a OPTIONS request": 1,
+      "lazy CSRF token fetching > mints no token on a read-only boot": 1,
+      "lazy CSRF token fetching > mints one and attaches it when a mutation finally runs": 1,
+      "lazy CSRF token fetching > preserves headers the caller set, such as the idempotency key": 1,
+      "lazy CSRF token fetching > rejects a wrong-shape 200 rather than sending the header value \"undefined\"": 1,
+      "lazy CSRF token fetching > reuses the minted token across later mutations instead of refetching": 1,
+      "lazy CSRF token fetching > shares a single request when parallel mutations race the first mint": 1,
+      "lazy CSRF token fetching > surfaces a failed mint to the caller instead of sending an unprotected mutation": 1,
+      "lazy CSRF token fetching > treats a missing method as GET rather than as a mutation": 1
+    },
+    "apps/web/src/lib/electron.test.ts": {
+      "electron helpers (web mode) > getApiBaseUrl returns empty string in web mode": 1,
+      "electron helpers (web mode) > getSocketUrl returns undefined in web mode": 1,
+      "electron helpers (web mode) > getTrpcUrl returns relative /trpc in web mode": 1,
+      "electron helpers (web mode) > initElectron is a no-op in web mode": 1,
+      "electron helpers (web mode) > IS_ELECTRON is false in web mode": 1
+    },
+    "apps/web/src/lib/error-reporting.test.ts": {
+      "error-reporting facade > captureException without init never throws and never touches the SDK": 1,
+      "error-reporting facade > forwards captureException with context after init": 1,
+      "error-reporting facade > initializes the SDK with a conservative, scrubbing config when enabled": 1,
+      "error-reporting facade > is a no-op by default (no VITE_SENTRY_DSN)": 1,
+      "error-reporting facade > is idempotent: repeated init calls configure the SDK once": 1,
+      "error-reporting facade > queues a capture fired while init is still in flight": 1,
+      "error-reporting facade > stays disabled in the Electron renderer even with a DSN": 1,
+      "scrubBreadcrumb > blanks credentials in navigation and fetch breadcrumb URLs": 1,
+      "scrubBreadcrumb > blanks the staff invite token in a navigation breadcrumb": 1,
+      "scrubBreadcrumb > blanks the tRPC batch input param and keeps the procedure path": 1,
+      "scrubBreadcrumb > drops message content that mentions a sensitive key name": 1,
+      "scrubBreadcrumb > is pure: the input breadcrumb is not mutated": 1,
+      "scrubBreadcrumb > redacts sensitive keys in data": 1,
+      "scrubBreadcrumb > redacts user identifiers in data, including compound names": 1,
+      "scrubEvent > is pure: the input event is not mutated": 1,
+      "scrubEvent > passes through events without scrubbable sections": 1,
+      "scrubEvent > redacts sensitive keys in extra, contexts, and request, including nested objects": 1,
+      "scrubEvent: credentials inside URL strings > blanks credentials quoted in the message and the exception text": 1,
+      "scrubEvent: credentials inside URL strings > blanks identifiers carried as search params, matching the key-based rule": 1,
+      "scrubEvent: credentials inside URL strings > blanks the credential in auth/invite (staff invite, same path-segment shape) and keeps the route": 1,
+      "scrubEvent: credentials inside URL strings > blanks the credential in confirm-email-change and keeps the route": 1,
+      "scrubEvent: credentials inside URL strings > blanks the credential in reset-password and keeps the route": 1,
+      "scrubEvent: credentials inside URL strings > blanks the credential in the Referer header, not just the url": 1,
+      "scrubEvent: credentials inside URL strings > blanks the credential in verify-email and keeps the route": 1,
+      "scrubEvent: credentials inside URL strings > leaves ordinary search params alone": 1,
+      "scrubEvent: identifiers denied at the Sentry boundary only > keeps organization and document identifiers, which name no person and carry the triage": 1,
+      "scrubEvent: identifiers denied at the Sentry boundary only > redacts userId in extra, contexts, tags and request, including compound names": 1
+    },
+    "apps/web/src/lib/i18n/i18n.namespace.test.tsx": {
+      "registerFeatureNamespace > re-renders a mounted component when its namespace registers after mount": 1
+    },
+    "apps/web/src/lib/i18n/i18n.test.ts": {
+      "calendar dates > does not roll back across the UTC midnight boundary": 1,
+      "calendar dates > refuses anything that is not a bare yyyy-MM-dd": 1,
+      "calendar dates > renders a floating UTC midnight as the day that was stored": 1,
+      "calendar dates > returns an empty string for an unparseable value": 1,
+      "calendar dates > round-trips through an <input type=\"date\"> value without shifting the day": 1,
+      "calendar dates > treats an absent or invalid date as an empty input value": 1,
+      "format > formats dates as MM/dd/yyyy": 1,
+      "format > formats money through the shared formatMoney helper": 1,
+      "format > formats numbers with the app locale separators": 1,
+      "format > returns an empty string for an unparseable date": 1,
+      "initI18n > defaults to English, the only bundled language": 1,
+      "initI18n > is idempotent: repeat calls return the same settled promise": 1,
+      "initI18n > resolves the shared namespaces": 1
+    },
+    "apps/web/src/lib/page-title.test.ts": {
+      "pageTitle > covers the auth surfaces that have no nav entry": 1,
+      "pageTitle > names the page from the catalog and keeps the product on the end": 1,
+      "pageTitle > uses the same keys the topbar heading reads": 1
+    },
+    "apps/web/src/lib/qr.test.ts": {
+      "otpauthUriToQrDataUri > encodes an otpauth URI as an inline SVG data URI (no network)": 1,
+      "otpauthUriToQrDataUri > renders a QR code an authenticator app scans back to the exact otpauth URI": 1
+    },
+    "apps/web/src/lib/shell-routes.test.ts": {
+      "loginPathForExpiredSession > refuses to bounce /auth/login, which is already a sign-in surface": 1,
+      "loginPathForExpiredSession > refuses to bounce /auth/register, which is already a sign-in surface": 1,
+      "loginPathForExpiredSession > refuses to bounce /auth/reset-password, which is already a sign-in surface": 1,
+      "loginPathForExpiredSession > refuses to bounce /auth/two-factor, which is already a sign-in surface": 1,
+      "loginPathForExpiredSession > sends / to the sign-in path": 1,
+      "loginPathForExpiredSession > sends /audit to the sign-in path": 1,
+      "loginPathForExpiredSession > sends /dashboard to the sign-in path": 1,
+      "loginPathForExpiredSession > sends /enroll-two-factor to the sign-in path": 1,
+      "loginPathForExpiredSession > sends /settings to the sign-in path": 1,
+      "pendingSkeletonForPath > maps /audit to the list silhouette": 1,
+      "pendingSkeletonForPath > maps /dashboard to the cards silhouette": 1,
+      "pendingSkeletonForPath > maps /settings to the detail silhouette": 1,
+      "pendingSkeletonForPath > maps /settings/security to the detail silhouette": 1,
+      "pendingSkeletonForPath > maps /workspaces/f_1 to the detail silhouette": 1
+    },
+    "apps/web/src/lib/theme.test.ts": {
+      "applyColorTheme > applies the default theme by removing data-theme": 1,
+      "applyColorTheme > renders violet as violet rather than as the default palette": 1,
+      "applyColorTheme > sets data-theme for every non-default theme, violet included": 1,
+      "applyColorTheme > switches from a non-default theme back to the default": 1,
+      "applyTheme > adds the dark class for the dark preference and drops it for light": 1
+    },
+    "apps/web/src/lib/trpc-errors.test.ts": {
+      "getAppErrorCode > returns INVALID_CREDENTIALS for the change-password wrong-current-password error": 1,
+      "getAppErrorCode > returns the AppErrorCode carried on error.data.appCode": 1,
+      "getAppErrorCode > returns undefined for an appCode that is not a known AppErrorCode member": 1,
+      "getAppErrorCode > returns undefined for non-object errors": 1,
+      "getAppErrorCode > returns undefined when data or appCode is missing": 1,
+      "translateAppError > falls back to the raw message when a real response carries no mapped code": 1,
+      "translateAppError > maps a known appCode to its translated sentence": 1,
+      "translateAppError > never returns a browser-internal transport message": 1,
+      "translateAppError > returns the network sentence for a TRPCClientError with no data": 1,
+      "translateAppError > returns undefined for an error that is neither a response nor a tRPC failure": 1
+    },
+    "apps/web/src/lib/trpc.test.ts": {
+      "401 session-expiry reaction > announces the bounce when a mutation comes back 401": 1,
+      "401 session-expiry reaction > announces the bounce when a query comes back 401": 1,
+      "401 session-expiry reaction > drops the cached identity before announcing, so useAuth stops lying": 1,
+      "401 session-expiry reaction > leaves every other failure alone": 1,
+      "401 session-expiry reaction > stays quiet when a mutation 401s with no session to lose": 1,
+      "401 session-expiry reaction > stays quiet when a query 401s with no session to lose": 1,
+      "401 session-expiry reaction > still suppresses the toast for a 401 background refetch": 1,
+      "trpc link chain > does not ask either transport for a CSRF token up front": 1,
+      "trpc link chain > leaves everything else on the batching link": 1,
+      "trpc link chain > omits the header entirely when no key is present, rather than sending an empty one": 1,
+      "trpc link chain > puts the key on the header the api middleware actually reads": 1,
+      "trpc link chain > routes an operation carrying an idempotency key out of the batch": 1,
+      "trpc link chain > routes the batched transport through the CSRF-aware fetch": 1,
+      "trpc link chain > routes the single transport through the CSRF-aware fetch": 1,
+      "trpc link chain > wires both a batching and a non-batching transport": 1
+    },
+    "apps/web/src/routes/_authenticated.test.tsx": {
+      "/_authenticated guard > lets a signed-in account through": 1,
+      "/_authenticated guard > rethrows a transport failure rather than logging a valid session out": 1,
+      "/_authenticated guard > still routes a 2FA-enrollment refusal to the enroll screen": 1,
+      "/_authenticated guard > still sends a signed-out visitor to sign in with their destination": 1,
+      "/_authenticated sidebar > collapses the rail on the same render as the toggle, with no remount": 1,
+      "/_authenticated sidebar > follows the store when something other than the trigger collapses it": 1,
+      "/_authenticated sidebar > re-expands, so the control is not one way": 1,
+      "/_authenticated sidebar > records the collapse in the store, so it survives a reload": 1
+    },
+    "apps/web/src/routes/_authenticated/audit.test.tsx": {
+      "/_authenticated/audit route > announces a load failure and offers a retry": 1,
+      "/_authenticated/audit route > bounces a USER to the dashboard instead of a 403 screen": 1,
+      "/_authenticated/audit route > lets an ADMIN through": 1,
+      "/_authenticated/audit route > mounts the audit screen": 1,
+      "/_authenticated/audit route > renders a skeleton rather than a blank frame while loading": 1
+    },
+    "apps/web/src/routes/_authenticated/settings/index.test.tsx": {
+      "/_authenticated/settings/ route search > drops a non-string section": 1,
+      "/_authenticated/settings/ route search > drops a section id the rail does not know": 1,
+      "/_authenticated/settings/ route search > drops an unknown provider and unrelated params": 1,
+      "/_authenticated/settings/ route search > keeps a known oauth_linked provider next to a section": 1,
+      "/_authenticated/settings/ route search > keeps a known section id": 1,
+      "/_authenticated/settings/ route search > never throws on an empty search": 1
+    },
+    "apps/web/src/routes/_authenticated/workspaces.test.tsx": {
+      "/_authenticated/workspaces route > announces a load failure and offers a retry": 1,
+      "/_authenticated/workspaces route > carries no role guard": 1,
+      "/_authenticated/workspaces route > mounts the Workspaces screen": 1,
+      "/_authenticated/workspaces route > renders a skeleton rather than a blank frame while loading": 1,
+      "/_authenticated/workspaces route > titles the document with its own page title": 1
+    },
+    "apps/web/src/routes/auth.test.tsx": {
+      "/auth layout guard > forwards a bare /auth visit to the sign-in screen": 1,
+      "/auth layout guard > lets a signed-out visitor reach the sign-in screen": 1,
+      "/auth layout guard > sends a signed-in account to the app shell": 1
+    },
+    "apps/web/src/stores/socket-store.test.ts": {
+      "useSocketStore > addActivity > adds an activity item": 1,
+      "useSocketStore > addActivity > caps activities at 20": 1,
+      "useSocketStore > addActivity > prepends new activities (newest first)": 1,
+      "useSocketStore > clearAll > resets the entire store to initial state": 1,
+      "useSocketStore > initial state > has disconnected status": 1,
+      "useSocketStore > initial state > has empty activities": 1,
+      "useSocketStore > setStatus > updates connection status": 1,
+      "useSocketStore > setStatus > updates to reconnecting": 1
+    },
+    "apps/web/src/stores/topbar-store.test.ts": {
+      "topbar subtitle store > does not let a stale unmount clear the subtitle a newer page published": 1,
+      "topbar subtitle store > lets a page publish nothing, leaving the shell with the title alone": 1,
+      "topbar subtitle store > publishes while a page is mounted and clears when it unmounts": 1,
+      "topbar subtitle store > republishes when the value changes without losing ownership": 1
+    },
+    "apps/web/src/stores/ui-store.test.ts": {
+      "migrateUIStore > does not re-run once the state is already at the current version": 1,
+      "migrateUIStore > leaves a deliberately chosen theme alone": 1,
+      "migrateUIStore > passes through state it cannot read instead of throwing": 1,
+      "migrateUIStore > preserves the rest of the persisted state while rewriting the theme": 1,
+      "migrateUIStore > rewrites a v0 stored violet to the default theme": 1,
+      "migrateUIStore validates the rehydrated blob > drops keys the store does not own rather than writing them back": 1,
+      "migrateUIStore validates the rehydrated blob > falls back to the default for a bad sidebarCollapsed": 1,
+      "migrateUIStore validates the rehydrated blob > falls back to the default for a bad theme": 1,
+      "migrateUIStore validates the rehydrated blob > fills in a field the blob is missing entirely": 1,
+      "migrateUIStore validates the rehydrated blob > replaces a colorTheme that no longer exists with the default": 1,
+      "useUIStore > initial state > defaults colorTheme to the brand default rather than a hardcoded id": 1,
+      "useUIStore > initial state > defaults sidebarCollapsed to false": 1,
+      "useUIStore > initial state > defaults theme to system": 1,
+      "useUIStore > setSidebarCollapsed > sets sidebar to collapsed": 1,
+      "useUIStore > setSidebarCollapsed > sets sidebar to expanded": 1,
+      "useUIStore > setTheme > calls applyTheme with the new theme": 1,
+      "useUIStore > setTheme > updates theme back to system": 1,
+      "useUIStore > setTheme > updates theme to dark": 1,
+      "useUIStore > setTheme > updates theme to light": 1,
+      "useUIStore > toggleSidebar > toggles from false to true": 1,
+      "useUIStore > toggleSidebar > toggles from true to false": 1,
+      "useUIStore > toggleSidebar > toggles multiple times correctly": 1
+    },
+    "apps/web/src/test/check-initial-bundle.test.ts": {
+      "check-initial-bundle > counts a chunk only once when it is both preloaded and scripted": 1,
+      "check-initial-bundle > counts the render-blocking stylesheet, which has the strongest claim on first paint": 1,
+      "check-initial-bundle > does not require a stylesheet, since a build may inline its CSS": 1,
+      "check-initial-bundle > fails when the document references a file the build did not emit": 1,
+      "check-initial-bundle > fails when there is no build to measure": 1,
+      "check-initial-bundle > fails, and says by how much, when the initial load is over budget": 1,
+      "check-initial-bundle > ignores cross-origin scripts, which are not bytes we ship": 1,
+      "check-initial-bundle > measures the same set whether the build used a relative or absolute base": 1,
+      "check-initial-bundle > refuses to measure a document with no modulepreload set": 1,
+      "check-initial-bundle > refuses to measure a document with no script at all": 1,
+      "check-initial-bundle > rejects the invalid limit \"-5\"": 1,
+      "check-initial-bundle > rejects the invalid limit \"\"": 1,
+      "check-initial-bundle > rejects the invalid limit \"0\"": 1,
+      "check-initial-bundle > rejects the invalid limit \"abc\"": 1,
+      "check-initial-bundle > sums the entry and its modulepreload set, and passes under the limit": 1,
+      "check-initial-bundle staleness precondition > measures a dist newer than its sources": 1,
+      "check-initial-bundle staleness precondition > refuses to weigh a dist older than its sources": 1,
+      "check-initial-bundle staleness precondition > skips the comparison under CI, where the workflow guarantees the order": 1
+    },
+    "apps/web/src/test/router-defaults.test.ts": {
+      "router defaults > bounces an expired session to a sign-in screen": 1,
+      "router defaults > declares a default error component alongside the default pending one": 1,
+      "router defaults > pairs reset with an invalidate, so the default retry re-runs the load": 1,
+      "router defaults > renders translated copy rather than the raw error message": 1
+    },
+    "apps/web/src/test/shell-split.bundle.test.ts": {
+      "the shells stay out of the entry chunk > keeps the staff layout drawing its shell while it waits": 1,
+      "the shells stay out of the entry chunk > splits pendingComponent along with the other route nodes": 1
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@repo/tsconfig/base.json",
+  "compilerOptions": {
+    "types": ["node", "vitest"],
+    // See packages/database/tsconfig.json: `check-types` is `tsc --noEmit` and
+    // the build is tsup, so this file is written by the type check alone.
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsc/check-types.tsbuildinfo"
+  },
+  "include": ["src", "tests", "vitest.config.ts"]
+}

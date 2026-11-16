@@ -1,0 +1,23 @@
+# Normalize line endings to LF in the repository for all text files.
+# Without this, contributors on Windows (core.autocrlf=true) commit/check out
+# CRLF, which makes `prettier --check` flag every file as unformatted.
+* text=auto eol=lf
+
+# Binary assets must never be normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.pdf binary
+
+# Lockfiles are generated; keep diffs/merges sane.
+pnpm-lock.yaml -diff linguist-generated
+
+# Shell scripts must keep LF even if checked out on Windows.
+*.sh text eol=lf

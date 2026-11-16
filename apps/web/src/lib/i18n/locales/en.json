@@ -1,0 +1,681 @@
+{
+  "common": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close",
+      "back": "Back",
+      "search": "Search",
+      "retry": "Try again"
+    },
+    "states": {
+      "loading": "Loading..."
+    },
+    "list": {
+      "filters": "Filters",
+      "filtersHeading": "Narrow the list",
+      "filtersActive_one": "{{count}} active filter",
+      "filtersActive_other": "{{count}} active filters"
+    },
+    "dateField": {
+      "openCalendar": "Open calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "formatHint": "Format {{pattern}}. Type the date, or press Alt and the down arrow to open the calendar."
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "nav": {
+      "primary": "Main navigation",
+      "groupMain": "Main",
+      "groupSettings": "Settings",
+      "dashboard": "Dashboard",
+      "workspaces": "Workspaces",
+      "audit": "Audit log",
+      "settings": "Settings"
+    },
+    "pageTitle": {
+      "signIn": "Sign in",
+      "register": "Register an organization",
+      "forgotPassword": "Password recovery",
+      "resetPassword": "Set a new password",
+      "verifyEmail": "Verify email address",
+      "confirmEmailChange": "Change email address",
+      "twoFactor": "Two-factor verification",
+      "enrollTwoFactor": "Two-factor setup",
+      "staffInvite": "Organization invitation",
+      "dashboard": "Dashboard",
+      "workspaces": "Workspaces",
+      "audit": "Audit log",
+      "settings": "Settings"
+    },
+    "userMenu": {
+      "trigger": "User menu",
+      "settings": "Settings",
+      "logout": "Log out",
+      "logoutError": "Could not log out. Please try again."
+    },
+    "organizationIdentity": {
+      "fallbackName": "Your organization"
+    },
+    "dataExport": {
+      "title": "Account data export",
+      "description": "Download a copy of your account data as a JSON file (GDPR data portability).",
+      "contents": "The export contains your account profile data: e-mail address, display name, role, account type, avatar URL and account creation date.",
+      "download": "Download my data",
+      "success": "Your data export has been downloaded",
+      "error": "Could not prepare the data export"
+    },
+    "errors": {
+      "unexpected": "An unexpected error occurred",
+      "refreshFailed": "Failed to refresh data",
+      "network": "No connection to the server. Check your internet and try again."
+    },
+    "uiLabels": {
+      "toggleSidebar": "Toggle sidebar",
+      "sidebarTitle": "Sidebar",
+      "sidebarDescription": "Displays the mobile sidebar."
+    },
+    "fallback": {
+      "errorTitle": "Something went wrong",
+      "rootErrorDescription": "The application encountered an error.",
+      "reload": "Reload page",
+      "notFoundTitle": "Page not found",
+      "notFoundDescription": "The page you are looking for does not exist.",
+      "goToDashboard": "Go to the dashboard",
+      "skipToContent": "Skip to main content"
+    },
+    "auth": {
+      "oauthDivider": "or",
+      "oauthContinueWith": "Continue with {{provider}}",
+      "oauthErrors": {
+        "oauth_failed": "Google sign-in did not work. Please try again.",
+        "oauth_state_expired": "That took too long and expired. Please try again.",
+        "oauth_account_exists": "An account with this email address already exists. Sign in with your password, then connect Google in settings.",
+        "oauth_link_blocked": "We cannot link this Google account automatically because your SaaS Starter account is protected by a password or two-factor authentication. Sign in with your password (reset it if you do not remember it), then link Google in settings.",
+        "oauth_signup_disabled": "Creating new accounts with Google is turned off. Contact your administrator."
+      },
+      "connectedAccounts": {
+        "title": "Connected accounts",
+        "description": "External accounts you can use to sign in to SaaS Starter.",
+        "empty": "You have no connected accounts yet.",
+        "loadFailed": "Could not load your connected accounts.",
+        "linkCta": "Link {{provider}} account",
+        "unlink": "Unlink",
+        "unlinkAccessible": "Unlink {{provider}} account ({{email}})",
+        "linkedOn": "Linked {{date}}",
+        "lastUsed": "last used {{date}}",
+        "linkedToast": "{{provider}} account linked.",
+        "unlinkedToast": "Account unlinked."
+      },
+      "sudo": {
+        "title": "Confirm your password",
+        "description": "This action needs you to confirm your password again. The confirmation stays valid for 5 minutes.",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "invalidPassword": "Password is incorrect.",
+        "noPassword": "This account has no password because you sign in with an external account. Set one via password reset, then try again.",
+        "noPasswordCta": "Go to password reset"
+      },
+      "emailChange": {
+        "title": "Email address",
+        "description": "Change the address you use to sign in. The new address must confirm the change before it takes effect.",
+        "currentLabel": "Current address",
+        "newLabel": "New email address",
+        "newPlaceholder": "name@company.com",
+        "factorLabel": "Two-factor authentication code",
+        "factorPlaceholder": "Authenticator or recovery code",
+        "factorHint": "Two-factor authentication is on, so the change also needs a current code.",
+        "oauthNote": "Connected Google accounts are tied to the Google identity, not the email address. Changing your email does not move or remove them.",
+        "submit": "Change email address",
+        "pendingSent": "We sent a confirmation link to {{email}}. The change takes effect once you open it. Afterwards you will be signed out and sign in with the new address.",
+        "requestedToast": "Confirmation link sent.",
+        "confirm": {
+          "loadingTitle": "Confirming your new address",
+          "loadingDescription": "This will only take a moment.",
+          "successTitle": "Email address changed",
+          "successDescription": "You have been signed out everywhere for security. Sign in with your new address.",
+          "errorTitle": "Confirmation failed",
+          "invalidLink": "This confirmation link is invalid or has expired. Request the change again from settings.",
+          "emailInUse": "This address has been taken in the meantime. Request the change again with a different address.",
+          "missingToken": "This link is incomplete. Open the link from the confirmation email again.",
+          "retry": "Try again",
+          "goToLogin": "Go to sign in"
+        }
+      },
+      "login": {
+        "accountLocked": "Your account has been temporarily locked due to too many failed login attempts. Please try again later.",
+        "captchaFailed": "CAPTCHA verification failed. Please try again."
+      },
+      "register": {
+        "emailExists": "An account with this email already exists."
+      },
+      "resetPassword": {
+        "success": "Password reset successfully. You can now sign in.",
+        "invalidLink": "This reset link is invalid or has expired. Please request a new one.",
+        "codeIncorrect": "That code was not correct"
+      },
+      "verifyEmail": {
+        "invalidLink": "This verification link is invalid or has expired."
+      },
+      "captcha": {
+        "verifying": "Running security check...",
+        "pendingHint": "We are checking that you are not a robot. This takes a moment.",
+        "failed": "The security check failed. Refresh the page and try again.",
+        "expired": "The security check expired. Wait for the widget to refresh, or reload the page."
+      },
+      "staffInvite": {
+        "title": "Join the organization",
+        "description": "Set a password for your account, then sign in as usual.",
+        "checking": "Checking the invitation...",
+        "checkError": "We could not check the invitation. Try again in a moment.",
+        "invalidLink": "This invitation has expired or has already been used.",
+        "invalidHelp": "Ask the person who invited you for a new one. A link lasts 7 days and works once.",
+        "movesAccount": "This address already has an account. Accepting moves it into the new organization and closes the organization you are in today. You cannot undo this yourself.",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Set a password for your account",
+        "codeLabel": "Two-factor code",
+        "codePlaceholder": "123456",
+        "codeHelp": "Your account has two-factor authentication on. Enter a code from your app, or one of your recovery codes.",
+        "badCode": "That code is not right. Try again.",
+        "submit": "Set password",
+        "thenSignIn": "Once your password is set we will take you to sign in.",
+        "success": "Password set. Sign in to enter the organization.",
+        "backToLogin": "Back to sign in"
+      },
+      "pages": {
+        "login": {
+          "title": "Welcome back",
+          "noAccount": "No account yet?",
+          "register": "Register an organization"
+        },
+        "register": {
+          "title": "Register an organization",
+          "haveAccount": "Already have an account?",
+          "signIn": "Sign in"
+        },
+        "forgotPassword": {
+          "title": "Reset your password",
+          "description": "Enter your account's email address and we will send you a link to set a new password."
+        },
+        "resetPassword": {
+          "title": "Set a new password",
+          "description": "Choose a new password for your account."
+        }
+      }
+    },
+    "settings": {
+      "nav": "Settings",
+      "subtitle": "Account, organization and app preferences",
+      "sections": {
+        "profile": "Profile",
+        "members": "Members",
+        "notifications": "Notifications",
+        "security": "Security",
+        "appearance": "Appearance",
+        "updates": "Updates",
+        "help": "Help"
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "Your account information",
+        "avatar": "Avatar",
+        "avatarAlt": "Your avatar",
+        "email": "Email",
+        "verified": "Verified",
+        "unverified": "Unverified",
+        "displayName": "Display name",
+        "notSet": "Not set",
+        "role": "Role",
+        "avatarUpdated": "Avatar updated",
+        "avatarUpdateFailed": "Could not update avatar. Please try again."
+      },
+      "password": {
+        "title": "Change password",
+        "description": "Update your password to keep your account secure",
+        "currentLabel": "Current password",
+        "currentPlaceholder": "Enter current password",
+        "newLabel": "New password",
+        "newPlaceholder": "Enter new password",
+        "submit": "Change password",
+        "success": "Password changed successfully",
+        "currentIncorrect": "Current password is incorrect",
+        "failed": "Failed to change password"
+      },
+      "dangerZone": {
+        "title": "Delete account",
+        "description": "Permanently delete your account and all of its data. You will be logged out everywhere immediately. Deletion becomes permanent after a 30-day grace window.",
+        "cta": "Delete account",
+        "dialogTitle": "Delete your account?",
+        "dialogDescription": "This deletes your account and all of its data. The deletion becomes permanent after a 30-day grace window. Enter your password to confirm.",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "confirm": "Delete my account",
+        "success": "Your account has been deleted",
+        "passwordIncorrect": "Password is incorrect",
+        "failed": "Failed to delete account"
+      },
+      "theme": {
+        "title": "Appearance",
+        "description": "Customize the appearance of the app. Choose between light, dark, or system theme.",
+        "label": "Theme",
+        "placeholder": "Select a theme",
+        "light": "Light",
+        "lightDescription": "A bright theme for daytime use",
+        "dark": "Dark",
+        "darkDescription": "A darker theme for nighttime use",
+        "system": "System",
+        "systemDescription": "Follow your OS preference"
+      },
+      "updates": {
+        "title": "Updates",
+        "description": "Manage application updates and release channel preferences.",
+        "currentVersion": "Current version",
+        "versionUnknown": "Unknown",
+        "releaseChannel": "Release channel",
+        "channels": {
+          "stable": "Stable",
+          "beta": "Beta"
+        },
+        "stableHint": "Receive only stable, tested releases.",
+        "betaHint": "Receive early access to new features (may be less stable).",
+        "check": "Check for updates",
+        "upToDate": "You are up to date.",
+        "available": "Update{{version}} available.",
+        "download": "Download",
+        "downloading": "Downloading update...",
+        "ready": "Update{{version}} ready to install.",
+        "restart": "Restart now",
+        "checkFailed": "Update check failed. Try again later.",
+        "checkError": "Update check failed",
+        "downloadError": "Download failed"
+      }
+    },
+    "twoFactor": {
+      "securityCard": {
+        "title": "Two-factor authentication",
+        "description": "Add a second step to your sign-in for stronger security.",
+        "statusOn": "On",
+        "statusOff": "Off",
+        "disabledHint": "Protect your account with codes from an authenticator app.",
+        "enableCta": "Enable two-factor authentication",
+        "authenticatorTitle": "Authenticator app",
+        "authenticatorHint": "A code from your authenticator app is required at every sign-in.",
+        "turnOff": "Turn off",
+        "turnOffAccessible": "Turn off two-factor authentication",
+        "recoveryTitle": "Recovery codes",
+        "recoveryRemaining_one": "{{count}} single-use code remaining.",
+        "recoveryRemaining_other": "{{count}} single-use codes remaining.",
+        "recoveryLow": "You are running low on recovery codes. Regenerate a fresh set.",
+        "regenerate": "Regenerate",
+        "trustedTitle": "Trusted browsers",
+        "trustedCount_one": "{{count}} browser may skip the second step.",
+        "trustedCount_other": "{{count}} browsers may skip the second step.",
+        "revokeAll": "Revoke all",
+        "enrollDialogTitle": "Set up two-factor authentication",
+        "enrollDialogDescription": "Use an authenticator app to generate a code for each sign-in.",
+        "revokedToast": "Trusted browsers revoked",
+        "revokeFailed": "Could not revoke trusted browsers"
+      },
+      "orgPolicy": {
+        "title": "Organization two-factor requirement",
+        "description": "Require every member of your organization to set up two-factor authentication.",
+        "badgeEnforcing": "Enforcing",
+        "badgeGrace": "Grace period",
+        "badgeOff": "Off",
+        "statusRequired": "Required for all members",
+        "statusNotRequired": "Not required",
+        "deadline": "Members must enroll by {{date}}",
+        "switchLabel": "Require two-factor authentication for all members",
+        "confirmTitle": "Require two-factor for your organization?",
+        "confirmDescription": "Every member without two-factor gets a 7-day window to enroll and is emailed now. After the deadline they must set it up before they can continue using the app.",
+        "confirmCta": "Require two-factor",
+        "enabledToast": "Two-factor is now required for your organization",
+        "disabledToast": "Two-factor requirement turned off",
+        "updateFailed": "Could not update the two-factor policy"
+      },
+      "enroll": {
+        "passwordHint": "Confirm your password to begin setting up two-factor authentication.",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "continue": "Continue",
+        "scanHint": "Scan the QR code with your authenticator app, then enter the 6-digit code it shows.",
+        "qrAlt": "Two-factor authentication QR code",
+        "manualHint": "Or enter this key manually:",
+        "codeLabel": "Verification code",
+        "verifyCta": "Verify and enable",
+        "codesTitle": "Save your recovery codes",
+        "codesHint": "Store these somewhere safe. Each code works once if you lose access to your authenticator, and they will not be shown again.",
+        "done": "Done",
+        "passwordIncorrect": "Password is incorrect",
+        "beginFailed": "Could not start enrollment",
+        "codeIncorrect": "That code was not correct",
+        "verifyFailed": "Could not verify the code"
+      },
+      "enrollOnly": {
+        "hint": "Your organization now requires two-factor authentication. Set it up to continue, or sign out.",
+        "signOut": "Sign out",
+        "logoutFailed": "Could not log out. Please try again.",
+        "pageTitle": "Set up two-factor authentication",
+        "pageDescription": "Your organization requires a second factor to continue"
+      },
+      "recoveryCodes": {
+        "copy": "Copy",
+        "copied": "Copied",
+        "download": "Download",
+        "copiedToast": "Recovery codes copied to clipboard",
+        "copyFailed": "Could not copy to clipboard"
+      },
+      "graceBanner": {
+        "title": "Two-factor authentication is required for your organization.",
+        "deadline": "Set it up before {{date}} to keep your access.",
+        "noDeadline": "Set it up soon to keep your access.",
+        "cta": "Set up now"
+      },
+      "disable": {
+        "title": "Disable two-factor authentication?",
+        "description": "Your account will be protected by its password alone. Every recovery code is invalidated and every trusted browser is forgotten. You can turn it back on at any time. Enter your password and a current code to confirm.",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "codeLabel": "Authentication or backup code",
+        "confirm": "Turn off two-factor",
+        "success": "Two-factor authentication disabled",
+        "passwordIncorrect": "Password is incorrect",
+        "codeIncorrect": "That code was not correct",
+        "failed": "Could not disable two-factor authentication"
+      },
+      "regenerate": {
+        "title": "Regenerate recovery codes",
+        "descriptionForm": "This replaces all of your existing recovery codes. Enter your password to continue.",
+        "descriptionCodes": "Save these codes now. Your old codes no longer work.",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "confirm": "Regenerate",
+        "done": "Done",
+        "passwordIncorrect": "Password is incorrect",
+        "failed": "Could not regenerate recovery codes"
+      },
+      "challenge": {
+        "heading": "Two-factor authentication",
+        "descriptionTotp": "Enter the 6-digit code from your authenticator app to finish signing in.",
+        "descriptionRecovery": "Enter one of the recovery codes you received during setup. Each code works only once.",
+        "codeLabelTotp": "Code from the app",
+        "codeLabelRecovery": "Recovery code",
+        "hintTotp": "The code in the app changes every 30 seconds.",
+        "hintRecovery": "Recovery codes use the XXXX-XXXX format. A used code is invalidated after you sign in.",
+        "trustDevice": "Remember this browser for 30 days",
+        "submit": "Verify",
+        "toggleQuestionTotp": "No access to the app?",
+        "toggleQuestionRecovery": "Have access to the app?",
+        "toggleToRecovery": "Use a recovery code",
+        "toggleToTotp": "Enter the code from the app",
+        "sessionExpired": "Your login session expired. Please sign in again.",
+        "codeIncorrect": "That code was not correct. Check your authenticator and try again."
+      }
+    },
+    "upload": {
+      "dropZoneLabel": "Upload an image: drag and drop, or activate to browse",
+      "change": "Change",
+      "dragDrop": "Drag & drop or",
+      "browse": "click to browse",
+      "hint": "Images only, max {{maxSizeMb}} MB",
+      "clear": "Clear",
+      "unsupportedType": "\"{{filename}}\" is not a supported image (PNG, JPEG, WebP, GIF)",
+      "tooLarge": "\"{{filename}}\" exceeds the {{maxSizeMb}} MB limit",
+      "currentAvatar": "Current avatar",
+      "postFailed": "Failed to upload file to storage service",
+      "failed": "Upload failed"
+    },
+    "desktop": {
+      "titleBar": {
+        "logIn": "Log in",
+        "signUp": "Sign up",
+        "minimize": "Minimize",
+        "maximize": "Maximize",
+        "restore": "Restore"
+      },
+      "updateBanner": {
+        "available": "Update{{version}} available",
+        "download": "Download",
+        "downloading": "Downloading update{{version}}...",
+        "ready": "Update{{version}} ready",
+        "restart": "Restart now",
+        "failed": "Update failed: {{error}}",
+        "dismiss": "Dismiss",
+        "downloadFailed": "Download failed",
+        "unknownError": "Unknown error"
+      },
+      "channelChangeFailed": "Could not change update channel",
+      "channelChangeFailedDescription": "Still on the {{channel}} channel. Please try again."
+    },
+    "connection": {
+      "status": "Connection status: {{label}}",
+      "connected": "Connected",
+      "connecting": "Connecting...",
+      "reconnecting": "Reconnecting...",
+      "disconnected": "Disconnected",
+      "lostTitle": "Connection lost",
+      "lostDescription": "Live updates are paused until the connection is restored.",
+      "reconnect": "Reconnect"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "bellLabel": "Notifications",
+      "bellLabelUnread_one": "Notifications ({{count}} unread)",
+      "bellLabelUnread_other": "Notifications ({{count}} unread)",
+      "loading": "Loading notifications",
+      "markAllRead": "Mark all as read",
+      "empty": "No notifications",
+      "markAllFailed": "Could not mark notifications as read",
+      "markOneFailed": "Could not mark notification as read",
+      "itemRead": "Read notification ({{type}})",
+      "itemUnread": "Unread notification ({{type}})"
+    },
+    "time": {
+      "justNow": "just now",
+      "minutesAgo": "{{count}}m ago",
+      "hoursAgo": "{{count}}h ago",
+      "daysAgo_one": "{{count}}d ago",
+      "daysAgo_other": "{{count}}d ago"
+    },
+    "passwordStrength": {
+      "met": "Requirement met:",
+      "notMet": "Requirement not met:",
+      "requirements": {
+        "minLength": "At least 8 characters",
+        "uppercase": "Uppercase letter",
+        "lowercase": "Lowercase letter",
+        "number": "Number",
+        "special": "Special character"
+      }
+    },
+    "admin": {
+      "members": {
+        "title": "Members",
+        "description": "Manage member accounts: roles, lockouts, two-factor and account deletion.",
+        "loadError": "Failed to load the member list",
+        "empty": "No members found.",
+        "locked": "Locked",
+        "headers": {
+          "email": "Email",
+          "name": "Name",
+          "role": "Role",
+          "twoFactor": "Two-factor",
+          "actions": "Actions",
+          "status": "Status"
+        },
+        "twoFactorEnabled": "Enabled",
+        "twoFactorDisabled": "Disabled",
+        "menu": {
+          "trigger": "Actions for {{email}}",
+          "changeRole": "Change role",
+          "unlock": "Unlock account",
+          "resetTwoFactor": "Reset two-factor",
+          "delete": "Delete account",
+          "remove": "Remove from organization",
+          "restore": "Restore to organization",
+          "revokeInvite": "Withdraw invitation"
+        },
+        "pagination": {
+          "summary": "Showing {{from}}-{{to}} of {{total}}",
+          "label": "Member list pagination"
+        },
+        "invite": "Invite someone",
+        "withdrawByEmail": "Withdraw an invitation by address",
+        "owner": "Owner",
+        "status": {
+          "active": "Active",
+          "pending": "Invited",
+          "removed": "Removed from organization"
+        }
+      },
+      "roles": {
+        "ADMIN": "Administrator",
+        "USER": "User"
+      },
+      "resetDialog": {
+        "title": "Reset two-factor for this member?",
+        "description": "This wipes the two-factor setup for {{email}}, forgets their trusted browsers, and signs them out. They must enroll a new authenticator the next time they sign in.",
+        "confirm": "Reset two-factor",
+        "success": "Two-factor reset for this member",
+        "error": "Could not reset two-factor for this member"
+      },
+      "changeRoleDialog": {
+        "title": "Change this member's role?",
+        "description": "The role of {{email}} will change from \"{{currentRole}}\" to \"{{nextRole}}\". The member is signed out and the new role applies from their next sign-in.",
+        "confirm": "Change role",
+        "success": "Role changed",
+        "error": "Could not change the role"
+      },
+      "unlockDialog": {
+        "title": "Unlock this account?",
+        "description": "The account {{email}} is locked after too many failed sign-in attempts. Unlocking clears the lockout so the member can sign in again right away.",
+        "confirm": "Unlock account",
+        "success": "Account unlocked",
+        "error": "Could not unlock the account"
+      },
+      "deleteDialog": {
+        "title": "Delete this account?",
+        "description": "This deletes the account of {{email}} entirely, not just its membership in this organization. The member is signed out immediately. This cannot be undone.",
+        "confirm": "Delete account",
+        "success": "Account deleted",
+        "error": "Could not delete the account"
+      },
+      "inviteDialog": {
+        "title": "Invite someone to the organization",
+        "description": "We will send a set-password link to this address. The invitation lasts 7 days and works once.",
+        "emailLabel": "Email address",
+        "emailPlaceholder": "e.g. anna@example.com",
+        "roleLabel": "Role in the organization",
+        "roleUserHint": "Day-to-day work in the app. No account management or organization settings.",
+        "roleAdminHint": "Everything above, plus inviting people, changing roles and organization settings.",
+        "confirm": "Send invitation",
+        "success": "Invitation sent to {{email}}",
+        "error": "Could not send the invitation",
+        "undelivered": "The account was created but the message to {{email}} could not be sent. They cannot request a new link themselves, so send the invitation again."
+      },
+      "removeDialog": {
+        "title": "Remove this person from the organization?",
+        "description": "{{email}} loses access to the organization and is signed out immediately. Their account and history stay, and you can restore them at any time.",
+        "confirm": "Remove from organization",
+        "success": "Removed from the organization",
+        "error": "Could not remove them from the organization"
+      },
+      "restoreDialog": {
+        "title": "Restore this person to the organization?",
+        "description": "{{email}} regains access to the organization in the role they held before.",
+        "confirm": "Restore",
+        "success": "Restored to the organization",
+        "error": "Could not restore them"
+      },
+      "revokeInviteDialog": {
+        "title": "Withdraw this invitation?",
+        "description": "The link sent to {{email}} stops working and the unused invitation is deleted. This cannot be undone, but you can invite them again.",
+        "confirm": "Withdraw invitation",
+        "success": "Invitation withdrawn",
+        "error": "Could not withdraw the invitation"
+      },
+      "withdrawInviteByEmailDialog": {
+        "title": "Withdraw an invitation by email address?",
+        "description": "For an invitation sent to someone who already has an account in another organization. Such an invitation does not appear in the members table, so it is withdrawn by address. Invitations shown in the table are withdrawn from that person's row menu.",
+        "emailLabel": "Email address",
+        "emailPlaceholder": "e.g. anna@example.com",
+        "consequence": "The invitation link stops working. Their account in their current organization is left as it is. This cannot be undone, but you can invite them again.",
+        "confirm": "Withdraw invitation",
+        "success": "If an invitation to this organization was pending for {{email}}, it has been withdrawn.",
+        "error": "Could not withdraw the invitation"
+      }
+    },
+    "notificationPrefs": {
+      "title": "Notifications",
+      "description": "Choose which notifications you want to receive and on which channels.",
+      "saveSuccess": "Notification settings saved.",
+      "loadError": "Failed to load notification settings.",
+      "channels": {
+        "inApp": "In-app",
+        "digest": "Email digest"
+      },
+      "categories": {
+        "WORKSPACE_CREATED": {
+          "label": "New workspace",
+          "description": "When a new workspace is added."
+        },
+        "ADMIN_ACTIONS": {
+          "label": "Admin actions",
+          "description": "Role changes and user account removals."
+        }
+      }
+    },
+    "sessions": {
+      "title": "Active sessions",
+      "description": "Devices this account is currently signed in on.",
+      "thisDevice": "This device",
+      "signedIn": "Signed in {{date}}",
+      "lastActive": "Last active {{date}}",
+      "revoke": "Sign out",
+      "revokeAccessible": "Sign out session: {{device}} ({{ip}})",
+      "revokedToast": "The session has been signed out",
+      "revokeFailed": "Could not sign out the session",
+      "revokeOthers": "Sign out other sessions",
+      "revokeOthersTitle": "Sign out other sessions?",
+      "revokeOthersDescription": "All other devices will be signed out immediately. This session stays active.",
+      "revokeOthersConfirm": "Sign out others",
+      "revokedOthersToast": "Other sessions have been signed out",
+      "revokeOthersFailed": "Could not sign out other sessions",
+      "loadFailed": "Could not load the session list",
+      "empty": "No active sessions",
+      "unknownDevice": "Unknown device",
+      "desktopApp": "SaaS Starter desktop app"
+    }
+  },
+  "errors": {
+    "VALIDATION_ERROR": "Some of the details are invalid. Fix the form and try again.",
+    "NOT_FOUND": "We could not find what you were looking for.",
+    "ALREADY_EXISTS": "That entry already exists.",
+    "RATE_LIMITED": "Too many attempts. Wait a moment and try again.",
+    "UNAUTHORIZED": "Sign in to perform this action.",
+    "FORBIDDEN": "You do not have permission to perform this action.",
+    "INTERNAL_ERROR": "Something went wrong on our side. Please try again shortly.",
+    "CONFLICT": "The data changed in the meantime. Reload the view and try again.",
+    "PAYLOAD_TOO_LARGE": "The data you are sending is too large. Reduce its size and try again.",
+    "ACCOUNT_LOCKED": "This account is temporarily locked after too many failed sign-in attempts.",
+    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "EMAIL_NOT_VERIFIED": "Confirm your email address before signing in.",
+    "INVALID_TOKEN": "This link is invalid or has already been used.",
+    "TOKEN_EXPIRED": "This link has expired. Request a new one.",
+    "DISPOSABLE_EMAIL": "Disposable email addresses are not supported. Use a permanent address.",
+    "TURNSTILE_FAILED": "The security check failed. Reload the page and try again.",
+    "CSRF_FAILED": "Your session expired mid-request. Reload the page and try again.",
+    "SESSION_EXPIRED": "Your session has expired. Please sign in again.",
+    "EMAIL_IN_USE": "That email address is already taken.",
+    "PASSWORD_NOT_SET": "This account does not have a password set. Set one via password reset to continue.",
+    "TWO_FACTOR_INVALID_CODE": "That two-factor code is not valid.",
+    "TWO_FACTOR_CHALLENGE_EXPIRED": "The two-factor challenge expired. Start signing in again.",
+    "TWO_FACTOR_ENROLLMENT_REQUIRED": "Your organization requires two-factor authentication. Set it up to continue."
+  }
+}

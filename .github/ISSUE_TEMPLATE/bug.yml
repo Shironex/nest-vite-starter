@@ -1,0 +1,46 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+labels: ['bug']
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: One-line summary
+      placeholder: 'Login submits twice when Enter is pressed in the password field'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - apps/api
+        - apps/web
+        - apps/desktop
+        - packages/ui
+        - packages/database
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Be specific. Exact route, inputs, and environment.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error output
+      render: shell

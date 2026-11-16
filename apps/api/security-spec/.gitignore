@@ -1,0 +1,3 @@
+# JUnit output from `pnpm --filter @repo/api test:security`, reconciled against
+# findings.json by tools/quality/check-security-manifest.ts and never committed.
+.junit/

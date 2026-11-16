@@ -1,0 +1,123 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "globalEnv": [
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD",
+    "ALLOW_PRODUCTION_SEED",
+    "API_URL",
+    "APP_TIME_ZONE",
+    "APP_URL",
+    "APP_VERSION",
+    "CI",
+    "CORS_ORIGINS",
+    "CRASH_REPORTER_URL",
+    "DATABASE_URL",
+    "DEV",
+    "ENCRYPTION_KEY",
+    "LOAD_USERS",
+    "LOAD_USER_PASSWORD",
+    "MEMBER_EMAIL",
+    "MEMBER_PASSWORD",
+    "MODE",
+    "NODE_ENV",
+    "OTEL_EXPORTER_OTLP_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_PROTOCOL",
+    "OTEL_SERVICE_NAME",
+    "REDIS_URL",
+    "SEED_2FA_POLICY",
+    "SEED_DEV_ALLOW_REMOTE",
+    "SEED_DEV_CONFIRM_DATABASE",
+    "SENTRY_DSN",
+    "SENTRY_ENVIRONMENT",
+    "TZ",
+    "npm_package_version"
+  ],
+  "globalPassThroughEnv": ["HOME", "LOGNAME", "USER", "USERNAME", "USERPROFILE"],
+  "tasks": {
+    "db:generate": {
+      "cache": false,
+      "inputs": ["packages/database/prisma/schema/**/*.prisma"],
+      "env": ["DATABASE_URL"]
+    },
+    "@repo/api#generate:trpc": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "inputs": ["src/**/*.ts", "!src/@generated/**"],
+      "outputs": ["src/@generated/**"]
+    },
+    "build": {
+      "dependsOn": ["^build", "db:generate"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", "!dist/cache/**"]
+    },
+    "@repo/api#build": {
+      "dependsOn": ["^build", "db:generate", "@repo/api#generate:trpc"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", "!dist/cache/**"]
+    },
+    "@repo/web#build": {
+      "dependsOn": ["^build", "@repo/api#generate:trpc"],
+      "env": ["VITE_SENTRY_DSN", "VITE_TURNSTILE_SITE_KEY"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**"]
+    },
+    "@repo/web#check-types": {
+      "dependsOn": ["^build", "@repo/api#generate:trpc"]
+    },
+    "@repo/api#check-types": {
+      "dependsOn": ["^build", "@repo/api#generate:trpc"]
+    },
+    "@repo/web#size:check": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "@repo/web#lighthouse": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "@repo/web#lint": {
+      "dependsOn": ["^build", "@repo/api#generate:trpc"]
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": ["PORT", "VITE_API_PROXY_TARGET"]
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "@repo/eslint-plugin-repo#lint": {
+      "dependsOn": ["^build", "build"]
+    },
+    "lint:fast": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "@repo/web#lint:fast": {
+      "dependsOn": ["^build", "@repo/api#generate:trpc"],
+      "cache": false
+    },
+    "check-types": {
+      "dependsOn": ["^build", "//#check-types:tools"]
+    },
+    "//#check-types:tools": {
+      "inputs": [
+        "tools/**/*.ts",
+        "tools/tsconfig.json",
+        "packages/eslint-plugin-repo/src/**/*.ts",
+        "packages/tsconfig/base.json"
+      ]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "env": ["PLAYWRIGHT_BASE_URL", "MAILPIT_URL"]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+<!doctype html>
+<!-- English, because the only catalog is. `lang` decides which voice a
+     screen reader reads the page in, how the text hyphenates, and how Firefox
+     formats a native date input. See lib/i18n for adding a language. -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SaaS Starter</title>
+    <!-- Sync theme bootstrapper. External so a strict CSP (script-src 'self')
+         doesn't have to permit 'unsafe-inline'. -->
+    <script src="/theme-boot.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

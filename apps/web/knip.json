@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "include": ["files", "dependencies", "unlisted"],
+  "entry": [
+    "eslint.config.js",
+    "src/types/*.d.ts",
+    "e2e/**/*.spec.ts",
+    "e2e/**/*.setup.ts",
+    "src/**/*.{test,spec}.{ts,tsx}",
+    "src/**/*.stories.tsx"
+  ],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": [
+    "src/features/auth/components/FormError/FormError.hooks.ts",
+    "src/features/auth/components/FormSuccess/FormSuccess.hooks.ts",
+    "src/features/landing/components/LandingPage/LandingPage.hooks.ts",
+    "src/features/workspace/components/WorkspaceSelect/index.ts"
+  ],
+  "ignoreDependencies": ["tailwindcss", "tw-animate-css", "@fontsource-variable/geist"]
+}

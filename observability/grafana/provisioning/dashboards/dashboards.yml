@@ -1,0 +1,17 @@
+apiVersion: 1
+
+providers:
+  - name: default
+    orgId: 1
+    folder: ''
+    folderUid: ''
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 30
+    # allowUiUpdates: false keeps dashboards in sync with the provisioning files.
+    # Operators who want to edit dashboards in the UI should export the JSON and
+    # commit it back here, that is the intended workflow.
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

@@ -1,0 +1,110 @@
+groups:
+  - name: api
+    interval: 30s
+    rules:
+      # High 5xx error rate on the API
+      - alert: ApiHighErrorRate
+        expr: |
+          (
+            sum(rate(http_request_duration_seconds_count{service="api",status_class="5xx"}[5m]))
+            /
+            sum(rate(http_request_duration_seconds_count{service="api"}[5m]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'API 5xx error rate above 5%'
+          description: '{{ $value | humanizePercentage }} of requests are returning 5xx over the last 5 min.'
+
+      # P99 latency above 2s (tRPC procedures)
+      - alert: ApiHighP99Latency
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le, procedure) (
+              rate(trpc_procedure_duration_seconds_bucket[5m])
+            )
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'tRPC P99 latency above 2s'
+          description: 'procedure={{ $labels.procedure }} p99={{ $value | humanizeDuration }}'
+
+      # Node.js event-loop lag > 100ms
+      - alert: ApiEventLoopLag
+        expr: nodejs_eventloop_lag_seconds > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Node.js event-loop lag above 100ms'
+          description: 'Current lag: {{ $value | humanizeDuration }}'
+
+      # Heap usage above 80% of the 1 GiB container limit
+      - alert: ApiHeapNearLimit
+        expr: |
+          nodejs_heap_size_used_bytes / nodejs_heap_size_total_bytes > 0.80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Node.js heap usage above 80%'
+          description: 'Heap used: {{ $value | humanizePercentage }} of allocated heap.'
+
+      # Audit-log writes failing (silent audit-trail loss: AuditService swallows them)
+      - alert: AuditWriteFailures
+        expr: increase(audit_write_failures_total[15m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Audit-log writes are failing'
+          description: '{{ $value }} audit-log write(s) failed and were swallowed over the last 15 min.'
+
+      # Emails being lost (enqueue failed at the producer, or the worker exhausted retries)
+      - alert: MailSendFailures
+        expr: increase(mail_send_failures_total[15m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Emails are being lost'
+          description: 'template={{ $labels.template }} lost {{ $value }} email(s) over the last 15 min (enqueue failure or retries exhausted).'
+
+      # Jobs sitting in a queue's failed set (the DLQ) need operator attention
+      - alert: EmailQueueDLQNonEmpty
+        expr: max_over_time(queue_jobs_failed[10m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Queue has failed (DLQ) jobs'
+          description: 'queue={{ $labels.queue }} holds {{ $value }} failed job(s).'
+
+  - name: targets
+    interval: 30s
+    rules:
+      # Scrape target unreachable (one generic rule covers every scrape job)
+      - alert: TargetDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Prometheus scrape target down'
+          description: 'job={{ $labels.job }} instance={{ $labels.instance }} has been unreachable for 2 min.'
+
+  - name: postgres
+    interval: 30s
+    rules:
+      # Postgres connection pool nearing exhaustion (postgres-exporter)
+      - alert: PostgresConnectionPoolExhausted
+        expr: |
+          pg_stat_database_numbackends
+          /
+          pg_settings_max_connections > 0.85
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Postgres connection pool above 85%'
+          description: '{{ $value | humanizePercentage }} of max_connections in use.'

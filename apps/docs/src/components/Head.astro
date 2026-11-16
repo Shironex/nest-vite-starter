@@ -1,0 +1,75 @@
+---
+import Default from '@astrojs/starlight/components/Head.astro';
+// SaaS Starter type system: Bricolage Grotesque (display), Instrument Sans (UI/body),
+// Spline Sans Mono (code). Self-hosted variable fonts, no external requests.
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource-variable/instrument-sans';
+import '@fontsource-variable/spline-sans-mono';
+---
+
+<Default />
+
+<script>
+  function decodeSource(encoded: string): string {
+    const binary = window.atob(encoded);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+
+  function activeTheme(): 'dark' | 'default' {
+    return document.documentElement.dataset.theme === 'light' ? 'default' : 'dark';
+  }
+
+  let counter = 0;
+
+  async function renderDiagrams(): Promise<void> {
+    const blocks = Array.from(
+      document.querySelectorAll<HTMLElement>('pre.mermaid[data-mermaid]'),
+    );
+    if (blocks.length === 0) return;
+
+    // Loaded on demand so pages without diagrams never pay for the (large)
+    // Mermaid bundle.
+    const { default: mermaid } = await import('mermaid');
+
+    // Mermaid 12 lays diagrams out with ELK and draws them in the `neo` look
+    // unless told otherwise. The docs' diagrams were written against dagre and
+    // `classic`, so both are pinned rather than letting every page re-flow.
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'loose',
+      theme: activeTheme(),
+      layout: 'dagre',
+      look: 'classic',
+      fontFamily: 'inherit',
+    });
+
+    for (const block of blocks) {
+      const source = decodeSource(block.dataset.mermaid ?? '');
+      try {
+        const { svg } = await mermaid.render(`mermaid-diagram-${counter++}`, source);
+        block.innerHTML = svg;
+      } catch (error) {
+        block.innerHTML = `<code>Failed to render diagram: ${String(error)}</code>`;
+      }
+    }
+  }
+
+  function schedule(): void {
+    void renderDiagrams();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', schedule, { once: true });
+  } else {
+    schedule();
+  }
+
+  // Re-render when the reader toggles light/dark so diagram colors follow the
+  // page theme (Starlight stores it on <html data-theme>).
+  new MutationObserver((mutations) => {
+    if (mutations.some((mutation) => mutation.attributeName === 'data-theme')) {
+      schedule();
+    }
+  }).observe(document.documentElement, { attributes: true });
+</script>
