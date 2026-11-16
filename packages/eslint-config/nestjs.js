@@ -3,11 +3,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import repoPlugin, {
-  HAND_SCOPED_MODELS,
   SOFT_DELETE_ALLOW_IN_FUNCTIONS,
   SOFT_DELETE_MODELS,
-  TENANT_MODELS,
-  TENANT_WHERE_ALLOW_IN,
 } from '@repo/eslint-plugin-repo';
 import architecture from '@noctcore/eslint-plugin-architecture';
 import codeQuality from '@noctcore/eslint-plugin-code-quality';
@@ -31,25 +28,13 @@ const NO_BARE_DATE_NOW_ALLOW_IN = [
 // the receiver the two transaction rules treat as "the outer client".
 const PRISMA_CLIENT_PROPERTIES = ['client'];
 
-// Seeds, migrations and the isolation lane: the files that legitimately work
-// below the tenant boundary. Every allowlist below starts from these.
+// Seeds, migrations and the integration lane: the files that legitimately work
+// with raw rows. Every allowlist below starts from these.
 const SEED_AND_MIGRATION_FILES = [
   '**/prisma/seed.ts',
   '**/*.seed.ts',
   '**/prisma/migrations/**',
   '**/*.isolation.spec.ts',
-];
-
-// Files allowed to touch the `unscoped` Prisma client (or call
-// `runWithoutTenantScope`). Each is a system path with no single tenant: the
-// PrismaService that builds the client, the cross-tenant iterator every sweep
-// goes through, and any resolver that
-// authenticates by token before a tenant exists. Exact files, never a directory
-// glob.
-const UNSCOPED_CLIENT_ALLOW_IN = [
-  ...SEED_AND_MIGRATION_FILES,
-  '**/common/database/prisma.service.ts',
-  '**/common/tenancy/cross-tenant-iterator.ts',
 ];
 
 // Where `restrict-model-writes` reads the schema to derive the relation fields
@@ -313,15 +298,11 @@ export const config = [
         'error',
         { clientProperties: PRISMA_CLIENT_PROPERTIES },
       ],
-      'noctcore-prisma/no-cross-tenant-id-in-where': ['error', { tenantModels: TENANT_MODELS }],
-      'noctcore-prisma/no-unscoped-prisma-outside-allowlist': [
-        'error',
-        { allowedFiles: UNSCOPED_CLIENT_ALLOW_IN, escapeHatchFns: ['runWithoutTenantScope'] },
-      ],
-      // Raw SQL is the third escape hatch: a raw query has no model, so the
-      // tenant-scope extension passes it through unscoped. A tagged template
-      // that names no table (the probes, the advisory locks) passes; anything
-      // that can touch a table needs a reviewed allowlist entry.
+      // Raw SQL is the escape hatch: a raw query has no model, so every
+      // model-level guard (soft-delete filters, select allowlists) passes it
+      // by. A tagged template that names no table (the probes, the advisory
+      // locks) passes; anything that can touch a table needs a reviewed
+      // allowlist entry.
       'noctcore-prisma/no-raw-sql-outside-allowlist': [
         'error',
         { allowedFiles: SEED_AND_MIGRATION_FILES },
@@ -337,26 +318,9 @@ export const config = [
       // zod-parsed value, which is the fix the rule asks for. Measured 0 hits
       // when wired.
       'noctcore-prisma/no-request-body-in-write': 'error',
-      // `handScopedModels` comes from the plugin's tenant registry rather than
-      // from a list here: it is the enforcement half of UNSCOPED_BY_DESIGN, and
-      // `tenant-model-registry-parity` reads the same module, so the exemption
-      // and its required scope columns cannot drift apart.
-      'noctcore-prisma/tenant-scoped-tables-require-where': [
-        'error',
-        {
-          tenantModels: TENANT_MODELS,
-          handScopedModels: HAND_SCOPED_MODELS,
-          allowIn: TENANT_WHERE_ALLOW_IN,
-        },
-      ],
-      'noctcore-prisma/tenant-write-must-carry-tenant-id': [
-        'error',
-        { tenantModels: TENANT_MODELS },
-      ],
-      // Soft delete has no runtime enforcement layer at all. The tenant boundary
-      // has a Prisma `$extends` extension injecting its column, so the lint is a
-      // second line; `deletedAt` has only the `BaseRepository.notDeleted`
-      // convention, so this lint IS the line. A read that forgets it returns
+      // Soft delete has no runtime enforcement layer at all: `deletedAt` has
+      // only the `BaseRepository.notDeleted` convention, so this lint IS the
+      // line. A read that forgets it returns
       // deleted rows and a bulk write that forgets it mutates them, and both
       // type-check and pass their tests.
       'noctcore-prisma/soft-deletable-tables-require-deleted-at': [

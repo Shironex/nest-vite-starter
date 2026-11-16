@@ -49,6 +49,10 @@ const NOT_ADOPTED = {
   'noctcore-react/max-hook-return-surface': 'Not reviewed. 9 hits, all in apps/web.',
   'noctcore-react/max-props-per-component': 'Not reviewed. 4 hits (ui 3, web 1).',
   'noctcore-react/no-prop-drilling': 'Not reviewed. 1 hit, in apps/web.',
+  'noctcore-prisma/no-cross-tenant-id-in-where':
+    'Moot: the app is single-user and its schema has no tenant column, so there is no tenant id to cross.',
+  'noctcore-prisma/no-unscoped-prisma-outside-allowlist':
+    'Moot: there is no tenant-scoped client any more, so PrismaService exposes one client and there is no unscoped twin to fence.',
 };
 
 const EXPORTED_CONFIGS = [baseConfig, reactConfig, reactArchitectureConfig, nestjsConfig];

@@ -24,15 +24,7 @@ plugin.configs.recommended = {
   rules: recommendedRules,
 };
 
-export {
-  HAND_SCOPED_MODELS,
-  HAND_SCOPE_PENDING,
-  SOFT_DELETE_ALLOW_IN_FUNCTIONS,
-  SOFT_DELETE_MODELS,
-  TENANT_MODELS,
-  TENANT_WHERE_ALLOW_IN,
-  UNSCOPED_BY_DESIGN,
-} from './utils/tenant-registry';
+export { SOFT_DELETE_ALLOW_IN_FUNCTIONS, SOFT_DELETE_MODELS } from './utils/soft-delete-registry';
 export { rules };
 export const configs = plugin.configs;
 export default plugin;

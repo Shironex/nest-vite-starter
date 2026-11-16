@@ -81,9 +81,9 @@ await queryClient.invalidateQueries({
     },
     {
       // Receiver is matched by method name, so an imported client is covered.
-      code: 'sharedQueryClient.invalidateQueries({ queryKey: trpc.workspaces.list.queryKey() });',
+      code: 'sharedQueryClient.invalidateQueries({ queryKey: trpc.sessions.list.queryKey() });',
       errors: [{ messageId: 'usePathKey' }],
-      output: 'sharedQueryClient.invalidateQueries({ queryKey: trpc.workspaces.list.pathKey() });',
+      output: 'sharedQueryClient.invalidateQueries({ queryKey: trpc.sessions.list.pathKey() });',
     },
     {
       // Inside Promise.all, the shape the mutation files use.

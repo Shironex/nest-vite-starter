@@ -5,11 +5,11 @@ import { ruleTester } from './rule-tester.js';
  * Wiring check for @noctcore/eslint-plugin-architecture/no-cross-feature-imports
  * as enabled through @repo/eslint-config/react-architecture. Options mirror
  * react-architecture.js (`featureRoot: 'src/features'`, `alias: '@/features'`,
- * `sharedFeatures: ['shared', 'workspace']`). Also pins the superset behavior the deleted
+ * `sharedFeatures: ['shared']`). Also pins the superset behavior the deleted
  * local rule lacked: `export ... from` re-export laundering is now caught.
  */
 const crossFeatureOptions = [
-  { featureRoot: 'src/features', alias: '@/features', sharedFeatures: ['shared', 'workspace'] },
+  { featureRoot: 'src/features', alias: '@/features', sharedFeatures: ['shared'] },
 ];
 
 const currentFile = '/repo/apps/web/src/features/billing/components/Invoice/Invoice.tsx';
@@ -28,12 +28,6 @@ ruleTester.run('no-cross-feature-imports', architecture.rules['no-cross-feature-
       filename: currentFile,
       options: crossFeatureOptions,
     },
-    // The platform Workspace feature, importable from any domain feature.
-    {
-      code: "import { WorkspaceSelect } from '@/features/workspace/components/WorkspaceSelect';",
-      filename: currentFile,
-      options: crossFeatureOptions,
-    },
     // Type-only imports are allowed by default.
     {
       code: "import type { Client } from '@/features/clients';",
@@ -42,11 +36,10 @@ ruleTester.run('no-cross-feature-imports', architecture.rules['no-cross-feature-
     },
   ],
   invalid: [
-    // Platform, not a free-for-all: `workspace` may not reach into a domain feature.
+    // Shared, not a free-for-all: `shared` may not reach into a domain feature.
     {
       code: "import { InvoiceForm } from '@/features/billing/components/InvoiceForm';",
-      filename:
-        '/repo/apps/web/src/features/workspace/components/WorkspaceSelect/WorkspaceSelect.tsx',
+      filename: '/repo/apps/web/src/features/shared/components/Picker/Picker.tsx',
       options: crossFeatureOptions,
       errors: [{ messageId: 'crossFeatureImport' }],
     },

@@ -62,7 +62,7 @@ describe('restrict-model-writes: every single-writer fence is wired', () => {
 /*
  * THE METHOD-SET DRIFT GATE. The published method lists are hand-written, so
  * they can fall behind the client: Prisma adds a method and it is invisible to
- * every tenant fence, every single-writer fence and both transaction rules at
+ * the soft-delete rule, every single-writer fence and both transaction rules at
  * once. The generated `<Model>Delegate` interface is the client's real method
  * surface. `generated/` is gitignored and produced by `db:generate`; a missing
  * client fails LOUDLY here rather than skipping.
@@ -104,7 +104,8 @@ describe('prisma method surface', () => {
       existsSync(GENERATED_MODELS_DIR),
       `No generated Prisma client at ${GENERATED_MODELS_DIR}. Run \`pnpm --filter @repo/database db:generate\`.`,
     ).toBe(true);
-    expect(readGeneratedDelegates().length).toBeGreaterThan(5);
+    // AuditLog, SecondFactor, Token and User today.
+    expect(readGeneratedDelegates().length).toBeGreaterThanOrEqual(4);
   });
 
   it('every model delegate exposes the same method surface', () => {

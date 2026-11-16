@@ -80,10 +80,7 @@ export const config = [
         {
           featureRoot: 'src/features',
           alias: '@/features',
-          // `workspace` is the platform Organization -> Workspace tier: the Workspace picker and
-          // dialog every domain feature mounts. Importable like `shared`; the
-          // rule still keeps it from importing any domain feature back.
-          sharedFeatures: ['shared', 'workspace'],
+          sharedFeatures: ['shared'],
         },
       ],
       'noctcore-react/max-hooks-per-file': ['error', { fileSuffixes: HOOK_BUCKET_SUFFIXES }],
