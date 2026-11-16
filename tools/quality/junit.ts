@@ -4,7 +4,7 @@
  * Deliberately small and dependency-free: the reconciler needs four facts per
  * case (which suite file, which name, what happened, and what was said about
  * it), and the document it reads is one this repo produces, with a shape pinned
- * by `apps/api/jest.security.config.js`. A general XML parser would be a new
+ * by the jest-junit options in `apps/api/jest.config.js`. A general XML parser would be a new
  * dependency in the one place that is supposed to be boring.
  *
  * It is strict where being wrong would be silent: an `<error>` is reported as

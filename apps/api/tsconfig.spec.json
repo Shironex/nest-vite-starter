@@ -7,6 +7,6 @@
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/.cache/tsc/spec.tsbuildinfo"
   },
-  "include": ["src", "test", "security-spec"],
+  "include": ["src", "test"],
   "exclude": ["node_modules", "dist"]
 }

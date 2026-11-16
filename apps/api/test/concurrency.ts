@@ -8,8 +8,7 @@
  * transaction and so could not observe waiting at all. These two primitives
  * make the overlap a fact of the test instead of a timing accident.
  *
- * They live here, next to the fixtures, so the ordinary suite can use them too;
- * `security-spec/harness.ts` re-exports them for the security lane.
+ * They live here, next to the fixtures, so any suite can use them.
  */
 
 /**

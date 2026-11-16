@@ -24,7 +24,6 @@
     "generate:trpc": "nestjs-trpc generate",
     "test": "jest",
     "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.integration.config.js",
-    "test:security": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.security.config.js",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:cov:check": "jest --coverage && node ../../scripts/check-coverage.mjs ./coverage/coverage-summary.json --lines 85 --functions 82",

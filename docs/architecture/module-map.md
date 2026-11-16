@@ -25,7 +25,7 @@ the backend vocabulary and why the module boundaries fall where they do, and
 | `data-export` | GDPR account export: gathers everything the api holds about one account into an archive. | 3     | 3       | 0      |
 | `health`      | Liveness and readiness probes for the container platform.                                | 5     | 0       | 0      |
 | `logger`      | Structured logging and request-scoped log context.                                       | 3     | 0       | 2      |
-| `mail`        | Transactional email: templates, the queue and the provider adapter.                      | 12    | 0       | 1      |
+| `mail`        | Transactional email: templates, the queue and the provider adapter.                      | 13    | 0       | 1      |
 | `user`        | The account lifecycle: profile, roles, disabling, deletion and the purge sweep.          | 5     | 2       | 2      |
 
 ### Cross-directory edges in `apps/api/src/modules`

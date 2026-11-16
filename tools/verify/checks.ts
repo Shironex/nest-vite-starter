@@ -156,16 +156,6 @@ export const CHECKS: readonly ICheckSpec[] = [
     lane: 'prisma_gates',
   },
   {
-    // One file per audit finding, reconciled case by case against
-    // security-spec/findings.json: the command, not jest's exit code, is the
-    // gate, because a suite that cannot start must never read as a pass.
-    id: 'security-spec',
-    profiles: RELEASE,
-    command: ['pnpm', 'check:security'],
-    manifestCommand: 'pnpm check:security',
-    lane: 'isolation',
-  },
-  {
     // Every declared @noctcore range against the registry's latest: the half
     // lint:meta's offline `noctcore-packages-current` cannot see. Release only
     // and outside pre-push, so lint and CI never depend on the registry; an

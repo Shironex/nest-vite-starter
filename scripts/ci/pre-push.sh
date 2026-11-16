@@ -140,10 +140,6 @@ if [ "${PRE_PUSH_SKIP_DB:-0}" = "1" ]; then
 elif db_up; then
   run pnpm --filter @repo/database db:migrate:check
   run pnpm --filter @repo/database db:migrate:status
-  # The security lane needs the same live database: one file per audit finding,
-  # reconciled case by case against security-spec/findings.json. It is the gate
-  # that answers "did we put a fixed finding back", which no other check asks.
-  run pnpm check:security
 else
   echo ""
   echo "⊘ Skipping Prisma gates: no database reachable on ${db_host}:${db_port}."

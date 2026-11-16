@@ -39,7 +39,7 @@ const config = {
    * (tools/verify/inventories/). Every run leaves a case list behind, so
    * `pnpm verify:inventory` can see a test that was deleted, skipped or
    * duplicated in a suite that still exits 0. The templates match the ones
-   * jest.security.config.js uses, so `{file, name}` reads the same across both
+   * jest.config.js uses, so `{file, name}` reads the same across both
    * jest lanes; `.agent-state/` is gitignored.
    */
   reporters: [

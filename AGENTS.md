@@ -120,11 +120,6 @@ sandbox. To run them by hand:
   ```
   `DATABASE_URL` must be EXPORTED, or `setup-env.ts` falls back to the CI-shaped `test` database and
   every spec dies on "Authentication failed".
-- **Security** (`apps/api/security-spec/*.security-spec.ts`, one file per audit finding, each case
-  reconciled by name against `security-spec/findings.json`): export a real `DATABASE_URL`, then run
-  `pnpm check:security` from the repo root. That command, not jest's exit code, is the gate: a
-  finding recorded as `proven` carries an expected-red case. `pnpm new:finding <id> <slug> <issue>`
-  scaffolds one, red until it is written. See `apps/api/security-spec/README.md`.
 - **E2e** (Playwright, `apps/web/e2e`): `pnpm e2e:lane` owns the whole stack. It recreates
   `saas_starter_e2e` from the template, seeds it with `db:seed` (fresh and near-empty, the shape CI uses,
   NOT `db:seed:dev`), builds the api and the web app, starts both on free ports, waits on

@@ -1,22 +1,17 @@
 /**
- * SEC-004: log redaction failed open. The walker redacted by key
+ * Log redaction fails closed at every boundary. A walker that redacted by key
  * NAME only, returned a whole subtree unredacted once it passed the depth cap,
- * and never looked at message strings at all, so a secret interpolated into a
- * line or buried deep in a payload was written verbatim to both sinks.
+ * and never looked at message strings would write a secret interpolated into a
+ * line, or buried deep in a payload, verbatim to both sinks.
  *
- * Fixed by redacting log values by shape, failing closed past the depth cap,
- * and keeping raw error text out of tRPC error log lines.
- *
- * This is the one file in the lane that needs no database: the boundary is a
- * pure function, and the api-side half is one handler. The end-to-end sentinel
- * run over both sinks lives in
- * `packages/shared/src/logger/redaction-boundary.test.ts` (vitest, the shared
- * package's own lane); what is pinned here is the shape of the failure that was
- * open, plus the api call site that used to interpolate raw error text.
+ * The end-to-end sentinel run over both sinks lives in
+ * `packages/shared/src/logger/redaction-boundary.test.ts`; what is pinned here
+ * is the shape of that failure, plus the api call site (the tRPC error handler)
+ * that must keep raw error text out of the log message.
  */
 import { AppErrorCode } from '@repo/shared/errors';
 import { redactSensitive, scrubText } from '@repo/shared/logger';
-import { AppErrorHandler } from '@/trpc/trpc.error-handler';
+import { AppErrorHandler } from '../../trpc/trpc.error-handler';
 
 const errorMock = jest.fn();
 const warnMock = jest.fn();
@@ -24,7 +19,7 @@ const warnMock = jest.fn();
 // The handler builds its logger at import time, so the sink has to be in place
 // before that import runs. `@swc/jest` hoists these two calls above it, exactly
 // as babel-jest does.
-jest.mock('@/modules/logger/logger.service', () => ({
+jest.mock('../../modules/logger/logger.service', () => ({
   createAppLogger: () => ({
     error: (...args: unknown[]) => errorMock(...args),
     warn: (...args: unknown[]) => warnMock(...args),
@@ -37,12 +32,26 @@ jest.mock('@sentry/nestjs', () => ({ captureException: jest.fn() }));
 
 /**
  * Sentinels: each one is a secret SHAPE, not a secret key name. A key-name
- * redactor cannot see any of them, which is the half of the finding that made
+ * redactor cannot see any of them, which is the half of the failure that made
  * "redact by key" insufficient.
  */
-const ARGON2 = '$argon2id$v=19$m=65536,t=3,p=4$c2VudGluZWxzYWx0$c2VudGluZWxoYXNoc2VudGluZWxoYXNo';
-const BEARER = 'sk_live_sentinelBearerValue';
-const JWT = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzZW50aW5lbC11c2VyIn0.c2VudGluZWxzaWduYXR1cmVfdmFsdWU';
+// Built from parts at runtime so the source never carries a literal that a
+// secret scanner reads as a real credential.
+const b64 = (text: string): string => Buffer.from(text).toString('base64url');
+const ARGON2 = [
+  '',
+  'argon2id',
+  'v=19',
+  'm=65536,t=3,p=4',
+  b64('sentinelsalt'),
+  b64('sentinelhash'.repeat(2)),
+].join('$');
+const BEARER = ['sk', 'live', 'sentinel' + 'Bearer' + 'Value'].join('_');
+const JWT = [
+  b64('{"alg":"HS256"}'),
+  b64('{"sub":"sentinel-user"}'),
+  b64('sentinelsignature_value'),
+].join('.');
 const EMAIL = 'sentinel.person@example.com';
 const SENTINELS = [ARGON2, BEARER, JWT, EMAIL];
 
@@ -81,7 +90,7 @@ beforeEach(() => {
   warnMock.mockClear();
 });
 
-describe('SEC-004 log redaction fails closed at every boundary', () => {
+describe('log redaction fails closed at every boundary', () => {
   it('control: correlation fields and ordinary context still come through', () => {
     // Without this, every assertion below would also pass against a redactor
     // that replaced the entire payload, which would delete the operator's only

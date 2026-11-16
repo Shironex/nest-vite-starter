@@ -44,8 +44,8 @@ regexes = [
   # (literal "test-csrf-secret..."), never used by the real CSRF flow. Exact
   # value, so a real secret of the same shape still fails the scan.
   '''test-csrf-secret-test-csrf-secret-0123456789''',
-  # Synthetic password-hash placeholder in the purge specs (for example
-  # apps/api/security-spec/fixtures.ts). A literal stand-in for an argon2id digest on a fixture row, flagged only because it
+  # Synthetic password-hash placeholder in the purge specs. A literal stand-in
+  # for an argon2id digest on a fixture row, flagged only because it
   # sits next to `passwordHash`. Not a hash of anything. Exact value, so a real
   # digest still fails.
   '''argon2-existing''',

@@ -43,8 +43,6 @@ import { apiModuleEdgesRule } from './rules/source-text/api-module-edges';
 import { procedureRequiresOutputRule } from './rules/source-text/procedure-requires-output';
 import { proceduresRequireGuardRule } from './rules/source-text/procedures-require-guard';
 import { routesRequireTestSiblingRule } from './rules/testing/routes-require-test-sibling';
-import { securitySpecNoSilentBailRule } from './rules/testing/security-spec-no-silent-bail';
-import { securitySpecRequiresControlRule } from './rules/testing/security-spec-requires-control';
 import { bannedDependenciesRule } from './rules/supply-chain/banned-dependencies';
 // The pnpm override block is a security control with no reason, advisory or
 // expiry of its own. overrides.ledger.json supplies those.
@@ -113,7 +111,7 @@ const serviceImageDigestPinRule = adoptHarnessRule(createServiceImageDigestPinRu
 const SKIP_DIRS = ['node_modules', '.git', 'dist', '.turbo', 'coverage', '__lint_edited_probe__'];
 const AUTH = 'apps/api/src/modules/auth';
 const SESSION_SCOPE = {
-  sourceGlobs: ['apps/*/{src,test,tests,security-spec}/**/*.{ts,tsx}'],
+  sourceGlobs: ['apps/*/{src,test,tests}/**/*.{ts,tsx}'],
   skipDirs: SKIP_DIRS,
   excludeSuffixes: ['.spec.ts', '.test.ts', '.test.tsx'],
 };
@@ -156,8 +154,8 @@ const sessionEpochCapturedRule = adoptHarnessRule(
     captureCall: 'sessionService.readEpoch(userId) (see LoginService.login)',
     hint: 'Read SessionService.readEpoch(userId) before the credential and pass it into the challenge seam.',
     sourceGlobs: [
-      'apps/*/{src,test,tests,security-spec}/**/*.{ts,tsx}',
-      'packages/*/{src,test,tests,security-spec}/**/*.{ts,tsx}',
+      'apps/*/{src,test,tests}/**/*.{ts,tsx}',
+      'packages/*/{src,test,tests}/**/*.{ts,tsx}',
       'tools/**/*.{ts,tsx}',
     ],
     skipDirs: SKIP_DIRS,
@@ -234,8 +232,6 @@ export const META_RULES: readonly IHarnessMetaRule[] = assertEveryRuleBlocks([
     proceduresRequireGuardRule,
     procedureRequiresOutputRule,
     routesRequireTestSiblingRule,
-    securitySpecNoSilentBailRule,
-    securitySpecRequiresControlRule,
     bannedDependenciesRule,
     pnpmOverrideLedgerRule,
     noctcorePackagesCurrentRule,

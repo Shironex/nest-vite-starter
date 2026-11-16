@@ -7,14 +7,7 @@ import type { IExecResult, IMetaContext } from './types';
 export const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx']);
 
 // Per-workspace subdirs holding first-party source worth scanning.
-//
-// `security-spec` is apps/api's third test lane (one file per audit finding,
-// reconciled against findings.json). It sits outside `src` deliberately, and it
-// is exactly the folder where a suppression would do the most damage: a
-// security case that `as any`s its way to green looks identical to one that
-// proves something. Adding it here is what puts it under the forbidden-text
-// rules and, through `isSourceFilePath`, under the Claude Code edit hooks.
-const WORKSPACE_SOURCE_SUBDIRS = ['src', 'test', 'tests', 'security-spec'] as const;
+const WORKSPACE_SOURCE_SUBDIRS = ['src', 'test', 'tests'] as const;
 
 // Monorepo roots that contain workspaces.
 const WORKSPACE_GROUPS = ['apps', 'packages'] as const;
@@ -76,7 +69,7 @@ export function collectSourceFiles(dir: string): string[] {
 
 /*
  * Whether a repo-relative path is WORKSPACE source
- * (`apps|packages/<workspace>/{src,test,tests,security-spec}/**.{ts,tsx}`, minus SKIP_DIRS).
+ * (`apps|packages/<workspace>/{src,test,tests}/**.{ts,tsx}`, minus SKIP_DIRS).
  *
  * This is the editor hooks' scope (scripts/hooks/, documented in CLAUDE.md), a
  * SUBSET of what `buildContext` collects: the hook deliberately stops at the

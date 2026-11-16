@@ -27,24 +27,6 @@ export default [
     },
   },
   {
-    // The security lane (security-spec/**) is test support, not served code, so
-    // it gets the same env allowance apps/api/test/** already has in the shared
-    // config: `harness.ts` reads DATABASE_URL and REDIS_URL to decide whether it
-    // can reach the services at all, and there is no Nest ConfigService in a
-    // jest harness to read them through. The specs themselves are already
-    // covered by the shared `**/*.{spec,test}.ts` allowance; this is for the
-    // harness and fixtures beside them.
-    files: ['security-spec/**/*.ts'],
-    languageOptions: {
-      globals: {
-        ...globals.node,
-      },
-    },
-    rules: {
-      'contracts/no-direct-process-env': 'off',
-    },
-  },
-  {
     files: ['**/*.config.{js,cjs,mjs}', '**/jest.config.js'],
     languageOptions: {
       sourceType: 'commonjs',

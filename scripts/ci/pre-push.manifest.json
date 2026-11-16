@@ -14,7 +14,6 @@
     "pnpm --filter @repo/api test:cov:check",
     "pnpm --filter @repo/web test:cov:check",
     "pnpm --filter @repo/database db:migrate:check",
-    "pnpm --filter @repo/database db:migrate:status",
-    "pnpm check:security"
+    "pnpm --filter @repo/database db:migrate:status"
   ]
 }

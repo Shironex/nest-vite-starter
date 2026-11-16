@@ -44,18 +44,4 @@ export default [
       'noctcore-security/no-user-controlled-fetch-url': 'off',
     },
   },
-  {
-    /*
-     * The two security-lane rule tests carry their fixtures as source STRINGS:
-     * a fixture containing `it.skip(` or `xit(` is the input those rules must
-     * report, not a skipped test in this file. `skipped-tests-need-tracking`
-     * matches text, so it cannot tell the two apart, and an owner marker on a
-     * fixture would say nothing true. Scoped to these files by name; every
-     * other file under tools/ keeps the rule.
-     */
-    files: ['**/security-spec-*.test.ts'],
-    rules: {
-      'code-quality/skipped-tests-need-tracking': 'off',
-    },
-  },
 ];

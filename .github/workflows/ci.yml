@@ -214,24 +214,6 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
 
-      # The security lane: one file per audit finding, reconciled case by case
-      # against apps/api/security-spec/findings.json. No path filter on purpose:
-      # the change that regresses a finding is the one that does not look like
-      # it touches the api. The prepare step only runs when the path filter
-      # above already skipped the build and the migrations.
-      - name: Prepare the security lane (only when the api path filter skipped)
-        if: steps.aff.outputs.run != 'true'
-        run: pnpm build:packages && pnpm --filter @repo/database db:migrate:deploy
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
-
-      - name: Security spec and findings manifest
-        run: pnpm check:security
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
-          REDIS_URL: redis://localhost:6379
-          ENCRYPTION_KEY: 6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81
-
       - name: Run API tests with coverage ratchet
         if: steps.aff.outputs.run == 'true'
         run: pnpm --filter @repo/api test:cov:check

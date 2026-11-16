@@ -11,7 +11,7 @@ rules `turbo lint` and `pnpm lint:meta` already enforce.
 
 - `guard-edit.mjs` (PreToolUse on Edit, Write, MultiEdit) denies an edit that adds a NEW `as any`,
   `@ts-ignore`, `@ts-expect-error`, inline `eslint-disable` or empty `catch {}` in the source files
-  lint-meta scans (`apps|packages/*/{src,test,tests,security-spec}`, `.ts`/`.tsx`, not
+  lint-meta scans (`apps|packages/*/{src,test,tests}`, `.ts`/`.tsx`, not
   generated). A denied edit is not applied: fix the underlying problem and retry; do not reword
   the pattern to slip past it.
   Moving an existing match is fine.

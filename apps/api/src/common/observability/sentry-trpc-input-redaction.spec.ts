@@ -1,21 +1,14 @@
 /**
- * SEC-006: an API error raised while serving the web's batched
- * tRPC GET shipped the procedure inputs to Sentry. The target is
- * `/api/trpc/<procs>?batch=1&input=<JSON of every procedure input>`, and the
- * API scrubber blanked only named OAuth query keys, so `request.url` and
- * `request.query_string` left the process with record ids and free-text
- * search terms (a surname) intact. The web Sentry boundary already denied
- * `input=` and the identifier keys in query form; the API one did not.
+ * No Sentry event may carry a batched tRPC input or an identifier query value.
+ * An API error raised while serving the web's batched tRPC GET has the target
+ * `/api/trpc/<procs>?batch=1&input=<JSON of every procedure input>`, so a
+ * scrubber that blanked only named query keys would ship record ids and
+ * free-text search terms in `request.url` and `request.query_string`.
  *
- * Fixed in `sentry-scrub.ts`, which now denies `input` and
- * the egress identifier keys in query-string form, the same list as the web's
- * `IDENTIFIER_QUERY_KEYS`.
- *
- * Why this lives here and not only in `sentry-scrub.spec.ts`: that spec calls
- * `scrubEvent` directly, so it stays green if `instrument.ts` stops handing the
- * scrubber to `Sentry.init`. This file loads the real `instrument.ts` with a DSN set
- * and drives the `beforeSend` it registered, so it goes red on either break.
- * No database.
+ * `sentry-scrub.spec.ts` calls `scrubEvent` directly, so it stays green if
+ * `instrument.ts` stops handing the scrubber to `Sentry.init`. This file loads
+ * the real `instrument.ts` with a DSN set and drives the `beforeSend` it
+ * registered, so it goes red on either break.
  */
 interface ISentryInitOptions {
   beforeSend?: (event: Record<string, unknown>) => Record<string, unknown> | null;
@@ -27,6 +20,7 @@ jest.mock('@sentry/nestjs', () => ({
   init: jest.fn((options: ISentryInitOptions) => {
     mockSentryInits.push(options);
   }),
+  close: jest.fn(() => Promise.resolve(true)),
   onUnhandledRejectionIntegration: jest.fn(() => ({ name: 'OnUnhandledRejection' })),
 }));
 
@@ -40,10 +34,15 @@ const PROCEDURES = '/api/trpc/user.list,user.get';
 
 let beforeSend: NonNullable<ISentryInitOptions['beforeSend']>;
 
+let onceSpy: jest.SpyInstance;
+
 beforeAll(async () => {
+  // A DSN registers the SIGTERM/SIGINT drain; keep it off the test process.
+  onceSpy = jest.spyOn(process, 'once').mockImplementation(() => process);
+  jest.spyOn(console, 'log').mockImplementation(() => undefined);
   process.env.SENTRY_DSN = 'https://public@sentry.invalid/1';
   // Imported only now: instrument.ts reads the DSN once, at module load.
-  await import('@/instrument');
+  await import('../../instrument');
   const registered = mockSentryInits[0]?.beforeSend;
   if (!registered) throw new Error('instrument.ts did not register a beforeSend with Sentry.init');
   beforeSend = registered;
@@ -51,6 +50,8 @@ beforeAll(async () => {
 
 afterAll(() => {
   delete process.env.SENTRY_DSN;
+  onceSpy.mockRestore();
+  jest.restoreAllMocks();
 });
 
 /** A fresh event per case: the scrubber rewrites in place. */
@@ -72,7 +73,7 @@ function expectNoProcedureInput(event: Record<string, unknown> | null): void {
   }
 }
 
-describe('SEC-006 no Sentry event carries a batched tRPC input or an identifier query value', () => {
+describe('no Sentry event carries a batched tRPC input or an identifier query value', () => {
   it('control: the registered beforeSend keeps the procedure path and the batch flag', () => {
     const event = beforeSend(trpcBatchEvent());
     const request = event?.request as { url: string; query_string: string } | undefined;

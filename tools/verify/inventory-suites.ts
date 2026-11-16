@@ -4,18 +4,13 @@ import type { LaneId } from './lanes';
  * The suites the inventory covers, and the one fact each runner does not agree
  * on: where its JUnit paths are rooted.
  *
- * Every runner here emits JUnit natively (jest through jest-junit, which the
- * security lane already depends on; vitest and Playwright through their built-in
+ * Every runner here emits JUnit natively (jest through jest-junit; vitest and
+ * Playwright through their built-in
  * reporters), so the inventory reads one shape and does not care which produced
  * it. The reporter is wired in each runner's own config rather than appended to
  * a command, because `verify` reaches the unit suites through `turbo test`,
  * which fans out to eight runners at once and cannot carry eight different
  * --outputFile flags.
- *
- * Not listed: the security lane. `apps/api/security-spec` is already reconciled
- * case by case against findings.json by `pnpm check:security`, which is a
- * stricter version of this check, so inventorying it twice would only mean two
- * baselines to keep in step.
  */
 export interface IInventorySuite {
   readonly id: string;
