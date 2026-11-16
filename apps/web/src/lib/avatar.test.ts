@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getInitials, getDownloadUrlFromResult, isHttpUrl } from '@/lib/avatar';
+import { getInitials } from '@/lib/avatar';
 
 describe('getInitials', () => {
   it('returns first letters of first and last name', () => {
@@ -28,55 +28,5 @@ describe('getInitials', () => {
 
   it('handles email starting with a number', () => {
     expect(getInitials(null, '123@example.com')).toBe('12');
-  });
-});
-
-describe('getDownloadUrlFromResult', () => {
-  it('returns the downloadUrl string when present', () => {
-    expect(getDownloadUrlFromResult({ downloadUrl: 'https://example.com/file.png' })).toBe(
-      'https://example.com/file.png',
-    );
-  });
-
-  it('returns undefined for null input', () => {
-    expect(getDownloadUrlFromResult(null)).toBeUndefined();
-  });
-
-  it('returns undefined for non-object input', () => {
-    expect(getDownloadUrlFromResult('string')).toBeUndefined();
-  });
-
-  it('returns undefined when downloadUrl is missing', () => {
-    expect(getDownloadUrlFromResult({ otherKey: 'value' })).toBeUndefined();
-  });
-
-  it('returns undefined when downloadUrl is not a string', () => {
-    expect(getDownloadUrlFromResult({ downloadUrl: 123 })).toBeUndefined();
-  });
-});
-
-describe('isHttpUrl', () => {
-  it('returns true for http URLs', () => {
-    expect(isHttpUrl('http://example.com')).toBe(true);
-  });
-
-  it('returns true for https URLs', () => {
-    expect(isHttpUrl('https://example.com/path?q=1')).toBe(true);
-  });
-
-  it('returns false for ftp URLs', () => {
-    expect(isHttpUrl('ftp://files.example.com')).toBe(false);
-  });
-
-  it('returns false for non-URL strings', () => {
-    expect(isHttpUrl('not-a-url')).toBe(false);
-  });
-
-  it('returns false for empty string', () => {
-    expect(isHttpUrl('')).toBe(false);
-  });
-
-  it('returns false for relative paths', () => {
-    expect(isHttpUrl('/uploads/avatar.png')).toBe(false);
   });
 });

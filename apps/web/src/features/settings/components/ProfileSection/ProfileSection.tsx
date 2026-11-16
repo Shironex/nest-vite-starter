@@ -2,11 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@repo/ui/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui/card';
 import { Badge } from '@repo/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@repo/ui/avatar';
-import { Skeleton } from '@repo/ui/skeleton';
-import { FileUploadZone } from '@/features/shared/components/FileUploadZone';
-import { ALLOWED_IMAGE_ACCEPT } from '@repo/shared/schemas';
-import { MAX_FILE_SIZE } from '@repo/shared/constants';
+import { Avatar, AvatarFallback } from '@repo/ui/avatar';
 import { useProfileSection } from './ProfileSection.hooks';
 
 /** Field label above each read-only value, per the design's 64px field rhythm. */
@@ -19,18 +15,7 @@ export default function ProfileSection() {
 
   if (!view) return null;
 
-  const {
-    displayName,
-    email,
-    role,
-    emailVerified,
-    initials,
-    displayAvatarUrl,
-    avatarLoading,
-    avatarError,
-    onUploadComplete,
-    onUploadError,
-  } = view;
+  const { displayName, email, role, emailVerified, initials } = view;
 
   /*
    * The verified/unverified pair rides the semantic success and warning
@@ -48,31 +33,11 @@ export default function ProfileSection() {
         <CardDescription>{t('settings.profile.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Avatar upload section */}
         <div className="grid gap-2">
           <span className={FIELD_LABEL_CLASS}>{t('settings.profile.avatar')}</span>
-          <div className="flex items-start gap-4">
-            {avatarLoading ? (
-              <Skeleton className="size-16 rounded-full" />
-            ) : (
-              <Avatar size="lg" className="size-16">
-                {/* On lookup failure, skip the image and fall back to initials. */}
-                {displayAvatarUrl && !avatarError ? (
-                  <AvatarImage src={displayAvatarUrl} alt={t('settings.profile.avatarAlt')} />
-                ) : null}
-                <AvatarFallback className="type-heading-h3">{initials}</AvatarFallback>
-              </Avatar>
-            )}
-            <div className="flex-1">
-              <FileUploadZone
-                onUploadComplete={onUploadComplete}
-                onUploadError={onUploadError}
-                accept={ALLOWED_IMAGE_ACCEPT}
-                maxSize={MAX_FILE_SIZE}
-                maxFiles={1}
-              />
-            </div>
-          </div>
+          <Avatar size="lg" className="size-16">
+            <AvatarFallback className="type-heading-h3">{initials}</AvatarFallback>
+          </Avatar>
         </div>
 
         <div className="grid gap-1">

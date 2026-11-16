@@ -177,15 +177,12 @@
         "title": "Profile",
         "description": "Your account information",
         "avatar": "Avatar",
-        "avatarAlt": "Your avatar",
         "email": "Email",
         "verified": "Verified",
         "unverified": "Unverified",
         "displayName": "Display name",
         "notSet": "Not set",
-        "role": "Role",
-        "avatarUpdated": "Avatar updated",
-        "avatarUpdateFailed": "Could not update avatar. Please try again."
+        "role": "Role"
       },
       "password": {
         "title": "Change password",
@@ -316,19 +313,6 @@
         "sessionExpired": "Your login session expired. Please sign in again.",
         "codeIncorrect": "That code was not correct. Check your authenticator and try again."
       }
-    },
-    "upload": {
-      "dropZoneLabel": "Upload an image: drag and drop, or activate to browse",
-      "change": "Change",
-      "dragDrop": "Drag & drop or",
-      "browse": "click to browse",
-      "hint": "Images only, max {{maxSizeMb}} MB",
-      "clear": "Clear",
-      "unsupportedType": "\"{{filename}}\" is not a supported image (PNG, JPEG, WebP, GIF)",
-      "tooLarge": "\"{{filename}}\" exceeds the {{maxSizeMb}} MB limit",
-      "currentAvatar": "Current avatar",
-      "postFailed": "Failed to upload file to storage service",
-      "failed": "Upload failed"
     },
     "time": {
       "justNow": "just now",

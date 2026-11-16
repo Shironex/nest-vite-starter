@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { useAuth } from '@/hooks/use-auth';
-import { useAvatarUrl } from '@/hooks/use-avatar-url';
 import { trpc, resetCsrfToken } from '@/lib/trpc';
 import { getInitials } from '@/lib/avatar';
 import type { IUserMenuView } from './UserMenu.types';
@@ -13,8 +12,6 @@ export function useUserMenu(): IUserMenuView | null {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  // Same hook and query key as the profile card, so both share one cache entry.
-  const avatar = useAvatarUrl(user?.avatarUrl);
 
   const logoutMutation = useMutation({
     ...trpc.auth.logout.mutationOptions(),
@@ -36,8 +33,6 @@ export function useUserMenu(): IUserMenuView | null {
     displayName,
     email: user.email,
     initials: getInitials(user.displayName, user.email),
-    // A failed lookup renders the initials rather than a broken image.
-    avatarUrl: avatar.isError ? undefined : avatar.url,
     isLogoutPending: logoutMutation.isPending,
     labels: {
       // The trigger is icon-only, so the name carries into its accessible name.

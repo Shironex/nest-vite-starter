@@ -1,5 +1,5 @@
 import { LogOut, Settings } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui/avatar';
+import { Avatar, AvatarFallback } from '@repo/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,16 +15,8 @@ export default function UserMenu() {
 
   if (!view) return null;
 
-  const {
-    displayName,
-    email,
-    initials,
-    avatarUrl,
-    isLogoutPending,
-    labels,
-    onLogout,
-    onNavigateToSettings,
-  } = view;
+  const { displayName, email, initials, isLogoutPending, labels, onLogout, onNavigateToSettings } =
+    view;
 
   return (
     <DropdownMenu>
@@ -33,8 +25,6 @@ export default function UserMenu() {
         className="rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <Avatar size="sm" className="size-8">
-          {/* Decorative: the trigger's aria-label already names the user. */}
-          {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
           <AvatarFallback className="bg-brand-100 type-label-caption font-semibold text-brand-ink">
             {initials}
           </AvatarFallback>

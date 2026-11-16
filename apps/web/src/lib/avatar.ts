@@ -1,3 +1,4 @@
+/** One or two letters for an initials avatar: from the display name, else the email. */
 export function getInitials(name: string | null | undefined, email: string): string {
   if (name) {
     const parts = name.trim().split(/\s+/);
@@ -7,21 +8,4 @@ export function getInitials(name: string | null | undefined, email: string): str
     return name.slice(0, 2).toUpperCase();
   }
   return email.slice(0, 2).toUpperCase();
-}
-
-export function getDownloadUrlFromResult(data: unknown): string | undefined {
-  if (!data || typeof data !== 'object') return undefined;
-  if (!('downloadUrl' in data)) return undefined;
-
-  const value = (data as { downloadUrl?: unknown }).downloadUrl;
-  return typeof value === 'string' ? value : undefined;
-}
-
-export function isHttpUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
-  } catch {
-    return false;
-  }
 }
