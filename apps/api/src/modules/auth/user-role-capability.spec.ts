@@ -38,7 +38,7 @@ const EXPECTED: Record<string, { gated: number; total: number }> = {
   sessions: { gated: 0, total: 3 },
   twoFactor: { gated: 1, total: 7 },
   // The one ungated user procedure is `me`.
-  user: { gated: 6, total: 7 },
+  user: { gated: 7, total: 8 },
 };
 
 interface IRouterGating {
