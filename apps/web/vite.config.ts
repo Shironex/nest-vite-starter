@@ -37,11 +37,6 @@ const apiProxy = {
     target: apiTarget,
     changeOrigin: true,
   },
-  '/socket.io': {
-    target: apiTarget,
-    changeOrigin: true,
-    ws: true,
-  },
 };
 
 export default defineConfig({

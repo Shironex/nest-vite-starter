@@ -66,8 +66,8 @@ export function oauthProviderDisplayName(providerKey: string): string {
  * Where the OAuth controller is mounted. Mirrors OAUTH_BASE_PATH in
  * apps/api/src/modules/auth/oauth/oauth.constants.ts, which is runtime code the
  * web cannot import. The `/api` prefix is load bearing: the platform router in
- * front of the SPA only forwards /trpc, /api and /socket.io to the api, so a
- * path outside those three is answered by index.html.
+ * front of the SPA only forwards /trpc and /api to the api, so a
+ * path outside those two is answered by index.html.
  */
 const OAUTH_BASE_PATH = '/api/auth/oauth';
 

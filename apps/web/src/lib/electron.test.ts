@@ -31,9 +31,4 @@ describe('electron helpers (web mode)', () => {
     const { getTrpcUrl } = await import('@/lib/electron');
     expect(getTrpcUrl()).toBe('/trpc');
   });
-
-  it('getSocketUrl returns undefined in web mode', async () => {
-    const { getSocketUrl } = await import('@/lib/electron');
-    expect(getSocketUrl()).toBeUndefined();
-  });
 });

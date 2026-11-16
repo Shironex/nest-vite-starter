@@ -2,7 +2,7 @@
  * Electron detection helpers and API URL resolution.
  *
  * In Electron mode the web renderer talks to an external NestJS API
- * at a configured URL. These helpers let tRPC and Socket.io resolve
+ * at a configured URL. These helpers let tRPC resolve
  * the correct URL at runtime.
  */
 
@@ -12,7 +12,7 @@ let apiUrl: string | null = null;
 
 /**
  * Fetch the API URL from the Electron main process.
- * Must be called once before any tRPC/Socket.io connections are made.
+ * Must be called once before any tRPC connections are made.
  * No-op in web mode.
  */
 export async function initElectron(): Promise<void> {
@@ -58,13 +58,4 @@ export function getApiBaseUrl(): string {
 export function getTrpcUrl(): string {
   if (!IS_ELECTRON) return '/trpc';
   return `${getApiBaseUrl()}/trpc`;
-}
-
-/**
- * Returns the Socket.io server URL. In Electron mode returns the absolute
- * URL; in web mode returns `undefined` (Socket.io auto-detects from window.location).
- */
-export function getSocketUrl(): string | undefined {
-  if (!IS_ELECTRON) return undefined;
-  return getApiBaseUrl();
 }

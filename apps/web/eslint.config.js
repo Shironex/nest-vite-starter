@@ -79,19 +79,6 @@ export default [
     },
   },
   {
-    /*
-     * The connection indicator is a `role="status"` span carrying `tabIndex={0}`
-     * so the tooltip describing the connection state opens on focus as well as
-     * hover. A status region is not focusable on its own, so removing the
-     * tabIndex would make that state mouse-only. Between the rule's two readings
-     * this is the more accessible one.
-     */
-    files: ['src/features/layout/components/ConnectionIndicator/ConnectionIndicator.tsx'],
-    rules: {
-      'jsx-a11y/no-noninteractive-tabindex': 'off',
-    },
-  },
-  {
     // `fetchWithCsrfRetry` is a forwarding wrapper: it receives a URL its
     // caller built (the tRPC links from `getTrpcUrl()`, an upload from
     // `getApiBaseUrl()` + `toApiPath`) and cannot see where it came from. The

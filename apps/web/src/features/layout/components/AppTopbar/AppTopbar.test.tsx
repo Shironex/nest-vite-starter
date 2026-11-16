@@ -9,10 +9,6 @@ vi.mock('./AppTopbar.hooks', () => ({
   useAppTopbar: () => useAppTopbar(),
 }));
 
-vi.mock('@/features/layout/components/ConnectionIndicator', () => ({
-  ConnectionIndicator: () => <span data-testid="connection-indicator" />,
-}));
-
 vi.mock('@/features/layout/components/UserMenu', () => ({
   UserMenu: () => <button type="button">User menu</button>,
 }));
@@ -61,10 +57,9 @@ describe('AppTopbar', () => {
     expect(screen.getByText('12 workspaces')).toBeInTheDocument();
   });
 
-  it('keeps the sidebar trigger, connection status and user menu', () => {
+  it('keeps the sidebar trigger and the user menu', () => {
     renderTopbar();
     expect(screen.getByRole('button', { name: /sidebar/i })).toBeInTheDocument();
-    expect(screen.getByTestId('connection-indicator')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'User menu' })).toBeInTheDocument();
   });
 });

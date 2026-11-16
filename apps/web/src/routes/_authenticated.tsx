@@ -19,8 +19,7 @@ import { translateAppError } from '@/lib/trpc-errors';
 import { trpc, isUnauthorizedError } from '@/lib/trpc';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import { useUIStore } from '@/stores/ui-store';
-import { useSocket } from '@/hooks/use-socket';
-import { useAuth, USER_ME_STALE_TIME } from '@/hooks/use-auth';
+import { USER_ME_STALE_TIME } from '@/hooks/use-auth';
 import { pendingSkeletonForPath } from '@/lib/shell-routes';
 import { AppSidebar } from '@/features/layout/components/AppSidebar';
 import { AppTopbar } from '@/features/layout/components/AppTopbar';
@@ -146,10 +145,6 @@ export const Route = createFileRoute('/_authenticated')({
 function AuthenticatedLayout() {
   const { t } = useTranslation();
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
-  const { isAuthenticated } = useAuth();
-
-  // Connect/disconnect Socket.io based on auth state
-  useSocket(isAuthenticated);
 
   /*
    * The rail is FULLY controlled: `open` AND `onOpenChange`, never `defaultOpen`

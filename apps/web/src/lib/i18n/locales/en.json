@@ -452,16 +452,6 @@
       "channelChangeFailed": "Could not change update channel",
       "channelChangeFailedDescription": "Still on the {{channel}} channel. Please try again."
     },
-    "connection": {
-      "status": "Connection status: {{label}}",
-      "connected": "Connected",
-      "connecting": "Connecting...",
-      "reconnecting": "Reconnecting...",
-      "disconnected": "Disconnected",
-      "lostTitle": "Connection lost",
-      "lostDescription": "Live updates are paused until the connection is restored.",
-      "reconnect": "Reconnect"
-    },
     "time": {
       "justNow": "just now",
       "minutesAgo": "{{count}}m ago",

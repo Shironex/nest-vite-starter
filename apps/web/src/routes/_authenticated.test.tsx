@@ -32,11 +32,7 @@ vi.mock('@/lib/trpc', () => ({
 
 vi.mock('@/lib/trpc-errors', () => ({ getAppErrorCode: () => appErrorCode.current }));
 
-vi.mock('@/hooks/use-socket', () => ({ useSocket: () => undefined }));
-vi.mock('@/hooks/use-auth', () => ({
-  useAuth: () => ({ isAuthenticated: true }),
-  USER_ME_STALE_TIME: 0,
-}));
+vi.mock('@/hooks/use-auth', () => ({ USER_ME_STALE_TIME: 0 }));
 vi.mock('@/features/two-factor/components/GraceBanner', () => ({ GraceBanner: () => null }));
 
 /*

@@ -1,5 +1,4 @@
 import { SidebarTrigger } from '@repo/ui/sidebar';
-import { ConnectionIndicator } from '@/features/layout/components/ConnectionIndicator';
 import { UserMenu } from '@/features/layout/components/UserMenu';
 import { useAppTopbar } from './AppTopbar.hooks';
 
@@ -26,7 +25,6 @@ export default function AppTopbar() {
         <h1 className="truncate type-heading-h2 text-text">{title}</h1>
         {subtitleNode}
       </div>
-      <ConnectionIndicator />
       <UserMenu />
     </header>
   );
