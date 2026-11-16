@@ -137,7 +137,7 @@ export const PATCHED = {
   appModule: 'apps/api/src/app.module.ts',
   sharedIndex: 'packages/shared/src/schemas/index.ts',
   auditActions: 'packages/shared/src/audit/index.ts',
-  auditCatalogEn: 'apps/web/src/features/audit/locales/en.json',
+  auditStrings: 'apps/web/src/features/audit/Audit.strings.ts',
   archRegistry: 'tools/arch/registry.ts',
 } as const;
 
@@ -188,34 +188,40 @@ function blockOf(source: string, open: string, close: string, file: string): str
 
 type ReadFile = (path: string) => string;
 
-interface IJsonCatalog {
-  actions: Record<string, string>;
-  actionGroups: Record<string, string>;
-  targetTypes: Record<string, string>;
+/** Insert one `key: 'value',` entry at the end of a top-level section of the audit strings table. */
+function addStringsEntry(
+  source: string,
+  section: string,
+  key: string,
+  value: string,
+  file: string,
+): string {
+  const header = `\n  ${section}: {\n`;
+  const start = source.indexOf(header);
+  if (start === -1 || source.indexOf(header, start + 1) !== -1) {
+    throw new PlanRefusedError(`${file}: expected exactly one ${JSON.stringify(header.trim())}.`);
+  }
+  const bodyStart = start + header.length;
+  const end = source.indexOf('\n  },', bodyStart);
+  if (end === -1) throw new PlanRefusedError(`${file}: \`${section}\` is never closed.`);
+  if (new RegExp(`^\\s*${key}:`, 'mu').test(source.slice(bodyStart, end))) {
+    throw new PlanRefusedError(`${file}: \`${section}.${key}\` already exists.`);
+  }
+  return `${source.slice(0, end)}\n    ${key}: ${JSON.stringify(value).replaceAll('"', "'")},${source.slice(end)}`;
 }
 
-function patchCatalog(source: string, file: string, n: IModuleNames): string {
-  const catalog = JSON.parse(source) as IJsonCatalog;
+function patchAuditStrings(source: string, file: string, n: IModuleNames): string {
   const domain = n.dir.replaceAll('-', '_');
-  const created = `${domain}_${n.accessor}_created`;
-  const updated = `${domain}_${n.accessor}_updated`;
-  for (const [section, key] of [
-    ['actions', created],
-    ['actions', updated],
-    ['actionGroups', domain],
-    ['targetTypes', n.model],
+  let patched = source;
+  for (const [section, key, value] of [
+    ['actions', `${domain}_${n.accessor}_created`, `${n.model} created`],
+    ['actions', `${domain}_${n.accessor}_updated`, `${n.model} updated`],
+    ['actionGroups', domain, n.model],
+    ['targetTypes', n.model, n.model],
   ] as const) {
-    if (typeof catalog[section] !== 'object' || catalog[section][key] !== undefined) {
-      throw new PlanRefusedError(
-        `${file}: \`${section}.${key}\` already exists or the section is missing.`,
-      );
-    }
+    patched = addStringsEntry(patched, section, key, value, file);
   }
-  catalog.actions[created] = `${n.model} created`;
-  catalog.actions[updated] = `${n.model} updated`;
-  catalog.actionGroups[domain] = n.model;
-  catalog.targetTypes[n.model] = n.model;
-  return `${JSON.stringify(catalog, null, 2)}\n`;
+  return patched;
 }
 
 function patchCanary(source: string, file: string, n: IModuleNames): string {
@@ -382,7 +388,7 @@ export function planModule({ names: n, policy, purpose, read, exists }: IPlanInp
         PATCHED.auditActions,
       ),
     ),
-    patch(PATCHED.auditCatalogEn, (source) => patchCatalog(source, PATCHED.auditCatalogEn, n)),
+    patch(PATCHED.auditStrings, (source) => patchAuditStrings(source, PATCHED.auditStrings, n)),
     patch(PATCHED.archRegistry, (source) => {
       const block = blockOf(
         source,

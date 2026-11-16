@@ -1,20 +1,13 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-  assertPascalCase,
-  fail,
-  repoRoot,
-  toKebab,
-  toScreamingSnake,
-  writeNew,
-} from './codegen-utils';
+import { assertPascalCase, fail, repoRoot, toKebab, writeNew } from './codegen-utils';
 
-/** A feature's namespace module, as the generated component imports it. */
-interface IFeatureI18n {
-  /** Module specifier relative to the component folder's parent, e.g. `Audit.i18n`. */
+/** A feature's strings table, as the generated component imports it. */
+interface IFeatureStrings {
+  /** Import specifier of the table, e.g. `@/features/audit/Audit.strings`. */
   readonly module: string;
-  /** The exported namespace constant, e.g. `AUDIT_NS`. */
-  readonly namespaceConst: string;
+  /** The exported table, e.g. `auditStrings`. */
+  readonly table: string;
   /** The English copy under `title`, which is what the generated shell renders. */
   readonly title: string;
 }
@@ -52,12 +45,12 @@ function generateFeatureComponent(feature: string, rawName: string): void {
 
   const dir = `${featureDir}/components/${name}`;
   const kebab = toKebab(name);
-  const i18n = featureI18nModule(featureDir);
+  const strings = featureStringsModule(feature, featureDir);
 
-  writeNew(`${dir}/${name}.tsx`, componentShell(name, kebab, i18n));
-  writeNew(`${dir}/${name}.hooks.ts`, componentHooks(name, i18n));
+  writeNew(`${dir}/${name}.tsx`, componentShell(name, kebab));
+  writeNew(`${dir}/${name}.hooks.ts`, componentHooks(name, strings));
   writeNew(`${dir}/${name}.types.ts`, componentTypes(name));
-  writeNew(`${dir}/${name}.test.tsx`, componentTest(name, i18n?.title ?? name));
+  writeNew(`${dir}/${name}.test.tsx`, componentTest(name, strings?.title ?? name));
   writeNew(`${dir}/index.ts`, componentBarrel(name));
 
   console.log(
@@ -66,62 +59,38 @@ function generateFeatureComponent(feature: string, rawName: string): void {
 }
 
 /*
- * The feature's `<Name>.i18n.ts` and the `title` its English catalog holds, or
- * null for a feature that ships no copy of its own. `pnpm new:feature` always
- * writes both; the older features without a `locales/` folder have neither, and
- * a component there must not import a module that does not exist. The title is
- * what the generated shell renders and what the generated test asserts, so a
- * catalog without one falls back to the plain, copy-free shell.
+ * The feature's `<Name>.strings.ts` and the `title` it holds, or null for a
+ * feature that ships no copy table of its own. `pnpm new:feature` always writes
+ * one; a hand-made feature may not have it, and a component there must not
+ * import a module that does not exist. The title is what the generated shell
+ * renders and what the generated test asserts, so a table without one falls
+ * back to the plain, copy-free shell.
  */
-function featureI18nModule(featureDir: string): IFeatureI18n | null {
-  const entries = readdirSync(join(repoRoot, featureDir)).filter((entry) =>
-    entry.endsWith('.i18n.ts'),
+function featureStringsModule(feature: string, featureDir: string): IFeatureStrings | null {
+  const file = readdirSync(join(repoRoot, featureDir)).find((entry) =>
+    entry.endsWith('.strings.ts'),
   );
-  const file = entries[0];
   if (file === undefined) {
     return null;
   }
 
-  const localePath = join(repoRoot, featureDir, 'locales', 'en.json');
-  if (!existsSync(localePath)) {
+  const source = readFileSync(join(repoRoot, featureDir, file), 'utf8');
+  const table = /export const (\w+Strings)\b/u.exec(source)?.[1];
+  const title = /^\s*title:\s*'([^']*)'/mu.exec(source)?.[1];
+  if (table === undefined || title === undefined) {
     return null;
   }
 
-  const catalog: unknown = JSON.parse(readFileSync(localePath, 'utf8'));
-  const title =
-    typeof catalog === 'object' && catalog !== null && 'title' in catalog
-      ? (catalog as { title: unknown }).title
-      : undefined;
-  if (typeof title !== 'string') {
-    return null;
-  }
-
-  const featureName = file.slice(0, -'.i18n.ts'.length);
   return {
-    module: `${featureName}.i18n`,
-    namespaceConst: `${toScreamingSnake(featureName)}_NS`,
+    module: `@/features/${feature}/${file.slice(0, -'.ts'.length)}`,
+    table,
     title,
   };
 }
 
-/*
- * Registering the catalog from the COMPONENT, not the route, is what keeps it
- * out of first paint (`route-i18n-side-effect`), and importing it in the hook
- * file too is what keeps a `*.hooks.test.tsx` from rendering raw keys once the
- * component module is mocked away. Both mirror features/audit.
- */
-function componentShell(name: string, kebab: string, i18n: IFeatureI18n | null): string {
-  const register =
-    i18n === null
-      ? ''
-      : `// Side effect: registers this feature's catalogs. Needed HERE and not only in
-// the hook file, because a component test mocks the hook module away, and
-// without this import the component would render bare i18n keys under test.
-import '../../${i18n.module}';
-`;
-
+function componentShell(name: string, kebab: string): string {
   return `import { cn } from '@repo/ui/lib/utils';
-${register}import { use${name} } from './${name}.hooks';
+import { use${name} } from './${name}.hooks';
 
 export default function ${name}() {
   const { label } = use${name}();
@@ -136,8 +105,8 @@ export default function ${name}() {
 `;
 }
 
-function componentHooks(name: string, i18n: IFeatureI18n | null): string {
-  if (i18n === null) {
+function componentHooks(name: string, strings: IFeatureStrings | null): string {
+  if (strings === null) {
     return `import type { I${name}View } from './${name}.types';
 
 export function use${name}(): I${name}View {
@@ -148,19 +117,14 @@ export function use${name}(): I${name}View {
 `;
   }
 
-  return `import { useTranslation } from 'react-i18next';
-// Importing the namespace constant also runs the registration, so a hook
-// rendered in isolation (a *.hooks.test.tsx) has the copy too.
-import { ${i18n.namespaceConst} } from '../../${i18n.module}';
+  return `import { ${strings.table} } from '${strings.module}';
 import type { I${name}View } from './${name}.types';
 
 export function use${name}(): I${name}View {
-  const { t } = useTranslation(${i18n.namespaceConst});
-
   // TODO: own this component's state, tRPC queryOptions/mutationOptions, and
   // store reads here so the component stays a thin presentational shell. Copy
-  // comes from the feature's locales/, never from a literal.
-  return { label: t('title') };
+  // comes from the feature's strings table, never from a literal.
+  return { label: ${strings.table}.title };
 }
 `;
 }
@@ -173,10 +137,8 @@ function componentTypes(name: string): string {
 }
 
 /*
- * `label` is the feature catalog's `title` once the feature owns copy, so the
- * assertion is on the rendered catalog string rather than on the component name.
- * That makes the generated test fail if the catalog is never registered, which
- * is the mistake worth catching.
+ * `label` is the feature strings table's `title` once the feature owns copy, so
+ * the assertion is on the rendered copy rather than on the component name.
  */
 function componentTest(name: string, label: string): string {
   return `import { render, screen } from '@testing-library/react';

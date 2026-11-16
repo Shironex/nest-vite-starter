@@ -27,7 +27,7 @@ function stripAnsi(text: string): string {
  * The generators are run, not read.
  *
  * `new-feature.ts` and `new-component.ts` encode conventions that keep moving
- * (the tRPC option proxy, `pathKey()` invalidation, `route-i18n-side-effect`
+ * (the tRPC option proxy, `pathKey()` invalidation, the strings table
  * placement, the five-file sibling set). Nothing imported them, so nothing failed
  * when a convention moved underneath them, and the first person to notice would
  * be whoever ran `pnpm new:feature` next. A generator that imports a missing
@@ -41,7 +41,7 @@ function stripAnsi(text: string): string {
  *
  * THE LIVE TREE, deliberately. `codegen-utils.ts` pins `repoRoot` to
  * `process.cwd()`, so the generators could be pointed at a temp directory, but
- * the generated code imports `@/lib/i18n`, `@repo/ui` and the generated tRPC
+ * the generated code imports `@/lib/strings`, `@repo/ui` and the generated tRPC
  * router. Type-checking it anywhere else would either resolve nothing or need a
  * copy of the whole workspace. The names are random and every artifact is
  * removed in `after`, which node:test runs even when a test fails.
@@ -191,31 +191,23 @@ describe('codegen generators', () => {
     writeFileSync(join(root, UI_PACKAGE_JSON), uiPackageJsonBefore);
   });
 
-  it('new:feature writes the documented sibling set, including the i18n registration', () => {
+  it('new:feature writes the documented sibling set, including the strings table', () => {
     assert.ok(featureRun.ok, `pnpm new:feature failed:\n${featureRun.output}`);
 
     assert.deepEqual(featureEntries, [
       `${feature}.constants.ts`,
-      `${feature}.i18n.ts`,
       `${feature}.mutations.ts`,
       `${feature}.queries.ts`,
+      `${feature}.strings.ts`,
       `${feature}.types.ts`,
-      'locales',
     ]);
-    assert.deepEqual(readdirSync(join(root, featurePath, 'locales')).sort(), ['en.json']);
 
-    // The whole point of emitting the file: the namespace is registered and
-    // named, so no caller repeats the string and no catalog goes unregistered.
-    const i18n = readFileSync(join(root, featurePath, `${feature}.i18n.ts`), 'utf8');
-    assert.match(i18n, new RegExp(`registerFeatureNamespace\\('${featureDir}'`, 'u'));
-    assert.match(
-      i18n,
-      new RegExp(`export const ${featureDir.toUpperCase()}_NS = '${featureDir}'`, 'u'),
-    );
-    assert.match(i18n, /registerFeatureNamespace\('[^']+', \{ en \}\)/u);
+    const strings = readFileSync(join(root, featurePath, `${feature}.strings.ts`), 'utf8');
+    assert.match(strings, /export const \w+Strings = \{/u);
+    assert.match(strings, /title: '[^']+'/u);
   });
 
-  it('new:component writes the six-file sibling set and registers the namespace', () => {
+  it('new:component writes the five-file sibling set and reads the strings table', () => {
     assert.ok(componentRun.ok, `pnpm new:component failed:\n${componentRun.output}`);
 
     assert.deepEqual(readdirSync(join(root, componentPath)).sort(), [
@@ -226,10 +218,9 @@ describe('codegen generators', () => {
       'index.ts',
     ]);
 
-    // The side-effect import belongs to the COMPONENT, not to a route
-    // (`route-i18n-side-effect`), which is asserted by the lint:meta case below.
-    const shell = readFileSync(join(root, componentPath, `${component}.tsx`), 'utf8');
-    assert.match(shell, new RegExp(`^import '\\.\\./\\.\\./${feature}\\.i18n';$`, 'mu'));
+    // The copy comes from the feature's table through the hook, not a literal.
+    const hooks = readFileSync(join(root, componentPath, `${component}.hooks.ts`), 'utf8');
+    assert.match(hooks, new RegExp(`from '@/features/${featureDir}/${feature}\\.strings'`, 'u'));
   });
 
   it('new:component ui writes the component and its package export entry', () => {

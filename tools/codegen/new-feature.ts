@@ -17,13 +17,12 @@ writeNew(`${base}/${name}.types.ts`, featureTypes(name));
 writeNew(`${base}/${name}.queries.ts`, featureQueries(name));
 writeNew(`${base}/${name}.mutations.ts`, featureMutations(name));
 writeNew(`${base}/${name}.constants.ts`, featureConstants(name));
-writeNew(`${base}/locales/en.json`, featureLocale(name));
-writeNew(`${base}/${name}.i18n.ts`, featureI18n(dir, name));
+writeNew(`${base}/${name}.strings.ts`, featureStrings(name));
 
 console.log(`\n  feature "${dir}" scaffolded. Add components with:`);
 console.log(`    pnpm new:component ${dir}/<Name>`);
-console.log(`\n  the generated component imports ${name}.i18n for side effect, so the`);
-console.log(`  namespace registers itself. Write the copy in locales/en.json, and add the`);
+console.log(`\n  the generated component renders its copy from ${name}.strings.ts. Write the`);
+console.log(`  feature's copy there, and add the`);
 console.log(`  purpose line the generated module map asks for:`);
 console.log(`    tools/arch/registry.ts  ->  WEB_FEATURE_PURPOSES`);
 console.log(`    '${dir}': '<one sentence: what this domain is FOR>',`);
@@ -75,39 +74,16 @@ export const ${toScreamingSnake(name)}_CONSTANTS = {} as const;
 }
 
 /*
- * The namespace registration, mirroring features/audit/Audit.i18n.ts. Emitted
- * by the generator rather than printed for the user to write by hand: every
- * feature that owns a `locales/` folder needs exactly this file, and a catalog
- * nobody registers renders raw keys.
- *
- * English is the only language and is passed as the parsed JSON, because it is
- * what every session renders (see "ADDING A LANGUAGE" in `@/lib/i18n` for how a
- * second one is registered).
+ * The feature's copy table: a plain `as const` object, one per feature, with a
+ * small function for any entry that interpolates or pluralizes. Copy shared by
+ * more than one feature belongs in src/lib/strings.ts, never here: a feature must
+ * never import another feature's strings (no-cross-feature-imports).
  */
-function featureI18n(dir: string, name: string): string {
-  return `import { registerFeatureNamespace } from '@/lib/i18n';
-import en from './locales/en.json';
-
-/**
- * Attach this feature's catalogs under the \`${dir}\` namespace.
- *
- * Imported for side effect from this feature's components, never from a route:
- * a route-level side-effect import is neither lazy nor tree-shakeable, so the
- * catalog would land on first paint (\`route-i18n-side-effect\`).
- */
-registerFeatureNamespace('${dir}', { en });
-
-/** The namespace name, so callers do not repeat the string literal. */
-export const ${toScreamingSnake(name)}_NS = '${dir}';
-`;
-}
-
-// One namespace per feature, one English catalog per namespace. Shared copy (actions, states, AppErrorCode sentences) belongs in
-// src/lib/i18n/locales, never here: a feature must never import another
-// feature's locales (no-cross-feature-imports).
-function featureLocale(name: string): string {
-  return `{
-  "title": "${name}"
-}
+function featureStrings(name: string): string {
+  const table = `${name.charAt(0).toLowerCase()}${name.slice(1)}Strings`;
+  return `/** English copy for this feature. Interpolated entries are small functions. */
+export const ${table} = {
+  title: '${name}',
+} as const;
 `;
 }

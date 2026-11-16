@@ -166,22 +166,17 @@ describe('planModule on the real tree', () => {
     );
   });
 
-  it('names every new audit action and domain in the web catalog', () => {
+  it('names every new audit action and domain in the web strings table', () => {
     const edits = plan(realTree());
     assert.match(
       edit(edits, PATCHED.auditActions).content,
       /INVOICE_CREATED: 'invoices\.invoice\.created'/u,
     );
-    for (const path of [PATCHED.auditCatalogEn]) {
-      const catalog = JSON.parse(edit(edits, path).content) as Record<
-        string,
-        Record<string, string>
-      >;
-      assert.ok(catalog.actions?.invoices_invoice_created);
-      assert.ok(catalog.actions?.invoices_invoice_updated);
-      assert.ok(catalog.actionGroups?.invoices);
-      assert.ok(catalog.targetTypes?.Invoice);
-    }
+    const strings = edit(edits, PATCHED.auditStrings).content;
+    assert.match(strings, /^ {4}invoices_invoice_created: 'Invoice created',$/mu);
+    assert.match(strings, /^ {4}invoices_invoice_updated: 'Invoice updated',$/mu);
+    assert.match(strings, /^ {4}invoices: 'Invoice',$/mu);
+    assert.match(strings, /^ {4}Invoice: 'Invoice',$/mu);
   });
 
   it('maps the policy onto the middleware set, never a guess', () => {
