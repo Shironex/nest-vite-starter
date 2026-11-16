@@ -39,7 +39,7 @@ export function useMembersSection(): IMembersSectionView {
   const members: Member[] = data?.items ?? [];
   /*
    * `isError` is read BEFORE the empty test on purpose. Without it a failed
-   * listUsers renders as "No members found.", i.e. the panel claims the organization has no members. There is no toast to correct it
+   * listUsers renders as "No members found.", i.e. the panel claims the app has no members. There is no toast to correct it
    * either: the query cache only toasts a BACKGROUND refetch failure, never an
    * initial load.
    */

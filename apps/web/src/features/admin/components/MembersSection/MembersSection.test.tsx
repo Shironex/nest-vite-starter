@@ -44,8 +44,7 @@ const admin = {
   lockedUntil: null,
   createdAt: new Date(),
   twoFactorEnabled: true,
-  membershipEndedAt: null,
-  isOwner: true,
+  disabledAt: null,
   status: 'active' as const,
 };
 
@@ -58,19 +57,18 @@ const lockedUser = {
   lockedUntil: new Date(Date.now() + 60 * 60 * 1000),
   createdAt: new Date(),
   twoFactorEnabled: false,
-  membershipEndedAt: null,
-  isOwner: false,
+  disabledAt: null,
   status: 'active' as const,
 };
 
-/** Was a member, no longer is. Restorable. */
+/** Disabled by an admin. Can be enabled again. */
 const removedMember = {
   ...lockedUser,
   id: 'u-4',
   email: 'dave@example.com',
   lockedUntil: null,
-  membershipEndedAt: new Date('2026-05-01T00:00:00Z'),
-  status: 'removed' as const,
+  disabledAt: new Date('2026-05-01T00:00:00Z'),
+  status: 'disabled' as const,
 };
 
 /** Radix opens the menu from the trigger's own keyboard handler. */
@@ -179,7 +177,7 @@ describe('MembersSection', () => {
     ).toBeInTheDocument();
   });
 
-  describe('the two membership states', () => {
+  describe('the two account states', () => {
     const everyone = [admin, lockedUser, removedMember];
 
     it('labels each row with the state it is actually in', async () => {
@@ -188,43 +186,31 @@ describe('MembersSection', () => {
 
       await screen.findByText('dave@example.com');
       expect(screen.getAllByText('Active')).toHaveLength(2);
-      expect(screen.getByText('Removed from organization')).toBeInTheDocument();
+      expect(screen.getByText('Account disabled')).toBeInTheDocument();
     });
 
-    it('marks the owner, and only the owner', async () => {
-      listUsersFn.mockResolvedValue({ items: everyone, nextCursor: null });
-      renderWithClient(<MembersSection />);
-
-      await screen.findByText('alice@example.com');
-      expect(screen.getAllByText('Owner')).toHaveLength(1);
-    });
-
-    it('offers restore to a removed member, and not removal again', async () => {
+    it('offers enable to a disabled account, and not disable again', async () => {
       listUsersFn.mockResolvedValue({ items: everyone, nextCursor: null });
       renderWithClient(<MembersSection />);
 
       await screen.findByText('dave@example.com');
       openRowMenu('dave@example.com');
 
-      expect(screen.getByRole('menuitem', { name: 'Restore to organization' })).toBeInTheDocument();
-      expect(
-        screen.queryByRole('menuitem', { name: 'Remove from organization' }),
-      ).not.toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: 'Enable account' })).toBeInTheDocument();
+      expect(screen.queryByRole('menuitem', { name: 'Disable account' })).not.toBeInTheDocument();
     });
 
-    it('offers removal to an active regular member', async () => {
+    it('offers disable to an active regular member', async () => {
       listUsersFn.mockResolvedValue({ items: everyone, nextCursor: null });
       renderWithClient(<MembersSection />);
 
       await screen.findByText('bob@example.com');
       openRowMenu('bob@example.com');
 
-      expect(
-        screen.getByRole('menuitem', { name: 'Remove from organization' }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: 'Disable account' })).toBeInTheDocument();
     });
 
-    it('never offers to remove or delete the owner', async () => {
+    it('never offers to disable or delete an admin', async () => {
       // Both are refused by guards on the server. A button that always errors
       // is worse than no button.
       listUsersFn.mockResolvedValue({ items: everyone, nextCursor: null });
@@ -233,22 +219,20 @@ describe('MembersSection', () => {
       await screen.findByText('alice@example.com');
       openRowMenu('alice@example.com');
 
-      expect(
-        screen.queryByRole('menuitem', { name: 'Remove from organization' }),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('menuitem', { name: 'Disable account' })).not.toBeInTheDocument();
       expect(screen.queryByRole('menuitem', { name: 'Delete account' })).not.toBeInTheDocument();
     });
 
-    it('opens the restore dialog for a removed member', async () => {
+    it('opens the enable dialog for a disabled account', async () => {
       listUsersFn.mockResolvedValue({ items: everyone, nextCursor: null });
       renderWithClient(<MembersSection />);
 
       await screen.findByText('dave@example.com');
       openRowMenu('dave@example.com');
-      fireEvent.click(screen.getByRole('menuitem', { name: 'Restore to organization' }));
+      fireEvent.click(screen.getByRole('menuitem', { name: 'Enable account' }));
 
       expect(
-        await screen.findByRole('heading', { name: /restore this person to the organization/i }),
+        await screen.findByRole('heading', { name: /enable this account/i }),
       ).toBeInTheDocument();
     });
   });

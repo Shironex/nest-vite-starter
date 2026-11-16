@@ -8,8 +8,8 @@ afterEach(() => {
 
 describe('topbar subtitle store', () => {
   it('publishes while a page is mounted and clears when it unmounts', () => {
-    const { unmount } = renderHook(() => useSetTopbarSubtitle('12 workspaces'));
-    expect(useTopbarStore.getState().subtitle).toBe('12 workspaces');
+    const { unmount } = renderHook(() => useSetTopbarSubtitle('12 users'));
+    expect(useTopbarStore.getState().subtitle).toBe('12 users');
 
     unmount();
     expect(useTopbarStore.getState().subtitle).toBeNull();
@@ -20,8 +20,8 @@ describe('topbar subtitle store', () => {
       initialProps: { value: 'loading' },
     });
 
-    rerender({ value: '12 workspaces' });
-    expect(useTopbarStore.getState().subtitle).toBe('12 workspaces');
+    rerender({ value: '12 users' });
+    expect(useTopbarStore.getState().subtitle).toBe('12 users');
   });
 
   it('lets a page publish nothing, leaving the shell with the title alone', () => {

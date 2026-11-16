@@ -5,7 +5,7 @@ import DashboardPage from './DashboardPage';
 vi.mock('./DashboardPage.hooks', () => ({
   useDashboardPage: () => ({
     greeting: 'Good day, Ada',
-    subtitle: 'Here is what is happening in your organization today.',
+    subtitle: 'Here is what is happening in your account today.',
     todayLabel: 'Tuesday, July 14, 2026',
   }),
 }));
@@ -18,7 +18,7 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
     expect(screen.getByText('Good day, Ada')).toBeInTheDocument();
     expect(
-      screen.getByText('Here is what is happening in your organization today.'),
+      screen.getByText('Here is what is happening in your account today.'),
     ).toBeInTheDocument();
   });
 

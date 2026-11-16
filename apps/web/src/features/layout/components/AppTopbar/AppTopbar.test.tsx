@@ -52,9 +52,9 @@ describe('AppTopbar', () => {
   });
 
   it('renders the subtitle when the route supplies one', () => {
-    useAppTopbar.mockReturnValueOnce({ title: 'Workspaces', subtitle: '12 workspaces' });
+    useAppTopbar.mockReturnValueOnce({ title: 'Users', subtitle: '12 users' });
     renderTopbar();
-    expect(screen.getByText('12 workspaces')).toBeInTheDocument();
+    expect(screen.getByText('12 users')).toBeInTheDocument();
   });
 
   it('keeps the sidebar trigger and the user menu', () => {

@@ -26,7 +26,7 @@ describe('useAppTopbar', () => {
   });
 
   it('resolves a nested route to its parent entry', () => {
-    expect(titleFor('/workspaces/f-1')).toBe(commonStrings.pageTitle.workspaces);
+    expect(titleFor('/audit/a-1')).toBe(commonStrings.pageTitle.audit);
   });
 
   it('prefers the deepest matching entry', () => {
@@ -47,10 +47,10 @@ describe('useAppTopbar', () => {
     // (a localized date, a record count) and `no-cross-feature-imports` stops
     // `layout` reaching into the features that own it, so the page publishes
     // into a shared store and the topbar reads it back.
-    useTopbarStore.getState().publish('owner-1', '12 workspaces, 9 active');
+    useTopbarStore.getState().publish('owner-1', '12 users, 9 active');
 
     const { result } = renderHook(() => useAppTopbar());
-    expect(result.current.subtitle).toBe('12 workspaces, 9 active');
+    expect(result.current.subtitle).toBe('12 users, 9 active');
 
     useTopbarStore.setState({ subtitle: null, ownerId: null });
   });

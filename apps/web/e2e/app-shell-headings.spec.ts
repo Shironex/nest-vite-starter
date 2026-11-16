@@ -17,7 +17,7 @@ import { ADMIN_STORAGE_STATE } from './support/auth';
  * topbar renders one, and one only); this covers the other half.
  *
  * Matched by tag rather than by `heading, level: 1`: a route that opens a modal
- * (`/workspaces/new`, say) gets `aria-hidden` on everything behind the overlay, which
+ * (a confirm dialog on `/settings`, say) gets `aria-hidden` on everything behind the overlay, which
  * takes the topbar out of the accessibility tree and would make a role-based
  * count read zero. The acceptance criterion is about the markup, so the
  * assertion is too.
@@ -28,7 +28,6 @@ import { ADMIN_STORAGE_STATE } from './support/auth';
 /** Route to the `pageTitle.*` string `Layout.nav.ts` resolves for it. */
 const ROUTE_TITLES: ReadonlyArray<readonly [string, string]> = [
   ['/dashboard', 'Dashboard'],
-  ['/workspaces', 'Workspaces'],
   ['/audit', 'Audit log'],
   ['/settings', 'Settings'],
 ];

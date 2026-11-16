@@ -61,9 +61,9 @@ const MAX_DEPTH = 6;
  * `queryKey`, which carries the procedure input verbatim (lib/trpc.ts), so an
  * identifier naming a person has to be denied here as well as in the api.
  *
- * Deliberately NOT here: `tenantId` / `workspaceId` / `documentId`. They identify
- * an organization or an opaque record rather than a person, and they are the
- * fields that answer "which customer is broken" on an error report. Redacting
+ * Deliberately NOT here: `documentId`, `jobId` and the like. They identify an
+ * opaque record rather than a person, and they are the fields that answer
+ * "which record is broken" on an error report. Redacting
  * them would cost the triage without protecting a data subject.
  */
 const EGRESS_IDENTIFIER_PATTERNS = ['userid', 'user_id'] as const;
@@ -147,7 +147,7 @@ const REDACTED_QUERY_PARAM_RE = new RegExp(
  * mailed: the token has to sit in the path because the mail client follows a
  * plain GET, which makes the URL itself the credential.
  *
- * `/auth/invite/<token>` is the staff invite, redeemable to join an Organization with
+ * `/auth/invite/<token>` is the invite link, redeemable to create an account with
  * the invited role until it expires: a single-use secret that arrives as
  * `document.location.href` on every error and navigation breadcrumb raised
  * on that page. It is the only `$token` route in `src/routes`.

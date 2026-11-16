@@ -6,15 +6,15 @@ import { NAV_GROUPS, findNavItemForPath, isActivePath } from './Layout.nav';
 
 describe('isActivePath', () => {
   it('matches the route exactly', () => {
-    expect(isActivePath('/workspaces', '/workspaces')).toBe(true);
+    expect(isActivePath('/audit', '/audit')).toBe(true);
   });
 
   it('matches a nested route', () => {
-    expect(isActivePath('/workspaces/f-1', '/workspaces')).toBe(true);
+    expect(isActivePath('/audit/a-1', '/audit')).toBe(true);
   });
 
   it('does not match a sibling that merely shares a prefix', () => {
-    expect(isActivePath('/workspaces-archive', '/workspaces')).toBe(false);
+    expect(isActivePath('/audit-archive', '/audit')).toBe(false);
   });
 
   it('does not match an unrelated route', () => {
@@ -24,7 +24,7 @@ describe('isActivePath', () => {
 
 describe('findNavItemForPath', () => {
   it('finds the entry owning the route', () => {
-    expect(findNavItemForPath('/workspaces/f-1')?.href).toBe('/workspaces');
+    expect(findNavItemForPath('/audit/a-1')?.href).toBe('/audit');
   });
 
   it('returns null outside the nav', () => {
@@ -53,17 +53,14 @@ describe('NAV_GROUPS', () => {
   });
 
   /**
-   * `workspaces.list` is open to every staff account; only `workspaces.create` and
-   * `workspaces.update` carry `AdminMiddleware`, and the screen hides those itself.
-   * Gating the link would hide the list from accounts the server lets read it.
+   * `audit.list` carries `AdminMiddleware`, so the link is hidden from a USER:
+   * a link to a screen the server refuses is worse than no link.
    */
-  it('leaves the Workspaces screen open to every staff account', () => {
-    const workspaces = NAV_GROUPS.flatMap((group) => group.items).find(
-      (item) => item.href === '/workspaces',
-    );
+  it('gates the audit log to admins', () => {
+    const audit = NAV_GROUPS.flatMap((group) => group.items).find((item) => item.href === '/audit');
 
-    expect(workspaces).toBeDefined();
-    expect(workspaces?.role).toBeUndefined();
+    expect(audit).toBeDefined();
+    expect(audit?.role).toBe('ADMIN');
   });
 
   /**

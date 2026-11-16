@@ -203,16 +203,15 @@ describe('scrubEvent: identifiers denied at the Sentry boundary only', () => {
     });
   });
 
-  it('keeps organization and document identifiers, which name no person and carry the triage', async () => {
+  it('keeps record identifiers, which name no person and carry the triage', async () => {
     const { scrubEvent } = await importFacade();
 
     const out = scrubEvent({
-      extra: { tenantId: 'ten_1', workspaceId: 'fir_1', documentId: 'doc_1', status: 404 },
+      extra: { jobId: 'job_1', documentId: 'doc_1', status: 404 },
     });
 
     expect(out.extra).toEqual({
-      tenantId: 'ten_1',
-      workspaceId: 'fir_1',
+      jobId: 'job_1',
       documentId: 'doc_1',
       status: 404,
     });
@@ -422,7 +421,7 @@ describe('scrubBreadcrumb', () => {
       category: 'fetch',
       data: {
         url:
-          '/api/trpc/workspaces.list,audit.list?batch=1&input=' +
+          '/api/trpc/user.listUsers,audit.list?batch=1&input=' +
           encodeURIComponent('{"0":{"json":{"search":"Kowalski","userId":"usr_9"}}}'),
         status_code: 500,
       },
@@ -430,7 +429,7 @@ describe('scrubBreadcrumb', () => {
 
     const url = (batched.data as { url: string }).url;
 
-    expect(url).toBe('/api/trpc/workspaces.list,audit.list?batch=1&input=[REDACTED]');
+    expect(url).toBe('/api/trpc/user.listUsers,audit.list?batch=1&input=[REDACTED]');
     expect(url).not.toContain('Kowalski');
     expect(url).not.toContain('usr_9');
   });

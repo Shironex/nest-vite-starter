@@ -12,8 +12,8 @@ import { ADMIN_STORAGE_STATE, loginAsAdmin } from './support/auth';
  * ## Why
  *
  * Four spec entry points wanted the seeded admin and each logged in for itself:
- * form-reflow's `beforeAll`, both workspace journeys, and the admin-reset test in
- * two-factor. Four concurrent sessions for one user is one too many for
+ * form-reflow's `beforeAll`, the two journeys of a since-removed screen, and the
+ * admin-reset test in two-factor. Four concurrent sessions for one user is one too many for
  * `MAX_SESSIONS = 3` (apps/api/.../session.service.ts): `establishSession`
  * evicts that user's OLDEST session right after writing the new one, and the
  * oldest was form-reflow's, the only one of the four still driving a live page

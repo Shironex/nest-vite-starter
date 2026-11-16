@@ -7,7 +7,7 @@ export interface IAuthLayoutProps {
   readonly title?: string;
   /**
    * ReactNode rather than string: the screens put a link in this line
-   * ("No account yet? Register an organization"), so plain text is not enough.
+   * ("No account yet? Create an account"), so plain text is not enough.
    */
   readonly description?: ReactNode;
   /**

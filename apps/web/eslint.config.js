@@ -49,16 +49,14 @@ export default [
   },
   {
     /*
-     * The three places autofocus is correct, scoped to exactly those files.
+     * The two places autofocus is correct, scoped to exactly those files.
      *
      * `jsx-a11y/no-autofocus` exists to stop a page stealing focus on load,
      * which disorients a screen-reader user who has not asked to go anywhere.
      * None of these is that case: the two-factor challenge is a screen the user
      * was redirected to for the sole purpose of typing the code that is its only
      * control; the enrollment wizard focuses the field belonging to a step the
-     * user advanced to deliberately; and the workspace dialog opts in per field and
-     * only ever on the first field of a modal the user just opened, which is the
-     * documented ARIA practice for dialogs.
+     * user advanced to deliberately.
      *
      * Scoped rather than disabled globally so a future autofocus on a page load
      * still fails the gate.
@@ -66,7 +64,6 @@ export default [
     files: [
       'src/features/two-factor/components/TwoFactorChallenge/TwoFactorChallenge.tsx',
       'src/features/two-factor/components/EnrollWizard/EnrollWizard.tsx',
-      'src/features/workspace/components/WorkspaceFormDialog/WorkspaceFormDialog.tsx',
     ],
     rules: {
       'jsx-a11y/no-autofocus': 'off',

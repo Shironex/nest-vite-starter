@@ -41,7 +41,7 @@ describe('useDashboardPage', () => {
   it('translates the subtitle rather than returning a raw key', () => {
     const { result } = renderHook(() => useDashboardPage());
 
-    expect(result.current.subtitle).toBe('Here is what is happening in your organization today.');
+    expect(result.current.subtitle).toBe('Here is what is happening in your account today.');
   });
 
   it('publishes an English long date for the topbar, capitalized', () => {

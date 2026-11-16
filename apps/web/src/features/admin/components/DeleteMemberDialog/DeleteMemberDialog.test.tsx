@@ -19,15 +19,13 @@ function renderWithClient(ui: React.ReactElement) {
 }
 
 describe('DeleteMemberDialog', () => {
-  it('warns that the whole account is deleted, not just the organization membership', () => {
+  it('warns that the whole account is deleted, not only disabled', () => {
     renderWithClient(
       <DeleteMemberDialog open onOpenChange={() => {}} memberId="u-1" email="member@example.com" />,
     );
     expect(screen.getByRole('heading', { name: /delete this account/i })).toBeInTheDocument();
     expect(screen.getByText(/member@example.com/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/entirely, not just its membership in this organization/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/entirely, rather than only disabling it/i)).toBeInTheDocument();
     expect(screen.getByText(/cannot be undone/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^delete account$/i })).toBeInTheDocument();
   });

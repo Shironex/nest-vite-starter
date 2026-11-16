@@ -58,7 +58,7 @@ describe('AuditLogDetails', () => {
       <AuditLogDetails
         row={{
           ...baseRow,
-          targetLabel: 'Workspace (f-1)',
+          targetLabel: 'User (u-1)',
           metaEntries: [{ key: 'field', value: 'city' }],
           ipAddress: '10.0.0.1',
           userAgent: 'Mozilla/5.0',
@@ -67,7 +67,7 @@ describe('AuditLogDetails', () => {
       />,
     );
 
-    expect(screen.getByText('Workspace (f-1)')).toBeInTheDocument();
+    expect(screen.getByText('User (u-1)')).toBeInTheDocument();
     expect(screen.getByText('field')).toBeInTheDocument();
     expect(screen.getByText('city')).toBeInTheDocument();
     expect(screen.getByText(/10\.0\.0\.1/)).toBeInTheDocument();

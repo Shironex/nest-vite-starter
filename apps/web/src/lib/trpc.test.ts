@@ -85,8 +85,8 @@ describe('401 session-expiry reaction', () => {
   }
 
   /** A query stub shaped like the two fields the query handler reads. */
-  const backgroundRefetch = { queryKey: [['workspaces', 'list']], state: { data: [] } };
-  const initialLoad = { queryKey: [['workspaces', 'list']], state: { data: undefined } };
+  const backgroundRefetch = { queryKey: [['audit', 'list']], state: { data: [] } };
+  const initialLoad = { queryKey: [['audit', 'list']], state: { data: undefined } };
 
   async function loadTrpc() {
     vi.resetModules();

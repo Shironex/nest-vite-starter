@@ -24,11 +24,9 @@ describe('RemoveMemberDialog', () => {
       <RemoveMemberDialog open onOpenChange={() => {}} memberId="u-1" email="member@example.com" />,
     );
 
-    expect(
-      screen.getByRole('heading', { name: /remove this person from the organization/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /disable this account/i })).toBeInTheDocument();
     expect(screen.getByText(/member@example.com/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^remove from organization$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^disable account$/i })).toBeInTheDocument();
   });
 
   it('renders nothing when closed', () => {
@@ -42,7 +40,7 @@ describe('RemoveMemberDialog', () => {
     );
 
     expect(
-      screen.queryByRole('heading', { name: /remove this person from the organization/i }),
+      screen.queryByRole('heading', { name: /disable this account/i }),
     ).not.toBeInTheDocument();
   });
 });

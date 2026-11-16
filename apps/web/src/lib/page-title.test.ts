@@ -9,8 +9,8 @@ import { commonStrings } from './strings';
  */
 describe('pageTitle', () => {
   it('names the page from the strings table and keeps the product on the end', () => {
-    expect(pageTitle(commonStrings.pageTitle.workspaces)).toEqual({
-      meta: [{ title: `${commonStrings.pageTitle.workspaces} | ${PRODUCT_NAME}` }],
+    expect(pageTitle(commonStrings.pageTitle.audit)).toEqual({
+      meta: [{ title: `${commonStrings.pageTitle.audit} | ${PRODUCT_NAME}` }],
     });
   });
 

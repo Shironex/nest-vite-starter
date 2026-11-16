@@ -30,7 +30,7 @@ describe('pendingSkeletonForPath', () => {
     ['/audit', 'list'],
     ['/settings', 'detail'],
     ['/settings/security', 'detail'],
-    ['/workspaces/f_1', 'detail'],
+    ['/settings/sessions', 'detail'],
   ] as const)('maps %s to the %s silhouette', (pathname, variant) => {
     expect(pendingSkeletonForPath(pathname)).toBe(variant);
   });

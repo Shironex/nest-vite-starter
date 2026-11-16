@@ -8,12 +8,12 @@ describe('ListSearchField', () => {
       <ListSearchField
         value=""
         onValueChange={() => undefined}
-        label="Search workspaces"
-        placeholder="Search workspaces..."
+        label="Search projects"
+        placeholder="Search projects..."
       />,
     );
 
-    expect(screen.getByLabelText('Search workspaces')).toHaveAttribute('type', 'search');
+    expect(screen.getByLabelText('Search projects')).toHaveAttribute('type', 'search');
   });
 
   it('hands the caller a plain string rather than the event', () => {
@@ -22,12 +22,12 @@ describe('ListSearchField', () => {
       <ListSearchField
         value=""
         onValueChange={onValueChange}
-        label="Search workspaces"
-        placeholder="Search workspaces..."
+        label="Search projects"
+        placeholder="Search projects..."
       />,
     );
 
-    fireEvent.change(screen.getByLabelText('Search workspaces'), {
+    fireEvent.change(screen.getByLabelText('Search projects'), {
       target: { value: 'Kowalska' },
     });
 

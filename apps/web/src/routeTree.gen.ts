@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
-import { Route as AuthenticatedWorkspacesRouteImport } from './routes/_authenticated/workspaces'
 import { Route as AuthConfirmEmailChangeRouteImport } from './routes/auth/confirm-email-change'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -41,11 +40,6 @@ const AuthRoute = AuthRouteImport.update({
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedWorkspacesRoute = AuthenticatedWorkspacesRouteImport.update({
-  id: '/workspaces',
-  path: '/workspaces',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthConfirmEmailChangeRoute = AuthConfirmEmailChangeRouteImport.update({
@@ -100,7 +94,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/audit': typeof AuthenticatedAuditRoute
-  '/workspaces': typeof AuthenticatedWorkspacesRoute
   '/auth/confirm-email-change': typeof AuthConfirmEmailChangeRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -115,7 +108,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
   '/audit': typeof AuthenticatedAuditRoute
-  '/workspaces': typeof AuthenticatedWorkspacesRoute
   '/auth/confirm-email-change': typeof AuthConfirmEmailChangeRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -132,7 +124,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
-  '/_authenticated/workspaces': typeof AuthenticatedWorkspacesRoute
   '/auth/confirm-email-change': typeof AuthConfirmEmailChangeRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -149,7 +140,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/audit'
-    | '/workspaces'
     | '/auth/confirm-email-change'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -164,7 +154,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/audit'
-    | '/workspaces'
     | '/auth/confirm-email-change'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -180,7 +169,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/audit'
-    | '/_authenticated/workspaces'
     | '/auth/confirm-email-change'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -226,13 +214,6 @@ declare module '@tanstack/react-router' {
       path: '/audit'
       fullPath: '/audit'
       preLoaderRoute: typeof AuthenticatedAuditRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/workspaces': {
-      id: '/_authenticated/workspaces'
-      path: '/workspaces'
-      fullPath: '/workspaces'
-      preLoaderRoute: typeof AuthenticatedWorkspacesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/auth/confirm-email-change': {
@@ -303,14 +284,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
-  AuthenticatedWorkspacesRoute: typeof AuthenticatedWorkspacesRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
-  AuthenticatedWorkspacesRoute: AuthenticatedWorkspacesRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
 }

@@ -29,7 +29,7 @@ beforeEach(() => {
 
 describe('useAppSidebar', () => {
   it('exposes only entries backed by a real route', () => {
-    expect(hrefs()).toEqual(['/dashboard', '/workspaces', '/settings']);
+    expect(hrefs()).toEqual(['/dashboard', '/settings']);
   });
 
   it('adds the admin-only audit log for an admin', () => {
@@ -43,17 +43,17 @@ describe('useAppSidebar', () => {
   });
 
   it('marks the entry for the current route active', () => {
-    pathname.current = '/workspaces';
+    pathname.current = '/settings';
     const { result } = renderHook(() => useAppSidebar());
     const items = result.current.groups.flatMap((group) => group.items);
-    expect(items.filter((item) => item.isActive).map((item) => item.href)).toEqual(['/workspaces']);
+    expect(items.filter((item) => item.isActive).map((item) => item.href)).toEqual(['/settings']);
   });
 
   it('keeps the parent entry active on a nested route', () => {
-    pathname.current = '/workspaces/f-1';
+    pathname.current = '/settings/sessions';
     const { result } = renderHook(() => useAppSidebar());
     const items = result.current.groups.flatMap((group) => group.items);
-    expect(items.find((item) => item.href === '/workspaces')?.isActive).toBe(true);
+    expect(items.find((item) => item.href === '/settings')?.isActive).toBe(true);
   });
 
   it('does not activate /settings from /compliance/settings', () => {

@@ -1,4 +1,4 @@
-import { Building2, History, LayoutDashboard, Settings } from 'lucide-react';
+import { History, LayoutDashboard, Settings } from 'lucide-react';
 import { ROLES } from '@repo/shared/permissions';
 import { commonStrings } from '@/lib/strings';
 import { layoutStrings } from './Layout.strings';
@@ -21,18 +21,6 @@ export const NAV_GROUPS: readonly INavGroupConfig[] = [
         pageTitle: commonStrings.pageTitle.dashboard,
         href: '/dashboard',
         icon: LayoutDashboard,
-      },
-      /*
-       * The workspaces, the Organization -> Workspace tier every tenant
-       * record hangs off. Ungated: `workspaces.list` carries only AuthMiddleware, so
-       * every staff account reads the list; adding or editing a Workspace is
-       * ADMIN-only at the router and the screen hides it for a USER.
-       */
-      {
-        title: layoutStrings.nav.workspaces,
-        pageTitle: commonStrings.pageTitle.workspaces,
-        href: '/workspaces',
-        icon: Building2,
       },
       /*
        * ADMIN-only like the reminder settings below: hiding the link is a
@@ -61,7 +49,7 @@ export const NAV_GROUPS: readonly INavGroupConfig[] = [
 ];
 
 /**
- * Segment-aware match, so `/workspaces/f-1` lights up `/workspaces` while `/settings`
+ * Segment-aware match, so `/audit/a-1` lights up `/audit` while `/settings`
  * stays dark on `/settings-archive`. A bare `startsWith` would match a sibling
  * route that merely shares a name prefix.
  */
@@ -70,8 +58,8 @@ export function isActivePath(currentPath: string, href: string): boolean {
 }
 
 /**
- * The deepest matching entry wins, so a future `/workspaces/archive` entry would
- * beat the `/workspaces` list rather than tying with it.
+ * The deepest matching entry wins, so a future `/settings/sessions` entry would
+ * beat the `/settings` entry rather than tying with it.
  */
 export function findNavItemForPath(
   currentPath: string,

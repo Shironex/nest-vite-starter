@@ -37,10 +37,9 @@ export const Route = createFileRoute('/_authenticated/settings/')({
 /**
  * `/settings`, composed onto the rail from the design.
  *
- * THE RAIL SHIPS THREE OF THE DESIGN'S SEVEN ROWS. The mockup lists Profile,
- * Organization, Users, Notifications, Security, Billing and Integrations.
- * Organization (organization master data), Notifications, Billing and
- * Integrations (third-party integrations) have no procedure, no schema and no
+ * THE RAIL SHIPS THREE OF THE DESIGN'S SIX ROWS. The mockup lists Profile,
+ * Users, Notifications, Security, Billing and Integrations. Notifications,
+ * Billing and Integrations (third-party integrations) have no procedure, no schema and no
  * code behind them, so they are absent rather than present-and-empty. A rail
  * row that opens onto a placeholder is a promise the app cannot keep.
  *

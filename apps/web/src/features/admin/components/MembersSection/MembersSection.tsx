@@ -55,13 +55,12 @@ function MemberRow({
   const twoFactorClass = member.twoFactorEnabled ? 'bg-success-bg text-success' : undefined;
   const isLocked = member.lockedUntil !== null && new Date(member.lockedUntil).getTime() > now;
   // adminDeleteUser refuses ADMIN targets (and the caller's own account, which
-  // is always an admin here), so the menu never offers what the api will deny.
-  // The owner is refused by a separate guard and gets the same treatment: a
-  // button that always errors is worse than no button.
-  const canDelete = member.role !== ROLES.ADMIN && !member.isOwner;
-  // removeMember refuses ADMIN targets too, and routes them through demotion.
-  const canRemove = member.status === 'active' && member.role !== ROLES.ADMIN && !member.isOwner;
-  const isRemoved = member.status === 'removed';
+  // is always an admin here), so the menu never offers what the api will deny:
+  // a button that always errors is worse than no button.
+  const canDelete = member.role !== ROLES.ADMIN;
+  // removeMember (disable) refuses ADMIN targets too, and routes them through demotion.
+  const canRemove = member.status === 'active' && member.role !== ROLES.ADMIN;
+  const isRemoved = member.status === 'disabled';
   const statusLabel = adminStrings.members.status[member.status];
   const statusClass =
     member.status === 'active' ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger';
@@ -76,14 +75,7 @@ function MemberRow({
           </Badge>
         )}
       </TableCell>
-      <TableCell>
-        {name}
-        {member.isOwner && (
-          <Badge variant="secondary" className="ml-2">
-            {adminStrings.members.owner}
-          </Badge>
-        )}
-      </TableCell>
+      <TableCell>{name}</TableCell>
       <TableCell>{roleLabel}</TableCell>
       <TableCell>
         <Badge variant="secondary" className={statusClass}>

@@ -22,18 +22,17 @@ export const adminStrings = {
       unlock: 'Unlock account',
       resetTwoFactor: 'Reset two-factor',
       delete: 'Delete account',
-      remove: 'Remove from organization',
-      restore: 'Restore to organization',
+      remove: 'Disable account',
+      restore: 'Enable account',
     },
     pagination: {
       summary: ({ from, to, total }: { from: number; to: number; total: number }) =>
         `Showing ${from}-${to} of ${total}`,
       label: 'Member list pagination',
     },
-    owner: 'Owner',
     status: {
       active: 'Active',
-      removed: 'Removed from organization',
+      disabled: 'Account disabled',
     },
   },
   roles: {
@@ -75,25 +74,25 @@ export const adminStrings = {
   deleteDialog: {
     title: 'Delete this account?',
     description: ({ email }: { email: string }) =>
-      `This deletes the account of ${email} entirely, not just its membership in this organization. The member is signed out immediately. This cannot be undone.`,
+      `This deletes the account of ${email} entirely, rather than only disabling it. The member is signed out immediately. This cannot be undone.`,
     confirm: 'Delete account',
     success: 'Account deleted',
     error: 'Could not delete the account',
   },
   removeDialog: {
-    title: 'Remove this person from the organization?',
+    title: 'Disable this account?',
     description: ({ email }: { email: string }) =>
-      `${email} loses access to the organization and is signed out immediately. Their account and history stay, and you can restore them at any time.`,
-    confirm: 'Remove from organization',
-    success: 'Removed from the organization',
-    error: 'Could not remove them from the organization',
+      `${email} can no longer sign in and is signed out immediately. Their account and history stay, and you can enable it again at any time.`,
+    confirm: 'Disable account',
+    success: 'Account disabled',
+    error: 'Could not disable the account',
   },
   restoreDialog: {
-    title: 'Restore this person to the organization?',
+    title: 'Enable this account?',
     description: ({ email }: { email: string }) =>
-      `${email} regains access to the organization in the role they held before.`,
-    confirm: 'Restore',
-    success: 'Restored to the organization',
-    error: 'Could not restore them',
+      `${email} can sign in again, in the role they held before.`,
+    confirm: 'Enable account',
+    success: 'Account enabled',
+    error: 'Could not enable the account',
   },
 } as const;

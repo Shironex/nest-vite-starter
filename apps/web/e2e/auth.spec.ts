@@ -35,7 +35,7 @@ test.describe('Authentication', () => {
 
   test('should show register page with correct heading', async ({ page }) => {
     await page.goto('/auth/register');
-    await expect(page.getByRole('heading', { name: 'Register an organization' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Create an account' })).toBeVisible();
   });
 
   test('should show register form fields', async ({ page }) => {
@@ -47,7 +47,7 @@ test.describe('Authentication', () => {
 
   test('should navigate from login to register', async ({ page }) => {
     await page.goto('/auth/login');
-    await page.getByRole('link', { name: 'Register an organization' }).click();
+    await page.getByRole('link', { name: 'Create an account' }).click();
     await expect(page).toHaveURL(/\/auth\/register/);
   });
 

@@ -35,8 +35,7 @@ const memberA = {
   lockedUntil: null,
   createdAt: new Date(),
   twoFactorEnabled: true,
-  membershipEndedAt: null,
-  isOwner: false,
+  disabledAt: null,
   status: 'active' as const,
 };
 const memberB = {
@@ -48,8 +47,7 @@ const memberB = {
   lockedUntil: null,
   createdAt: new Date(),
   twoFactorEnabled: false,
-  membershipEndedAt: null,
-  isOwner: false,
+  disabledAt: null,
   status: 'active' as const,
 };
 
@@ -126,10 +124,10 @@ describe('useMembersSection', () => {
 });
 
 /**
- * A failed listUsers is a failed read, not an empty organization.
+ * A failed listUsers is a failed read, not an empty member list.
  *
  * Without the isError branch the panel rendered "No members found." plus
- * nothing else while the api was 500ing, i.e. it stated that the organization has
+ * nothing else while the api was 500ing, i.e. it stated that the app has
  * no members. Nothing corrected it: the query cache toasts a BACKGROUND
  * refetch failure only, never an initial load.
  */

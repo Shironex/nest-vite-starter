@@ -29,11 +29,9 @@ describe('RestoreMemberDialog', () => {
       />,
     );
 
-    expect(
-      screen.getByRole('heading', { name: /restore this person to the organization/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /enable this account/i })).toBeInTheDocument();
     expect(screen.getByText(/member@example.com/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^restore$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^enable account$/i })).toBeInTheDocument();
   });
 
   it('renders nothing when closed', () => {
@@ -46,8 +44,6 @@ describe('RestoreMemberDialog', () => {
       />,
     );
 
-    expect(
-      screen.queryByRole('heading', { name: /restore this person to the organization/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /enable this account/i })).not.toBeInTheDocument();
   });
 });

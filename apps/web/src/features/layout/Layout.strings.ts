@@ -5,7 +5,6 @@ export const layoutStrings = {
     groupMain: 'Main',
     groupSettings: 'Settings',
     dashboard: 'Dashboard',
-    workspaces: 'Workspaces',
     audit: 'Audit log',
     settings: 'Settings',
   },
@@ -14,8 +13,5 @@ export const layoutStrings = {
     settings: 'Settings',
     logout: 'Log out',
     logoutError: 'Could not log out. Please try again.',
-  },
-  organizationIdentity: {
-    fallbackName: 'Your organization',
   },
 } as const;

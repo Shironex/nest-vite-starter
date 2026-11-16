@@ -20,15 +20,15 @@ import { trpc } from '@/lib/trpc';
  * still see.
  */
 
-/** One keyset page of the tenant's audit history (ADMIN-only procedure). */
+/** One keyset page of the app's audit history (ADMIN-only procedure). */
 export function useAuditLogList(input: AuditLogListInput) {
   return useQuery({ ...trpc.audit.list.queryOptions(input), placeholderData: keepPreviousData });
 }
 
 /**
- * The actor dropdown's options: the tenant's users, via the existing
+ * The actor dropdown's options: the app's users, via the existing
  * admin-only listUsers procedure (this screen is ADMIN-gated too). One page at
- * the schema's maximum; an organization with more than 100 staff accounts will need a
+ * the schema's maximum; an app with more than 100 accounts will need a
  * searchable picker, which is deliberately not built speculatively.
  */
 export function useAuditActorOptions() {

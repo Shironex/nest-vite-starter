@@ -9,7 +9,7 @@ import { create } from 'zustand';
  * `pageSubtitleKey` beside it. That cannot express what the design draws: the
  * dashboard subtitle is a live localized date ("Tuesday,
  * July 14, 2026") and a list screen's subtitle is a live record count ("12
- * workspaces, 9 active"). Both are data, not copy.
+ * users, 9 active"). Both are data, not copy.
  *
  * WHY IT LIVES IN `stores/` AND NOT IN THE LAYOUT FEATURE. The shell cannot
  * fetch that data itself, and it should not: it has no business knowing what a
@@ -54,7 +54,7 @@ export const useTopbarStore = create<ITopbarState & ITopbarActions>((set) => ({
  * Publishes this page's topbar subtitle for as long as it is mounted.
  *
  * Pass `null` while the data is still loading rather than a placeholder: a
- * subtitle that flickers from "0 workspaces" to the real figure reads as a
+ * subtitle that flickers from "0 users" to the real figure reads as a
  * wrong answer being corrected, which is worse than one arriving a moment late.
  */
 export function useSetTopbarSubtitle(subtitle: string | null): void {

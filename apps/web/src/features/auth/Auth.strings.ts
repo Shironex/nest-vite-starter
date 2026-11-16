@@ -124,10 +124,10 @@ export const authStrings = {
     login: {
       title: 'Welcome back',
       noAccount: 'No account yet?',
-      register: 'Register an organization',
+      register: 'Create an account',
     },
     register: {
-      title: 'Register an organization',
+      title: 'Create an account',
       haveAccount: 'Already have an account?',
       signIn: 'Sign in',
     },

@@ -12,7 +12,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@repo/ui/sidebar';
-import { OrganizationIdentity } from '@/features/layout/components/OrganizationIdentity';
 import { useAppSidebar } from './AppSidebar.hooks';
 import type { IActiveNavItem } from './AppSidebar.types';
 
@@ -85,8 +84,6 @@ export default function AppSidebar() {
           {groupSections}
         </nav>
       </SidebarContent>
-
-      <OrganizationIdentity />
     </Sidebar>
   );
 }

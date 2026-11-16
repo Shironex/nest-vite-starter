@@ -65,16 +65,16 @@ user-facing copy owns one `<Name>.strings.ts` at the feature root: a plain
 or pluralizes.
 
 ```
-workspace/
-  Workspace.strings.ts   # export const workspaceStrings = { ... } as const
+project/
+  Project.strings.ts   # export const projectStrings = { ... } as const
   components/
-  Workspaces.queries.ts
+  Projects.queries.ts
 ```
 
 ```ts
-// Workspace.strings.ts
-export const workspaceStrings = {
-  title: 'Workspaces',
+// Project.strings.ts
+export const projectStrings = {
+  title: 'Projects',
   list: {
     editFor: ({ name }: { name: string }) => `Edit ${name}`,
   },
@@ -82,7 +82,7 @@ export const workspaceStrings = {
 ```
 
 Components and hooks import the table and read it directly
-(`workspaceStrings.list.editFor({ name })`). `pnpm new:feature` scaffolds the
+(`projectStrings.list.editFor({ name })`). `pnpm new:feature` scaffolds the
 file.
 
 Rules:

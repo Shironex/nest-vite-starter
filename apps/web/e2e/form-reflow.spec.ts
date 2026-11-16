@@ -30,8 +30,7 @@ import { ADMIN_STORAGE_STATE } from './support/auth';
  * cursor would miss it.
  *
  * Prereqs (same as auth-login.spec.ts): docker services + dev servers running,
- * the seeded admin, and the seeded Workspace the DB seed creates for the default
- * organization. The settings group also assumes the admin has 2FA disabled, which is
+ * and the seeded admin. The settings group also assumes the admin has 2FA disabled, which is
  * the state the two-factor journeys restore after each of their tests.
  */
 

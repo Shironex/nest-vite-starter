@@ -1,7 +1,7 @@
 /** English copy for this feature. Interpolated entries are small functions. */
 export const settingsStrings = {
   nav: 'Settings',
-  subtitle: 'Account, organization and app preferences',
+  subtitle: 'Account and app preferences',
   sections: {
     profile: 'Profile',
     members: 'Members',

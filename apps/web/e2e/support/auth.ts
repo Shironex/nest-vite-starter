@@ -14,7 +14,7 @@ import type { Page } from '@playwright/test';
 export const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@example.com';
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'P@ssw0rd!Change.Me';
 
-/** Seeded dev/e2e fixture member in the admin's tenant, seeded with 2FA on. */
+/** Seeded dev/e2e fixture member (a plain USER), seeded with 2FA on. */
 export const MEMBER_EMAIL = process.env.MEMBER_EMAIL ?? 'member@example.com';
 
 /**

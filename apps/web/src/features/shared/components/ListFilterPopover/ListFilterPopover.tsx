@@ -8,7 +8,7 @@ import type { IListFilterPopoverProps } from './ListFilterPopover.types';
  * The toolbar's "Filters" control: one button that opens the surface's filters
  * in a panel.
  *
- * WHY THIS EXISTS. Every list screen has its own filter grammar: a workspace
+ * WHY THIS EXISTS. Every list screen has its own filter grammar: a project
  * picker on one, three pickers and a date range on the audit feed, a state
  * multi-select or a whole `<fieldset>` of type checkboxes on others. Left on the
  * page they are different shapes competing with the data. The design puts every
