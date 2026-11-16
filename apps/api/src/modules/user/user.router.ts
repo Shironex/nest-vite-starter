@@ -6,7 +6,6 @@ import {
   adminUserListPageOutput,
   memberActionSchema,
   userProfileOutput,
-  userTenantOutput,
 } from '@repo/shared/schemas';
 import { ROLES } from '@repo/shared/permissions';
 import { UserService } from './user.service';
@@ -52,20 +51,10 @@ export class UserRouter {
     return this.userService.getProfile(ctx.user.id);
   }
 
-  /**
-   * The caller's organization identity, for the sidebar footer block.
-   * No input: the tenant comes from the session, never a client-supplied id.
-   * `name` is null only for a tenant-less account; see UserService.getTenantIdentity.
-   */
-  @Query({ output: userTenantOutput })
-  async tenant() {
-    return this.userService.getTenantIdentity();
-  }
-
   // ── Admin procedures ──────────────────────────────────────────────
 
   /**
-   * List users in the caller's tenant (admin only), one cursor page at a time.
+   * List users (admin only), one cursor page at a time.
    * Returns admin-visible fields including lock status, plus `nextCursor` to
    * feed back for the following page (null on the last page). The whole input
    * defaults via zod, so a bare call (no args) yields the first page of 50.
@@ -107,7 +96,7 @@ export class UserRouter {
 
   /**
    * Soft delete a user's account (admin only; hard-deleted by the purge cron
-   * after the grace window). Scoped to the caller's tenant; refuses the
+   * after the grace window). Refuses the
    * caller's own account (self-service auth.deleteAccount owns that) and
    * refuses ADMIN targets. Revokes the target's sessions.
    */
@@ -122,14 +111,12 @@ export class UserRouter {
   }
 
   /**
-   * End somebody's membership of the organization without deleting their account
-   * (admin only).
+   * Disable an account without deleting it (admin only).
    *
    * The reversible alternative to deleting an account, which leaves nothing
-   * recoverable. The row
-   * keeps its tenantId so the removal is visible and can be undone; the guards
-   * (no self, no ADMIN target) are in the service, where the write repeats the
-   * role predicate.
+   * recoverable. The guards (no self, no ADMIN target) are in the service,
+   * where the write repeats the role predicate. The procedure keeps its
+   * historical name until the admin surface is redesigned.
    */
   @Mutation({ input: memberActionSchema, output: ackOutput })
   @UseMiddlewares(AuthMiddleware, AdminMiddleware)
@@ -137,15 +124,15 @@ export class UserRouter {
     @Input() input: z.infer<typeof memberActionSchema>,
     @Ctx() ctx: IAuthenticatedContextType,
   ) {
-    await this.userService.removeMember(ctx.user.id, input.userId);
+    await this.userService.disableUser(ctx.user.id, input.userId);
     return { success: true as const };
   }
 
-  /** Put a removed member back (admin only). */
+  /** Enable a disabled account (admin only). */
   @Mutation({ input: memberActionSchema, output: ackOutput })
   @UseMiddlewares(AuthMiddleware, AdminMiddleware)
   async restoreMember(@Input() input: z.infer<typeof memberActionSchema>) {
-    await this.userService.restoreMember(input.userId);
+    await this.userService.enableUser(input.userId);
     return { success: true as const };
   }
 }

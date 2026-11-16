@@ -25,7 +25,6 @@ import type Redis from 'ioredis';
 import RedisMock from 'ioredis-mock';
 import type { PrismaClient } from '@repo/database' with { 'resolution-mode': 'import' };
 import { AUDIT_ACTIONS, AUDIT_PII_ERASED_VALUE } from '@repo/shared/audit';
-import { buildCanaryTenantScopeExtension } from '@test/tenant-scope-canary';
 import { esmImport } from '../../common/utils/esm-import';
 import type { PrismaService } from '../../common/database/prisma.service';
 import { AuditService } from '../audit/audit.service';
@@ -39,10 +38,9 @@ import type { TokenService } from '../auth/services/token.service';
 import type { UserService } from './user.service';
 import { UserPurgeService } from './user-purge.service';
 
-let unscoped: PrismaClient;
+let prisma: PrismaClient;
 let prismaService: PrismaService;
 
-const createdTenantIds = new Set<string>();
 const createdUserIds = new Set<string>();
 
 const GRACE_DAYS = 30;
@@ -55,22 +53,12 @@ const LONG_AGO = new Date('2001-01-01T00:00:00Z');
 /** Test-only placeholder, never a real hash. */
 const FAKE_HASH = 'argon2-existing';
 
-const makeTenant = async () => {
+const makeUser = async () => {
   const uid = randomUUID();
-  const tenant = await unscoped.tenant.create({
-    data: { name: `scrub-${uid}`, slug: `scrub-${uid}` },
-  });
-  createdTenantIds.add(tenant.id);
-  return tenant;
-};
-
-const makeUser = async (tenantId: string) => {
-  const uid = randomUUID();
-  const user = await unscoped.user.create({
+  const user = await prisma.user.create({
     data: {
       email: `scrub-old-${uid}@example.test`,
-      tenantId,
-      role: 'ADMIN',
+      role: 'USER',
       passwordHash: FAKE_HASH,
       emailVerified: true,
     },
@@ -85,8 +73,8 @@ const buildEmailChange = (audit: AuditService) => {
   const redis = new RedisMock() as unknown as Redis;
   const mailed: string[] = [];
   const userService = {
-    findById: (id: string) => unscoped.user.findFirst({ where: { id, deletedAt: null } }),
-    findByEmail: (email: string) => unscoped.user.findFirst({ where: { email } }),
+    findById: (id: string) => prisma.user.findFirst({ where: { id, deletedAt: null } }),
+    findByEmail: (email: string) => prisma.user.findFirst({ where: { email } }),
     normalizeEmail: (email: string) => email.trim().toLowerCase(),
     isDisposableEmail: async () => false,
   };
@@ -133,34 +121,28 @@ const buildPurge = (audit: AuditService) =>
 
 /** Every audit row this user is the subject of, as the audit trail stores it. */
 const subjectRows = (userId: string) =>
-  unscoped.auditLog.findMany({
+  prisma.auditLog.findMany({
     where: { targetType: 'User', targetId: userId },
     orderBy: { createdAt: 'asc' },
   });
 
 beforeAll(async () => {
-  const { prisma } = (await esmImport('@repo/database')) as { prisma: PrismaClient };
-  unscoped = prisma;
-  const client = unscoped.$extends(buildCanaryTenantScopeExtension()) as unknown as PrismaClient;
-  prismaService = { client, unscoped } as unknown as PrismaService;
+  ({ prisma } = (await esmImport('@repo/database')) as { prisma: PrismaClient });
+  prismaService = { client: prisma } as unknown as PrismaService;
 });
 
 afterAll(async () => {
   if (createdUserIds.size > 0) {
     const ids = [...createdUserIds];
-    await unscoped.auditLog.deleteMany({ where: { targetId: { in: ids } } });
-    await unscoped.user.deleteMany({ where: { id: { in: ids } } });
-  }
-  if (createdTenantIds.size > 0) {
-    await unscoped.tenant.deleteMany({ where: { id: { in: [...createdTenantIds] } } });
+    await prisma.auditLog.deleteMany({ where: { targetId: { in: ids } } });
+    await prisma.user.deleteMany({ where: { id: { in: ids } } });
   }
 });
 
 describe('scrub on purge (audit PII registry -> user purge)', () => {
   it('erases the declared email fields of a purged user and keeps every audit row', async () => {
     const audit = new AuditService(prismaService);
-    const tenant = await makeTenant();
-    const user = await makeUser(tenant.id);
+    const user = await makeUser();
     const oldEmail = user.email;
     const newEmail = `scrub-new-${randomUUID()}@example.test`;
 
@@ -186,12 +168,12 @@ describe('scrub on purge (audit PII registry -> user purge)', () => {
     expect(requested?.userId).toBe(user.id);
 
     // 2. The user deletes their account and the grace window lapses.
-    await unscoped.user.update({ where: { id: user.id }, data: { deletedAt: LONG_AGO } });
+    await prisma.user.update({ where: { id: user.id }, data: { deletedAt: LONG_AGO } });
 
     // 3. The real cron sweep.
     const purged = await buildPurge(audit).sweep();
     expect(purged).toBeGreaterThanOrEqual(1);
-    expect(await unscoped.user.findUnique({ where: { id: user.id } })).toBeNull();
+    expect(await prisma.user.findUnique({ where: { id: user.id } })).toBeNull();
 
     // 4. Every row survives, keyed by the same id, with the same action.
     const after = await subjectRows(user.id);
@@ -224,9 +206,8 @@ describe('scrub on purge (audit PII registry -> user purge)', () => {
 
   it("leaves a surviving user's declared fields alone", async () => {
     const audit = new AuditService(prismaService);
-    const tenant = await makeTenant();
-    const doomed = await makeUser(tenant.id);
-    const survivor = await makeUser(tenant.id);
+    const doomed = await makeUser();
+    const survivor = await makeUser();
     const survivorNew = `scrub-keep-${randomUUID()}@example.test`;
 
     const emailChange = buildEmailChange(audit);
@@ -238,7 +219,7 @@ describe('scrub on purge (audit PII registry -> user purge)', () => {
       'iso',
     );
 
-    await unscoped.user.update({ where: { id: doomed.id }, data: { deletedAt: LONG_AGO } });
+    await prisma.user.update({ where: { id: doomed.id }, data: { deletedAt: LONG_AGO } });
     await buildPurge(audit).sweep();
 
     const rows = await subjectRows(survivor.id);

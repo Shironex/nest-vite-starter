@@ -31,16 +31,15 @@ export interface UserFixture {
   failedAttempts: number;
   lockoutCount: number;
   lockedUntil: Date | null;
-  tenantId: string | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
   /**
-   * Set when somebody is removed from their organization without their account being
-   * deleted. Distinct from `deletedAt`: the row stays live and visible, and
-   * every credential path has to refuse it separately.
+   * Set when an admin disables the account without deleting it. Distinct from
+   * `deletedAt`: the row stays live and visible, and every credential path has
+   * to refuse it separately.
    */
-  membershipEndedAt: Date | null;
+  disabledAt: Date | null;
 }
 
 /*
@@ -61,11 +60,10 @@ export const userFixture = (overrides: Partial<UserFixture> = {}): UserFixture =
   failedAttempts: 0,
   lockoutCount: 0,
   lockedUntil: null,
-  tenantId: null,
   createdAt: FIXTURE_TIMESTAMP,
   updatedAt: FIXTURE_TIMESTAMP,
   deletedAt: null,
-  membershipEndedAt: null,
+  disabledAt: null,
   ...overrides,
 });
 

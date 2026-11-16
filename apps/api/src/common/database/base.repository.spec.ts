@@ -153,8 +153,8 @@ describe('BaseRepository.pageWithTotal', () => {
 
   it('awaits the rows itself rather than handing back a lazy promise', async () => {
     // A Prisma promise is lazy. Returning an un-awaited pair would execute the
-    // query after the caller's ALS request scope had exited, and the tenant
-    // extension fails closed there.
+    // query after the caller's ALS request scope had exited, where nothing
+    // reading the ALS sees a store.
     let settled = false;
     const rows = Promise.resolve([{ id: 'r-1' }]).then((value) => {
       settled = true;

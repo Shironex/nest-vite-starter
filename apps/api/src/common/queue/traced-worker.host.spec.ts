@@ -72,20 +72,20 @@ describe('TracedWorkerHost instrumentation', () => {
     await expect(processor.process(jobFor(0, 3))).rejects.toThrow('smtp down');
   });
 
-  // The `_ctx` envelope is JSON out of Redis and it becomes the tenant scope
-  // every scoped Prisma call in the processor runs under, so it is parsed
+  // The `_ctx` envelope is JSON out of Redis and it becomes the ALS actor
+  // every audit row in the processor is written under, so it is parsed
   // rather than asserted. A replayed or hand-edited job runs with NO context
   // instead of with a forged one.
-  it('runs the job with no tenant scope when the context envelope is malformed', async () => {
+  it('runs the job with no actor when the context envelope is malformed', async () => {
     let seen: IRequestContext | undefined;
     const processor = new TestProcessor(() => {
       seen = getRequestContext();
       return Promise.resolve('done');
     });
 
-    await processor.process(jobFor(0, 3, { _ctx: { tenantId: { not: '' } } }));
+    await processor.process(jobFor(0, 3, { _ctx: { userId: { not: '' } } }));
 
-    expect(seen?.tenantId).toBeUndefined();
+    expect(seen?.userId).toBeUndefined();
   });
 
   it('carries a well-formed envelope into the ALS store', async () => {
@@ -95,9 +95,9 @@ describe('TracedWorkerHost instrumentation', () => {
       return Promise.resolve('done');
     });
 
-    await processor.process(jobFor(0, 3, { _ctx: { tenantId: 'tenant-a' } }));
+    await processor.process(jobFor(0, 3, { _ctx: { userId: 'u-1' } }));
 
-    expect(seen?.tenantId).toBe('tenant-a');
+    expect(seen?.userId).toBe('u-1');
   });
 
   it('ignores a traceparent that is not a string', async () => {

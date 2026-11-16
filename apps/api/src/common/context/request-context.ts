@@ -28,18 +28,6 @@ export interface IRequestContext {
    * W3C span-id (lowercase hex, 16 chars) of the request's root span.
    */
   spanId?: string | undefined;
-  /**
-   * Active Tenant (organization) id for the request. Read by the Prisma tenant-scope
-   * extension to fail-closed and to inject `where: { tenantId }` on every
-   * tenant-scoped model. Undefined for system/seed/CLI contexts running outside
-   * a request, which is why those paths must use the unscoped client.
-   */
-  tenantId?: string | undefined;
-  /**
-   * Active Workspace id for the request. Reserved for the 3-tier scope (Workspace is
-   * nested under Tenant); not yet enforced by the tenant-scope extension.
-   */
-  workspaceId?: string | undefined;
 }
 
 export const requestContext = new AsyncLocalStorage<IRequestContext>();
@@ -58,12 +46,4 @@ export function getTraceId(): string | undefined {
 
 export function getSpanId(): string | undefined {
   return requestContext.getStore()?.spanId;
-}
-
-export function getTenantId(): string | undefined {
-  return requestContext.getStore()?.tenantId;
-}
-
-export function getWorkspaceId(): string | undefined {
-  return requestContext.getStore()?.workspaceId;
 }

@@ -1,21 +1,16 @@
 import type { PrismaClient } from '@repo/database' with { 'resolution-mode': 'import' };
-import { buildTenantScopeExtension } from './tenant-scope.extension';
 
 // `@repo/database` is ESM-only and this suite runs as CJS, so the loader seam
-// (esmImport) is the one thing replaced. The tenant-scope extension is real.
+// (esmImport) is the one thing replaced.
 jest.mock('../utils/esm-import', () => ({ esmImport: jest.fn() }));
 
 interface IFakePrisma {
-  base: { $extends: jest.Mock; $queryRaw: jest.Mock; $disconnect: jest.Mock };
-  scoped: object;
+  base: { $queryRaw: jest.Mock; $disconnect: jest.Mock };
 }
 
 function buildFakePrisma(): IFakePrisma {
-  const scoped = { tag: 'scoped-client' };
   return {
-    scoped,
     base: {
-      $extends: jest.fn().mockReturnValue(scoped),
       $queryRaw: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
       $disconnect: jest.fn().mockResolvedValue(undefined),
     },
@@ -57,36 +52,16 @@ describe('PrismaService', () => {
     expect(esmImportMock).toHaveBeenCalledWith('@repo/database');
   });
 
-  it('exposes the raw client as `unscoped` and the extended one as `client`', async () => {
+  it('exposes the loaded @repo/database client as `client`', async () => {
     const fake = buildFakePrisma();
     const { service } = loadService(fake);
 
     await service.onModuleInit();
 
-    expect(service.unscoped).toBe(fake.base);
-    expect(service.client).toBe(fake.scoped);
-    expect(service.client).not.toBe(service.unscoped);
+    expect(service.client).toBe(fake.base);
   });
 
-  it('builds the scoped client ONCE with the tenant-scope extension', async () => {
-    const fake = buildFakePrisma();
-    const { service } = loadService(fake);
-
-    await service.onModuleInit();
-    // Repeated reads must not mint a new $extends proxy each time.
-    void service.client;
-    void service.client;
-
-    expect(fake.base.$extends).toHaveBeenCalledTimes(1);
-    const extension = fake.base.$extends.mock.calls[0]?.[0] as ReturnType<
-      typeof buildTenantScopeExtension
-    >;
-    // The name identifies the tenant-scope extension; what its query hook does
-    // is tenant-scope.extension.spec.ts's subject, not this one's.
-    expect(extension.name).toBe(buildTenantScopeExtension().name);
-  });
-
-  it('probes connectivity on the UNSCOPED client, so no tenant context is needed at boot', async () => {
+  it('probes connectivity at boot', async () => {
     const fake = buildFakePrisma();
     const { service } = loadService(fake);
 
@@ -115,7 +90,7 @@ describe('PrismaService', () => {
     expect(esmImportMock).toHaveBeenCalledTimes(1);
   });
 
-  it('disconnects the raw client on shutdown', async () => {
+  it('disconnects the client on shutdown', async () => {
     const fake = buildFakePrisma();
     const { service } = loadService(fake);
     await service.onModuleInit();

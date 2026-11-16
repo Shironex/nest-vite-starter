@@ -162,17 +162,16 @@ describe('sentry-scrub (API)', () => {
   });
 
   describe('egress identifiers (parity with the web Sentry boundary)', () => {
-    it('keeps the organization and record identifiers that answer "which customer is broken"', () => {
-      // They name an organization or an opaque record, not a data subject, so
-      // redacting them would cost the triage and protect nobody.
+    it('keeps the record identifiers that answer "which record is broken"', () => {
+      // They name an opaque record, not a data subject, so redacting them would
+      // cost the triage and protect nobody.
       const event = scrubEvent({
-        extra: { tenantId: 'ten-1', workspaceId: 'fir-2', documentId: 'doc-3' },
+        extra: { documentId: 'doc-3', jobId: 'job-4' },
       });
 
       const serialized = JSON.stringify(event);
-      expect(serialized).toContain('ten-1');
-      expect(serialized).toContain('fir-2');
       expect(serialized).toContain('doc-3');
+      expect(serialized).toContain('job-4');
     });
   });
 

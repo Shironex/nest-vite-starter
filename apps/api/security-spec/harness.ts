@@ -61,7 +61,7 @@ const RUN_HINT = 'export DATABASE_URL=<a real database> && pnpm --filter @repo/a
 let postgres: PrismaClient | undefined;
 
 /**
- * The unscoped Prisma singleton, connected, or a thrown `SPEC-INFRA`.
+ * The Prisma singleton, connected, or a thrown `SPEC-INFRA`.
  *
  * The singleton from `@repo/database` rather than `new PrismaClient()`: Prisma 7
  * needs a driver adapter and that package is where it is configured. Loaded

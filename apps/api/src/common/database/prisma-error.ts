@@ -18,8 +18,7 @@ export const PRISMA_ERROR = {
   /**
    * "An operation failed because it depends on one or more records that were
    * required but not found." Raised by singular `update`/`delete`/
-   * `findUniqueOrThrow` when the `where` matches no row - including a
-   * tenant-scoped write whose injected scope key excluded the target.
+   * `findUniqueOrThrow` when the `where` matches no row.
    */
   RECORD_NOT_FOUND: 'P2025',
 } as const;

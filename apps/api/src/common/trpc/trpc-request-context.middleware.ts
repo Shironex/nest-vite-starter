@@ -14,19 +14,18 @@ import type { IRequestContext } from '../context/request-context';
  * pipeline that `consumer.apply(...).forRoutes('*')` feeds, so a tRPC call
  * reaches its resolver with no ALS scope unless one is opened here.
  *
- * What depends on it: AuthMiddleware needs a store to write `tenantId` into, and
- * without that write EVERY query against a tenant-scoped model fails closed with
- * "Tenant context required" (`workspace`). Less visibly, `requestId` never reaches the structured logs
- * and `AuditService` cannot see the caller.
+ * What depends on it: AuthMiddleware needs a store to write `userId` into, and
+ * without it `AuditService` cannot see the caller and `requestId` never reaches
+ * the structured logs.
  *
  * Registered FIRST in `globalMiddlewares` (app.module.ts) so the scope is open
  * before any other middleware, notably AuthMiddleware, which populates
- * `userId`/`tenantId` into the store this opens.
+ * `userId` into the store this opens.
  *
  * Per PROCEDURE rather than per HTTP request: a batched call runs several
  * procedures over one request and each gets its own store. They are built from
  * the same `req`, so `requestId` is shared and correlation is unaffected, while
- * per-procedure `userId`/`tenantId` writes cannot bleed across a batch.
+ * per-procedure `userId` writes cannot bleed across a batch.
  */
 @Injectable()
 export class TrpcRequestContextMiddleware implements TRPCMiddleware {
@@ -39,10 +38,10 @@ export class TrpcRequestContextMiddleware implements TRPCMiddleware {
      *
      * If an outer scope ever exists (a future express mount ahead of the tRPC
      * handler, or a test harness), sharing one object across a batch would let
-     * every procedure in that batch write `userId`/`tenantId` into the same
-     * store. A procedure that runs without AuthMiddleware would then observe a
-     * sibling's tenantId, flipping the Prisma extension from fail-closed to
-     * fail-open on scheduling order. Copying keeps `requestId` correlation
+     * every procedure in that batch write `userId` into the same store. A
+     * procedure that runs without AuthMiddleware would then observe a
+     * sibling's userId, and audit rows would name the wrong actor depending on
+     * scheduling order. Copying keeps `requestId` correlation
      * identical while making per-procedure isolation unconditional.
      */
     const path = `trpc/${opts.path ?? 'unknown'}`;
@@ -86,7 +85,7 @@ export class TrpcRequestContextMiddleware implements TRPCMiddleware {
      *
      * Only `requestId` is published. It is derived from the HTTP request, so
      * every procedure of a batch writes the same value into the ctx they share.
-     * Publishing anything per-procedure (`userId`/`tenantId`) would let one
+     * Publishing anything per-procedure (`userId`) would let one
      * procedure's write be read as another's: the bleed the copy-on-inherit
      * above exists to prevent.
      */
@@ -95,9 +94,9 @@ export class TrpcRequestContextMiddleware implements TRPCMiddleware {
     }
 
     // The `async` is load bearing: `run(store, () => opts.next())` would return
-    // a promise Prisma has not started yet, and this repo's Prisma extension
-    // reads the ALS when the promise is finally awaited, outside the scope,
-    // where it fails closed. Awaiting inside keeps the resolution in scope.
+    // a promise that may resolve outside the scope, where anything reading the
+    // ALS (AuditService, the logger) would see no store. Awaiting inside keeps
+    // the resolution in scope.
     return requestContext.run(
       store,
       async () => await opts.next({ ctx: { requestId: store.requestId } }),

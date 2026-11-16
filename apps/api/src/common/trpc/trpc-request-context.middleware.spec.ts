@@ -68,7 +68,7 @@ describe('TrpcRequestContextMiddleware', () => {
 
     // Correlation is inherited...
     expect(seen.store?.requestId).toBe('outer-id');
-    // ...but the object is not shared, so a sibling procedure's tenantId write
+    // ...but the object is not shared, so a sibling procedure's userId write
     // cannot be observed through it.
     expect(seen.store).not.toBe(outer);
   });
@@ -133,7 +133,7 @@ describe('TrpcRequestContextMiddleware', () => {
     const req = buildReq();
     const next = jest.fn().mockImplementation(async () => {
       const store = requestContext.getStore();
-      if (store) store.tenantId = 'ten-from-procedure';
+      if (store) store.userId = 'user-from-procedure';
       return 'next-result';
     });
     const opts = {
@@ -144,7 +144,7 @@ describe('TrpcRequestContextMiddleware', () => {
 
     await requestContext.run(outer, async () => subject.use(opts));
 
-    expect(outer.tenantId).toBeUndefined();
+    expect(outer.userId).toBeUndefined();
   });
 
   it('rejects a malformed inbound x-request-id rather than trusting it', async () => {

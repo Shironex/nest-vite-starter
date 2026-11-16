@@ -3,9 +3,9 @@
  * audit finding, each pinning the behavior that finding is about.
  *
  * It is a third lane, beside the fast `test` suite and the `test:integration`
- * isolation lane, because it answers a different question. The fast suite asks
- * "does this unit behave"; the isolation lane asks "is the tenant boundary
- * real"; this lane asks "is finding X still fixed", and its results are
+ * lane, because it answers a different question. The fast suite asks "does
+ * this unit behave"; the integration lane asks "does it hold against real
+ * Postgres"; this lane asks "is finding X still fixed", and its results are
  * reconciled case by case against `security-spec/findings.json` by
  * `tools/quality/check-security-manifest.ts`. That reconciliation, not jest's
  * exit code, is the gate: a finding recorded as `proven` (demonstrated, not yet

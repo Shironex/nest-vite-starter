@@ -84,11 +84,10 @@ const PRISMA_ERROR_MESSAGES: Record<string, string> = {
  * being INTERNAL_ERROR-class so it no longer pages Sentry.
  *
  * P2025 is here because it is an ordinary outcome, not a fault: a singular
- * `update`/`delete` whose `where` matched nothing. The tenant-scope extension
- * makes that the NORMAL result of touching a row outside the active scope (see
- * common/database/tenant-scope.extension.ts), so leaving it INTERNAL_ERROR-class
- * would return HTTP 500 and raise a Sentry event for a routine 404 - and would
- * hand attackers a way to generate Sentry events with a foreign id.
+ * `update`/`delete` whose `where` matched nothing (a stale or foreign id), so
+ * leaving it INTERNAL_ERROR-class would return HTTP 500 and raise a Sentry event
+ * for a routine 404 - and would hand attackers a way to generate Sentry events
+ * with a made-up id.
  *
  * P2002 is deliberately NOT promoted. Reaching this handler with a unique
  * constraint violation means a service failed to guard a constraint it should
@@ -212,7 +211,7 @@ export class AppErrorHandler implements TRPCErrorHandler {
      * sentinel, with no change to a single log call.
      *
      * Skipped when a store is somehow already live (a future express mount ahead
-     * of the tRPC handler), so a real store carrying userId/tenantId is never
+     * of the tRPC handler), so a real store carrying userId is never
      * replaced by this id-only one. Also skipped when nothing was published,
      * where `getRequestId()` is already the best available answer.
      */

@@ -5,12 +5,11 @@ type Services = ConstructorParameters<typeof UserRouter>;
 const buildRouter = () => {
   const userService = {
     getProfile: jest.fn().mockResolvedValue({ id: 'u-1', email: 'e' }),
-    getTenantIdentity: jest.fn().mockResolvedValue({ name: 'Acme Robotics' }),
     listUsers: jest.fn().mockResolvedValue({ items: [], nextCursor: null }),
     updateRole: jest.fn().mockResolvedValue(undefined),
     adminDeleteUser: jest.fn().mockResolvedValue(undefined),
-    removeMember: jest.fn().mockResolvedValue(undefined),
-    restoreMember: jest.fn().mockResolvedValue(undefined),
+    disableUser: jest.fn().mockResolvedValue(undefined),
+    enableUser: jest.fn().mockResolvedValue(undefined),
   };
   const lockoutService = {
     adminUnlock: jest.fn().mockResolvedValue(undefined),
@@ -36,13 +35,6 @@ describe('UserRouter (wiring)', () => {
     const result = await router.me(buildCtx('u-9'));
     expect(userService.getProfile).toHaveBeenCalledWith('u-9');
     expect(result).toEqual({ id: 'u-1', email: 'e' });
-  });
-
-  it('tenant() delegates to userService.getTenantIdentity() with no input', async () => {
-    const { router, userService } = buildRouter();
-    const result = await router.tenant();
-    expect(userService.getTenantIdentity).toHaveBeenCalledWith();
-    expect(result).toEqual({ name: 'Acme Robotics' });
   });
 
   it('listUsers() forwards the zod-defaulted pagination input to userService.listUsers', async () => {
@@ -87,7 +79,7 @@ describe('UserRouter (wiring)', () => {
     expect(result).toEqual({ deleted: true });
   });
 
-  it('removeMember() delegates target + caller id to userService.removeMember', async () => {
+  it('removeMember() delegates target + caller id to userService.disableUser', async () => {
     const { router, userService } = buildRouter();
 
     const result = await router.removeMember(
@@ -96,17 +88,17 @@ describe('UserRouter (wiring)', () => {
     );
 
     // The caller's id comes from the session, never from the input: the
-    // no-self-removal rule would be spoofable otherwise.
-    expect(userService.removeMember).toHaveBeenCalledWith('admin-1', 'target-1');
+    // no-self-disable rule would be spoofable otherwise.
+    expect(userService.disableUser).toHaveBeenCalledWith('admin-1', 'target-1');
     expect(result).toEqual({ success: true });
   });
 
-  it('restoreMember() delegates the target to userService.restoreMember', async () => {
+  it('restoreMember() delegates the target to userService.enableUser', async () => {
     const { router, userService } = buildRouter();
 
     const result = await router.restoreMember({ userId: 'target-1' });
 
-    expect(userService.restoreMember).toHaveBeenCalledWith('target-1');
+    expect(userService.enableUser).toHaveBeenCalledWith('target-1');
     expect(result).toEqual({ success: true });
   });
 });

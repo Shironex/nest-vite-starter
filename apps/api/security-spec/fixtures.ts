@@ -2,10 +2,10 @@
  * Shared row factories for the DB-backed security specs.
  *
  * Every finding in this folder is about what the real rows do, so each spec
- * needs the same four things: the unscoped singleton, a `PrismaService` shaped
- * exactly as the app builds it (the tenant-scope extension on top), throwaway
- * tenants and users, and a cleanup that leaves the database as it found it.
- * Writing that four times invites four slightly different versions of it.
+ * needs the same three things: the Prisma singleton wrapped in a
+ * `PrismaService` shaped exactly as the app builds it, throwaway users, and a
+ * cleanup that leaves the database as it found it. Writing that three times
+ * invites three slightly different versions of it.
  *
  * Kept deliberately small: anything a single finding needs stays in that
  * finding's spec, so a change there cannot quietly move another finding's
@@ -14,13 +14,12 @@
 import { randomUUID } from 'node:crypto';
 import type { PrismaClient } from '@repo/database' with { 'resolution-mode': 'import' };
 import type { PrismaService } from '@/common/database/prisma.service';
-import { buildTenantScopeExtension } from '@/common/database/tenant-scope.extension';
 import { requirePostgresOrFail } from './harness';
 
 /**
  * A stand-in for an argon2id digest. The literal already carried in
  * `.gitleaks.toml`: any string next to a `passwordHash` key trips the generic
- * API key rule, so the isolation specs settled on this one and these follow.
+ * API key rule, so the integration specs settled on this one and these follow.
  */
 export const FAKE_HASH = 'argon2-existing';
 
@@ -30,14 +29,12 @@ export interface ISeededUser {
 }
 
 export interface ISecurityWorld {
-  /** The raw singleton: fixtures are written past the tenant boundary on purpose. */
-  readonly unscoped: PrismaClient;
-  /** What a service is constructed with: `client` is tenant-scoped, `unscoped` is not. */
+  /** The Prisma singleton, for writing fixtures and reading rows back. */
+  readonly prisma: PrismaClient;
+  /** What a service is constructed with. */
   readonly prismaService: PrismaService;
-  /** A throwaway organization. `label` only has to make a failing row readable. */
-  makeTenant(label: string): Promise<{ id: string }>;
-  /** A STAFF member of `tenantId`. Overrides go straight to `user.create`. */
-  makeUser(tenantId: string, overrides?: Record<string, unknown>): Promise<ISeededUser>;
+  /** A throwaway USER. Overrides go straight to `user.create`. */
+  makeUser(overrides?: Record<string, unknown>): Promise<ISeededUser>;
   /** Drop a user from the cleanup list, for a case whose assertion IS the delete. */
   forgetUser(id: string): void;
   /** Delete everything this world created, children first. */
@@ -61,36 +58,21 @@ let current: ISecurityWorld | undefined;
  * file that leaked it.
  */
 export async function openWorld(prefix: string): Promise<ISecurityWorld> {
-  const unscoped = await requirePostgresOrFail();
-  // Exactly what PrismaService.client hands a service: the extension on the
-  // singleton. A spec that read through `unscoped` would prove nothing about
-  // the boundary the app actually runs behind.
-  const client = unscoped.$extends(buildTenantScopeExtension()) as unknown as PrismaClient;
-  const prismaService = { client, unscoped } as unknown as PrismaService;
+  const prisma = await requirePostgresOrFail();
+  // Exactly what PrismaService.client hands a service.
+  const prismaService = { client: prisma } as unknown as PrismaService;
 
-  const tenantIds = new Set<string>();
   const userIds = new Set<string>();
 
   const world: ISecurityWorld = {
-    unscoped,
+    prisma,
     prismaService,
 
-    async makeTenant(label: string) {
+    async makeUser(overrides: Record<string, unknown> = {}) {
       const uid = randomUUID();
-      const tenant = await unscoped.tenant.create({
-        data: { name: `${prefix}-${label}-${uid}`, slug: `${prefix}-${label}-${uid}` },
-        select: { id: true },
-      });
-      tenantIds.add(tenant.id);
-      return tenant;
-    },
-
-    async makeUser(tenantId: string, overrides: Record<string, unknown> = {}) {
-      const uid = randomUUID();
-      const user = await unscoped.user.create({
+      const user = await prisma.user.create({
         data: {
           email: `${prefix}-${uid}@example.test`,
-          tenantId,
           role: 'USER',
           passwordHash: FAKE_HASH,
           emailVerified: true,
@@ -107,25 +89,15 @@ export async function openWorld(prefix: string): Promise<ISecurityWorld> {
     },
 
     async cleanup() {
-      // Audit rows first (nothing cascades them), then the owner pointer
-      // (Tenant.ownerId blocks the user delete), then users (User.tenantId is
-      // Restrict, and tokens cascade with them), then tenants.
-      if (tenantIds.size > 0) {
-        await unscoped.auditLog.deleteMany({ where: { tenantId: { in: [...tenantIds] } } });
-        await unscoped.tenant.updateMany({
-          where: { id: { in: [...tenantIds] } },
-          data: { ownerId: null },
-        });
-      }
+      // Audit rows first (nothing cascades them), then users (tokens cascade
+      // with them).
       if (userIds.size > 0) {
-        await unscoped.user.deleteMany({ where: { id: { in: [...userIds] } } });
-      }
-      if (tenantIds.size > 0) {
-        await unscoped.tenant.deleteMany({ where: { id: { in: [...tenantIds] } } });
+        await prisma.auditLog.deleteMany({ where: { userId: { in: [...userIds] } } });
+        await prisma.user.deleteMany({ where: { id: { in: [...userIds] } } });
       }
       // Release the pool, or jest holds the worker open after the last case and
       // CI reads a finished suite as a hang.
-      await unscoped.$disconnect();
+      await prisma.$disconnect();
     },
   };
 

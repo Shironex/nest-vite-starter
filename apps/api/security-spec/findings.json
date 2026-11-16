@@ -35,7 +35,7 @@
     },
     {
       "id": "SEC-005",
-      "title": "Raw SQL is an unguarded door past the tenant extension: lint $queryRaw and $executeRaw as an escape hatch",
+      "title": "Raw SQL is an unreviewed door past every model-level guard: lint $queryRaw and $executeRaw as an escape hatch",
       "status": "fixed",
       "spec": "security-spec/raw-sql-allowlist.security-spec.ts",
       "alsoCoveredBy": ["tools/lint-meta/rules/config/required-rules-at-error.test.ts"],
@@ -45,7 +45,7 @@
           "expect": "pass"
         },
         {
-          "name": "SEC-005 raw SQL never leaves the allowlist > no file under src reaches past the tenant boundary with raw SQL",
+          "name": "SEC-005 raw SQL never leaves the allowlist > no file under src uses raw SQL outside the allowlist",
           "expect": "pass"
         }
       ]

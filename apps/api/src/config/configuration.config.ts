@@ -99,22 +99,6 @@ export const validationSchema = Joi.object({
   // next sweep; the default gives 30 days to reverse an accidental deletion.
   USER_PURGE_GRACE_DAYS: Joi.number().integer().min(0).default(30),
 
-  // The isolation canary's mutant selector. It names one model the
-  // tenant-scope extension should NOT isolate, which is how `pnpm
-  // canary:isolation` proves the isolation lane goes red when the boundary
-  // breaks. Nothing under src/ reads it: the seam lives in
-  // apps/api/test/tenant-scope-canary.ts, outside this app's rootDir.
-  //
-  // Declared here ONLY to be refused. `Joi.forbidden()` outside the test
-  // environment means an API process that inherits the variable from a shell,
-  // a compose file or a CI step fails boot loudly rather than serving requests
-  // with one model unscoped. `.empty('')` keeps the documented blank in
-  // .env.example (env-cascade-drift requires the key to appear there) from
-  // reading as "set".
-  ISOLATION_CANARY_DISABLE_MODEL: Joi.string()
-    .empty('')
-    .when('NODE_ENV', { is: 'test', then: Joi.optional(), otherwise: Joi.forbidden() }),
-
   // OpenTelemetry: empty endpoint disables the SDK entirely (no-op),
   // matching the default local-dev path. When set, the SDK pushes OTLP/HTTP
   // to that base URL plus /v1/traces and /v1/metrics. See apps/api/src/otel.ts.

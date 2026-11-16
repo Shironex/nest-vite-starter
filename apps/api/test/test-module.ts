@@ -21,7 +21,6 @@ import { SessionService } from '../src/modules/auth/services/session.service';
 import { LockoutService } from '../src/modules/auth/services/lockout.service';
 import { TokenService } from '../src/modules/auth/services/token.service';
 import { AuthSharedService } from '../src/modules/auth/services/auth-shared.service';
-import { ProvisioningService } from '../src/modules/auth/services/provisioning.service';
 import { TurnstileService } from '../src/modules/auth/services/turnstile.service';
 import { TwoFactorChallengeService } from '../src/modules/auth/services/two-factor-challenge.service';
 import { TwoFactorAdminResetService } from '../src/modules/auth/services/two-factor-admin-reset.service';
@@ -209,18 +208,6 @@ export interface PrismaServiceMock {
     token: PrismaTokenDelegateMock;
     secondFactor: PrismaSecondFactorDelegateMock;
     auditLog: { create: jest.Mock };
-    tenant: { create: jest.Mock; update: jest.Mock; findUnique: jest.Mock };
-    // The platform Workspace module's model.
-    workspace: PrismaHrDelegateMock;
-  };
-  /**
-   * The raw, UNSCOPED client (`prismaService.unscoped`), exposed so specs for
-   * cross-tenant system jobs can drive its delegates. Kept minimal: the models those jobs actually read.
-   */
-  unscoped: {
-    user: PrismaUserDelegateMock;
-    secondFactor: PrismaSecondFactorDelegateMock;
-    tenant: PrismaHrDelegateMock;
   };
 }
 
@@ -241,17 +228,6 @@ export interface PrismaTokenDelegateMock {
   create: jest.Mock;
   delete: jest.Mock;
   deleteMany: jest.Mock;
-  count: jest.Mock;
-}
-
-/** Delegate shape shared by the tenant-owned models the specs drive. */
-export interface PrismaHrDelegateMock {
-  findFirst: jest.Mock;
-  findMany: jest.Mock;
-  findUnique: jest.Mock;
-  create: jest.Mock;
-  update: jest.Mock;
-  updateMany: jest.Mock;
   count: jest.Mock;
 }
 
@@ -297,16 +273,6 @@ const buildPrismaSecondFactorDelegate = (): PrismaSecondFactorDelegateMock => ({
   count: jest.fn(),
 });
 
-const buildPrismaHrDelegate = (): PrismaHrDelegateMock => ({
-  findFirst: jest.fn(),
-  findMany: jest.fn(),
-  findUnique: jest.fn(),
-  create: jest.fn(),
-  update: jest.fn(),
-  updateMany: jest.fn(),
-  count: jest.fn(),
-});
-
 export const buildPrismaMock = (): PrismaServiceMock => {
   const client = {
     $transaction: jest.fn(),
@@ -314,21 +280,11 @@ export const buildPrismaMock = (): PrismaServiceMock => {
     token: buildPrismaTokenDelegate(),
     secondFactor: buildPrismaSecondFactorDelegate(),
     auditLog: { create: jest.fn() },
-    tenant: { create: jest.fn(), update: jest.fn(), findUnique: jest.fn() },
-    workspace: buildPrismaHrDelegate(),
   };
   // Default: $transaction(cb) → cb(client). Specs that need a separate tx
   // object should call `mockPrismaTransaction(prisma, txMock)`.
   client.$transaction.mockImplementation(async (cb: (tx: typeof client) => unknown) => cb(client));
-  // The unscoped client (cross-tenant escape hatch): its own delegate stubs so a
-  // system-job spec asserting `prisma.unscoped.*` never aliases the scoped ones.
-  const unscoped = {
-    user: buildPrismaUserDelegate(),
-    secondFactor: buildPrismaSecondFactorDelegate(),
-    // The tenant list the cross-tenant sweeps iterate.
-    tenant: buildPrismaHrDelegate(),
-  };
-  return { client, unscoped };
+  return { client };
 };
 
 /**
@@ -349,17 +305,6 @@ export const buildPrismaTx = () => ({
   user: buildPrismaUserDelegate(),
   token: buildPrismaTokenDelegate(),
   auditLog: { create: jest.fn() },
-  tenant: { create: jest.fn(), update: jest.fn(), findUnique: jest.fn() },
-});
-
-/**
- * Build a tx object with the Workspace delegate wired. Separate from
- * `buildPrismaTx` because these transactions touch a disjoint set of models
- * and mixing the two would let a spec silently assert against a delegate its
- * subject never uses.
- */
-export const buildPrismaHrTx = () => ({
-  workspace: buildPrismaHrDelegate(),
 });
 
 /**
@@ -497,7 +442,7 @@ const buildAuthMocks = (
       findCredentialById: jest.fn(),
       // Defaults to eligible, so every existing reset spec keeps its meaning:
       // the two refusals this answers are states a spec has to arrange.
-      findPasswordResetEligibility: jest.fn().mockResolvedValue({ membershipEnded: false }),
+      findPasswordResetEligibility: jest.fn().mockResolvedValue({ disabled: false }),
       create: jest.fn(),
       updatePassword: jest.fn(),
       verifyEmail: jest.fn(),
@@ -690,14 +635,7 @@ export const createAuthTestModule = async (
       { provide: TokenRepository, useValue: mocks.tokenRepo },
       { provide: LockoutRepository, useValue: mocks.lockoutRepo },
       { provide: PrismaService, useValue: mocks.prisma },
-      // ProvisioningService is provided REAL, not mocked: it owns nothing but
-      // the organization+owner transaction, which it runs through the mocked
-      // PrismaService and TokenService above. A spec asserting on
-      // `mocks.prisma.client.$transaction` / `tx.tenant.create` therefore sees
-      // the same calls whether the caller inlines the transaction or delegates
-      // to this service.
-      ProvisioningService,
-      // StepUpService is provided REAL for the same reason. It owns nothing but
+      // StepUpService is provided REAL, not mocked. It owns nothing but
       // the second-factor gate sequence, which it runs entirely through the
       // mocked SecondFactorRepository, TotpService, AuthSharedService and
       // AuditService above, so a spec asserting on `mocks.secondFactor.*`,

@@ -37,9 +37,9 @@
  * cannot fire. A decorator would still need a base implementation to wrap
  * `process(...)`. The base class is the simplest discoverable shape.
  *
- * The envelope carries `tenantId`/`workspaceId` as well as the request and trace
- * ids (`job-context.ts`), so queued work re-enters the producer's tenant scope
- * without a processor doing anything about it.
+ * The envelope carries `userId` as well as the request and trace ids
+ * (`job-context.ts`), so queued work keeps the producer's actor without a
+ * processor doing anything about it.
  */
 import { Processor } from '@nestjs/bullmq';
 import type { Job } from 'bullmq';

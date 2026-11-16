@@ -63,7 +63,7 @@ export class DataExportService {
     // transaction for a consistent snapshot.
     const account = await this.userService.getProfile(userId);
 
-    // GDPR access event: metadata only (ip / userAgent / tenant ride the ALS
+    // GDPR access event: metadata only (ip / userAgent ride the ALS
     // fallback inside AuditService). NEVER attach the export payload here.
     await this.auditService.log({
       action: AUDIT_ACTIONS.DATA_EXPORT_DOWNLOADED,

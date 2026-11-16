@@ -182,7 +182,6 @@
     }
   ],
   "waived": {
-    "ISOLATION_CANARY_DISABLE_MODEL": "A test-only seam, not configuration: Joi forbids it outside NODE_ENV=test and only the isolation canary sets it.",
     "HOME": "Set by the operating system, not by a deployment: the api's Sentry scrubber reads it to redact the home directory from error events.",
     "USERPROFILE": "Set by the operating system (the Windows home directory), not by a deployment; read by the same Sentry scrubber.",
     "USER": "Set by the operating system, not by a deployment: the api's Sentry scrubber reads it to redact the OS user name.",

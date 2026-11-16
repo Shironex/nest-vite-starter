@@ -123,9 +123,9 @@ function scrubString(value: string): string {
  * policy, so they carry the same list. A key naming a natural person that a
  * product adds belongs in both.
  *
- * Deliberately NOT here: `tenantId` / `workspaceId` / `documentId`. They identify an
- * organization or an opaque record rather than a person, and they are the
- * fields that answer "which customer is broken" on an error report. Redacting
+ * Deliberately NOT here: `documentId` and other record ids. They identify an
+ * opaque record rather than a person, and they are the fields that answer
+ * "which record is broken" on an error report. Redacting
  * them would cost the triage without protecting a data subject.
  *
  * Matched as a SUBSTRING, the same way the shared list matches, so compound

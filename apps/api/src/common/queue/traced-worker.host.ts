@@ -60,7 +60,7 @@ export abstract class TracedWorkerHost<T extends Worker = Worker> extends Worker
   async process(job: Job, token?: string): Promise<unknown> {
     // `job.data` is JSON out of Redis, so the three reserved keys are read as
     // unknown and checked, not asserted. `rebuildRequestContextFromJob` parses
-    // `_ctx` itself (that one becomes the tenant scope, so it gets a schema);
+    // `_ctx` itself (that one becomes the ALS actor, so it gets a schema);
     // the two trace headers only need to be strings before they reach the OTel
     // propagator, which would otherwise be handed an object.
     const data = (job.data ?? {}) as Record<string, unknown>;

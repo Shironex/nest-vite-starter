@@ -43,7 +43,7 @@ export function resolveAppTimeZone(raw: string | undefined): string {
 
 /**
  * All calendar-date math is pinned to this zone, set by the `APP_TIME_ZONE` env
- * key (default `UTC`). One zone per deployment, not per tenant.
+ * key (default `UTC`). One zone per deployment.
  *
  * Read at module scope: `main.ts` loads the `.env` files before any other
  * module is imported, so the value is already in `process.env` here.

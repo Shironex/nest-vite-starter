@@ -1,12 +1,12 @@
 /**
  * Assert the TYPE and the `appCode` of a refusal, never only its wording.
  *
- * A fence spec that asserts `.rejects.toThrow('Workspace not found.')` passes
+ * A fence spec that asserts `.rejects.toThrow('User not found.')` passes
  * when the throw is swapped for a `ForbiddenError` carrying the same sentence,
  * because a message is the one thing the two refusals share. The property those
  * specs exist to defend is the DIFFERENCE between them: NOT_FOUND says nothing
  * about whether the id exists, FORBIDDEN confirms that it does and turns the
- * surface into an enumeration oracle over another organization's roster.
+ * surface into an enumeration oracle over the account roster.
  *
  * So a refusal is asserted on three axes, in this order of importance:
  *

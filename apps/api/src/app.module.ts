@@ -21,7 +21,6 @@ import { SessionModule } from './modules/auth/session.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { DataExportModule } from './modules/data-export/data-export.module';
-import { WorkspaceModule } from './modules/workspace/workspace.module';
 import { QueueModule } from './common/queue/queue.module';
 import { QueueObservabilityModule } from './common/queue/queue-observability.module';
 import { RequestContextModule } from './common/context/request-context.module';
@@ -88,10 +87,10 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
       transformer: superjson,
       // Applied to every procedure.
       // TrpcRequestContextMiddleware MUST stay first: it opens the ALS request
-      // scope that AuthMiddleware writes `userId`/`tenantId` into, and that the
-      // Prisma tenant-scope extension reads. nestjs-trpc mounts outside the
-      // express pipeline RequestContextMiddleware runs in, so without this every
-      // tenant-scoped query fails closed and no tRPC log carries a requestId.
+      // scope that AuthMiddleware writes `userId` into, and that AuditService
+      // and the logger read. nestjs-trpc mounts outside the express pipeline
+      // RequestContextMiddleware runs in, so without this no audit row carries
+      // its actor and no tRPC log carries a requestId.
       globalMiddlewares: [TrpcRequestContextMiddleware],
     }),
     HealthModule,
@@ -100,7 +99,6 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
     AuthModule,
     UserModule,
     DataExportModule,
-    WorkspaceModule,
   ],
   providers: [
     PingRouter,

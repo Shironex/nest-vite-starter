@@ -1,7 +1,8 @@
 /**
- * Integration (isolation) lane. Runs ONLY `*.isolation.spec.ts` against the
- * live docker Postgres - the proof that the app-layer tenant-scope extension is
- * a real isolation boundary (there is no Postgres RLS). The fast `test` script
+ * Integration lane. Runs ONLY `*.isolation.spec.ts` against the live docker
+ * Postgres (and, where a spec needs it, a real Redis): the proofs a mocked
+ * Prisma cannot give, such as raw advisory locks, real argon2 bursts against
+ * the lockout counters, and end-to-end flows across real rows. The fast `test` script
  * excludes these via testPathIgnorePatterns, so the default lane never touches
  * a live DB.
  *

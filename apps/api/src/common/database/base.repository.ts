@@ -27,18 +27,17 @@ export abstract class BaseRepository {
    * needs a total the cursor deliberately does not compute. The failure worth
    * engineering against is not staleness, it is a count that measures a
    * DIFFERENT POPULATION than the rows above it: a second hand-written `where`
-   * that forgets the soft-delete filter, or the explicit
-   * `tenantId` a model outside the tenant-scope extension needs. That number
-   * looks plausible and is wrong, and no type catches it.
+   * that forgets the soft-delete filter or another clause of the page's
+   * predicate. That number looks plausible and is wrong, and no type catches
+   * it.
    *
    * So the contract on every caller is two lines, and both are load bearing:
    *
    *   1. build ONE `where` object and hand it to both statements. Not two
    *      objects that look alike - one binding, used twice.
    *   2. take both delegates off the SAME client the page read uses
-   *      (`tx ?? this.client`). The count must pass through the same
-   *      `$allOperations` hook, or it reports a number drawn from every organization's
-   *      rows, which is a tenant-isolation defect wearing a footer's clothes.
+   *      (`tx ?? this.client`), so a count inside a transaction sees what the
+   *      page read sees.
    *
    * COUNTED ONLY WHEN `cursor` IS UNDEFINED, in this one place, so the three
    * list repositories cannot each decide it differently. A COUNT over one
@@ -58,7 +57,8 @@ export abstract class BaseRepository {
    *
    * The rows are awaited HERE rather than handed back as a pair, and that is
    * not style either: an un-awaited promise would execute after the caller's
-   * ALS request scope had exited, and the tenant extension would fail closed.
+   * ALS request scope had exited, and anything reading the ALS would see no
+   * store.
    *
    * DELIBERATELY NOT AN INTERACTIVE TRANSACTION. One was considered and is the
    * wrong trade here. Prisma inherits the database default isolation level,

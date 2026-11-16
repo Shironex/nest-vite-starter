@@ -42,10 +42,8 @@ export const USER_PURGE_MAX_PER_SWEEP = 500;
  *   - Best-effort: `sweep()` NEVER throws; per-user failures are logged and
  *     deferred, a failed tick logs and returns 0.
  *
- * Uses `prismaService.client` for the User reads and writes: User is not a
- * tenant-scoped model, so the tenant-scope extension passes it through
- * untouched even without a request context, and the lint-guarded `unscoped`
- * escape hatch stays unused.
+ * Uses `prismaService.client` for the User reads and writes; it runs with no
+ * request context.
  */
 @Injectable()
 export class UserPurgeService {

@@ -14,17 +14,14 @@ const logger = new Logger('JobContext');
  * BullMQ stores `job.data` as JSON in Redis and oversized payloads inflate
  * memory and slow throughput at the queue.
  *
- * tenantId/workspaceId carry the tenant scope across the queue boundary so queued
- * work re-enters the same tenant context (Prisma tenant-scope extension, audit
- * rows, tenant-scoped log enrichment) as the producer.
+ * userId carries the actor across the queue boundary so queued work writes
+ * audit rows and logs under the same actor as the producer.
  */
 export interface IJobContextEnvelope {
   requestId?: string;
   userId?: string;
   traceId?: string;
   spanId?: string;
-  tenantId?: string;
-  workspaceId?: string;
 }
 
 /**
@@ -64,8 +61,6 @@ export function withJobContext<T extends Record<string, unknown>>(
   if (reqCtx?.userId) envelope.userId = reqCtx.userId;
   if (reqCtx?.traceId) envelope.traceId = reqCtx.traceId;
   if (reqCtx?.spanId) envelope.spanId = reqCtx.spanId;
-  if (reqCtx?.tenantId) envelope.tenantId = reqCtx.tenantId;
-  if (reqCtx?.workspaceId) envelope.workspaceId = reqCtx.workspaceId;
 
   const carrier: TracePropagationCarrier = {};
   // Inject the currently-active context (which is the per-request span when
@@ -98,12 +93,10 @@ export function withJobContext<T extends Record<string, unknown>>(
  * nothing a client sends reaches it, and no code path writes an envelope this
  * schema would reject. What it defends against is the queue itself as an input:
  * a job replayed from a queue UI with edited data, a payload written by an
- * older or newer producer, or anything with Redis write access. `tenantId` from
- * this envelope becomes the ALS scope the Prisma tenant-scope extension splices
- * into every `where`, and that extension is the sole tenancy boundary (there is
- * no RLS), so a non-string here would be a Prisma filter object rather than an
- * id. Every other Redis-sourced blob in the api (sessions, grants) is
- * schema-parsed for the same reason.
+ * older or newer producer, or anything with Redis write access. `userId` from
+ * this envelope becomes the ALS actor that audit rows are written under, so a
+ * non-string here must never pass. Every other Redis-sourced blob in the api
+ * (sessions, grants) is schema-parsed for the same reason.
  *
  * `.strict()` so a field the producer stopped writing cannot ride along
  * unnoticed, and the whole envelope is dropped rather than repaired: a partly
@@ -115,8 +108,6 @@ const jobContextEnvelopeSchema = z
     userId: z.string().min(1).optional(),
     traceId: z.string().optional(),
     spanId: z.string().optional(),
-    tenantId: z.string().min(1).optional(),
-    workspaceId: z.string().min(1).optional(),
   })
   .strict();
 
@@ -148,7 +139,7 @@ export function rebuildRequestContextFromJob(
       // malformed header into lost work, and the processor's own payload
       // schema still guards what the job actually does.
       logger.warn(
-        'Dropping a malformed job context envelope; the job runs without tenant or trace context.',
+        'Dropping a malformed job context envelope; the job runs without actor or trace context.',
         { requestId: fallbackRequestId },
       );
     }
@@ -159,7 +150,5 @@ export function rebuildRequestContextFromJob(
     userId: parsed?.userId,
     traceId: parsed?.traceId,
     spanId: parsed?.spanId,
-    tenantId: parsed?.tenantId,
-    workspaceId: parsed?.workspaceId,
   };
 }

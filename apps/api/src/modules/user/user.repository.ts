@@ -44,7 +44,7 @@ const ADMIN_LIST_SELECT = {
   emailVerified: true,
   lockedUntil: true,
   createdAt: true,
-  membershipEndedAt: true,
+  disabledAt: true,
 } as const;
 
 @Injectable()
@@ -72,22 +72,18 @@ export class UserRepository extends BaseRepository {
    * link. Answers both refusals in one round trip on a flow that runs on the
    * unauthenticated hot path.
    *
-   * `passwordHash` is read but never returned: the caller gets the boolean it
-   * needs, so this stays consistent with CREDENTIAL_FREE_SELECT's rule that a
-   * credential does not leave the repository.
-   *
    * The refusal is silent at the call site because the reset flow returns a
-   * generic answer either way: a removed member keeps their address and their
-   * account, and a reset would hand them a working credential whose only
-   * remaining barrier is the login check.
+   * generic answer either way: a disabled account keeps its address, and a
+   * reset would hand it a working credential whose only remaining barrier is
+   * the login check.
    */
-  async findPasswordResetEligibility(userId: string): Promise<{ membershipEnded: boolean } | null> {
+  async findPasswordResetEligibility(userId: string): Promise<{ disabled: boolean } | null> {
     const user = await this.client.user.findFirst({
       where: { id: userId, ...this.notDeleted },
-      select: { membershipEndedAt: true },
+      select: { disabledAt: true },
     });
     if (!user) return null;
-    return { membershipEnded: user.membershipEndedAt !== null };
+    return { disabled: user.disabledAt !== null };
   }
 
   /**
@@ -148,97 +144,44 @@ export class UserRepository extends BaseRepository {
   }
 
   /**
-   * Tenant-scoped role change. The `User` model is platform-global (the tenant
-   * Prisma extension only scopes `workspace`), so the tenant filter is EXPLICIT
-   * here. `tenantId` is non-optional on purpose: an `undefined` would be dropped
-   * from the Prisma where-clause and match the target across all tenants, which
-   * is the exact cross-tenant write we are closing. The caller (service) must
-   * resolve and assert a concrete tenant from the ALS before calling this.
-   *
-   * Returns the affected-row count so the service can throw NotFound when a
-   * cross-tenant `userId` matches zero rows.
+   * Role change on a live row. A soft-deleted id can only arrive by a crafted
+   * request (the admin list is `notDeleted`-filtered), and zero rows is the
+   * right answer for it: the service turns that into NotFound rather than
+   * promoting an erased account.
    */
-  async updateRoleScoped(
-    userId: string,
-    tenantId: string,
-    role: Role,
-    tx?: Prisma.TransactionClient,
-  ): Promise<number> {
+  async updateRole(userId: string, role: Role, tx?: Prisma.TransactionClient): Promise<number> {
     const result = await (tx ?? this.client).user.updateMany({
-      // Live rows only: the admin surface that offers a role change lists staff
-      // through `listStaff`, which is itself `notDeleted`-filtered, so a
-      // soft-deleted id can only arrive by a crafted request. Zero rows is the
-      // right answer for it and the service turns that into NotFound, rather
-      // than promoting an erased account.
-      where: { id: userId, tenantId, ...this.notDeleted },
+      where: { id: userId, ...this.notDeleted },
       data: { role },
     });
     return result.count;
   }
 
   /**
-   * Who owns this organization, or null when nobody does.
-   *
-   * Null is a real and permanent answer, not a missing row: nothing deletes an
-   * orphan Tenant, so an organization whose only ADMIN self-deleted keeps its row with
-   * no owner to name. Callers must read null as "the owner rule does not apply
-   * here" rather than as an error.
-   */
-  async findOwnerId(tenantId: string): Promise<string | null> {
-    const tenant = await this.client.tenant.findUnique({
-      where: { id: tenantId },
-      select: { ownerId: true },
-    });
-    return tenant?.ownerId ?? null;
-  }
-
-  /**
-   * The organization's display name, for the sidebar identity block. Null only when
-   * the tenant row itself is gone, which nothing in the app currently does;
-   * the caller (service) already treats a tenant-less session the same way.
-   */
-  async getTenantName(tenantId: string): Promise<string | null> {
-    const tenant = await this.client.tenant.findUnique({
-      where: { id: tenantId },
-      select: { name: true },
-    });
-    return tenant?.name ?? null;
-  }
-
-  /**
-   * How many other people are still working in this organization.
+   * How many other people still use the app.
    *
    * Same liveness predicate as `countLiveAdmins`, and for the same reasons:
-   * neither a soft-deleted nor a removed row is somebody who would be stranded.
+   * neither a soft-deleted nor a disabled row is somebody who would be
+   * stranded.
    */
-  async countOtherLiveMembers(
-    tenantId: string,
-    excludeUserId: string,
-    tx?: Prisma.TransactionClient,
-  ): Promise<number> {
+  async countOtherLiveUsers(excludeUserId: string, tx?: Prisma.TransactionClient): Promise<number> {
     return (tx ?? this.client).user.count({
-      where: {
-        tenantId,
-        id: { not: excludeUserId },
-        deletedAt: null,
-        membershipEndedAt: null,
-      },
+      where: { id: { not: excludeUserId }, deletedAt: null, disabledAt: null },
     });
   }
 
   /**
-   * Serialize every membership decision inside one organization.
+   * Serialize every decision that can shrink the admin set.
    *
    * The last-admin rule is a count followed by a write, and those are not
    * atomic on their own: two admins demoting each other concurrently both read
-   * a count of two, both writes land, and the organization is left with none. That is
+   * a count of two, both writes land, and the app is left with none. That is
    * the exact state the rule exists to prevent, so the rule without this lock
    * is decoration.
    *
-   * Advisory and xact-scoped: it
-   * releases on commit OR rollback with no unlock path to forget, and it is
-   * keyed by tenant so two organizations never wait on each other. Role changes are
-   * rare, so serializing them within one organization costs nothing measurable.
+   * Advisory and xact-scoped: it releases on commit OR rollback with no unlock
+   * path to forget. Role changes are rare, so serializing them costs nothing
+   * measurable.
    *
    * TAKE THIS BEFORE THE COUNT, never between the count and the write: a lock
    * acquired after the aggregate protects nothing, because the stale number is
@@ -249,34 +192,29 @@ export class UserRepository extends BaseRepository {
    * every call. Unit tests here mock Prisma and cannot see that, which is why
    * the integration spec exercises it against a real engine.
    */
-  async lockTenantMembership(tenantId: string, tx: Prisma.TransactionClient): Promise<void> {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`tenant-membership:${tenantId}`}::text))`;
+  async lockAdminSet(tx: Prisma.TransactionClient): Promise<void> {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${'admin-set'}::text))`;
   }
 
   /**
-   * How many admins this organization would still have if nothing changed.
+   * How many admins the app would still have if nothing changed.
    *
    * The predicate is the whole point and every clause is load-bearing.
    * `deletedAt` because a soft-deleted admin is on their way out and cannot
-   * administer anything. `membershipEndedAt` because a removed member cannot
-   * log in at all, and counting them would let the guard approve demoting the
-   * last admin who actually can.
+   * administer anything. `disabledAt` because a disabled account cannot log in
+   * at all, and counting it would let the guard approve demoting the last
+   * admin who actually can.
    *
    * `excludeUserId` asks "how many OTHER admins", which is the question a
    * demotion needs.
    */
-  async countLiveAdmins(
-    tenantId: string,
-    tx?: Prisma.TransactionClient,
-    excludeUserId?: string,
-  ): Promise<number> {
+  async countLiveAdmins(tx?: Prisma.TransactionClient, excludeUserId?: string): Promise<number> {
     return (tx ?? this.client).user.count({
       where: {
-        tenantId,
         ...(excludeUserId === undefined ? {} : { id: { not: excludeUserId } }),
         role: ROLES.ADMIN,
         deletedAt: null,
-        membershipEndedAt: null,
+        disabledAt: null,
       },
     });
   }
@@ -298,38 +236,27 @@ export class UserRepository extends BaseRepository {
   }
 
   /**
-   * Tenant-scoped role probe for the admin delete path. Like updateRoleScoped,
-   * `tenantId` is non-optional on purpose: an `undefined` would be dropped
-   * from the where-clause and read the target across all tenants. Returns the
-   * minimal projection the guard needs (never credential fields).
+   * Role probe for the admin role-change and delete paths. Returns the
+   * minimal projection the guards need (never credential fields).
    */
-  async findRoleScoped(
-    userId: string,
-    tenantId: string,
-  ): Promise<{ id: string; role: string } | null> {
+  async findRole(userId: string): Promise<{ id: string; role: string } | null> {
     return this.client.user.findFirst({
-      // Live rows only, matching listUsers: this probe backs the admin delete
-      // surface.
-      where: { id: userId, tenantId, ...this.notDeleted },
+      // Live rows only, matching listUsers: this probe backs the admin surface.
+      where: { id: userId, ...this.notDeleted },
       select: { id: true, role: true },
     });
   }
 
   /**
-   * Tenant-scoped soft delete for the admin path. The `role: { not: ADMIN }`
-   * predicate repeats the service-level admin-target guard INSIDE the write so
-   * a target promoted to ADMIN between the service's probe and this update
-   * still cannot be deleted (no TOCTOU). Returns the affected count so the
-   * service can throw NotFound on zero rows.
+   * Soft delete for the admin path. The `role: { not: ADMIN }` predicate
+   * repeats the service-level admin-target guard INSIDE the write so a target
+   * promoted to ADMIN between the service's probe and this update still cannot
+   * be deleted (no TOCTOU). Returns the affected count so the service can
+   * throw NotFound on zero rows.
    */
-  async softDeleteScopedNonAdmin(userId: string, tenantId: string): Promise<number> {
+  async softDeleteNonAdmin(userId: string): Promise<number> {
     const result = await this.client.user.updateMany({
-      where: {
-        id: userId,
-        tenantId,
-        role: { not: ROLES.ADMIN },
-        ...this.notDeleted,
-      },
+      where: { id: userId, role: { not: ROLES.ADMIN }, ...this.notDeleted },
       data: { deletedAt: now() },
     });
     return result.count;
@@ -342,13 +269,50 @@ export class UserRepository extends BaseRepository {
     });
   }
 
+  /** Resolve a live account by id, for the disable and enable surfaces. */
+  async findForDisable(
+    userId: string,
+  ): Promise<{ id: string; role: string; disabledAt: Date | null } | null> {
+    return this.client.user.findFirst({
+      where: { id: userId, ...this.notDeleted },
+      select: { id: true, role: true, disabledAt: true },
+    });
+  }
+
   /**
-   * List one cursor page of non-deleted users for the given tenant. The `User`
-   * model is platform-global (the tenant Prisma extension only scopes `workspace`),
-   * so the `tenantId` filter is EXPLICIT here. `tenantId` is non-optional on
-   * purpose: an `undefined` would be dropped from the Prisma where-clause and
-   * leak every tenant's users. The caller (service) must resolve and assert a
-   * concrete tenant from the ALS before calling this.
+   * Disable an account without deleting it.
+   *
+   * The role predicate is REPEATED here rather than only probed in the service,
+   * copying `softDeleteNonAdmin`: an admin promoted between the probe and this
+   * write must not be disabled by a call that was authorized against their old
+   * role. Disabling an ADMIN has to go through demotion first, which is what
+   * routes it past the last-admin guard.
+   */
+  async disable(userId: string, at: Date): Promise<number> {
+    const result = await this.client.user.updateMany({
+      where: { id: userId, ...this.notDeleted, role: { not: ROLES.ADMIN }, disabledAt: null },
+      data: { disabledAt: at },
+    });
+    return result.count;
+  }
+
+  /**
+   * Enable a disabled account.
+   *
+   * `disabledAt: { not: null }` makes enabling an active account a zero-row
+   * no-op rather than a silent success, so the surface cannot report having
+   * enabled somebody who was never disabled.
+   */
+  async enable(userId: string): Promise<number> {
+    const result = await this.client.user.updateMany({
+      where: { id: userId, ...this.notDeleted, disabledAt: { not: null } },
+      data: { disabledAt: null },
+    });
+    return result.count;
+  }
+
+  /**
+   * List one cursor page of non-deleted users. The router is admin-gated.
    *
    * Pagination: keyset on the unique `id` (Prisma `cursor` + `skip: 1` to
    * exclude the cursor row itself), ordered by `createdAt desc` with `id desc`
@@ -356,87 +320,15 @@ export class UserRepository extends BaseRepository {
    * a next page is known without a COUNT; `nextCursor` is the last returned
    * row's id, or null on the final page.
    *
-   * The COUNT the settings footer states ("z 312") rides alongside on the FIRST
-   * page, built from the SAME `where` binding (`pageWithTotal`, which owns the
-   * count-only-without-a-cursor rule). Reusing the object rather than restating
-   * it is what carries the explicit `tenantId` into the count: `User` is
-   * platform-global and outside the tenant-scope extension, so a hand-written
-   * count `where` that forgot it would report every organization's staff headcount as
-   * this tenant's. A cursored page returns `total: null` and the panel carries
-   * the first page's answer forward.
-   *
-   * Cheap by construction. The filter is served by
-   * `(tenantId, deletedAt, createdAt desc, id desc)`, and the population is one
-   * organization's own staff accounts: tens of rows, not a growing ledger.
+   * The COUNT the footer states rides alongside on the FIRST page, built from
+   * the SAME `where` binding (`pageWithTotal`, which owns the
+   * count-only-without-a-cursor rule). A cursored page returns `total: null`
+   * and the panel carries the first page's answer forward. The filter and
+   * order are served by `(deletedAt, createdAt desc, id desc)`.
    */
-  /**
-   * Resolve a member of the caller's organization by id, for the removal surfaces.
-   *
-   * Tenant containment lives here rather than in the service: a cross-tenant id
-   * resolves to nothing and is indistinguishable from a missing one, which is
-   * the same arrangement `UserRepository.findRoleScoped` uses.
-   */
-  async findMemberScoped(
-    userId: string,
-    tenantId: string,
-  ): Promise<{
-    id: string;
-    role: string;
-    passwordHash: string | null;
-    membershipEndedAt: Date | null;
-  } | null> {
-    return this.client.user.findFirst({
-      where: { id: userId, tenantId, deletedAt: null },
-      select: { id: true, role: true, passwordHash: true, membershipEndedAt: true },
-    });
-  }
-
-  /**
-   * End somebody's membership without deleting their account.
-   *
-   * The role predicate is REPEATED here rather than only probed in the service,
-   * copying `softDeleteScopedNonAdmin`: an admin promoted between the probe and
-   * this write must not be removable by a call that was authorized against
-   * their old role. Removing an ADMIN has to go through demotion first, which
-   * is what routes it past the owner and last-admin guards.
-   */
-  async endMembership(userId: string, tenantId: string, at: Date): Promise<number> {
-    const result = await this.client.user.updateMany({
-      where: {
-        id: userId,
-        tenantId,
-        deletedAt: null,
-        role: { not: ROLES.ADMIN },
-        membershipEndedAt: null,
-      },
-      data: { membershipEndedAt: at },
-    });
-    return result.count;
-  }
-
-  /**
-   * Put a removed member back.
-   *
-   * `membershipEndedAt: { not: null }` makes restoring an active member a
-   * zero-row no-op rather than a silent success, so the surface cannot report
-   * having restored somebody who never left.
-   */
-  async restoreMembership(userId: string, tenantId: string): Promise<number> {
-    const result = await this.client.user.updateMany({
-      where: {
-        id: userId,
-        tenantId,
-        deletedAt: null,
-        membershipEndedAt: { not: null },
-      },
-      data: { membershipEndedAt: null },
-    });
-    return result.count;
-  }
-
-  async listUsers(tenantId: string, params: IListUsersParams): Promise<IAdminUserListPage> {
+  async listUsers(params: IListUsersParams): Promise<IAdminUserListPage> {
     const { cursor, limit } = params;
-    const where = { tenantId, ...this.notDeleted };
+    const where = { ...this.notDeleted };
     const { rows, total } = await this.pageWithTotal(
       this.client.user.findMany({
         where,
@@ -453,9 +345,8 @@ export class UserRepository extends BaseRepository {
 
     // Derive `twoFactorEnabled` for the whole page in ONE batched query (never
     // N+1): a user is 2FA-enabled iff an ACTIVE, non-recovery SecondFactor row
-    // EXISTS for them. `SecondFactor` is user-scoped credential data (absent
-    // from TENANT_SCOPED_MODELS), so `this.client` passes the query through
-    // untouched. `distinct` collapses a user's multiple factors to a single id.
+    // EXISTS for them. `distinct` collapses a user's multiple factors to a
+    // single id.
     const pageIds = page.map((user) => user.id);
     const enabledFactors =
       pageIds.length > 0
@@ -471,19 +362,13 @@ export class UserRepository extends BaseRepository {
         : [];
     const enabledUserIds = new Set(enabledFactors.map((factor) => factor.userId));
 
-    // Who owns the organization, for the members list's owner badge. One indexed read
-    // per page rather than per row, and null is a real answer: an organization whose
-    // only ADMIN self-deleted keeps its Tenant row with no owner to name.
-    const ownerId = await this.findOwnerId(tenantId);
-
     const items = page.map((user) => ({
       ...user,
       twoFactorEnabled: enabledUserIds.has(user.id),
-      isOwner: ownerId !== null && ownerId === user.id,
       // Derived here rather than on the client, because it is the distinction
-      // the removal surfaces branch on and two implementations of it would
+      // the disable surfaces branch on and two implementations of it would
       // eventually disagree.
-      status: (user.membershipEndedAt !== null ? 'removed' : 'active') as 'active' | 'removed',
+      status: (user.disabledAt !== null ? 'disabled' : 'active') as 'active' | 'disabled',
     }));
     return { items, nextCursor, total };
   }

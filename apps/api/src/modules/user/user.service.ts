@@ -5,7 +5,6 @@ import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import { ROLES, type Role } from '@repo/shared/permissions';
 import type { Prisma } from '@repo/database' with { 'resolution-mode': 'import' };
 import { ForbiddenError, NotFoundError } from '../../common/errors';
-import { getTenantId } from '../../common/context/request-context';
 import { now } from '../../common/clock';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '../../common/database/prisma.service';
@@ -34,18 +33,16 @@ export interface IAdminUserListItem {
    * SecondFactor row. Batched over the page in UserRepository.listUsers.
    */
   twoFactorEnabled: boolean;
-  /** When their membership ended, or null while they are still a member. */
-  membershipEndedAt: Date | null;
-  /** The person the organization was provisioned around, who cannot be demoted. */
-  isOwner: boolean;
+  /** When an admin disabled the account, or null while it is active. */
+  disabledAt: Date | null;
   /**
-   * The two states the members list distinguishes, derived in the repository
-   * so the client and the removal surfaces cannot disagree about them.
+   * The two states the user list distinguishes, derived in the repository so
+   * the client and the disable surfaces cannot disagree about them.
    *
-   *   removed: was a member, no longer is. Restorable.
-   *   active:  a member.
+   *   disabled: cannot sign in. Reversible.
+   *   active:   can sign in.
    */
-  status: 'active' | 'removed';
+  status: 'active' | 'disabled';
 }
 
 /** One cursor page of the admin user list. `nextCursor` is null on the last page. */
@@ -53,7 +50,7 @@ export interface IAdminUserListPage {
   items: IAdminUserListItem[];
   nextCursor: string | null;
   /**
-   * Staff accounts in the tenant, for the members footer's range summary.
+   * Live accounts, for the user list footer's range summary.
    * Counted on the FIRST page only; null on a page cut from a cursor, and the
    * panel carries the first page's answer forward. See `pageWithTotal`.
    */
@@ -169,66 +166,30 @@ export class UserService {
    * login that re-reads the new role, making the change take effect immediately.
    * Order matters: the DB write must land BEFORE the sessions are dropped.
    *
-   * Tenant containment: the `User` model is platform-global, so an admin in
-   * organization A must not be able to flip a role on a user in organization B. The update is
-   * scoped to the caller's active tenant (from the ALS); a cross-tenant
-   * `userId` matches zero rows and throws NotFound BEFORE any session is
-   * revoked, so it never changes or revokes anything. Fails closed: a missing
-   * tenant in context throws Forbidden rather than falling back to all-tenants.
-   *
    * AUDITED, like the neighboring adminDeleteUser. A privilege grant that
-   * leaves no trace makes "who made this account an admin" unanswerable, in an
-   * application whose whole audit apparatus exists for questions of exactly that
-   * shape. The row carries the role VALUES in before/after (the
-   * auth.email.changed shape): a role is not PII, and "the role field changed"
-   * is not what an inspector is asking.
+   * leaves no trace makes "who made this account an admin" unanswerable. The
+   * row carries the role VALUES in before/after (the auth.email.changed
+   * shape): a role is not PII, and "the role field changed" is not what an
+   * inspector is asking.
    *
-   * Takes the ACTOR's id as well as the target's. It did not, and could not
-   * express a self-target rule without it, which is the whole of the guard
-   * below: an admin demoting themselves is how an organization loses its last admin,
-   * and promotion requires an admin, so nobody is left who can undo it. The
-   * neighboring adminDeleteUser has taken an actor id all along for the same
-   * class of reason.
+   * Takes the ACTOR's id as well as the target's, for the self-target rule
+   * below: an admin demoting themselves is how the app loses its last admin,
+   * and promotion requires an admin, so nobody is left who can undo it.
    */
   async updateRole(actorUserId: string, targetUserId: string, role: Role): Promise<void> {
-    const tenantId = getTenantId();
-    if (!tenantId) {
-      throw new ForbiddenError();
-    }
-
-    // Refused before the tenant probe, because the answer does not depend on
-    // it: whatever organization you are in, you may not change your own role. Self
-    // PROMOTION is already impossible (the procedure is admin-gated, so the
-    // caller is an ADMIN), which leaves self-demotion, and a sole ADMIN
-    // demoting themselves strands the organization with no way back in.
+    // Self PROMOTION is already impossible (the procedure is admin-gated, so
+    // the caller is an ADMIN), which leaves self-demotion, and a sole ADMIN
+    // demoting themselves strands the app with no way back in.
     if (actorUserId === targetUserId) {
       throw new ForbiddenError();
     }
 
     // Read the OLD role before overwriting it: the update is a blind
     // `updateMany` returning a count, so this is the only moment the previous
-    // value exists anywhere. Same tenant/STAFF fence as the write, so a
-    // cross-tenant id is refused here rather than one statement later.
-    const previous = await this.userRepository.findRoleScoped(targetUserId, tenantId);
+    // value exists anywhere.
+    const previous = await this.userRepository.findRole(targetUserId);
     if (!previous) {
       throw new NotFoundError();
-    }
-
-    // The owner is the person the organization was provisioned around, and only they
-    // may change their own role, which, combined with the self-target refusal
-    // above, means nobody can. That is deliberate for now: handing an organization to
-    // someone else is ownership TRANSFER, an audited operation of its own, and
-    // until it exists the owner is simply not demotable.
-    //
-    // Without this a promoted ADMIN could demote the founder and then delete
-    // them, two calls that each pass every other check in the system.
-    //
-    // A null owner is a real, permanent population (an organization whose only ADMIN
-    // self-deleted keeps its Tenant row), so the rule simply does not apply
-    // there rather than failing closed.
-    const ownerId = await this.userRepository.findOwnerId(tenantId);
-    if (ownerId !== null && ownerId === targetUserId && actorUserId !== ownerId) {
-      throw new ForbiddenError(AppErrorCode.FORBIDDEN, 'The organization owner cannot be demoted');
     }
 
     // A demotion is the only direction that can empty the admin set, so the
@@ -237,10 +198,10 @@ export class UserService {
     const isDemotion = previous.role === ROLES.ADMIN && role !== ROLES.ADMIN;
 
     const count = isDemotion
-      ? await this.demoteKeepingOneAdmin(targetUserId, tenantId, role)
-      : await this.userRepository.updateRoleScoped(targetUserId, tenantId, role);
+      ? await this.demoteKeepingOneAdmin(targetUserId, role)
+      : await this.userRepository.updateRole(targetUserId, role);
     if (count === 0) {
-      // Deleted or moved between the probe and the write.
+      // Deleted between the probe and the write.
       throw new NotFoundError();
     }
 
@@ -257,74 +218,55 @@ export class UserService {
       after: { role },
     });
 
-    // A cross-tenant miss above never reaches here; see revokeAuthState for
-    // why the revoke must run before the cache clear.
     await this.revokeAuthState(targetUserId);
   }
 
   /**
-   * End somebody's membership of the organization without deleting their account.
+   * Disable an account without deleting it.
    *
-   * The reversible alternative to deleting an account (nothing survives). The row keeps its
-   * tenantId, so the removal stays VISIBLE on the members list and can be
-   * undone; modeling it as `tenantId = null` was considered and rejected,
-   * because a null-tenant user fails every fail-closed tenant-scoped operation
-   * AND disappears from every admin list, which is worse than either end.
+   * The reversible alternative to deleting an account (nothing survives).
    *
-   * Two refusals, and both close a door that would otherwise reopen the organization
-   * takeover in a single call:
+   * Two refusals, and both close a door that would otherwise strand the app
+   * with no admin in a single call:
    *
-   *   1. self. Removing yourself is not a thing an admin needs to do, and the
-   *      last one doing it strands the organization exactly as a self-demotion would.
-   *   2. an ADMIN target. Removing an admin has to go through demotion first,
-   *      which is what routes it past the owner guard and the last-admin guard.
-   *      The predicate is REPEATED inside the write, copying
-   *      softDeleteScopedNonAdmin, so a target promoted between the probe and
-   *      the write cannot be removed by a call authorized against their old role.
+   *   1. self. Disabling yourself is not a thing an admin needs to do, and the
+   *      last one doing it strands the app exactly as a self-demotion would.
+   *   2. an ADMIN target. Disabling an admin has to go through demotion first,
+   *      which is what routes it past the last-admin guard. The predicate is
+   *      REPEATED inside the write, copying softDeleteNonAdmin, so a target
+   *      promoted between the probe and the write cannot be disabled by a call
+   *      authorized against their old role.
    *
    * Retryable. The flag commits before the session teardown, so a Redis blip in
-   * revokeAuthState would otherwise strand the removed member's live sessions
-   * with no way for the admin to try again: the retry would find nothing left to
-   * flag and answer NotFound. Removing somebody already removed therefore
-   * re-runs the (idempotent) teardown and succeeds, without a second
-   * MEMBER_REMOVED row.
+   * revokeAuthState would otherwise strand the disabled account's live sessions
+   * with no way for the admin to try again: the retry would find nothing left
+   * to flag and answer NotFound. Disabling an already disabled account
+   * therefore re-runs the (idempotent) teardown and succeeds, without a second
+   * USER_DISABLED row.
    */
-  async removeMember(actorUserId: string, targetUserId: string): Promise<void> {
-    const tenantId = getTenantId();
-    if (!tenantId) {
-      throw new ForbiddenError();
-    }
+  async disableUser(actorUserId: string, targetUserId: string): Promise<void> {
     if (actorUserId === targetUserId) {
-      throw new ForbiddenError(
-        AppErrorCode.FORBIDDEN,
-        'You cannot remove yourself from the organization',
-      );
+      throw new ForbiddenError(AppErrorCode.FORBIDDEN, 'You cannot disable your own account');
     }
 
-    const target = await this.userRepository.findMemberScoped(targetUserId, tenantId);
+    const target = await this.userRepository.findForDisable(targetUserId);
     if (!target) {
-      // A cross-tenant id resolves to nothing here and is indistinguishable
-      // from a missing one.
       throw new NotFoundError();
     }
     if (target.role === ROLES.ADMIN) {
-      throw new ForbiddenError(
-        AppErrorCode.FORBIDDEN,
-        'Demote this admin before removing them from the organization',
-      );
+      throw new ForbiddenError(AppErrorCode.FORBIDDEN, 'Demote this admin before disabling them');
     }
 
-    if (target.membershipEndedAt !== null) {
-      // Already removed, in THIS organization (the probe is tenant-scoped, so a
-      // cross-tenant id still answers NotFound above): the retry after a failed
-      // teardown. Nothing to flag and nothing new to audit.
+    if (target.disabledAt !== null) {
+      // Already disabled: the retry after a failed teardown. Nothing to flag
+      // and nothing new to audit.
       await this.revokeAuthState(targetUserId);
       return;
     }
 
-    const count = await this.userRepository.endMembership(targetUserId, tenantId, now());
+    const count = await this.userRepository.disable(targetUserId, now());
     if (count === 0) {
-      // Promoted, deleted or already removed between the probe and the write.
+      // Promoted, deleted or already disabled between the probe and the write.
       throw new NotFoundError();
     }
 
@@ -332,49 +274,43 @@ export class UserService {
     // moved, so writing after would make a Redis failure the difference between
     // an access removal with a trail and one without.
     await this.auditService.log({
-      action: AUDIT_ACTIONS.MEMBER_REMOVED,
+      action: AUDIT_ACTIONS.USER_DISABLED,
       targetType: 'User',
       targetId: targetUserId,
       metadata: { role: target.role },
     });
 
-    // The removal is enforced wherever a NEW credential or session is handed
-    // out: every session mint re-reads it in TwoFactorChallengeService (password
+    // The flag is enforced wherever a NEW credential or session is handed out:
+    // every session mint re-reads it in TwoFactorChallengeService (password
     // login passes through there, and also refuses it at its own door for the
-    // audit reason), plus the DB-token side
-    // door, password reset. Never in auth.middleware, which
-    // reads the session blob and never touches the database, so this call is
-    // what closes the sessions they already hold.
+    // audit reason), plus the DB-token side door, password reset. Never in
+    // auth.middleware, which reads the session blob and never touches the
+    // database, so this call is what closes the sessions it already holds.
     await this.revokeAuthState(targetUserId);
   }
 
   /**
-   * Put a removed member back.
+   * Enable a disabled account.
    *
-   * Records whether the restored member is an ADMIN, because re-admitting one
-   * is a privilege grant that did not pass through user.role.changed and would
+   * Records whether the account is an ADMIN, because re-admitting one is a
+   * privilege grant that did not pass through user.role.changed and would
    * otherwise have no answer in the trail.
    */
-  async restoreMember(targetUserId: string): Promise<void> {
-    const tenantId = getTenantId();
-    if (!tenantId) {
-      throw new ForbiddenError();
-    }
-
-    const target = await this.userRepository.findMemberScoped(targetUserId, tenantId);
-    if (!target || target.membershipEndedAt === null) {
-      // Restoring somebody who never left is a no-op the surface must not be
-      // able to report as a success.
+  async enableUser(targetUserId: string): Promise<void> {
+    const target = await this.userRepository.findForDisable(targetUserId);
+    if (!target || target.disabledAt === null) {
+      // Enabling somebody who was never disabled is a no-op the surface must
+      // not be able to report as a success.
       throw new NotFoundError();
     }
 
-    const count = await this.userRepository.restoreMembership(targetUserId, tenantId);
+    const count = await this.userRepository.enable(targetUserId);
     if (count === 0) {
       throw new NotFoundError();
     }
 
     await this.auditService.log({
-      action: AUDIT_ACTIONS.MEMBER_RESTORED,
+      action: AUDIT_ACTIONS.USER_ENABLED,
       targetType: 'User',
       targetId: targetUserId,
       metadata: { role: target.role, restoresAdmin: target.role === ROLES.ADMIN },
@@ -382,17 +318,17 @@ export class UserService {
   }
 
   /**
-   * Refuse a self-service deletion that would strand colleagues.
+   * Refuse a self-service deletion that would strand everyone else.
    *
    * `deleteAccount` soft-deletes whatever role it is given, so the last ADMIN
-   * of an organization can erase themselves and leave everyone else behind with no
-   * admin, no owner, and no in-app way to appoint one: promotion requires an
-   * admin. That is the same permanent lockout `updateRole` guards against,
-   * through a door `updateRole` cannot see.
+   * can erase themselves and leave everyone else behind with no admin and no
+   * in-app way to appoint one: promotion requires an admin. That is the same
+   * permanent lockout `updateRole` guards against, through a door `updateRole`
+   * cannot see.
    *
-   * Deliberately conditioned on OTHER members existing. A sole user deleting
-   * their own account is the only case that exists today, it strands nobody,
-   * and self-service deletion has to keep working for it.
+   * Deliberately conditioned on OTHER users existing. A sole user deleting
+   * their own account strands nobody, and self-service deletion has to keep
+   * working for it.
    */
   async assertDeletionLeavesNobodyStranded(
     user: {
@@ -400,24 +336,23 @@ export class UserService {
       // The raw Prisma role string, not the narrowed `Role`: this takes a raw
       // User row.
       role: string;
-      tenantId: string | null;
     },
     tx?: Prisma.TransactionClient,
   ): Promise<void> {
-    if (user.tenantId === null || user.role !== ROLES.ADMIN) {
+    if (user.role !== ROLES.ADMIN) {
       return;
     }
 
-    const liveAdmins = await this.userRepository.countLiveAdmins(user.tenantId, tx);
+    const liveAdmins = await this.userRepository.countLiveAdmins(tx);
     if (liveAdmins > 1) {
       return;
     }
 
-    const others = await this.userRepository.countOtherLiveMembers(user.tenantId, user.id, tx);
+    const others = await this.userRepository.countOtherLiveUsers(user.id, tx);
     if (others > 0) {
       throw new ForbiddenError(
         AppErrorCode.FORBIDDEN,
-        'This organization would be left with no admin. Promote a colleague, or remove them first.',
+        'The app would be left with no admin. Promote another user first.',
       );
     }
   }
@@ -427,78 +362,58 @@ export class UserService {
    * serialized act.
    *
    * A count followed by a write is not atomic, and this is the same class
-   * `demoteKeepingOneAdmin` takes the per-tenant advisory lock for: two admins
-   * of the same organization pressing "delete my account" in the same second both
-   * count two live admins, both writes land, and the organization is left with zero
-   * admins and stranded members. That is precisely the state the guard exists
-   * to prevent, and it has no in-app remedy: an organization with no admin cannot
-   * manage members, and promotion requires an admin.
+   * `demoteKeepingOneAdmin` takes the admin-set advisory lock for: two admins
+   * pressing "delete my account" in the same second both count two live
+   * admins, both writes land, and the app is left with zero admins and
+   * stranded users. That is precisely the state the guard exists to prevent.
    *
-   * The lock is taken only when there is an invariant to protect. A non-admin,
-   * or an account with no organization, cannot strand anyone, so serializing them
-   * would put every deletion in the deployment behind a lock for nothing.
+   * The lock is taken only when there is an invariant to protect. A non-admin
+   * cannot strand anyone, so serializing them would put every deletion behind
+   * a lock for nothing.
    *
    * Returns the affected count, and deliberately does not throw on zero: a
    * concurrent double-delete already achieved what the caller asked for, and
    * the caller still owns the teardown.
    */
-  async softDeleteSelfKeepingOneAdmin(user: {
-    id: string;
-    role: string;
-    tenantId: string | null;
-  }): Promise<number> {
-    if (user.tenantId === null || user.role !== ROLES.ADMIN) {
+  async softDeleteSelfKeepingOneAdmin(user: { id: string; role: string }): Promise<number> {
+    if (user.role !== ROLES.ADMIN) {
       return this.userRepository.softDelete(user.id);
     }
 
-    const tenantId = user.tenantId;
     return this.prismaService.client.$transaction(async (tx) => {
       // BEFORE the count, never between the count and the write.
-      await this.userRepository.lockTenantMembership(tenantId, tx);
+      await this.userRepository.lockAdminSet(tx);
       await this.assertDeletionLeavesNobodyStranded(user, tx);
       return this.userRepository.softDelete(user.id, tx);
     });
   }
 
   /**
-   * Demote an ADMIN while guaranteeing the organization keeps one.
+   * Demote an ADMIN while guaranteeing the app keeps one.
    *
-   * The check and the write are one transaction under a per-tenant advisory
+   * The check and the write are one transaction under the admin-set advisory
    * lock, because a count followed by an update is not atomic: two admins
    * demoting each other concurrently would both read a count of two, both
-   * writes would land, and the organization would be left with none. That is exactly
+   * writes would land, and the app would be left with none. That is exactly
    * the state this guard exists to prevent, so the guard without the lock is
-   * decoration. The repo already treats this class seriously, repeating the
-   * role predicate inside the write in `softDeleteScopedNonAdmin`.
-   *
-   * An organization with no admin cannot create workspaces, manage members, or
-   * read its own audit log, and promotion requires an admin, so there is no
-   * in-app way back.
+   * decoration.
    */
-  private async demoteKeepingOneAdmin(
-    targetUserId: string,
-    tenantId: string,
-    role: Role,
-  ): Promise<number> {
+  private async demoteKeepingOneAdmin(targetUserId: string, role: Role): Promise<number> {
     return this.prismaService.client.$transaction(async (tx) => {
       // BEFORE the count, never between the count and the write.
-      await this.userRepository.lockTenantMembership(tenantId, tx);
+      await this.userRepository.lockAdminSet(tx);
 
       // OTHER live admins, not "all minus one": the target may already be out
-      // of the live count (soft-deleted or removed).
-      const otherLiveAdmins = await this.userRepository.countLiveAdmins(tenantId, tx, targetUserId);
+      // of the live count (soft-deleted or disabled).
+      const otherLiveAdmins = await this.userRepository.countLiveAdmins(tx, targetUserId);
       if (otherLiveAdmins === 0) {
         // Deliberately the generic FORBIDDEN app code, like the sibling
-        // guards: they are one class ("this membership change is not
-        // allowed") and the message carries the detail for the log and the
-        // audit trail.
-        throw new ForbiddenError(
-          AppErrorCode.FORBIDDEN,
-          'An organization must keep at least one admin',
-        );
+        // guards: the message carries the detail for the log and the audit
+        // trail.
+        throw new ForbiddenError(AppErrorCode.FORBIDDEN, 'The app must keep at least one admin');
       }
 
-      return this.userRepository.updateRoleScoped(targetUserId, tenantId, role, tx);
+      return this.userRepository.updateRole(targetUserId, role, tx);
     });
   }
 
@@ -527,33 +442,23 @@ export class UserService {
    * the user-purge sweep hard-deletes it after the grace window.
    *
    * Guards, all fail closed:
-   *   - Tenant containment: like updateRole, the target is resolved and
-   *     deleted strictly inside the caller's active tenant; a cross-tenant id
-   *     matches nothing and throws NotFound before any teardown.
    *   - No self-delete: deleting your own account requires the password-
    *     confirmed self-service flow (auth.deleteAccount), never the admin path.
-   *   - No admin targets: an admin cannot delete another ADMIN (mirrors the
-   *     spirit of updateUserRole, which only demotes via an explicit role
-   *     change; deletion is a bigger hammer and gets the hard stop). The
+   *   - No admin targets: an admin cannot delete another ADMIN (deletion is a
+   *     bigger hammer than a role change and gets the hard stop). The
    *     repository write repeats the role predicate so a concurrent promotion
    *     cannot slip through between the probe and the write.
    *
    * Teardown order copies updateRole: DB write first, then revokeAuthState
-   * (sessions). The audit row lands last; the
-   * actor (admin) and request metadata come from the ALS context, the target
-   * is explicit.
+   * (sessions). The audit row lands last; the actor (admin) and request
+   * metadata come from the ALS context, the target is explicit.
    */
   async adminDeleteUser(targetUserId: string, actorUserId: string): Promise<void> {
-    const tenantId = getTenantId();
-    if (!tenantId) {
-      throw new ForbiddenError();
-    }
-
     if (targetUserId === actorUserId) {
       throw new ForbiddenError();
     }
 
-    const target = await this.userRepository.findRoleScoped(targetUserId, tenantId);
+    const target = await this.userRepository.findRole(targetUserId);
     if (!target) {
       throw new NotFoundError();
     }
@@ -561,16 +466,7 @@ export class UserService {
       throw new ForbiddenError();
     }
 
-    // Belt and braces. The owner is stamped ADMIN at provisioning and cannot be
-    // demoted, so the check above already covers them today. It is stated
-    // anyway because that reasoning is a chain of two other rules, and the day
-    // either one changes this is the guard that should still be standing.
-    const ownerId = await this.userRepository.findOwnerId(tenantId);
-    if (ownerId === targetUserId) {
-      throw new ForbiddenError(AppErrorCode.FORBIDDEN, 'The organization owner cannot be removed');
-    }
-
-    const count = await this.userRepository.softDeleteScopedNonAdmin(targetUserId, tenantId);
+    const count = await this.userRepository.softDeleteNonAdmin(targetUserId);
     if (count === 0) {
       // Concurrently deleted or promoted between the probe and the write.
       throw new NotFoundError();
@@ -586,23 +482,13 @@ export class UserService {
   }
 
   /**
-   * List one cursor page of the caller's tenant's non-deleted users with
-   * admin-visible fields. Excludes sensitive fields: passwordHash,
-   * failedAttempts, lockoutCount. `limit` is validated (1..100, default 50) by
-   * the router input schema before it reaches here.
-   *
-   * Tenant containment: the `User` model is platform-global, so the list is
-   * scoped to the caller's active tenant (from the ALS) so an admin in organization A
-   * cannot read organization B's users. Fails closed: a missing tenant in context
-   * throws Forbidden rather than returning every tenant's users.
+   * List one cursor page of non-deleted users with admin-visible fields.
+   * Excludes sensitive fields: passwordHash, failedAttempts, lockoutCount.
+   * `limit` is validated (1..100, default 50) by the router input schema
+   * before it reaches here. The router is admin-gated.
    */
   async listUsers(params: IListUsersParams): Promise<IAdminUserListPage> {
-    const tenantId = getTenantId();
-    if (!tenantId) {
-      throw new ForbiddenError();
-    }
-
-    return this.userRepository.listUsers(tenantId, params);
+    return this.userRepository.listUsers(params);
   }
 
   /**
@@ -617,26 +503,5 @@ export class UserService {
     }
 
     return user;
-  }
-
-  /**
-   * The caller's organization identity, for the sidebar footer block.
-   * `tenantId` comes from `getTenantId()` (the session-derived ALS), never
-   * from a client-supplied id.
-   *
-   * Deliberately does NOT fail closed like the admin-scoped methods above: a
-   * missing tenant is a real, if rare, state (pre-tenant seed data) and this
-   * is a read for a piece of chrome, not a tenant-scoped write. Returning a
-   * null name lets the caller render a sane fallback instead of an error
-   * boundary over the whole sidebar.
-   */
-  async getTenantIdentity(): Promise<{ name: string | null }> {
-    const tenantId = getTenantId();
-    if (!tenantId) {
-      return { name: null };
-    }
-
-    const name = await this.userRepository.getTenantName(tenantId);
-    return { name };
   }
 }

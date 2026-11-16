@@ -13,12 +13,6 @@ export interface IAppContextType {
     emailVerified: boolean;
   } | null;
   session: { id: string; token: string } | null;
-  /**
-   * Active Tenant (organization) id, mirrored from the ALS request context. Populated
-   * by AuthMiddleware/login (owned by a sibling step); the Prisma tenant-scope
-   * extension reads tenantId from the ALS, not from here.
-   */
-  tenantId?: string;
 }
 
 /**

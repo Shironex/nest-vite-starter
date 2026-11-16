@@ -5,9 +5,6 @@ import { buildPrismaMock } from '@test/test-module';
 
 const buildSubject = async () => {
   const prisma = buildPrismaMock();
-  // listUsers reads the organization's owner once per page, for the members list's
-  // owner badge. No owner by default, which is a real population.
-  prisma.client.tenant.findUnique.mockResolvedValue({ ownerId: null });
   // buildPrismaMock predates the 2FA feature and its `client` has no
   // `secondFactor` delegate. listUsers now batches an EXISTS query against it,
   // so wire a local stub here (defaulting to "no factors") rather than editing
@@ -21,10 +18,7 @@ const buildSubject = async () => {
   return { repo: module.get(UserRepository), prisma, secondFactor };
 };
 
-// These tests pin the literal tenant filter onto the Prisma where-clause. The
-// `User` model is platform-global (the tenant Prisma extension only scopes
-// `workspace`), so this explicit `tenantId` is the actual cross-tenant containment.
-describe('UserRepository tenant containment', () => {
+describe('UserRepository admin list and role writes', () => {
   describe('listUsers', () => {
     const listItem = (id: string) => ({
       id,
@@ -34,24 +28,23 @@ describe('UserRepository tenant containment', () => {
       emailVerified: true,
       lockedUntil: null,
       createdAt: new Date('2026-01-01T00:00:00Z'),
-      membershipEndedAt: null,
+      disabledAt: null,
     });
 
     /** The same row as the caller sees it, plus the derived fields. */
     const visibleItem = (id: string) => ({
       ...listItem(id),
-      isOwner: false,
       status: 'active' as const,
     });
 
-    it('filters findMany by { tenantId, kind: STAFF, deletedAt: null } with the admin projection and deterministic ordering', async () => {
+    it('filters findMany by { deletedAt: null } with the admin projection and deterministic ordering', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.findMany.mockResolvedValue([]);
 
-      await repo.listUsers('tenant-a', { limit: 50 });
+      await repo.listUsers({ limit: 50 });
 
       expect(prisma.client.user.findMany).toHaveBeenCalledWith({
-        where: { tenantId: 'tenant-a', deletedAt: null },
+        where: { deletedAt: null },
         select: {
           id: true,
           email: true,
@@ -60,7 +53,7 @@ describe('UserRepository tenant containment', () => {
           emailVerified: true,
           lockedUntil: true,
           createdAt: true,
-          membershipEndedAt: true,
+          disabledAt: true,
         },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: 51,
@@ -71,7 +64,7 @@ describe('UserRepository tenant containment', () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.findMany.mockResolvedValue([]);
 
-      await repo.listUsers('tenant-a', { cursor: 'u-50', limit: 10 });
+      await repo.listUsers({ cursor: 'u-50', limit: 10 });
 
       expect(prisma.client.user.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -90,7 +83,7 @@ describe('UserRepository tenant containment', () => {
         listItem('u-3'),
       ]);
 
-      const page = await repo.listUsers('tenant-a', { limit: 2 });
+      const page = await repo.listUsers({ limit: 2 });
 
       expect(page.items.map((u) => u.id)).toEqual(['u-1', 'u-2']);
       expect(page.nextCursor).toBe('u-2');
@@ -100,37 +93,34 @@ describe('UserRepository tenant containment', () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.findMany.mockResolvedValue([listItem('u-1'), listItem('u-2')]);
 
-      const page = await repo.listUsers('tenant-a', { limit: 2 });
+      const page = await repo.listUsers({ limit: 2 });
 
       expect(page.items).toHaveLength(2);
       expect(page.nextCursor).toBeNull();
     });
 
-    it('returns an empty page with nextCursor: null when the tenant has no users', async () => {
+    it('returns an empty page with nextCursor: null when there are no users', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.findMany.mockResolvedValue([]);
       prisma.client.user.count.mockResolvedValue(0);
 
-      const page = await repo.listUsers('tenant-a', { limit: 50 });
+      const page = await repo.listUsers({ limit: 50 });
 
       expect(page).toEqual({ items: [], nextCursor: null, total: 0 });
     });
 
-    // The members footer's total. The count is the half that leaks tenants if
-    // it is written twice: `User` sits OUTSIDE the tenant-scope extension, so
-    // the explicit tenantId in the where-clause is the only containment there
-    // is, and a count that restated it and dropped `tenantId` would report
-    // every organization's staff headcount as this one's.
-    it('counts the identical tenant-contained predicate the page read used', async () => {
+    // The users footer's total: the count must use the same binding as the
+    // page read, or the footer and the list drift apart.
+    it('counts the identical predicate the page read used', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.findMany.mockResolvedValue([]);
       prisma.client.user.count.mockResolvedValue(12);
 
-      const page = await repo.listUsers('tenant-a', { limit: 10 });
+      const page = await repo.listUsers({ limit: 10 });
 
       expect(page.total).toBe(12);
       expect(prisma.client.user.count).toHaveBeenCalledWith({
-        where: { tenantId: 'tenant-a', deletedAt: null },
+        where: { deletedAt: null },
       });
       const listWhere = (prisma.client.user.findMany.mock.calls[0]?.[0] as { where: unknown })
         .where;
@@ -139,20 +129,18 @@ describe('UserRepository tenant containment', () => {
     });
 
     it('does not count a page cut from a cursor', async () => {
-      // `User` is platform-global and outside the tenant-scope extension, so
-      // this count carries an explicit tenantId and is cheap; it is still the
-      // same number for every page of one traversal, and the members panel
-      // carries the first page's answer forward.
+      // The count is the same number for every page of one traversal, and the
+      // users panel carries the first page's answer forward.
       const { repo, prisma } = await buildSubject();
       prisma.client.user.findMany.mockResolvedValue([]);
 
-      const page = await repo.listUsers('tenant-a', { cursor: 'u-50', limit: 10 });
+      const page = await repo.listUsers({ cursor: 'u-50', limit: 10 });
 
       expect(prisma.client.user.count).not.toHaveBeenCalled();
       expect(page.total).toBeNull();
     });
 
-    it('totals the tenant, not the page', async () => {
+    it('totals every live user, not the page', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.findMany.mockResolvedValue([
         listItem('u-1'),
@@ -161,7 +149,7 @@ describe('UserRepository tenant containment', () => {
       ]);
       prisma.client.user.count.mockResolvedValue(9);
 
-      const page = await repo.listUsers('tenant-a', { limit: 2 });
+      const page = await repo.listUsers({ limit: 2 });
 
       expect(page.items).toHaveLength(2);
       expect(page.nextCursor).toBe('u-2');
@@ -181,7 +169,7 @@ describe('UserRepository tenant containment', () => {
       // u-1 and u-3 have an ACTIVE non-recovery factor; u-2 does not.
       secondFactor.findMany.mockResolvedValue([{ userId: 'u-1' }, { userId: 'u-3' }]);
 
-      const page = await repo.listUsers('tenant-a', { limit: 50 });
+      const page = await repo.listUsers({ limit: 50 });
 
       // One batched query, filtered to ACTIVE non-recovery factors for the page.
       expect(secondFactor.findMany).toHaveBeenCalledTimes(1);
@@ -202,64 +190,37 @@ describe('UserRepository tenant containment', () => {
     });
 
     it.each([
-      ['removed', { membershipEndedAt: new Date('2026-05-01T00:00:00Z') }],
-      ['active', { membershipEndedAt: null }],
+      ['disabled', { disabledAt: new Date('2026-05-01T00:00:00Z') }],
+      ['active', { disabledAt: null }],
     ])(
       'derives status %p from the row rather than leaving it to the client',
       async (expected, row) => {
-        // The same distinction the removal procedures branch on. Two
+        // The same distinction the disable procedures branch on. Two
         // implementations of it would eventually disagree, and the one on the
         // client is the one that would be wrong.
         const { repo, prisma } = await buildSubject();
         prisma.client.user.findMany.mockResolvedValue([{ ...listItem('u-1'), ...row }]);
 
-        const page = await repo.listUsers('tenant-a', { limit: 50 });
+        const page = await repo.listUsers({ limit: 50 });
 
         expect(page.items[0]!.status).toBe(expected);
       },
     );
 
-    it('marks the owner, and marks nobody when the organization has none', async () => {
-      // A null owner is permanent, not transitional: an organization whose only ADMIN
-      // self-deleted keeps its Tenant row with nobody to name.
-      const { repo, prisma } = await buildSubject();
-      prisma.client.user.findMany.mockResolvedValue([listItem('u-1'), listItem('u-2')]);
-
-      const noOwner = await repo.listUsers('tenant-a', { limit: 50 });
-      expect(noOwner.items.map((item) => item.isOwner)).toEqual([false, false]);
-
-      prisma.client.tenant.findUnique.mockResolvedValue({ ownerId: 'u-2' });
-      const withOwner = await repo.listUsers('tenant-a', { limit: 50 });
-      expect(withOwner.items.map((item) => item.isOwner)).toEqual([false, true]);
-    });
-
     it('never returns a password hash', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.findMany.mockResolvedValue([listItem('u-1')]);
 
-      const page = await repo.listUsers('tenant-a', { limit: 50 });
+      const page = await repo.listUsers({ limit: 50 });
 
       expect(page.items[0]).not.toHaveProperty('passwordHash');
-    });
-
-    it('reads the owner once per page, not once per row', async () => {
-      const { repo, prisma } = await buildSubject();
-      prisma.client.user.findMany.mockResolvedValue([
-        listItem('u-1'),
-        listItem('u-2'),
-        listItem('u-3'),
-      ]);
-
-      await repo.listUsers('tenant-a', { limit: 50 });
-
-      expect(prisma.client.tenant.findUnique).toHaveBeenCalledTimes(1);
     });
 
     it('skips the second-factor query entirely for an empty page (no wasted round-trip)', async () => {
       const { repo, prisma, secondFactor } = await buildSubject();
       prisma.client.user.findMany.mockResolvedValue([]);
 
-      await repo.listUsers('tenant-a', { limit: 50 });
+      await repo.listUsers({ limit: 50 });
 
       expect(secondFactor.findMany).not.toHaveBeenCalled();
     });
@@ -274,7 +235,7 @@ describe('UserRepository tenant containment', () => {
         listItem('u-3'),
       ]);
 
-      await repo.listUsers('tenant-a', { limit: 2 });
+      await repo.listUsers({ limit: 2 });
 
       expect(secondFactor.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -284,54 +245,30 @@ describe('UserRepository tenant containment', () => {
     });
   });
 
-  describe('updateRoleScoped', () => {
-    it('scopes the role updateMany to { id, tenantId } and returns the affected count', async () => {
+  describe('updateRole', () => {
+    it('writes the role on the live row only and returns the affected count', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.updateMany.mockResolvedValue({ count: 1 });
 
-      const count = await repo.updateRoleScoped('u-1', 'tenant-a', 'ADMIN');
+      const count = await repo.updateRole('u-1', 'ADMIN');
 
       expect(prisma.client.user.updateMany).toHaveBeenCalledWith({
-        // `deletedAt: null` joins tenantId: the staff list that offers the action
-        // is itself soft-delete filtered, so promoting an erased account is a
-        // crafted request and zero rows is the right answer for it.
-        where: { id: 'u-1', tenantId: 'tenant-a', deletedAt: null },
+        // The users list that offers the action is itself soft-delete filtered,
+        // so promoting an erased account is a crafted request and zero rows is
+        // the right answer for it.
+        where: { id: 'u-1', deletedAt: null },
         data: { role: 'ADMIN' },
       });
       expect(count).toBe(1);
     });
 
-    it('returns 0 when the target is not in the caller tenant (no row matched)', async () => {
+    it('returns 0 when no live row matched', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.updateMany.mockResolvedValue({ count: 0 });
 
-      const count = await repo.updateRoleScoped('other-tenant-user', 'tenant-a', 'ADMIN');
+      const count = await repo.updateRole('gone-user', 'ADMIN');
 
       expect(count).toBe(0);
-    });
-  });
-
-  describe('getTenantName', () => {
-    it('reads the tenant by id and returns its name', async () => {
-      const { repo, prisma } = await buildSubject();
-      prisma.client.tenant.findUnique.mockResolvedValue({ name: 'Acme Robotics' });
-
-      const name = await repo.getTenantName('tenant-a');
-
-      expect(prisma.client.tenant.findUnique).toHaveBeenCalledWith({
-        where: { id: 'tenant-a' },
-        select: { name: true },
-      });
-      expect(name).toBe('Acme Robotics');
-    });
-
-    it('returns null when the tenant row is gone', async () => {
-      const { repo, prisma } = await buildSubject();
-      prisma.client.tenant.findUnique.mockResolvedValue(null);
-
-      const name = await repo.getTenantName('tenant-a');
-
-      expect(name).toBeNull();
     });
   });
 });
@@ -393,45 +330,59 @@ describe('UserRepository guarded soft-delete writes', () => {
   });
 });
 
-// The admin delete path is tenant-scoped like updateRoleScoped: the explicit
-// tenantId in the where-clause IS the cross-tenant containment, and the role
-// predicate repeats the no-admin-targets guard inside the write (no TOCTOU).
-describe('UserRepository admin-delete scoping', () => {
-  it('findRoleScoped probes by { id, tenantId, kind: STAFF, deletedAt: null } with the minimal projection', async () => {
+// The role predicate repeats the no-admin-targets guard inside the write (no
+// TOCTOU).
+describe('UserRepository admin-delete and disable writes', () => {
+  it('findRole probes by { id, deletedAt: null } with the minimal projection', async () => {
     const { repo, prisma } = await buildSubject();
     prisma.client.user.findFirst.mockResolvedValue({ id: 'u-1', role: 'USER' });
 
-    await expect(repo.findRoleScoped('u-1', 'tenant-a')).resolves.toEqual({
-      id: 'u-1',
-      role: 'USER',
-    });
+    await expect(repo.findRole('u-1')).resolves.toEqual({ id: 'u-1', role: 'USER' });
     expect(prisma.client.user.findFirst).toHaveBeenCalledWith({
-      where: { id: 'u-1', tenantId: 'tenant-a', deletedAt: null },
+      where: { id: 'u-1', deletedAt: null },
       select: { id: true, role: true },
     });
   });
 
-  it('softDeleteScopedNonAdmin scopes the write to { id, tenantId, kind: STAFF, role != ADMIN, deletedAt: null }', async () => {
+  it('softDeleteNonAdmin scopes the write to { id, role != ADMIN, deletedAt: null }', async () => {
     const { repo, prisma } = await buildSubject();
     prisma.client.user.updateMany.mockResolvedValue({ count: 1 });
 
-    await expect(repo.softDeleteScopedNonAdmin('u-1', 'tenant-a')).resolves.toBe(1);
+    await expect(repo.softDeleteNonAdmin('u-1')).resolves.toBe(1);
     expect(prisma.client.user.updateMany).toHaveBeenCalledWith({
-      where: {
-        id: 'u-1',
-        tenantId: 'tenant-a',
-        role: { not: 'ADMIN' },
-        deletedAt: null,
-      },
+      where: { id: 'u-1', role: { not: 'ADMIN' }, deletedAt: null },
       data: { deletedAt: expect.any(Date) },
     });
   });
 
-  it('softDeleteScopedNonAdmin returns 0 when the target is cross-tenant, deleted, or ADMIN', async () => {
+  it('softDeleteNonAdmin returns 0 when the target is deleted or ADMIN', async () => {
     const { repo, prisma } = await buildSubject();
     prisma.client.user.updateMany.mockResolvedValue({ count: 0 });
 
-    await expect(repo.softDeleteScopedNonAdmin('other-tenant-user', 'tenant-a')).resolves.toBe(0);
+    await expect(repo.softDeleteNonAdmin('admin-user')).resolves.toBe(0);
+  });
+
+  it('disable repeats the non-admin and not-yet-disabled guards inside the write', async () => {
+    const { repo, prisma } = await buildSubject();
+    prisma.client.user.updateMany.mockResolvedValue({ count: 1 });
+    const at = new Date('2026-05-01T00:00:00Z');
+
+    await expect(repo.disable('u-1', at)).resolves.toBe(1);
+    expect(prisma.client.user.updateMany).toHaveBeenCalledWith({
+      where: { id: 'u-1', deletedAt: null, role: { not: 'ADMIN' }, disabledAt: null },
+      data: { disabledAt: at },
+    });
+  });
+
+  it('enable only matches a disabled live row', async () => {
+    const { repo, prisma } = await buildSubject();
+    prisma.client.user.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(repo.enable('u-1')).resolves.toBe(0);
+    expect(prisma.client.user.updateMany).toHaveBeenCalledWith({
+      where: { id: 'u-1', deletedAt: null, disabledAt: { not: null } },
+      data: { disabledAt: null },
+    });
   });
 });
 
@@ -488,43 +439,42 @@ describe('UserRepository soft-deleted users are excluded from auth reads', () =>
 describe('UserRepository password-reset eligibility', () => {
   /** The row as the eligibility projection returns it. */
   const row = (over: Record<string, unknown> = {}) => ({
-    membershipEndedAt: null,
+    disabledAt: null,
     ...over,
   });
 
-  it('leaves a member eligible', async () => {
+  it('leaves an active account eligible', async () => {
     const { repo, prisma } = await buildSubject();
     prisma.client.user.findFirst.mockResolvedValue(row());
 
     await expect(repo.findPasswordResetEligibility('u-1')).resolves.toEqual({
-      membershipEnded: false,
+      disabled: false,
     });
   });
 
-  it('reports a removed member', async () => {
+  it('reports a disabled account', async () => {
     const { repo, prisma } = await buildSubject();
-    prisma.client.user.findFirst.mockResolvedValue(row({ membershipEndedAt: new Date() }));
+    prisma.client.user.findFirst.mockResolvedValue(row({ disabledAt: new Date() }));
 
     await expect(repo.findPasswordResetEligibility('u-1')).resolves.toMatchObject({
-      membershipEnded: true,
+      disabled: true,
     });
   });
 });
 
-describe('UserRepository membership counts', () => {
+describe('UserRepository admin and user counts', () => {
   describe('countLiveAdmins', () => {
-    it('counts live, current ADMIN members only', async () => {
+    it('counts live, enabled ADMIN accounts only', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.count.mockResolvedValue(1);
 
-      await repo.countLiveAdmins('tenant-a');
+      await repo.countLiveAdmins();
 
       expect(prisma.client.user.count).toHaveBeenCalledWith({
         where: {
-          tenantId: 'tenant-a',
           role: 'ADMIN',
           deletedAt: null,
-          membershipEndedAt: null,
+          disabledAt: null,
         },
       });
     });
@@ -533,26 +483,39 @@ describe('UserRepository membership counts', () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.count.mockResolvedValue(0);
 
-      await repo.countLiveAdmins('tenant-a', undefined, 'u-1');
+      await repo.countLiveAdmins(undefined, 'u-1');
 
       expect(prisma.client.user.count).toHaveBeenCalledWith({
-        where: expect.objectContaining({ tenantId: 'tenant-a', id: { not: 'u-1' } }),
+        where: expect.objectContaining({ id: { not: 'u-1' } }),
       });
     });
   });
 
-  describe('countOtherLiveMembers', () => {
-    it('counts every other live member as somebody the deletion would strand', async () => {
+  describe('countOtherLiveUsers', () => {
+    it('counts every other live user as somebody the deletion would strand', async () => {
       const { repo, prisma } = await buildSubject();
       prisma.client.user.count.mockResolvedValue(1);
 
-      await repo.countOtherLiveMembers('tenant-a', 'u-1');
+      await repo.countOtherLiveUsers('u-1');
 
       const { where } = prisma.client.user.count.mock.calls[0]![0] as {
         where: Record<string, unknown>;
       };
-      expect(where).not.toHaveProperty('NOT');
-      expect(where).toMatchObject({ tenantId: 'tenant-a', id: { not: 'u-1' } });
+      expect(where).toEqual({ id: { not: 'u-1' }, deletedAt: null, disabledAt: null });
     });
+  });
+});
+
+describe('UserRepository admin-set lock', () => {
+  it('takes one global advisory xact lock through $executeRaw', async () => {
+    const { repo } = await buildSubject();
+    const tx = { $executeRaw: jest.fn().mockResolvedValue(1) };
+
+    await repo.lockAdminSet(tx as never);
+
+    expect(tx.$executeRaw).toHaveBeenCalledTimes(1);
+    const [strings, key] = tx.$executeRaw.mock.calls[0] as [readonly string[], string];
+    expect(strings.join('?')).toContain('pg_advisory_xact_lock(hashtext(');
+    expect(key).toBe('admin-set');
   });
 });

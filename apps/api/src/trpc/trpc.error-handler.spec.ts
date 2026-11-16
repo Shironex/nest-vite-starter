@@ -187,7 +187,7 @@ describe('AppErrorHandler', () => {
 
     it.each([
       ['BAD_REQUEST', 'Start date must be before end date'],
-      ['NOT_FOUND', 'Workspace not found'],
+      ['NOT_FOUND', 'User not found'],
       ['FORBIDDEN', 'You can only access your own files'],
       ['TOO_MANY_REQUESTS', 'Too many attempts'],
       ['CONFLICT', 'Already exists'],
@@ -223,7 +223,7 @@ describe('AppErrorHandler', () => {
       const cause = new Error(
         [
           '',
-          'Invalid `prisma.workspace.create()` invocation:',
+          'Invalid `prisma.user.create()` invocation:',
           '',
           '{',
           '  data: {',
@@ -387,7 +387,7 @@ describe('AppErrorHandler', () => {
     });
 
     it('does NOT page Sentry for a P2025 (a routine 404, not a fault)', () => {
-      // A tenant-scoped update/delete against a foreign or missing id raises
+      // An update/delete against a stale or made-up id raises
       // P2025 by design, so this must not be an attacker-triggerable way to
       // generate Sentry events.
       const cause = {
@@ -583,7 +583,7 @@ describe('AppErrorHandler', () => {
     });
 
     it('keeps a live outer store rather than replacing it with an id-only one', () => {
-      // A store carrying userId/tenantId must survive: the published id is the
+      // A store carrying userId must survive: the published id is the
       // same value anyway, so there is nothing to gain by swapping it out.
       const opts = buildOpts({
         code: 'INTERNAL_SERVER_ERROR',
@@ -591,9 +591,9 @@ describe('AppErrorHandler', () => {
         ctx: { requestId: 'req-from-ctx' },
       });
 
-      requestContext.run({ requestId: 'req-from-ctx', tenantId: 'ten-1' }, () => {
+      requestContext.run({ requestId: 'req-from-ctx', userId: 'u-1' }, () => {
         handler.onError(opts);
-        expect(requestContext.getStore()?.tenantId).toBe('ten-1');
+        expect(requestContext.getStore()?.userId).toBe('u-1');
       });
 
       expect(loggedRequestIds).toEqual(['req-from-ctx']);

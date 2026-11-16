@@ -40,17 +40,8 @@ the docblock rather than generalizing from the name.
 `auth` leaf modules - `session`, `auth-middleware`, `lockout`. `common/` adds `PrismaModule`, `RedisModule` and
 `QueueModule`, also `@Global()`.
 
-`workspace` is platform too, imported where it is needed rather than global:
-the workspaces of an organization, the second tier of the Organization -> Workspace tenancy
-boundary. Every tenant-owned record below the organization hangs off a Workspace, so the
-module carries no domain meaning. It exports only `WorkspaceLookupService`, the read
-half (the tenant gate for a caller-supplied `workspaceId`, and the tenant's Workspace
-list); creating or editing a Workspace stays behind its own `workspaces` router. It
-imports no feature module.
-
 Everything else is a **feature**: `user`, `storage`, `mail`, `data-export`,
-`health`, and AuthModule proper. `workspace` must not
-import from any of them.
+`health`, and AuthModule proper.
 
 `modules/auth` is both at once, and that is the load-bearing fact here. A router
 needing `AuthMiddleware` imports `AuthMiddlewareModule`, never `AuthModule` -
@@ -83,14 +74,12 @@ rule holds them as named entry points, each with its reason.
 
 ## What lint already guarantees
 
-`packages/eslint-config/nestjs.js` runs twenty-three rules at `error`, production
+`packages/eslint-config/nestjs.js` runs nineteen rules at `error`, production
 code only (`interface-prefix-i` is the one that also polices specs). By class:
 
-- **Tenancy and transactions (8)** - no unscoped Prisma client and no raw SQL
-  outside an allowlist, a tenant-scoped model carries `tenantId` in both `where`
-  and `data`, no foreign tenant id in a `where`, a soft-deletable model's reads
-  filter `deletedAt`, every multi-row write inside a transaction, and inside one
-  use `tx` rather than the outer client.
+- **Data access and transactions (4)** - no raw SQL outside an allowlist, a
+  soft-deletable model's reads filter `deletedAt`, every multi-row write inside
+  a transaction, and inside one use `tx` rather than the outer client.
 
 - **Single-writer fences** - a fenced column is written by exactly one named
   service.

@@ -31,7 +31,7 @@ export type DomainErrorCode =
  * EVERY subclass takes `(appCode = <its default>, message?)`, in that order and
  * never the reverse. The order is load-bearing rather than cosmetic: `message`
  * is `string` and `appCode` is a union of string LITERALS, so a call written the
- * old way round, `new NotFoundError('Workspace not found')`, no longer compiles.
+ * old way round, `new NotFoundError('User not found')`, no longer compiles.
  * That is the whole guard. The previous arrangement had ValidationError on this
  * shape and its five siblings on the mirror image, which is why 39 call sites
  * ended up passing an AppErrorCode in the message slot: harmless only while the
@@ -92,8 +92,8 @@ export class ConflictError extends DomainError {
   /**
    * Defaults to CONFLICT, not ALREADY_EXISTS: the overwhelming majority of the
    * throw sites are optimistic-version CAS losers and state-machine refusals,
-   * whose remedy is "reload and retry". A genuine duplicate (workspace name,
-   * email already a login identity) passes ALREADY_EXISTS or the
+   * whose remedy is "reload and retry". A genuine duplicate (an email already
+   * a login identity) passes ALREADY_EXISTS or the
    * field-specific code explicitly, so the web can tell the user to change the
    * value instead of reloading.
    */

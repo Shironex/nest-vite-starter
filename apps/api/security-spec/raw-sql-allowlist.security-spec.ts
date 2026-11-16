@@ -1,12 +1,12 @@
 /**
- * SEC-005: raw SQL is an unguarded door past the tenant boundary.
- * The tenant-scope extension dispatches on the Prisma MODEL, and a raw query
- * has none, so `$queryRaw` / `$executeRaw` go through unscoped: the first raw
- * SELECT against a tenant table returns every organization's rows, type-checks, and
- * trips no other guard.
+ * SEC-005: raw SQL is an unreviewed door past every model-level guard.
+ * The soft-delete filters, the select allowlists and the parameter binding of
+ * the query builder all live on the Prisma MODEL, and a raw query has none, so
+ * `$queryRaw` / `$executeRaw` (and above all the `Unsafe` variants) skip them
+ * and type-check anyway.
  *
- * Fixed by a lint rule that treats raw SQL as a tenant escape hatch, pinned at
- * error.
+ * Fixed by a lint rule that treats raw SQL as an escape hatch with an
+ * allowlist, pinned at error.
  *
  * The fix is a lint rule, so the thing that regresses is not a function's
  * behavior but the tree: a new raw query that nobody allowlisted. Both
@@ -50,8 +50,8 @@ function collectSource(dir: string): string[] {
 
 /**
  * ESLint with the api's own flat config, minus every type-aware rule.
- * `overrideConfig` is appended last, so everything else (the tenancy block that
- * wires the rule under test) still applies exactly as `pnpm lint` resolves it.
+ * `overrideConfig` is appended last, so everything else (the block that wires
+ * the rule under test) still applies exactly as `pnpm lint` resolves it.
  *
  * The control lints a fixture that exists in no TypeScript program, so a rule
  * needing type information does not merely skip it, it THROWS while loading and
@@ -83,14 +83,14 @@ const rawSqlReports = (results: readonly ESLint.LintResult[]): IReport[] =>
       .map((message) => ({ file: relative(API_ROOT, result.filePath), message: message.message })),
   );
 
-/** An unguarded raw read of a tenant table: the exact door the rule exists for. */
+/** An unguarded raw read with string interpolation: the exact door the rule exists for. */
 const LEAKY_FIXTURE = [
   "import type { PrismaService } from '../../common/database/prisma.service';",
   'export class LeakyRepository {',
   '  constructor(private readonly prismaService: PrismaService) {}',
   '  async all(id: string): Promise<unknown> {',
   '    return this.prismaService.client.$queryRawUnsafe(',
-  '      `SELECT * FROM "Workspace" WHERE id = \'${id}\'`,',
+  '      `SELECT * FROM "User" WHERE id = \'${id}\'`,',
   '    );',
   '  }',
   '}',
@@ -109,7 +109,7 @@ describe('SEC-005 raw SQL never leaves the allowlist', () => {
     expect(rawSqlReports(results)).toHaveLength(1);
   });
 
-  it('no file under src reaches past the tenant boundary with raw SQL', async () => {
+  it('no file under src uses raw SQL outside the allowlist', async () => {
     const candidates = collectSource(SRC_ROOT).filter((file) =>
       RAW_SQL_MARKER.test(readFileSync(file, 'utf8')),
     );

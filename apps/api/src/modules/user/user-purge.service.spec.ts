@@ -6,16 +6,9 @@ import type { AuditPiiScrubService } from '../audit/audit-pii-scrub.service';
 import { UserPurgeService, USER_PURGE_MAX_PER_SWEEP } from './user-purge.service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const TENANT = 'tenant-1';
-
-const expiredRow = (
-  id: string,
-  deletedAt = new Date('2026-05-01T00:00:00Z'),
-  tenantId: string | null = TENANT,
-) => ({
+const expiredRow = (id: string, deletedAt = new Date('2026-05-01T00:00:00Z')) => ({
   id,
   deletedAt,
-  tenantId,
 });
 
 const buildSubject = (graceDays = 30) => {

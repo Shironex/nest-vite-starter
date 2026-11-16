@@ -1,8 +1,8 @@
 /**
  * Centralized Redis key construction. Every Redis key produced inside the
  * API must come through this helper so:
- *   - A tenant-prefix retrofit can wrap a single layer (`cache:t:<tid>:…`)
- *     without grepping the codebase for ad-hoc string literals.
+ *   - A prefix retrofit can wrap a single layer without grepping the
+ *     codebase for ad-hoc string literals.
  *   - A cache-manager adoption can extend the same builders rather than
  *     re-implement key shape per call site.
  *   - Naming conventions stay consistent (separator, casing, ordering).
