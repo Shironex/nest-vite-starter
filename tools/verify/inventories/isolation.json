@@ -9,7 +9,6 @@
       "tenant isolation (live DB, app-layer extension is the only boundary) > T11c a scoped findUnique inside a transaction sees that transaction uncommitted write": 1,
       "tenant isolation (live DB, app-layer extension is the only boundary) > T12 concurrent same-tick findUnique across tenants does not cross the batch": 1,
       "tenant isolation (live DB, app-layer extension is the only boundary) > T13 a compound-unique selector carrying another tenant id matches no row": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T14 OAuth signup provisioning isolation > provisions pre-ALS, stamps the audit row explicitly, and stays invisible cross-tenant": 1,
       "tenant isolation (live DB, app-layer extension is the only boundary) > T2 scoped findUnique by cross-tenant id resolves to null": 1,
       "tenant isolation (live DB, app-layer extension is the only boundary) > T3 scoped findFirst by cross-tenant id resolves to null": 1,
       "tenant isolation (live DB, app-layer extension is the only boundary) > T4 cross-tenant update by id matches no row and throws (other tenant unchanged)": 1,
@@ -21,14 +20,10 @@
       "tenant isolation (live DB, app-layer extension is the only boundary) > T8 update cannot move a row to another tenant (data.tenantId is stripped)": 1,
       "tenant isolation (live DB, app-layer extension is the only boundary) > T8b update cannot move a row via a nested relation write (data.tenant.connect)": 1,
       "tenant isolation (live DB, app-layer extension is the only boundary) > T8c upsert cannot move a row via a nested relation write in its update branch": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > T9 create ignores a client-supplied tenantId and stamps the active tenant": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > two-factor policy isolation > P1 a policy created for tenant A is invisible to tenant B": 1,
-      "tenant isolation (live DB, app-layer extension is the only boundary) > two-factor policy isolation > P2 fail-closed: a policy query with no tenant in context throws": 1
+      "tenant isolation (live DB, app-layer extension is the only boundary) > T9 create ignores a client-supplied tenantId and stamps the active tenant": 1
     },
     "apps/api/src/common/database/tenant-scope-coverage.isolation.spec.ts": {
       "every model the extension isolates has a cross-tenant case > C0 the fixtures cover the whole registry, so a new scoped model cannot skip this file": 1,
-      "every model the extension isolates has a cross-tenant case > twoFactorPolicy > C1 a row of tenant A is invisible to a scoped read under tenant B": 1,
-      "every model the extension isolates has a cross-tenant case > twoFactorPolicy > C2 fails closed when there is no tenant in context": 1,
       "every model the extension isolates has a cross-tenant case > workspace > C1 a row of tenant A is invisible to a scoped read under tenant B": 1,
       "every model the extension isolates has a cross-tenant case > workspace > C2 fails closed when there is no tenant in context": 1
     },
@@ -39,56 +34,14 @@
       "audit read isolation (live DB, explicit clause is the only boundary) > A5 keyset pagination walks the tenant feed newest-first without leaks or repeats": 1
     },
     "apps/api/src/modules/auth/account-pre-hijack.isolation.spec.ts": {
-      "account pre-hijacking > control: a Google-only account still signs in through its existing link": 1,
       "account pre-hijacking > control: register, verify, then sign in with the password still works": 1,
-      "account pre-hijacking > the auto-link that remains (passwordless, factorless, double-verified) > revokes every earlier session and mints one that validates": 1,
-      "account pre-hijacking > the auto-link that remains (passwordless, factorless, double-verified) > still fails the mint when ANOTHER revocation lands during the gate checks": 1,
-      "account pre-hijacking > the Google callback for the now-verified address is refused: LINK_BLOCKED, no link row": 1,
       "account pre-hijacking > the registrant's pre-verification session no longer validates once the owner verifies": 1
     },
     "apps/api/src/modules/auth/login-attempt-budget.isolation.spec.ts": {
-      "password lockout under a parallel burst > a Google-only account is answered exactly like a password account": 1,
-      "password lockout under a parallel burst > a Google-only account reserves too, so a burst cannot single it out": 1,
       "password lockout under a parallel burst > at most 5 of 8 concurrent wrong-password logins reach argon2": 1,
       "password lockout under a parallel burst > control: a correct password signs in and clears both counters": 1,
       "password lockout under a parallel burst > counting never extends the window: the TTL is set once, on create": 1,
       "password lockout under a parallel burst > the burst still arms the progressive tier in the row": 1
-    },
-    "apps/api/src/modules/auth/oauth/oauth-removed-member.isolation.spec.ts": {
-      "Google sign-in refuses a member removed from their organization > auto-link path: the removed member is refused and gains no link row": 1,
-      "Google sign-in refuses a member removed from their organization > control: an active member with a linked Google account signs in": 1,
-      "Google sign-in refuses a member removed from their organization > control: an active, double-verified, zero-factor, passwordless member is auto-linked and signs in": 1,
-      "Google sign-in refuses a member removed from their organization > linked path: the removed member is refused, generic code, membership_ended audited": 1,
-      "removeMember is retryable after a failed session teardown > control: a removed member of ANOTHER organization is still NotFound, and nothing is revoked": 1,
-      "removeMember is retryable after a failed session teardown > the retry revokes instead of answering NotFound, and audits the removal once": 1,
-      "the session seam re-reads account state on its own > refuses a removed member handed in by an entry point that checked nothing": 1,
-      "the session seam re-reads account state on its own > refuses a soft-deleted account the same way": 1
-    },
-    "apps/api/src/modules/auth/staff-invite/pending-invite-predicate.isolation.spec.ts": {
-      "staffInvite.revoke deletes open invitations and nothing else > control: withdraws a real pending invitation and audits it": 1,
-      "staffInvite.revoke deletes open invitations and nothing else > refuses a Google-only colleague and deletes nothing": 1,
-      "staffInvite.revoke deletes open invitations and nothing else > refuses the caller's own account and deletes nothing": 1,
-      "staffInvite.revoke deletes open invitations and nothing else > refuses the Google-signup owner and deletes nothing": 1,
-      "staffInvite.withdrawByEmail withdraws a cross-organization invitation > answers the same for an address with nothing open, and writes no audit row": 1,
-      "staffInvite.withdrawByEmail withdraws a cross-organization invitation > cannot withdraw an invitation another organization sent to the same person": 1,
-      "staffInvite.withdrawByEmail withdraws a cross-organization invitation > deletes the token, which the state check and acceptance then reject, and leaves the account alone": 1,
-      "the last-admin guard counts admins, not open invitations > control: a Google-only ADMIN counts, so the real admin may leave": 1,
-      "the last-admin guard counts admins, not open invitations > counts the OTHER admins for a demotion, so re-grading an invitation is not refused": 1,
-      "the last-admin guard counts admins, not open invitations > refuses the only real admin's self-deletion while an ADMIN invitation is open": 1,
-      "the members list reads the pending pair > lists a Google-signup owner as active and a real invitee as pending": 1
-    },
-    "apps/api/src/modules/auth/staff-invite/staff-invite-acceptance.isolation.spec.ts": {
-      "a moved account reads the organization it joined, not the one it left > clears a removal on the way in": 1,
-      "a moved account reads the organization it joined, not the one it left > sees the target organization and nothing of the previous one": 1,
-      "the acceptance transaction is all or nothing > rolls the password and the move back together when the tenant delete fails": 1,
-      "the emptiness counts run under the OLD tenant, or not at all > counts only the named organization when the scope is set to it": 1,
-      "the emptiness counts run under the OLD tenant, or not at all > fails closed when the counts are attempted with no tenant in the ALS": 1,
-      "the invitation mail names only a live inviter > returns a live colleague's display name and null for a soft-deleted one": 1,
-      "User.tenantId is Restrict, so emptiness must count dead rows too > counts that soft-deleted row, so the organization reads as not abandonable": 1,
-      "User.tenantId is Restrict, so emptiness must count dead rows too > deletes an organization once its last row is gone": 1,
-      "User.tenantId is Restrict, so emptiness must count dead rows too > refuses to delete an organization that still holds a SOFT-DELETED user": 1,
-      "Workspace.tenant is Cascade, which is why the transaction is Serializable > refuses a Serializable transaction that lost its race, rather than writing": 1,
-      "Workspace.tenant is Cascade, which is why the transaction is Serializable > would take a concurrently created workspace with the organization": 1
     },
     "apps/api/src/modules/user/membership-lock.isolation.spec.ts": {
       "lockTenantMembership against real Postgres > does not serialize two transactions on different organizations": 1,
