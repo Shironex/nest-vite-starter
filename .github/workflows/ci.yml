@@ -518,12 +518,6 @@ jobs:
           PORT: '3000'
           NODE_ENV: production
           APP_URL: http://localhost:5173
-          # The API's OWN public origin, distinct from APP_URL (the SPA origin).
-          # Joi-required under NODE_ENV=production so a deployment cannot
-          # silently mint OAuth redirect URIs against localhost, and absent here
-          # since the day it became required, which is why both of these steps
-          # died at config validation before reaching a single assertion.
-          API_PUBLIC_URL: http://localhost:3000
           SMTP_HOST: localhost
           SMTP_PORT: '1025'
           TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA

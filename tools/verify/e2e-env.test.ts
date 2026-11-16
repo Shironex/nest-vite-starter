@@ -90,11 +90,10 @@ describe('e2e env parity with CI', () => {
     assert.equal(ciEnv['ADMIN_PASSWORD'], E2E_ADMIN.password);
   });
 
-  it('moves both origins with the ports it is given', () => {
+  it('moves the ports it is given', () => {
     const env = e2eApiEnv({ ...CI_E2E_ENV_INPUT, apiPort: 41_001, webPort: 41_002 });
 
     assert.equal(env['PORT'], '41001');
-    assert.equal(env['API_PUBLIC_URL'], 'http://localhost:41001');
     assert.equal(env['APP_URL'], 'http://localhost:41002');
   });
 });

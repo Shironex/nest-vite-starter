@@ -38,10 +38,6 @@ export function e2eApiEnv(input: IE2eEnvInput): Record<string, string> {
     // The SPA origin. The employer journey follows a mail link back to it, so
     // it must be the port the web app is actually served on.
     APP_URL: `http://localhost:${input.webPort}`,
-    // The API's OWN public origin, distinct from APP_URL: Joi-required under
-    // NODE_ENV=production so a deployment cannot mint OAuth redirect URIs
-    // against localhost by accident.
-    API_PUBLIC_URL: `http://localhost:${input.apiPort}`,
     SMTP_HOST: input.smtpHost,
     SMTP_PORT: String(input.smtpPort),
     TURNSTILE_SECRET_KEY: '1x0000000000000000000000000000000AA',

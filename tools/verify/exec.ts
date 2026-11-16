@@ -38,7 +38,6 @@ const SERVICE_VARS = [
   'REDIS_URL',
   'PORT',
   'APP_URL',
-  'API_PUBLIC_URL',
   'SMTP_HOST',
   'SMTP_PORT',
   'PLAYWRIGHT_BASE_URL',

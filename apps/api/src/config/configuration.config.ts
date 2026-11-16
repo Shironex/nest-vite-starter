@@ -50,21 +50,6 @@ export const validationSchema = Joi.object({
     ),
   CORS_ORIGINS: Joi.string().optional().allow(''),
 
-  // The API's OWN public origin, distinct from APP_URL (the SPA origin). It is
-  // the only source for the OAuth `redirect_uri`, which must never be derived
-  // from the request Host header. Behind a reverse proxy this is the api
-  // service's public https URL, not an internal service URL: the IdP redirects
-  // the user's BROWSER to it. Required in production so a deployment cannot
-  // silently fall back to localhost and mint redirect URIs no console matches.
-  API_PUBLIC_URL: Joi.string()
-    .uri()
-    .empty('')
-    .when('NODE_ENV', {
-      is: 'production',
-      then: Joi.required(),
-      otherwise: Joi.string().uri().default('http://localhost:3000'),
-    }),
-
   // TOTP issuer shown in the user's authenticator app (the label before the
   // account email). Defaults to APP_NAME; override per deployment/brand.
   TOTP_ISSUER: Joi.string().optional().allow(''),
@@ -82,23 +67,6 @@ export const validationSchema = Joi.object({
   SMTP_USER: Joi.string().optional().allow(''),
   SMTP_PASS: Joi.string().optional().allow(''),
   SMTP_FROM: Joi.string().default('noreply@localhost'),
-
-  // Google OAuth. Unlike TURNSTILE_SECRET_KEY, these are OPTIONAL: a
-  // deployment with no Google project must still boot, and the registry simply
-  // reports the provider as disabled so its routes 404 and discovery omits it.
-  //
-  // `.empty('')` is what makes the both-or-neither rule below actually bite.
-  // env-cascade-drift requires every Joi key to appear in .env.example, so the
-  // unset state on disk is `KEY=` (the empty string), and Joi's `.and()` counts
-  // an empty string as PRESENT. Mapping '' to undefined first means a client id
-  // with a blank secret fails boot loudly instead of half-configuring the
-  // provider.
-  OAUTH_GOOGLE_CLIENT_ID: Joi.string().empty('').optional(),
-  OAUTH_GOOGLE_CLIENT_SECRET: Joi.string().empty('').optional(),
-
-  // Whether an OAuth identity with no matching account may create one.
-  // Default open, matching password signup.
-  OAUTH_ALLOW_SIGNUP: Joi.boolean().default(true),
 
   // Cloudflare Turnstile: always required. Use the public test key
   // (1x0000000000000000000000000000000AA) in dev; Joi must NOT default
@@ -165,4 +133,4 @@ export const validationSchema = Joi.object({
   SENTRY_DSN: Joi.string().uri().optional().allow(''),
   SENTRY_ENVIRONMENT: Joi.string().optional().allow(''),
   APP_VERSION: Joi.string().optional().allow(''),
-}).and('OAUTH_GOOGLE_CLIENT_ID', 'OAUTH_GOOGLE_CLIENT_SECRET');
+});

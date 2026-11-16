@@ -33,12 +33,11 @@
         "APP_NAME",
         "APP_URL",
         "APP_TIME_ZONE",
-        "API_PUBLIC_URL",
         "APP_VERSION"
       ],
       "secrets": [],
       "required": [],
-      "prodRequired": ["API_PUBLIC_URL"],
+      "prodRequired": [],
       "services": ["api", "web"]
     },
     "database": {
@@ -102,16 +101,6 @@
       "required": ["SMTP_HOST"],
       "prodRequired": [],
       "services": ["mailpit"]
-    },
-    "google-signin": {
-      "kind": "presence",
-      "toggle": "OAUTH_GOOGLE_CLIENT_ID",
-      "description": "Google sign-in. Leave both client keys empty and the provider registers as disabled.",
-      "keys": ["OAUTH_GOOGLE_CLIENT_ID", "OAUTH_GOOGLE_CLIENT_SECRET", "OAUTH_ALLOW_SIGNUP"],
-      "secrets": ["OAUTH_GOOGLE_CLIENT_SECRET"],
-      "required": [],
-      "prodRequired": [],
-      "services": []
     },
     "turnstile": {
       "kind": "core",
@@ -180,12 +169,6 @@
     }
   },
   "crossRules": [
-    {
-      "id": "google-signin-both-or-neither",
-      "kind": "and",
-      "keys": ["OAUTH_GOOGLE_CLIENT_ID", "OAUTH_GOOGLE_CLIENT_SECRET"],
-      "why": "A half-configured OAuth client is never valid, so setting one without the other fails boot."
-    },
     {
       "id": "resend-needs-api-key",
       "kind": "requiredWhen",
