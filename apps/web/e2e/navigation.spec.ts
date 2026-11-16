@@ -1,54 +1,44 @@
+import { PRODUCT_NAME } from '@repo/shared/constants';
 import { test, expect } from './support/render-only';
 
-test.describe('Navigation', () => {
-  test('should show landing page with correct title', async ({ page }) => {
+test.describe('Landing page', () => {
+  test('is titled with the product name', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle('SaaS Starter');
+    await expect(page).toHaveTitle(PRODUCT_NAME);
   });
 
-  test('should display hero section', async ({ page }) => {
+  test('names the product in its only h1', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1, name: /Ship the product/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(PRODUCT_NAME);
   });
 
-  // The Landing Split design has no theme-toggle affordance in its nav, so the
-  // marketing page deliberately ships without one. The toggle still lives in
-  // Settings for signed-in users.
-  test('should not offer a theme toggle on the marketing page', async ({ page }) => {
+  // The landing page deliberately ships without a theme toggle. The toggle
+  // lives in Settings for signed-in users.
+  test('offers no theme toggle', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('button', { name: /toggle theme/i })).toHaveCount(0);
   });
 
-  test('should have navigation links for unauthenticated users', async ({ page }) => {
+  test('carries no marketing sections', async ({ page }) => {
     await page.goto('/');
-    const header = page.getByRole('banner');
-    await expect(header.getByRole('link', { name: 'Log in' }).first()).toBeVisible();
-    await expect(header.getByRole('link', { name: 'Sign up' }).first()).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2 })).toHaveCount(0);
   });
 
-  test('should navigate to login from landing page', async ({ page }) => {
+  test('leads to sign in from the header', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('banner').getByRole('link', { name: 'Log in' }).first().click();
+    await page.getByRole('banner').getByRole('link', { name: 'Sign in' }).click();
     await expect(page).toHaveURL(/\/auth\/login/);
   });
 
-  test('should navigate to register from landing page', async ({ page }) => {
+  test('leads to account creation from the header', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('banner').getByRole('link', { name: 'Sign up' }).first().click();
+    await page.getByRole('banner').getByRole('link', { name: 'Create account' }).click();
     await expect(page).toHaveURL(/\/auth\/register/);
   });
 
-  test('should display features section', async ({ page }) => {
+  test('leads to account creation from the hero', async ({ page }) => {
     await page.goto('/');
-    await expect(
-      page.getByRole('heading', { level: 2, name: /Everything a SaaS needs/i }),
-    ).toBeVisible();
-  });
-
-  test('should expand a FAQ answer', async ({ page }) => {
-    await page.goto('/');
-    const question = page.getByRole('button', { name: /import data from another tool/i });
-    await question.click();
-    await expect(question).toHaveAttribute('aria-expanded', 'true');
+    await page.getByRole('main').getByRole('link', { name: 'Create an account' }).click();
+    await expect(page).toHaveURL(/\/auth\/register/);
   });
 });

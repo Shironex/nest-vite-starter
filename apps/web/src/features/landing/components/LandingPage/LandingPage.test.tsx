@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { PRODUCT_NAME } from '@repo/shared/constants';
 import LandingPage from './LandingPage';
 
 vi.mock('@tanstack/react-router', () => ({
@@ -11,12 +12,24 @@ vi.mock('@tanstack/react-router', () => ({
 }));
 
 describe('LandingPage', () => {
-  it('renders exactly one h1 and no skipped heading levels', () => {
+  it('names the product from PRODUCT_NAME in its only h1', () => {
     render(<LandingPage />);
 
-    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    // Every h3 on the page sits under an h2 section heading.
-    expect(screen.getAllByRole('heading', { level: 2 }).length).toBeGreaterThan(0);
+    const headings = screen.getAllByRole('heading', { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]).toHaveTextContent(PRODUCT_NAME);
+  });
+
+  it('offers sign in and account creation, from the header and the hero', () => {
+    render(<LandingPage />);
+
+    const header = screen.getByRole('banner');
+    expect(header.querySelector('a[href="/auth/login"]')).toHaveTextContent('Sign in');
+    expect(header.querySelector('a[href="/auth/register"]')).toHaveTextContent('Create account');
+    expect(screen.getByRole('link', { name: 'Create an account' })).toHaveAttribute(
+      'href',
+      '/auth/register',
+    );
   });
 
   it('exposes the landmarks the skip link and screen readers rely on', () => {
@@ -24,22 +37,14 @@ describe('LandingPage', () => {
 
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
     expect(screen.getByRole('banner')).toBeInTheDocument();
-    expect(screen.getByRole('contentinfo')).toBeInTheDocument();
+    expect(screen.getByRole('contentinfo')).toHaveTextContent(PRODUCT_NAME);
   });
 
-  it('renders every marketing section in order', () => {
-    const { container } = render(<LandingPage />);
-
-    expect(container.querySelector('#features')).toBeInTheDocument();
-    expect(container.querySelector('#how-it-works')).toBeInTheDocument();
-    expect(container.querySelector('#pricing')).toBeInTheDocument();
-    expect(container.querySelector('#faq')).toBeInTheDocument();
-  });
-
-  it('invents no social proof: no customer logos and no testimonial', () => {
+  it('carries no marketing sections: no pricing, FAQ or invented social proof', () => {
     render(<LandingPage />);
 
-    expect(screen.queryByRole('figure')).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0);
+    expect(screen.queryByText(/pricing/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/trusted by/i)).not.toBeInTheDocument();
   });
 });

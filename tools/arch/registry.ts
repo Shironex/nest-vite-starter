@@ -37,11 +37,11 @@ const API_MODULE_PURPOSES: IPurposeMap = {
 
 /** `apps/web/src/features/*`. */
 const WEB_FEATURE_PURPOSES: IPurposeMap = {
-  admin: 'User management: roles, lockout, two-factor reset, disabling and deletion.',
-  audit: 'Audit log browser with filters and per-entry detail.',
+  admin:
+    'The admin page: users (roles, sessions, lockout, two-factor reset, disabling, deletion) and a read-only audit list.',
   auth: 'Sign in, register, verify, reset password and the Turnstile challenge.',
-  dashboard: 'The authenticated landing page and its widgets.',
-  landing: 'The public marketing page.',
+  dashboard: 'The authenticated home page: a greeting and a start-here card.',
+  landing: 'The public landing page.',
   layout: 'Authenticated app shell: sidebar, top bar and user menu.',
   settings: 'Profile, password, sessions, GDPR export, theme and account deletion.',
   shared: 'Components used by more than one domain.',
