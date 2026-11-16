@@ -7,7 +7,6 @@ module.exports = {
       [
         'api',
         'web',
-        'desktop',
         'ui',
         'shared',
         'database',
