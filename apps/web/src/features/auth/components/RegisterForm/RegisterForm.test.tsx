@@ -34,12 +34,6 @@ vi.mock('@/lib/trpc', () => ({
   resetCsrfToken: () => undefined,
 }));
 
-// OAuthButtons fetches the provider discovery endpoint on mount. Stub it to a
-// marker so this suite stays offline; the button has its own suite.
-vi.mock('@/features/auth/components/OAuthButtons', () => ({
-  OAuthButtons: () => <div data-testid="oauth-buttons" />,
-}));
-
 function renderWithClient(ui: React.ReactElement) {
   const client = new QueryClient({
     defaultOptions: { mutations: { retry: false } },
@@ -65,10 +59,5 @@ describe('RegisterForm', () => {
   it('renders the email field', () => {
     renderWithClient(<RegisterForm />);
     expect(screen.getByLabelText('Work email address')).toBeInTheDocument();
-  });
-
-  it('offers the OAuth providers alongside the email signup', () => {
-    renderWithClient(<RegisterForm />);
-    expect(screen.getByTestId('oauth-buttons')).toBeInTheDocument();
   });
 });

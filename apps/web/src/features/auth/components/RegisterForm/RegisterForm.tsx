@@ -6,8 +6,6 @@ import { AuthField } from '@/features/auth/components/AuthField';
 import { TurnstileField } from '@/features/auth/components/TurnstileField';
 import { AuthSubmit } from '@/features/auth/components/AuthSubmit';
 import { FormError } from '@/features/auth/components/FormError';
-import { OAuthButtons } from '@/features/auth/components/OAuthButtons';
-import { OAuthErrorAlert } from '@/features/auth/components/OAuthErrorAlert';
 import { useRegisterForm } from './RegisterForm.hooks';
 
 /**
@@ -33,7 +31,6 @@ export default function RegisterForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
         {serverError && <FormError>{serverError}</FormError>}
-        <OAuthErrorAlert />
 
         <AuthField
           form={form}
@@ -74,8 +71,6 @@ export default function RegisterForm() {
         <AuthSubmit isPending={isPending} captchaStatus={captchaStatus}>
           {t('register.submit')}
         </AuthSubmit>
-
-        <OAuthButtons />
       </form>
     </Form>
   );

@@ -36,7 +36,6 @@ const baseView = (
   onSubmit: vi.fn(),
   isPending: false,
   requiresFactorCode: false,
-  hasLinkedAccounts: false,
   pendingSentTo: null,
   isDialogOpen: false,
   onDialogOpenChange: vi.fn(),
@@ -65,16 +64,6 @@ describe('EmailChangeSection', () => {
     view.current = baseView({ requiresFactorCode: true });
     render(<EmailChangeSection />);
     expect(screen.getByLabelText('Two-factor authentication code')).toBeInTheDocument();
-  });
-
-  it('explains that OAuth links do not follow the address, only when one is linked', () => {
-    view.current = baseView({ hasLinkedAccounts: true });
-    render(<EmailChangeSection />);
-    expect(screen.getByText(/not the email address/)).toBeInTheDocument();
-
-    view.current = baseView({ hasLinkedAccounts: false });
-    render(<EmailChangeSection />);
-    expect(screen.getAllByText(/not the email address/)).toHaveLength(1);
   });
 
   it('announces where the confirmation link went after a successful request', () => {

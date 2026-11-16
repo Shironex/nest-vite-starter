@@ -20,9 +20,8 @@ describe('SettingsShell', () => {
   });
 
   /*
-   * The OAuth link callback lands on `/settings?oauth_linked=...` and the
-   * announcing panel lives in a specific section, so the route can ask for
-   * that section to open first.
+   * A deep link (`/settings?section=...`) names a specific section, so the
+   * route can ask for that section to open first.
    */
   it('opens the requested initial section instead of the first row', () => {
     render(<SettingsShell sections={SECTIONS} initialSectionId="security" />);

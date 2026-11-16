@@ -29,12 +29,6 @@ vi.mock('@/features/auth/components/TurnstileField', () => ({
   TurnstileField: () => null,
 }));
 
-// OAuthButtons fetches the provider discovery endpoint on mount. Stub it to a
-// marker for the same reason; the button has its own suite.
-vi.mock('@/features/auth/components/OAuthButtons', () => ({
-  OAuthButtons: () => <div data-testid="oauth-buttons" />,
-}));
-
 function renderWithClient(ui: React.ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
@@ -49,10 +43,5 @@ describe('LoginForm', () => {
   it('renders the sign in button', () => {
     renderWithClient(<LoginForm />);
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
-  });
-
-  it('offers the OAuth providers alongside the password form', () => {
-    renderWithClient(<LoginForm />);
-    expect(screen.getByTestId('oauth-buttons')).toBeInTheDocument();
   });
 });

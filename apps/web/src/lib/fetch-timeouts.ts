@@ -5,7 +5,7 @@
  */
 
 /**
- * Small JSON reads (CSRF token, OAuth provider discovery). The CSRF promise is
+ * Small JSON reads (the CSRF token). The CSRF promise is
  * cached, so a hung token fetch would block every mutation until a reload.
  */
 export const SMALL_FETCH_TIMEOUT_MS = 10_000;

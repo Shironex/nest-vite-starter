@@ -26,9 +26,8 @@ export interface ISettingsShellProps {
   readonly sections: readonly ISettingsSection[];
   /**
    * Which rail row opens first, instead of the first one. Set by the route
-   * when a redirect carries the user to a specific panel (the OAuth link
-   * callback lands on `/settings?oauth_linked=...` and must open the panel
-   * that announces it, which only mounts while its section is selected).
+   * when a deep link (`/settings?section=...`) carries the user to a
+   * specific panel.
    * An id not in `sections` falls back to the first row like any stale id.
    * A later CHANGE to a defined id selects that row again (a deep link that
    * arrives while the shell is mounted); a change to `undefined` keeps the

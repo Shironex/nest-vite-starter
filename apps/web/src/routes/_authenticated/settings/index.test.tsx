@@ -17,15 +17,8 @@ describe('/_authenticated/settings/ route search', () => {
     expect(validateSearch({ section: 42 })).toEqual({});
   });
 
-  it('keeps a known oauth_linked provider next to a section', () => {
-    expect(validateSearch({ oauth_linked: 'google', section: 'profile' })).toEqual({
-      oauth_linked: 'google',
-      section: 'profile',
-    });
-  });
-
-  it('drops an unknown provider and unrelated params', () => {
-    expect(validateSearch({ oauth_linked: 'myspace', foo: 'bar' })).toEqual({});
+  it('drops unrelated params', () => {
+    expect(validateSearch({ foo: 'bar' })).toEqual({});
   });
 
   it('never throws on an empty search', () => {

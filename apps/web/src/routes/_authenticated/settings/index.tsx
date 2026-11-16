@@ -17,37 +17,23 @@ import { SecurityCard } from '@/features/two-factor/components/SecurityCard';
 import { OrgTwoFactorPolicyCard } from '@/features/two-factor/components/OrgTwoFactorPolicyCard';
 import { MembersSection } from '@/features/admin/components/MembersSection';
 import { ThemeSection } from '@/features/settings/components/ThemeSection';
-import { ConnectedAccountsSection } from '@/features/auth/components/ConnectedAccountsSection';
 import { EmailChangeSection } from '@/features/auth/components/EmailChangeSection';
-import { isOAuthProviderKey } from '@/features/auth/Auth.constants';
 import { SETTINGS_SECTION } from '@/features/settings/Settings.constants';
 import { isSettingsSectionId } from '@/features/settings/Settings.util';
 import type { SettingsSectionId } from '@/features/settings/Settings.constants';
-import type { OAuthProviderKey } from '@/features/auth/Auth.constants';
 import { IS_ELECTRON } from '@/lib/electron';
 import { UpdatesSection } from '@/features/settings/components/UpdatesSection';
 
 export const Route = createFileRoute('/_authenticated/settings/')({
   head: () => pageTitle('pageTitle.settings'),
   /**
-   * A successful OAuth link comes back as a 302 to
-   * `/settings?oauth_linked=<provider>` (OAUTH_LINKED_PARAM in the api's
-   * oauth.constants.ts). ConnectedAccountsSection announces it and strips it.
-   * Same discipline as the `/auth` layout's `error` param: a total function,
-   * no schema parse, and any value outside the known provider keys is dropped
-   * rather than echoed.
-   *
    * `?section=<id>` deep links to one rail row (the two-factor grace banner
-   * sends the user to `security`). Same discipline: only an id from
-   * SETTINGS_SECTION survives, anything else is dropped. The page consumes it
-   * and strips it again, see SettingsPage.
+   * sends the user to `security`). A total function, no schema parse: only an
+   * id from SETTINGS_SECTION survives, anything else is dropped. The page
+   * consumes it and strips it again, see SettingsPage.
    */
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { oauth_linked?: OAuthProviderKey; section?: SettingsSectionId } => ({
-    ...(isOAuthProviderKey(search.oauth_linked) ? { oauth_linked: search.oauth_linked } : {}),
-    ...(isSettingsSectionId(search.section) ? { section: search.section } : {}),
-  }),
+  validateSearch: (search: Record<string, unknown>): { section?: SettingsSectionId } =>
+    isSettingsSectionId(search.section) ? { section: search.section } : {},
   component: SettingsPage,
 });
 
@@ -77,7 +63,7 @@ export const Route = createFileRoute('/_authenticated/settings/')({
 function SettingsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { oauth_linked, section } = Route.useSearch();
+  const { section } = Route.useSearch();
   const navigate = useNavigate();
   const isAdmin = user?.role === ROLES.ADMIN;
 
@@ -108,7 +94,6 @@ function SettingsPage() {
           <PasswordSection />
           <SecurityCard />
           <SessionsSection />
-          <ConnectedAccountsSection />
           <DangerZoneSection />
         </>
       ),
@@ -151,13 +136,6 @@ function SettingsPage() {
     });
   }
 
-  // The link callback must land the user ON the announcing panel:
-  // ConnectedAccountsSection only mounts while the security section is
-  // selected, and it is the one that reads and strips `oauth_linked`. That is
-  // why it wins over `section`: sending the user anywhere else would leave the
-  // link unannounced and the param stuck in the URL.
-  const initialSectionId = oauth_linked !== undefined ? SETTINGS_SECTION.security : section;
-
   /*
    * `section` is a one-shot request, not the rail's state: the shell adopts it
    * when it changes and the rail stays local state after that. Stripping it
@@ -165,13 +143,11 @@ function SettingsPage() {
    * shown on this page too, so without the strip a second click on its CTA
    * (after the user moved to another row) would navigate to the URL already
    * on screen and do nothing. `replace` keeps Back from resurrecting it.
-   * With `oauth_linked` present ConnectedAccountsSection clears the whole
-   * search itself, so this stands aside rather than race it.
    */
   useEffect(() => {
-    if (section === undefined || oauth_linked !== undefined) return;
+    if (section === undefined) return;
     void navigate({ to: '/settings', search: {}, replace: true });
-  }, [section, oauth_linked, navigate]);
+  }, [section, navigate]);
 
-  return <SettingsShell sections={sections} initialSectionId={initialSectionId} />;
+  return <SettingsShell sections={sections} initialSectionId={section} />;
 }

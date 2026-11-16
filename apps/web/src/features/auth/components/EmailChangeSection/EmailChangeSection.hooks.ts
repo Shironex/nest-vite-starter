@@ -11,12 +11,11 @@ import { trpc } from '@/lib/trpc';
 import { useIdempotencyKey } from '@/hooks/use-idempotency-key';
 import { getAppErrorCode, translateAppError } from '@/lib/trpc-errors';
 import { useAuth } from '@/hooks/use-auth';
-import { useOAuthAccounts } from '@/features/auth/ConnectedAccounts.queries';
 import type { IEmailChangeSectionView } from './EmailChangeSection.types';
 
 /**
- * The email-change form state. Sudo gates the request the way unlink is
- * gated in ConnectedAccountsSection: the mutation attempts FIRST and treats
+ * The email-change form state. Sudo gates the request: the mutation attempts
+ * FIRST and treats
  * FORBIDDEN as "open the password dialog and retry": the 300 s sudo window
  * routinely expires while settings sit open, so FORBIDDEN is the normal flow
  * here, not an error state, and attempting first spares a user with a live
@@ -32,7 +31,6 @@ export function useEmailChangeSection(): IEmailChangeSectionView {
   const { user } = useAuth();
 
   const twoFactorQuery = useQuery({ ...trpc.twoFactor.status.queryOptions() });
-  const accountsQuery = useOAuthAccounts();
 
   const form = useForm<RequestEmailChangeInput>({
     resolver: zodResolver(requestEmailChangeSchema),
@@ -74,8 +72,6 @@ export function useEmailChangeSection(): IEmailChangeSectionView {
           message: translateAppError(error) ?? t('errors.unexpected'),
         });
       } else {
-        // PASSWORD_NOT_SET lands here: the catalog copy points an OAuth-only
-        // account at password reset (which doubles as set-password).
         toast.error(translateAppError(error) ?? t('errors.unexpected'));
       }
     },
@@ -114,7 +110,6 @@ export function useEmailChangeSection(): IEmailChangeSectionView {
     onSubmit,
     isPending: requestMutation.isPending,
     requiresFactorCode: twoFactorQuery.data?.enabled === true,
-    hasLinkedAccounts: (accountsQuery.data?.accounts.length ?? 0) > 0,
     pendingSentTo,
     isDialogOpen,
     onDialogOpenChange,

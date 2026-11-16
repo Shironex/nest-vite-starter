@@ -16,10 +16,4 @@ export interface IConfirmPasswordDialogView {
   readonly form: UseFormReturn<ConfirmPasswordInput>;
   readonly onSubmit: (data: ConfirmPasswordInput) => void;
   readonly isPending: boolean;
-  /**
-   * True once the api answered PASSWORD_NOT_SET: an OAuth-only account has no
-   * password to re-enter, so the form is replaced by the set-a-password-first
-   * explanation and its route to password reset.
-   */
-  readonly hasNoPassword: boolean;
 }

@@ -26,7 +26,6 @@ export default function EmailChangeSection() {
     onSubmit,
     isPending,
     requiresFactorCode,
-    hasLinkedAccounts,
     pendingSentTo,
     isDialogOpen,
     onDialogOpenChange,
@@ -103,10 +102,6 @@ export default function EmailChangeSection() {
                   </FormItem>
                 )}
               />
-            )}
-
-            {hasLinkedAccounts && (
-              <p className="type-body-small text-text-muted">{t('auth.emailChange.oauthNote')}</p>
             )}
 
             <Button type="submit" disabled={isPending}>

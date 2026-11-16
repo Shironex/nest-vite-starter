@@ -70,19 +70,6 @@ describe('useConfirmPasswordDialog', () => {
     expect(toastError).not.toHaveBeenCalled();
   });
 
-  it('swaps to the set-a-password-first state on PASSWORD_NOT_SET', async () => {
-    rejectWithCode(AppErrorCode.PASSWORD_NOT_SET);
-    const { result } = renderDialogHook();
-
-    expect(result.current.hasNoPassword).toBe(false);
-    act(() => result.current.onSubmit({ password: 'anything' }));
-
-    // An OAuth-only account cannot succeed by retyping, so no field error and
-    // no toast: the body swap is the whole answer.
-    await waitFor(() => expect(result.current.hasNoPassword).toBe(true));
-    expect(toastError).not.toHaveBeenCalled();
-  });
-
   it('pins the rate-limit sentence to the field on RATE_LIMITED', async () => {
     rejectWithCode(AppErrorCode.RATE_LIMITED);
     const { result } = renderDialogHook();

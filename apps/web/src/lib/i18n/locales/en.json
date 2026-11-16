@@ -92,36 +92,12 @@
       "skipToContent": "Skip to main content"
     },
     "auth": {
-      "oauthDivider": "or",
-      "oauthContinueWith": "Continue with {{provider}}",
-      "oauthErrors": {
-        "oauth_failed": "Google sign-in did not work. Please try again.",
-        "oauth_state_expired": "That took too long and expired. Please try again.",
-        "oauth_account_exists": "An account with this email address already exists. Sign in with your password, then connect Google in settings.",
-        "oauth_link_blocked": "We cannot link this Google account automatically because your SaaS Starter account is protected by a password or two-factor authentication. Sign in with your password (reset it if you do not remember it), then link Google in settings.",
-        "oauth_signup_disabled": "Creating new accounts with Google is turned off. Contact your administrator."
-      },
-      "connectedAccounts": {
-        "title": "Connected accounts",
-        "description": "External accounts you can use to sign in to SaaS Starter.",
-        "empty": "You have no connected accounts yet.",
-        "loadFailed": "Could not load your connected accounts.",
-        "linkCta": "Link {{provider}} account",
-        "unlink": "Unlink",
-        "unlinkAccessible": "Unlink {{provider}} account ({{email}})",
-        "linkedOn": "Linked {{date}}",
-        "lastUsed": "last used {{date}}",
-        "linkedToast": "{{provider}} account linked.",
-        "unlinkedToast": "Account unlinked."
-      },
       "sudo": {
         "title": "Confirm your password",
         "description": "This action needs you to confirm your password again. The confirmation stays valid for 5 minutes.",
         "passwordLabel": "Password",
         "passwordPlaceholder": "Enter your password",
-        "invalidPassword": "Password is incorrect.",
-        "noPassword": "This account has no password because you sign in with an external account. Set one via password reset, then try again.",
-        "noPasswordCta": "Go to password reset"
+        "invalidPassword": "Password is incorrect."
       },
       "emailChange": {
         "title": "Email address",
@@ -132,7 +108,6 @@
         "factorLabel": "Two-factor authentication code",
         "factorPlaceholder": "Authenticator or recovery code",
         "factorHint": "Two-factor authentication is on, so the change also needs a current code.",
-        "oauthNote": "Connected Google accounts are tied to the Google identity, not the email address. Changing your email does not move or remove them.",
         "submit": "Change email address",
         "pendingSent": "We sent a confirmation link to {{email}}. The change takes effect once you open it. Afterwards you will be signed out and sign in with the new address.",
         "requestedToast": "Confirmation link sent.",

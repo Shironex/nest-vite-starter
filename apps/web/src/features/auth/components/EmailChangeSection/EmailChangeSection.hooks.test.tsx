@@ -5,10 +5,9 @@ import type { ReactNode } from 'react';
 import { AppErrorCode } from '@repo/shared/errors';
 import { useEmailChangeSection } from './EmailChangeSection.hooks';
 
-const { requestFn, statusFn, listFn, meFn, toastSuccess, toastError } = vi.hoisted(() => ({
+const { requestFn, statusFn, meFn, toastSuccess, toastError } = vi.hoisted(() => ({
   requestFn: vi.fn(),
   statusFn: vi.fn(),
-  listFn: vi.fn(),
   meFn: vi.fn(),
   toastSuccess: vi.fn(),
   toastError: vi.fn(),
@@ -28,12 +27,6 @@ vi.mock('@/lib/trpc', () => ({
     },
   },
 }));
-vi.mock('@/features/auth/ConnectedAccounts.queries', async () => {
-  const { useQuery } = await import('@tanstack/react-query');
-  return {
-    useOAuthAccounts: () => useQuery({ queryKey: ['oauth', 'listAccounts'], queryFn: listFn }),
-  };
-});
 
 /** tRPC-shaped error: getAppErrorCode reads `error.data.appCode`. */
 const appError = (appCode: AppErrorCode) =>
@@ -50,21 +43,18 @@ beforeEach(() => {
   vi.clearAllMocks();
   meFn.mockResolvedValue({ id: 'u-1', email: 'old@x.com' });
   statusFn.mockResolvedValue({ enabled: false });
-  listFn.mockResolvedValue({ accounts: [] });
   requestFn.mockResolvedValue({ success: true });
 });
 
 describe('useEmailChangeSection', () => {
-  it('exposes the session email, and 2FA/OAuth-driven flags', async () => {
+  it('exposes the session email and the 2FA-driven flag', async () => {
     statusFn.mockResolvedValue({ enabled: true });
-    listFn.mockResolvedValue({ accounts: [{ id: 'acc-1' }] });
 
     const { result } = renderHook(() => useEmailChangeSection(), { wrapper });
 
     await waitFor(() => {
       expect(result.current.currentEmail).toBe('old@x.com');
       expect(result.current.requiresFactorCode).toBe(true);
-      expect(result.current.hasLinkedAccounts).toBe(true);
     });
   });
 
@@ -170,7 +160,7 @@ describe('useEmailChangeSection', () => {
   });
 
   it('surfaces other failures as a toast', async () => {
-    requestFn.mockRejectedValueOnce(appError(AppErrorCode.PASSWORD_NOT_SET));
+    requestFn.mockRejectedValueOnce(appError(AppErrorCode.RATE_LIMITED));
 
     const { result } = renderHook(() => useEmailChangeSection(), { wrapper });
 

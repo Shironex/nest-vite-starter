@@ -23,9 +23,8 @@ export const Route = createFileRoute('/auth/two-factor')({
 });
 
 /**
- * 2FA challenge. Entered when `auth.login` returns `twofa_required`, or by the
- * Google callback redirect; in both cases the `__Host-2fa` pending cookie is
- * already set, so the page needs no query params beyond the post-verify
+ * 2FA challenge. Entered when `auth.login` returns `twofa_required`; the
+ * `__Host-2fa` pending cookie is already set, so the page needs no query params beyond the post-verify
  * `redirect`. The route is a thin seam: all logic lives in the feature hook.
  */
 function TwoFactorPage() {

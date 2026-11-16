@@ -13,8 +13,8 @@ import { STAFF_HOME_PATH } from '@/lib/shell-routes';
 import type { ITwoFactorChallengeView } from './TwoFactorChallenge.types';
 
 // The redirect target is route state, read here so the component never takes it
-// as a prop. The `__Host-2fa` pending cookie is already set (by login or the
-// Google callback), so this page needs no other params.
+// as a prop. The `__Host-2fa` pending cookie is already set by login, so this
+// page needs no other params.
 const routeApi = getRouteApi('/auth/two-factor');
 
 export function useTwoFactorChallenge(): ITwoFactorChallengeView {

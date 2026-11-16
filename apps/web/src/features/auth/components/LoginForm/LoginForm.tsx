@@ -8,16 +8,9 @@ import { AuthField } from '@/features/auth/components/AuthField';
 import { TurnstileField } from '@/features/auth/components/TurnstileField';
 import { AuthSubmit } from '@/features/auth/components/AuthSubmit';
 import { FormError } from '@/features/auth/components/FormError';
-import { OAuthButtons } from '@/features/auth/components/OAuthButtons';
-import { OAuthErrorAlert } from '@/features/auth/components/OAuthErrorAlert';
 import { useLoginForm } from './LoginForm.hooks';
 
-/**
- * The sign-in screen, including the "Continue with Google" button the design
- * shows. It renders only when the api reports Google as enabled (configuring
- * the OAuth client is a deployment step, not a build-time one), so an environment
- * with no OAuth client configured still sees exactly the old screen.
- */
+/** The sign-in screen: email and password, with an optional remember-me. */
 export default function LoginForm() {
   const { t } = useTranslation(AUTH_NS);
   const {
@@ -40,7 +33,6 @@ export default function LoginForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
         {serverError && <FormError>{serverError}</FormError>}
-        <OAuthErrorAlert />
 
         <AuthField
           form={form}
@@ -87,8 +79,6 @@ export default function LoginForm() {
         <AuthSubmit isPending={isPending} captchaStatus={captchaStatus}>
           {t('login.submit')}
         </AuthSubmit>
-
-        <OAuthButtons />
       </form>
     </Form>
   );

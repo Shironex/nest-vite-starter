@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
@@ -25,7 +24,6 @@ export function useConfirmPasswordDialog({
   onConfirmed,
 }: IConfirmPasswordDialogProps): IConfirmPasswordDialogView {
   const { t } = useTranslation();
-  const [hasNoPassword, setHasNoPassword] = useState(false);
 
   const form = useForm<ConfirmPasswordInput>({
     resolver: zodResolver(confirmPasswordSchema),
@@ -49,10 +47,6 @@ export function useConfirmPasswordDialog({
         // code mentions the e-mail address, which is wrong under a lone
         // password field.
         form.setError('password', { message: t('auth.sudo.invalidPassword') });
-      } else if (code === AppErrorCode.PASSWORD_NOT_SET) {
-        // An OAuth-only account (null password hash). No retry can succeed,
-        // so the dialog swaps its body instead of erroring the field.
-        setHasNoPassword(true);
       } else if (code === AppErrorCode.RATE_LIMITED) {
         // 5 attempts per 300 s per user; the catalog copy fits verbatim.
         form.setError('password', { message: t('errors:RATE_LIMITED') });
@@ -66,5 +60,5 @@ export function useConfirmPasswordDialog({
     confirmMutation.mutate(data);
   }
 
-  return { form, onSubmit, isPending: confirmMutation.isPending, hasNoPassword };
+  return { form, onSubmit, isPending: confirmMutation.isPending };
 }
