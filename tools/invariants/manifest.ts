@@ -7,8 +7,7 @@ import { join, posix, relative, sep } from 'node:path';
  * The manifests exist because the worst bugs break invariants rather than
  * code paths, and in each case the invariant was real but written down nowhere
  * a reviewer would find it: a session re-issue path could drop a flag the
- * original mint carried, the tenant scope could escape through a transaction, and "enforce it at
- * every door" updated three doors out of four.
+ * original mint carried, and "enforce it at every door" updated three doors out of four.
  *
  * A prose list of invariants rots exactly like the prose module map did, so
  * the format is deliberately machine-checkable and the check is a lint-meta

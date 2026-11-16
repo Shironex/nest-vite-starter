@@ -7,7 +7,7 @@ import { sandboxesDir } from './ownership';
 /*
  * A running sandbox is described by one JSON file per sandbox id, written 0600
  * into a gitignored directory. The file carries the bound host ports, which is
- * what every consumer (the isolation lane, the Prisma gates, the e2e lane)
+ * what every consumer (the integration lane, the Prisma gates, the e2e lane)
  * needs and what nothing can reconstruct once the run that created them ends.
  *
  * Credentials never reach stdout: `sandbox:inspect` prints ports and lane ids,

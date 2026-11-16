@@ -166,15 +166,6 @@ export const CHECKS: readonly ICheckSpec[] = [
     lane: 'isolation',
   },
   {
-    // Runs the isolation lane once per mutant (about 64s) and requires every
-    // mutant to die, so a tenant boundary that stopped being tested cannot
-    // stay green. Release only: far too slow for a per-push profile.
-    id: 'isolation-canary',
-    profiles: RELEASE,
-    command: ['pnpm', 'canary:isolation'],
-    lane: 'isolation',
-  },
-  {
     // Every declared @noctcore range against the registry's latest: the half
     // lint:meta's offline `noctcore-packages-current` cannot see. Release only
     // and outside pre-push, so lint and CI never depend on the registry; an

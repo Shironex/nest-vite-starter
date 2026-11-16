@@ -13,7 +13,7 @@ const API_PACKAGE_DIR = 'apps/api';
 /**
  * A path (relative to the package) inside the glob the logging rules are scoped
  * to. Never read: `calculateConfigForFile` is pure glob matching, the same probe
- * convention as `tenant-model-registry-parity`.
+ * convention as `required-rules-at-error`.
  */
 const API_PROBE = 'src/modules/example/example.service.ts';
 
@@ -43,7 +43,7 @@ const LINT_RULE_ID = 'observability/no-sensitive-fields-in-logs';
  * lint entry is redacted at runtime and invisible to the static guard.
  *
  * The static side is read from the RESOLVED ESLint config, like
- * `tenant-model-registry-parity`, so it asserts what the rule actually receives
+ * `required-rules-at-error`, so it asserts what the rule actually receives
  * rather than parsing one const out of nestjs.js.
  */
 

@@ -45,18 +45,6 @@ export default [
     },
   },
   {
-    // The isolation canary runner is a standalone Node CLI: it boots no Nest
-    // application, and it spawns the isolation lane with the mutant selector
-    // and the database url in the CHILD's environment, so its own environment
-    // is its input. `contracts/no-direct-process-env` points at the NestJS
-    // typed config accessor, which is an impossible answer here; the same
-    // reasoning the root config applies to scripts/**.
-    files: ['canary/*.ts'],
-    rules: {
-      'contracts/no-direct-process-env': 'off',
-    },
-  },
-  {
     /*
      * The two security-lane rule tests carry their fixtures as source STRINGS:
      * a fixture containing `it.skip(` or `xit(` is the input those rules must

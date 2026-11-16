@@ -60,25 +60,11 @@ const REQUIRED_RULES: readonly IRequiredRule[] = [
       'It carries the single-writer fences: a model whose invariant spans several rows gets one owner, and only that owner (plus seeds and migrations) may write it. There are none yet, so the rule is inert, and it stays wired at error so that the first restriction added to SINGLE_WRITER_FENCES in packages/eslint-config/nestjs.js is enforced without anyone having to remember to switch it on.',
   },
   {
-    ruleId: 'noctcore-prisma/tenant-scoped-tables-require-where',
-    packageDir: 'apps/api',
-    probe: 'src/modules/example/example.service.ts',
-    rationale:
-      "A query on the unscoped client, or on a model the extension deliberately does not scope (AuditLog), gets no runtime tenant filter. Without this rule such a read without a tenant column in its where returns every organization's rows and type-checks.",
-  },
-  {
-    ruleId: 'noctcore-prisma/no-unscoped-prisma-outside-allowlist',
-    packageDir: 'apps/api',
-    probe: 'src/modules/example/example.service.ts',
-    rationale:
-      'The `unscoped` client bypasses the tenant-scope extension, which is the whole tenant boundary (there is no RLS). Without this rule any service can reach for it and every query through it crosses tenants silently.',
-  },
-  {
     ruleId: 'noctcore-prisma/no-raw-sql-outside-allowlist',
     packageDir: 'apps/api',
     probe: 'src/modules/example/example.service.ts',
     rationale:
-      "The tenant-scope extension dispatches on the model, and a raw query has no model, so $queryRaw and $executeRaw pass through unscoped. Without this rule the first raw SELECT against a tenant table returns every organization's rows, type-checks, and trips no other guard.",
+      'Every model-level guard (the soft-delete filter, the select allowlists, parameter binding) lives on the Prisma model, and a raw query has none. Without this rule a raw SELECT that forgets `deletedAt`, or interpolates caller input, type-checks and trips no other guard.',
   },
   {
     ruleId: 'repo/effect-fired-mutation-must-bind-callbacks',

@@ -6,7 +6,7 @@ import { requiredRulesAtErrorRule } from './required-rules-at-error';
 
 /*
  * The rule pins a fixed table of rule ids per package. These tests drive one
- * entry of that table (a tenant-boundary rule, apps/api) and filter the result to
+ * entry of that table (the raw SQL rule, apps/api) and filter the result to
  * it, so adding another required rule to the table does not break them.
  */
 const PINNED = 'noctcore-prisma/no-raw-sql-outside-allowlist';
@@ -57,8 +57,8 @@ describe('required-rules-at-error', () => {
 
     const violations = await runAsync(requiredRulesAtErrorRule, fixture.context());
 
-    // At least the five apps/api pins; the web pins report a missing package.
-    assert.ok(violations.filter((violation) => violation.file.startsWith('apps/api')).length >= 5);
+    // At least the three apps/api pins; the web pins report a missing package.
+    assert.ok(violations.filter((violation) => violation.file.startsWith('apps/api')).length >= 3);
   });
 
   it('reports a pinned package that does not exist, rather than skipping it', async () => {

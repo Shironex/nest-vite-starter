@@ -13,7 +13,7 @@ describe('readProcedures', () => {
   it('reads the router alias, the procedure kind and both middleware levels', () => {
     const [procedure, ...rest] = read(`
 @Router({ alias: 'example' })
-@UseMiddlewares(AuthMiddleware, TenantMiddleware)
+@UseMiddlewares(AuthMiddleware, AdminMiddleware)
 export class ExampleRouter {
   @Query({ output: listOutput })
   @UseMiddlewares(RateLimitMiddleware)
@@ -29,7 +29,7 @@ export class ExampleRouter {
     assert.equal(procedure?.router, 'example');
     assert.equal(procedure?.procedure, 'list');
     assert.equal(procedure?.kind, 'Query');
-    assert.deepEqual(procedure?.classMiddlewares, ['AuthMiddleware', 'TenantMiddleware']);
+    assert.deepEqual(procedure?.classMiddlewares, ['AuthMiddleware', 'AdminMiddleware']);
     assert.deepEqual(procedure?.methodMiddlewares, ['RateLimitMiddleware']);
     assert.equal(procedure?.hasOutput, true);
   });

@@ -58,7 +58,7 @@ export const INVENTORY_SUITES: readonly IInventorySuite[] = [
   },
   {
     id: 'isolation',
-    label: 'apps/api isolation lane (jest, live Postgres)',
+    label: 'apps/api integration lane (jest, live Postgres)',
     pathBase: 'apps/api',
     report: `${INVENTORY_REPORT_DIR}/isolation.junit.xml`,
     command: ['pnpm', '--filter', '@repo/api', 'test:integration'],

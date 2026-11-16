@@ -29,24 +29,20 @@ const API_MODULE_PURPOSES: IPurposeMap = {
   auth: 'May you enter: credentials, sessions, 2FA and the guards.',
   'data-export':
     'GDPR account export: gathers everything the api holds about one account into an archive.',
-  workspace:
-    'The workspaces of an organization (the Organization -> Workspace tenancy tier): the Workspace gate, list, create and edit.',
   health: 'Liveness and readiness probes for the container platform.',
   logger: 'Structured logging and request-scoped log context.',
   mail: 'Transactional email: templates, the queue and the provider adapter.',
-  user: 'The account lifecycle: profile, membership, deletion and the purge sweep.',
+  user: 'The account lifecycle: profile, roles, disabling, deletion and the purge sweep.',
 };
 
 /** `apps/web/src/features/*`. */
 const WEB_FEATURE_PURPOSES: IPurposeMap = {
-  admin: 'Organization member management: roles, lockout, two-factor reset and deletion.',
+  admin: 'User management: roles, lockout, two-factor reset, disabling and deletion.',
   audit: 'Audit log browser with filters and per-entry detail.',
   auth: 'Sign in, register, verify, reset password and the Turnstile challenge.',
   dashboard: 'The authenticated landing page and its widgets.',
-  workspace:
-    'Platform Organization -> Workspace tier: the Workspaces screen, the Workspace picker and the create/edit dialog.',
   landing: 'The public marketing page.',
-  layout: 'Authenticated app shell: sidebar, top bar, organization identity and user menu.',
+  layout: 'Authenticated app shell: sidebar, top bar and user menu.',
   settings: 'Profile, password, sessions, GDPR export, theme and account deletion.',
   shared: 'Components used by more than one domain.',
   'two-factor': 'TOTP enrollment, the challenge screen and recovery codes.',

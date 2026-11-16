@@ -181,9 +181,9 @@ describe('tsc output', () => {
 describe('lint:meta output', () => {
   const output = [
     'lint-meta: running 2 rules from /work/starter/tools/lint-meta/registry.ts',
-    '\u2192 tenant-scoped-tables-require-where',
+    '\u2192 soft-deletable-tables-require-deleted-at',
     '\u2192 no-audit-write-in-transaction',
-    '[ERROR] tenant-scoped-tables-require-where (apps/api/src/a.ts): read without a where',
+    '[ERROR] soft-deletable-tables-require-deleted-at (apps/api/src/a.ts): read without a where',
     '[ERROR] no-audit-write-in-transaction (/work/starter/apps/api/src/b.ts): audit inside a transaction (see docs): here',
     '',
   ].join('\n');
@@ -196,7 +196,7 @@ describe('lint:meta output', () => {
       {
         kind: 'lint-meta',
         file: 'apps/api/src/a.ts',
-        rule: 'tenant-scoped-tables-require-where',
+        rule: 'soft-deletable-tables-require-deleted-at',
         message: 'read without a where',
       },
       {

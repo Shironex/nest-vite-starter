@@ -47,13 +47,9 @@ const MODULES_ROOT = 'apps/api/src/modules/';
  * module may not import from any module listed against it. Zero breaks when
  * the rule landed, and it is the reason the graph is a DAG rather than a set of
  * comments claiming it is one.
- *
- * `workspace` is the platform Organization -> Workspace tier, below every domain module: the
- * domain imports it for the Workspace gate, and it stays whole in a product built
- * on this code only while it imports none of them back.
  */
 const FORBIDDEN_DIRECTIONS: Readonly<Record<string, readonly string[]>> = {
-  // Add each domain module here as it is built: `workspace: ['orders']`, and the
+  // Add each domain module here as it is built: `user: ['orders']`, and the
   // order between domain modules, so the graph stays a DAG.
 };
 

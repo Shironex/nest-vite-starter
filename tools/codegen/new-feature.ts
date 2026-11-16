@@ -54,14 +54,14 @@ function featureMutations(name: string): string {
   return `import { useMutation } from '@tanstack/react-query';
 import { trpc } from '@/lib/trpc';
 
-// TODO: replace workspaces.update with this feature's own tRPC mutation. Spread
+// TODO: replace user.updateUserRole with this feature's own tRPC mutation. Spread
 // the mutation options from the option proxy
 // (trpc.<router>.<procedure>.mutationOptions()), never a hand-written object.
 // The types flow from the procedure's schemas through the generated AppRouter;
 // never cast them.
 export function use${name}Mutation() {
   return useMutation({
-    ...trpc.workspaces.update.mutationOptions(),
+    ...trpc.user.updateUserRole.mutationOptions(),
   });
 }
 `;

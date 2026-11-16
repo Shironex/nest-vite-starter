@@ -16,26 +16,17 @@ import {
   createSecurityScannerVersionParityRule,
   createServiceImageDigestPinRule,
 } from '@noctcore/lint-meta-rules';
-import {
-  createPrismaMethodSurfaceRule,
-  createTenantModelRegistryParityRule,
-} from '@noctcore/lint-meta-rules/prisma';
+import { createPrismaMethodSurfaceRule } from '@noctcore/lint-meta-rules/prisma';
 import { createEslintConfigNoWarnRule } from '@noctcore/lint-meta-rules/resolved-config';
 import {
   createSessionEpochCapturedRule,
   createSessionLandingDeclaredRule,
   createSessionMintCallersRule,
 } from '@noctcore/lint-meta-rules/session';
-import {
-  HAND_SCOPED_MODELS,
-  HAND_SCOPE_PENDING,
-  UNSCOPED_BY_DESIGN,
-} from '../../packages/eslint-plugin-repo/src/utils/tenant-registry';
 import { adoptHarnessRule, adoptLocalRule, assertEveryRuleBlocks } from './harness';
 import type { IHarnessMetaRule } from './harness';
 import { envCascadeDriftRule } from './rules/config/env-cascade-drift';
 import { eslintOverridePathsExistRule } from './rules/config/eslint-override-paths-exist';
-import { isolationCanaryCoverageRule } from './rules/config/isolation-canary-coverage';
 import { requiredRulesAtErrorRule } from './rules/config/required-rules-at-error';
 import { githubActionsExpressionSyntaxRule } from './rules/ci/github-actions-expression-syntax';
 import { logRedactionDenylistParityRule } from './rules/config/log-redaction-denylist-parity';
@@ -81,36 +72,6 @@ import { configSurfaceCompleteRule } from '../starter/config-surface';
  * was discarded and a `warn` visible only through that shape went unreported.
  */
 const eslintConfigNoWarnRule = adoptHarnessRule(createEslintConfigNoWarnRule());
-
-/*
- * The registry data stays here because it is this repo's: which models the
- * runtime extension isolates, which are exempt and why, and what each exempt
- * model is scoped by instead. The check reads the runtime map at its source
- * rather than a copy of it, and reads the STATIC side out of the resolved ESLint
- * config, so moving the array or spreading a different preset is still caught.
- */
-const tenantModelRegistryParityRule = adoptHarnessRule(
-  createTenantModelRegistryParityRule({
-    schemaPath: 'packages/database/prisma/schema',
-    tenantFields: ['tenantId'],
-    registry: {
-      scopedModels: [],
-      unscopedByDesign: UNSCOPED_BY_DESIGN,
-      handScopedModels: HAND_SCOPED_MODELS,
-      handScopePending: HAND_SCOPE_PENDING,
-    },
-    scopedModelsSource: {
-      file: 'apps/api/src/common/database/tenant-scope.extension.ts',
-      exportName: 'TENANT_SCOPED_MODELS',
-    },
-    eslint: {
-      cwd: 'apps/api',
-      probe: 'src/modules/example/example.service.ts',
-      configFile: 'packages/eslint-config/nestjs.js',
-    },
-    registryFile: 'packages/eslint-plugin-repo/src/utils/tenant-registry.ts',
-  }),
-);
 
 /*
  * New here: the method surface the Prisma fences police must be exactly what the
@@ -245,7 +206,7 @@ const sessionLandingDeclaredRule = adoptHarnessRule(
         file: `${AUTH}/services/register.service.ts`,
         landing: 'server-decided',
         because:
-          'Self-signup has one outcome: a new Tenant, its owner ADMIN, and the verify-your-email notice. There is nothing for the response to choose between.',
+          'Self-signup has one outcome: a new USER account and the verify-your-email notice. There is nothing for the response to choose between.',
       },
       {
         file: `${AUTH}/services/password-change.service.ts`,
@@ -286,7 +247,6 @@ export const META_RULES: readonly IHarnessMetaRule[] = assertEveryRuleBlocks([
     routesRequireTestSiblingRule,
     securitySpecNoSilentBailRule,
     securitySpecRequiresControlRule,
-    isolationCanaryCoverageRule,
     bannedDependenciesRule,
     pnpmOverrideLedgerRule,
     noctcorePackagesCurrentRule,
@@ -301,7 +261,6 @@ export const META_RULES: readonly IHarnessMetaRule[] = assertEveryRuleBlocks([
     envNoDirectImportMetaEnvRule,
     tsconfigIncludePathsExistRule,
   ].map(adoptLocalRule),
-  tenantModelRegistryParityRule,
   prismaMethodSurfaceRule,
   githubActionsShaPinnedRule,
   serviceImageDigestPinRule,

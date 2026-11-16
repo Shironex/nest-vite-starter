@@ -30,7 +30,7 @@ describe('security-spec-requires-control', () => {
   it('does not accept a control named only in a comment', () => {
     const fixture = createFixture({
       [SPEC]: `describe('SEC-900 the door', () => {
-  // control: an active member gets in. Covered by the isolation lane.
+  // control: an active account gets in. Covered by the integration lane.
   it('refuses a stranger', () => {
     expect(open()).toBe(false);
   });
