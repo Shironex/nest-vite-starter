@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/use-auth';
 import { trpc } from '@/lib/trpc';
 import { useCarriedTotal, useCursorPages } from '@/features/shared/CursorPages.hooks';
 import type {
@@ -24,10 +23,7 @@ const PAGE_SIZE = 50;
  */
 export function useMembersSection(): IMembersSectionView {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const [dialogTarget, setDialogTarget] = useState<IMemberDialogTarget | null>(null);
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [isWithdrawByEmailOpen, setIsWithdrawByEmailOpen] = useState(false);
   // A bare Date.now() in render scope is impure (react-hooks/purity), so the
   // lock-badge comparison point is captured once per mount. Unlocking
   // invalidates the list, and the refetched lockedUntil clears the badge.
@@ -44,8 +40,7 @@ export function useMembersSection(): IMembersSectionView {
   const members: Member[] = data?.items ?? [];
   /*
    * `isError` is read BEFORE the empty test on purpose. Without it a failed
-   * listUsers renders as "No members found." plus an Invite button, i.e. the
-   * panel claims the organization has no members. There is no toast to correct it
+   * listUsers renders as "No members found.", i.e. the panel claims the organization has no members. There is no toast to correct it
    * either: the query cache only toasts a BACKGROUND refetch failure, never an
    * initial load.
    */
@@ -88,15 +83,8 @@ export function useMembersSection(): IMembersSectionView {
 
   return {
     members,
-    currentUserId: user?.id ?? null,
     onRetry: () => void refetch(),
     now,
-    isInviteOpen,
-    onOpenInvite: () => setIsInviteOpen(true),
-    onCloseInvite: () => setIsInviteOpen(false),
-    isWithdrawByEmailOpen,
-    onOpenWithdrawByEmail: () => setIsWithdrawByEmailOpen(true),
-    onCloseWithdrawByEmail: () => setIsWithdrawByEmailOpen(false),
     state,
     pagination,
     dialogTarget,

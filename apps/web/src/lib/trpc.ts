@@ -62,11 +62,9 @@ function reactToUnauthorized(error: unknown): boolean {
    * held a profile a moment ago. A visitor typing the wrong password never did;
    * a session that died mid-visit did.
    *
-   * Both e2e symptoms of getting this wrong were real: a wrong password
+   * The e2e symptom of getting this wrong was real: a wrong password
    * replaced the field error with "Sign in to perform this action." and
-   * remounted the form, and an invitee opening their invite link in a
-   * clean browser was bounced off `/auth/invite/$token` to the sign-in page
-   * by the `user.me` probe behind that route.
+   * remounted the form.
    *
    * The failure direction is right too: a 401 arriving after the profile has
    * already been dropped (a second request from the same dead session) does not

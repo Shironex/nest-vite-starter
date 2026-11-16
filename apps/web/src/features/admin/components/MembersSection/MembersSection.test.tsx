@@ -3,12 +3,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import MembersSection from './MembersSection';
 
-const { listUsersFn, authState } = vi.hoisted(() => ({
+const { listUsersFn } = vi.hoisted(() => ({
   listUsersFn: vi.fn(),
-  authState: { user: { id: 'u-admin-self' } as { id: string } | null },
 }));
-
-vi.mock('@/hooks/use-auth', () => ({ useAuth: () => authState }));
 
 vi.mock('@repo/ui/sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/lib/trpc', () => ({
@@ -29,11 +26,6 @@ vi.mock('@/lib/trpc', () => ({
     },
     twoFactor: {
       resetMemberTwoFactor: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
-    },
-    staffInvite: {
-      send: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
-      revoke: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
-      withdrawByEmail: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
     },
   },
 }));
@@ -71,15 +63,6 @@ const lockedUser = {
   status: 'active' as const,
 };
 
-/** Invited, no password ever set. Withdrawable, and nothing else. */
-const pendingMember = {
-  ...lockedUser,
-  id: 'u-3',
-  email: 'carol@example.com',
-  lockedUntil: null,
-  status: 'pending' as const,
-};
-
 /** Was a member, no longer is. Restorable. */
 const removedMember = {
   ...lockedUser,
@@ -97,7 +80,6 @@ function openRowMenu(email: string) {
 
 afterEach(() => {
   vi.clearAllMocks();
-  authState.user = { id: 'u-admin-self' };
 });
 
 describe('MembersSection', () => {
@@ -197,16 +179,15 @@ describe('MembersSection', () => {
     ).toBeInTheDocument();
   });
 
-  describe('the three membership states', () => {
-    const everyone = [admin, lockedUser, pendingMember, removedMember];
+  describe('the two membership states', () => {
+    const everyone = [admin, lockedUser, removedMember];
 
     it('labels each row with the state it is actually in', async () => {
       listUsersFn.mockResolvedValue({ items: everyone, nextCursor: null });
       renderWithClient(<MembersSection />);
 
-      await screen.findByText('carol@example.com');
+      await screen.findByText('dave@example.com');
       expect(screen.getAllByText('Active')).toHaveLength(2);
-      expect(screen.getByText('Invited')).toBeInTheDocument();
       expect(screen.getByText('Removed from organization')).toBeInTheDocument();
     });
 
@@ -216,25 +197,6 @@ describe('MembersSection', () => {
 
       await screen.findByText('alice@example.com');
       expect(screen.getAllByText('Owner')).toHaveLength(1);
-    });
-
-    it('offers a pending invitee only the one thing that applies to them', async () => {
-      // They have never signed in: no lockout to clear, no factor to reset, and
-      // no membership to end. The only real action is withdrawing the invite.
-      listUsersFn.mockResolvedValue({ items: everyone, nextCursor: null });
-      renderWithClient(<MembersSection />);
-
-      await screen.findByText('carol@example.com');
-      openRowMenu('carol@example.com');
-
-      expect(screen.getByRole('menuitem', { name: 'Withdraw invitation' })).toBeInTheDocument();
-      expect(screen.queryByRole('menuitem', { name: 'Reset two-factor' })).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole('menuitem', { name: 'Remove from organization' }),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole('menuitem', { name: 'Restore to organization' }),
-      ).not.toBeInTheDocument();
     });
 
     it('offers restore to a removed member, and not removal again', async () => {
@@ -277,71 +239,6 @@ describe('MembersSection', () => {
       expect(screen.queryByRole('menuitem', { name: 'Delete account' })).not.toBeInTheDocument();
     });
 
-    /**
-     * Withdrawing is a hard delete. A Google-signup owner has no password, and
-     * an api that reads the null password alone labels them "pending": the row
-     * must still never offer to delete them, and must keep the ordinary
-     * account actions, because a verified address is not an open invitation.
-     */
-    it('never offers withdraw on a Google-signup owner, even labeled pending', async () => {
-      const googleOwner = {
-        ...admin,
-        id: 'u-owner',
-        email: 'owner@example.com',
-        emailVerified: true,
-        status: 'pending' as const,
-      };
-      listUsersFn.mockResolvedValue({ items: [googleOwner], nextCursor: null });
-      renderWithClient(<MembersSection />);
-
-      await screen.findByText('owner@example.com');
-      openRowMenu('owner@example.com');
-
-      expect(
-        screen.queryByRole('menuitem', { name: 'Withdraw invitation' }),
-      ).not.toBeInTheDocument();
-      expect(screen.getByRole('menuitem', { name: 'Reset two-factor' })).toBeInTheDocument();
-    });
-
-    it('never offers withdraw on an owner row, whatever else it says', async () => {
-      const ownerLookingPending = { ...pendingMember, email: 'o@example.com', isOwner: true };
-      listUsersFn.mockResolvedValue({ items: [ownerLookingPending], nextCursor: null });
-      renderWithClient(<MembersSection />);
-
-      await screen.findByText('o@example.com');
-      openRowMenu('o@example.com');
-
-      expect(
-        screen.queryByRole('menuitem', { name: 'Withdraw invitation' }),
-      ).not.toBeInTheDocument();
-    });
-
-    it("never offers withdraw on the current user's own row", async () => {
-      authState.user = { id: pendingMember.id };
-      listUsersFn.mockResolvedValue({ items: [pendingMember], nextCursor: null });
-      renderWithClient(<MembersSection />);
-
-      await screen.findByText('carol@example.com');
-      openRowMenu('carol@example.com');
-
-      expect(
-        screen.queryByRole('menuitem', { name: 'Withdraw invitation' }),
-      ).not.toBeInTheDocument();
-    });
-
-    it('opens the withdraw dialog for a pending invitee', async () => {
-      listUsersFn.mockResolvedValue({ items: everyone, nextCursor: null });
-      renderWithClient(<MembersSection />);
-
-      await screen.findByText('carol@example.com');
-      openRowMenu('carol@example.com');
-      fireEvent.click(screen.getByRole('menuitem', { name: 'Withdraw invitation' }));
-
-      expect(
-        await screen.findByRole('heading', { name: /withdraw this invitation/i }),
-      ).toBeInTheDocument();
-    });
-
     it('opens the restore dialog for a removed member', async () => {
       listUsersFn.mockResolvedValue({ items: everyone, nextCursor: null });
       renderWithClient(<MembersSection />);
@@ -352,61 +249,6 @@ describe('MembersSection', () => {
 
       expect(
         await screen.findByRole('heading', { name: /restore this person to the organization/i }),
-      ).toBeInTheDocument();
-    });
-  });
-
-  describe('inviting', () => {
-    it('offers the invite action even when the organization has no other members', async () => {
-      // The empty state is the first thing a new organization sees, and it is exactly
-      // where the invite button matters most. Putting it inside the table would
-      // hide it in the one case it is needed.
-      listUsersFn.mockResolvedValue({ items: [], nextCursor: null, total: 0 });
-      renderWithClient(<MembersSection />);
-
-      // Await the EMPTY state, not the button: the button renders immediately
-      // whatever the query is doing, so asserting on it first proves nothing
-      // about the empty case this test is named for.
-      expect(await screen.findByText('No members found.')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /invite someone/i })).toBeInTheDocument();
-    });
-
-    it('opens the invite dialog', async () => {
-      listUsersFn.mockResolvedValue({ items: [admin], nextCursor: null });
-      renderWithClient(<MembersSection />);
-
-      await screen.findByText('alice@example.com');
-      fireEvent.click(screen.getByRole('button', { name: /invite someone/i }));
-
-      expect(
-        await screen.findByRole('heading', { name: /invite someone to the organization/i }),
-      ).toBeInTheDocument();
-    });
-  });
-
-  describe('withdrawing an invitation by address', () => {
-    it('offers it even when the table is empty, since the invitation it reaches has no row', async () => {
-      // An invitation to someone who already works in another organization is never a
-      // row here, so the table being empty says nothing about whether one is
-      // open. The affordance cannot live in a row menu for the same reason.
-      listUsersFn.mockResolvedValue({ items: [], nextCursor: null, total: 0 });
-      renderWithClient(<MembersSection />);
-
-      expect(await screen.findByText('No members found.')).toBeInTheDocument();
-      expect(
-        screen.getByRole('button', { name: /withdraw an invitation by address/i }),
-      ).toBeInTheDocument();
-    });
-
-    it('opens the withdraw-by-address dialog', async () => {
-      listUsersFn.mockResolvedValue({ items: [admin], nextCursor: null });
-      renderWithClient(<MembersSection />);
-
-      await screen.findByText('alice@example.com');
-      fireEvent.click(screen.getByRole('button', { name: /withdraw an invitation by address/i }));
-
-      expect(
-        await screen.findByRole('heading', { name: /withdraw an invitation by email address/i }),
       ).toBeInTheDocument();
     });
   });

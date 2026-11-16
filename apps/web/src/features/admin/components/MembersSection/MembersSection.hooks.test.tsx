@@ -4,12 +4,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { useMembersSection } from './MembersSection.hooks';
 
-const { listUsersFn, authState } = vi.hoisted(() => ({
+const { listUsersFn } = vi.hoisted(() => ({
   listUsersFn: vi.fn(),
-  authState: { user: { id: 'u-self' } as { id: string } | null },
 }));
-
-vi.mock('@/hooks/use-auth', () => ({ useAuth: () => authState }));
 
 vi.mock('@/lib/trpc', () => ({
   trpc: {
@@ -126,50 +123,16 @@ describe('useMembersSection', () => {
     expect(result.current.dialogTarget?.kind).toBe('delete');
     expect(result.current.dialogTarget?.member.id).toBe('u-2');
   });
-
-  it('opens and closes the withdraw-by-address dialog, which has no member', async () => {
-    listUsersFn.mockResolvedValue({ items: [], nextCursor: null, total: 0 });
-    const { result } = renderHook(() => useMembersSection(), { wrapper });
-
-    expect(result.current.isWithdrawByEmailOpen).toBe(false);
-    act(() => result.current.onOpenWithdrawByEmail());
-    expect(result.current.isWithdrawByEmailOpen).toBe(true);
-    expect(result.current.dialogTarget).toBeNull();
-
-    act(() => result.current.onCloseWithdrawByEmail());
-    expect(result.current.isWithdrawByEmailOpen).toBe(false);
-  });
 });
 
 /**
  * A failed listUsers is a failed read, not an empty organization.
  *
  * Without the isError branch the panel rendered "No members found." plus
- * an Invite button while the api was 500ing, i.e. it stated that the organization has
+ * nothing else while the api was 500ing, i.e. it stated that the organization has
  * no members. Nothing corrected it: the query cache toasts a BACKGROUND
  * refetch failure only, never an initial load.
  */
-describe('useMembersSection current user', () => {
-  afterEach(() => {
-    authState.user = { id: 'u-self' };
-  });
-
-  it("exposes the signed-in admin's id, so their own row can hide actions aimed at them", () => {
-    listUsersFn.mockResolvedValue({ items: [], nextCursor: null, total: 0 });
-    const { result } = renderHook(() => useMembersSection(), { wrapper });
-
-    expect(result.current.currentUserId).toBe('u-self');
-  });
-
-  it('reads null while the profile is still loading', () => {
-    authState.user = null;
-    listUsersFn.mockResolvedValue({ items: [], nextCursor: null, total: 0 });
-    const { result } = renderHook(() => useMembersSection(), { wrapper });
-
-    expect(result.current.currentUserId).toBeNull();
-  });
-});
-
 describe('useMembersSection failure', () => {
   it('reports a failed load as an error, not as an empty list', async () => {
     listUsersFn.mockRejectedValue(new Error('boom'));

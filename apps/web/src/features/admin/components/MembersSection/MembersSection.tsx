@@ -1,6 +1,5 @@
 import {
   LockOpen,
-  MailX,
   MoreHorizontal,
   ShieldOff,
   Trash2,
@@ -25,13 +24,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ROLES } from '@repo/shared/permissions';
 import { ChangeMemberRoleDialog } from '../ChangeMemberRoleDialog';
 import { DeleteMemberDialog } from '../DeleteMemberDialog';
-import { InviteMemberDialog } from '../InviteMemberDialog';
 import { RemoveMemberDialog } from '../RemoveMemberDialog';
 import { ResetMemberDialog } from '../ResetMemberDialog';
 import { RestoreMemberDialog } from '../RestoreMemberDialog';
-import { RevokeInviteDialog } from '../RevokeInviteDialog';
 import { UnlockMemberDialog } from '../UnlockMemberDialog';
-import { WithdrawInviteByEmailDialog } from '../WithdrawInviteByEmailDialog';
 import { useMembersSection } from './MembersSection.hooks';
 import type { Member, MemberDialogKind } from './MembersSection.types';
 
@@ -42,13 +38,10 @@ const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5'];
 
 function MemberRow({
   member,
-  isSelf,
   now,
   onOpenDialog,
 }: {
   member: Member;
-  /** Whether this row is the signed-in admin's own account. */
-  isSelf: boolean;
   now: number;
   onOpenDialog: (kind: MemberDialogKind, member: Member) => void;
 }) {
@@ -68,27 +61,10 @@ function MemberRow({
   const canDelete = member.role !== ROLES.ADMIN && !member.isOwner;
   // removeMember refuses ADMIN targets too, and routes them through demotion.
   const canRemove = member.status === 'active' && member.role !== ROLES.ADMIN && !member.isOwner;
-  // `emailVerified` as well as the status: an open invitation is the pair (no
-  // password AND an unverified address), and a Google-signup account has no
-  // password either. The api derives the status from the pair; reading it
-  // again here keeps an older api from ever labeling the owner withdrawable.
-  const isPending = member.status === 'pending' && !member.emailVerified;
   const isRemoved = member.status === 'removed';
-  // A pending row has never signed in: it has no lockout to clear, no second
-  // factor to reset, and nothing to remove. The one thing it can do is stop
-  // existing.
-  const canManageAccount = !isPending;
-  // Withdrawing is a hard delete, so it is never offered on the owner or on
-  // the caller's own row, whatever the status says. The api refuses both too;
-  // a destructive item that can only fail is still one click from a mistake.
-  const canWithdrawInvite = isPending && !member.isOwner && !isSelf;
   const statusLabel = t(`admin.members.status.${member.status}`);
   const statusClass =
-    member.status === 'active'
-      ? 'bg-success-bg text-success'
-      : member.status === 'pending'
-        ? 'bg-warning-bg text-warning'
-        : 'bg-danger-bg text-danger';
+    member.status === 'active' ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger';
 
   return (
     <TableRow>
@@ -141,12 +117,10 @@ function MemberRow({
                 {t('admin.members.menu.unlock')}
               </DropdownMenuItem>
             )}
-            {canManageAccount && (
-              <DropdownMenuItem onClick={() => onOpenDialog('resetTwoFactor', member)}>
-                <ShieldOff className="size-4" />
-                {t('admin.members.menu.resetTwoFactor')}
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem onClick={() => onOpenDialog('resetTwoFactor', member)}>
+              <ShieldOff className="size-4" />
+              {t('admin.members.menu.resetTwoFactor')}
+            </DropdownMenuItem>
             {isRemoved && (
               <DropdownMenuItem onClick={() => onOpenDialog('restore', member)}>
                 <UserPlus className="size-4" />
@@ -158,18 +132,6 @@ function MemberRow({
                 <UserMinus className="size-4" />
                 {t('admin.members.menu.remove')}
               </DropdownMenuItem>
-            )}
-            {canWithdrawInvite && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => onOpenDialog('revokeInvite', member)}
-                >
-                  <MailX className="size-4" />
-                  {t('admin.members.menu.revokeInvite')}
-                </DropdownMenuItem>
-              </>
             )}
             {canDelete && (
               <>
@@ -201,15 +163,8 @@ export default function MembersSection() {
   const deleteTarget = target?.kind === 'delete' ? target.member : null;
   const removeTarget = target?.kind === 'remove' ? target.member : null;
   const restoreTarget = target?.kind === 'restore' ? target.member : null;
-  const revokeInviteTarget = target?.kind === 'revokeInvite' ? target.member : null;
   const rows = v.members.map((member) => (
-    <MemberRow
-      key={member.id}
-      member={member}
-      isSelf={member.id === v.currentUserId}
-      now={v.now}
-      onOpenDialog={v.onOpenDialog}
-    />
+    <MemberRow key={member.id} member={member} now={v.now} onOpenDialog={v.onOpenDialog} />
   ));
   const skeletons = SKELETON_KEYS.map((key) => <Skeleton key={key} className="h-10 w-full" />);
 
@@ -238,21 +193,9 @@ export default function MembersSection() {
         beside `OrgTwoFactorPolicyCard`'s `CardTitle` in the same panel, and the
         two have to read as the same level.
       */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h2 className="type-heading-h3 text-text">{t('admin.members.title')}</h2>
-          <p className={MUTED_LINE_CLASS}>{t('admin.members.description')}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={v.onOpenWithdrawByEmail}>
-            <MailX className="size-4" />
-            {t('admin.members.withdrawByEmail')}
-          </Button>
-          <Button type="button" onClick={v.onOpenInvite}>
-            <UserPlus className="size-4" />
-            {t('admin.members.invite')}
-          </Button>
-        </div>
+      <div className="space-y-1">
+        <h2 className="type-heading-h3 text-text">{t('admin.members.title')}</h2>
+        <p className={MUTED_LINE_CLASS}>{t('admin.members.description')}</p>
       </div>
 
       <ListSurface
@@ -339,21 +282,6 @@ export default function MembersSection() {
           memberId={restoreTarget.id}
           email={restoreTarget.email}
         />
-      )}
-
-      {revokeInviteTarget && (
-        <RevokeInviteDialog
-          open
-          onOpenChange={v.onCloseDialog}
-          memberId={revokeInviteTarget.id}
-          email={revokeInviteTarget.email}
-        />
-      )}
-
-      {v.isInviteOpen && <InviteMemberDialog open onOpenChange={v.onCloseInvite} />}
-
-      {v.isWithdrawByEmailOpen && (
-        <WithdrawInviteByEmailDialog open onOpenChange={v.onCloseWithdrawByEmail} />
       )}
     </section>
   );

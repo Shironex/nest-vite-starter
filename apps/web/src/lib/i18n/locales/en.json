@@ -48,7 +48,6 @@
       "confirmEmailChange": "Change email address",
       "twoFactor": "Two-factor verification",
       "enrollTwoFactor": "Two-factor setup",
-      "staffInvite": "Organization invitation",
       "dashboard": "Dashboard",
       "workspaces": "Workspaces",
       "audit": "Audit log",
@@ -144,25 +143,6 @@
         "pendingHint": "We are checking that you are not a robot. This takes a moment.",
         "failed": "The security check failed. Refresh the page and try again.",
         "expired": "The security check expired. Wait for the widget to refresh, or reload the page."
-      },
-      "staffInvite": {
-        "title": "Join the organization",
-        "description": "Set a password for your account, then sign in as usual.",
-        "checking": "Checking the invitation...",
-        "checkError": "We could not check the invitation. Try again in a moment.",
-        "invalidLink": "This invitation has expired or has already been used.",
-        "invalidHelp": "Ask the person who invited you for a new one. A link lasts 7 days and works once.",
-        "movesAccount": "This address already has an account. Accepting moves it into the new organization and closes the organization you are in today. You cannot undo this yourself.",
-        "passwordLabel": "Password",
-        "passwordPlaceholder": "Set a password for your account",
-        "codeLabel": "Two-factor code",
-        "codePlaceholder": "123456",
-        "codeHelp": "Your account has two-factor authentication on. Enter a code from your app, or one of your recovery codes.",
-        "badCode": "That code is not right. Try again.",
-        "submit": "Set password",
-        "thenSignIn": "Once your password is set we will take you to sign in.",
-        "success": "Password set. Sign in to enter the organization.",
-        "backToLogin": "Back to sign in"
       },
       "pages": {
         "login": {
@@ -423,19 +403,15 @@
           "resetTwoFactor": "Reset two-factor",
           "delete": "Delete account",
           "remove": "Remove from organization",
-          "restore": "Restore to organization",
-          "revokeInvite": "Withdraw invitation"
+          "restore": "Restore to organization"
         },
         "pagination": {
           "summary": "Showing {{from}}-{{to}} of {{total}}",
           "label": "Member list pagination"
         },
-        "invite": "Invite someone",
-        "withdrawByEmail": "Withdraw an invitation by address",
         "owner": "Owner",
         "status": {
           "active": "Active",
-          "pending": "Invited",
           "removed": "Removed from organization"
         }
       },
@@ -471,19 +447,6 @@
         "success": "Account deleted",
         "error": "Could not delete the account"
       },
-      "inviteDialog": {
-        "title": "Invite someone to the organization",
-        "description": "We will send a set-password link to this address. The invitation lasts 7 days and works once.",
-        "emailLabel": "Email address",
-        "emailPlaceholder": "e.g. anna@example.com",
-        "roleLabel": "Role in the organization",
-        "roleUserHint": "Day-to-day work in the app. No account management or organization settings.",
-        "roleAdminHint": "Everything above, plus inviting people, changing roles and organization settings.",
-        "confirm": "Send invitation",
-        "success": "Invitation sent to {{email}}",
-        "error": "Could not send the invitation",
-        "undelivered": "The account was created but the message to {{email}} could not be sent. They cannot request a new link themselves, so send the invitation again."
-      },
       "removeDialog": {
         "title": "Remove this person from the organization?",
         "description": "{{email}} loses access to the organization and is signed out immediately. Their account and history stay, and you can restore them at any time.",
@@ -497,23 +460,6 @@
         "confirm": "Restore",
         "success": "Restored to the organization",
         "error": "Could not restore them"
-      },
-      "revokeInviteDialog": {
-        "title": "Withdraw this invitation?",
-        "description": "The link sent to {{email}} stops working and the unused invitation is deleted. This cannot be undone, but you can invite them again.",
-        "confirm": "Withdraw invitation",
-        "success": "Invitation withdrawn",
-        "error": "Could not withdraw the invitation"
-      },
-      "withdrawInviteByEmailDialog": {
-        "title": "Withdraw an invitation by email address?",
-        "description": "For an invitation sent to someone who already has an account in another organization. Such an invitation does not appear in the members table, so it is withdrawn by address. Invitations shown in the table are withdrawn from that person's row menu.",
-        "emailLabel": "Email address",
-        "emailPlaceholder": "e.g. anna@example.com",
-        "consequence": "The invitation link stops working. Their account in their current organization is left as it is. This cannot be undone, but you can invite them again.",
-        "confirm": "Withdraw invitation",
-        "success": "If an invitation to this organization was pending for {{email}}, it has been withdrawn.",
-        "error": "Could not withdraw the invitation"
       }
     },
     "sessions": {

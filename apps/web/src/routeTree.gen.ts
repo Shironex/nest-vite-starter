@@ -24,7 +24,6 @@ import { Route as AuthTwoFactorRouteImport } from './routes/auth/two-factor'
 import { Route as AuthVerifyEmailRouteImport } from './routes/auth/verify-email'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
-import { Route as AuthInviteTokenRouteImport } from './routes/auth/invite.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -102,11 +101,6 @@ const AuthenticatedSettingsIndexRoute =
     path: '/settings/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthInviteTokenRoute = AuthInviteTokenRouteImport.update({
-  id: '/invite/$token',
-  path: '/invite/$token',
-  getParentRoute: () => AuthRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -121,7 +115,6 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/two-factor': typeof AuthTwoFactorRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
-  '/auth/invite/$token': typeof AuthInviteTokenRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
 }
@@ -138,7 +131,6 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/two-factor': typeof AuthTwoFactorRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
-  '/auth/invite/$token': typeof AuthInviteTokenRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
 }
@@ -157,7 +149,6 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/two-factor': typeof AuthTwoFactorRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
-  '/auth/invite/$token': typeof AuthInviteTokenRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
 }
@@ -176,7 +167,6 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/two-factor'
     | '/auth/verify-email'
-    | '/auth/invite/$token'
     | '/dashboard/'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -193,7 +183,6 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/two-factor'
     | '/auth/verify-email'
-    | '/auth/invite/$token'
     | '/dashboard'
     | '/settings'
   id:
@@ -211,7 +200,6 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/two-factor'
     | '/auth/verify-email'
-    | '/auth/invite/$token'
     | '/_authenticated/dashboard/'
     | '/_authenticated/settings/'
   fileRoutesById: FileRoutesById
@@ -330,13 +318,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/auth/invite/$token': {
-      id: '/auth/invite/$token'
-      path: '/invite/$token'
-      fullPath: '/auth/invite/$token'
-      preLoaderRoute: typeof AuthInviteTokenRouteImport
-      parentRoute: typeof AuthRoute
-    }
   }
 }
 
@@ -366,7 +347,6 @@ interface AuthRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthTwoFactorRoute: typeof AuthTwoFactorRoute
   AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
-  AuthInviteTokenRoute: typeof AuthInviteTokenRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
@@ -377,7 +357,6 @@ const AuthRouteChildren: AuthRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthTwoFactorRoute: AuthTwoFactorRoute,
   AuthVerifyEmailRoute: AuthVerifyEmailRoute,
-  AuthInviteTokenRoute: AuthInviteTokenRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)

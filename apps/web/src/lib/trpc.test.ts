@@ -199,8 +199,7 @@ describe('401 session-expiry reaction', () => {
   /*
    * The sign-in form itself. A wrong password is a 401 with the same code, and
    * bouncing on it replaced the field error with "sign in to do that" and
-   * remounted the form; the same reaction threw an invitee off
-   * `/auth/invite/$token` in a clean browser. Both were caught by e2e.
+   * remounted the form. It was caught by e2e.
    */
   it.each([
     ['query', 'queryOnError' as const, backgroundRefetch],
