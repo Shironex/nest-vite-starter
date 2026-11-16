@@ -147,7 +147,6 @@ const translationDeadKeysRule = adoptHarnessRule(
       AUTH_NS: 'auth',
       DASHBOARD_NS: 'dashboard',
       WORKSPACE_NS: 'workspace',
-      HELP_NS: 'help',
     },
     sourceGlobs: ['apps/web/src/**/*.ts', 'apps/web/src/**/*.tsx'],
   }),
@@ -268,12 +267,6 @@ const sessionLandingDeclaredRule = adoptHarnessRule(
         landing: 'login-result',
         because:
           'The second door: verifyChallenge finishes a sign-in on its own, returning the same union from a different service.',
-      },
-      {
-        file: `${AUTH}/oauth/oauth.controller.ts`,
-        landing: 'server-decided',
-        because:
-          'A provider sign-in redirects rather than returning a union: the server decides the landing (the app home, or the 2FA challenge screen) and sends the browser there.',
       },
       {
         file: `${AUTH}/services/register.service.ts`,

@@ -11,8 +11,8 @@ The classic shapes:
 
 - a new session re-issue path forgets a field every other door stamps into the session blob;
 - the tenant scope escapes through a transaction;
-- "enforce it at every door" updates login and password reset, but not the OAuth resolver, so a
-  removed member signs back in with Google.
+- "enforce it at every door" updates login, but not password reset, so a removed member signs back
+  in through the reset link.
 
 ## Format
 
@@ -72,8 +72,8 @@ The subsystems covered, written from the code rather than from memory:
 | `queues.md`            | BullMQ registration, job context and processors                    |
 
 Subsystems deliberately NOT covered yet, because nobody has read them closely enough to write a
-manifest that is a record rather than a guess: mail and notification delivery, storage and the S3
-ticket path, and the web i18n and routing conventions.
+manifest that is a record rather than a guess: mail delivery and the web i18n and routing
+conventions.
 
 ## Unenforced invariants
 
@@ -81,6 +81,5 @@ Invariants cited as `unenforced` point here. Each is a known gap, not an oversig
 holds in the code today, but nothing mechanical stops a future change from breaking it. Closing one
 means adding a lint-meta rule, an ESLint rule or a spec and replacing the `unenforced` citation.
 
-- `sessions.md`: revocation reaches live sockets, not only future requests.
 - `queues.md`, `audit.md`, `account-lifecycle.md`, `tenancy.md`: see the
   invariant marked `unenforced` in each manifest.

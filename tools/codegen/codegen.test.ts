@@ -164,12 +164,7 @@ describe('codegen generators', () => {
         {
           extends: './tsconfig.app.json',
           compilerOptions: { tsBuildInfoFile: null },
-          include: [
-            'src/vite-env.d.ts',
-            'src/types',
-            'src/test/setup.ts',
-            `src/features/${featureDir}`,
-          ],
+          include: ['src/vite-env.d.ts', 'src/test/setup.ts', `src/features/${featureDir}`],
         },
         null,
         2,

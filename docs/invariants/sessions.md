@@ -3,7 +3,6 @@ subsystem: Session establishment
 globs:
   - apps/api/src/modules/auth/services/*.ts
   - apps/api/src/modules/auth/middleware/*.ts
-  - apps/api/src/modules/auth/oauth/*.ts
   - apps/api/src/modules/auth/*.router.ts
 ---
 
@@ -23,7 +22,6 @@ seam carries lint-meta rules rather than a paragraph in a README.
   of it, and the live re-read of account state.
 - `login.service.ts`, `register.service.ts`, `password-change.service.ts`,
   `password-reset.service.ts`, `session-management.service.ts` - the staff doors.
-- `oauth/oauth-account.service.ts` and `oauth.controller.ts` - the Google door.
 - `middleware/auth.middleware.ts` - where the blob is read back.
 
 ## Risks
@@ -31,7 +29,7 @@ seam carries lint-meta rules rather than a paragraph in a README.
 - `AuthMiddleware` trusts what the blob says for the life of the session. A field a door forgot to
   write is read back as its default, not as an error.
 - A door that mints without capturing the session epoch first leaves the whole credential check
-  (an Argon2 verify, an OAuth token exchange) outside the fence.
+  (an Argon2 verify) outside the fence.
 - Every new authentication flow is a new door, and the doors are not obviously enumerable from any
   single file.
 
@@ -41,7 +39,7 @@ seam carries lint-meta rules rather than a paragraph in a README.
 
 **Enforced by:** `lint-meta:establish-session-callers`
 
-A new login or OAuth entry point must route through `beginOrEstablish`, or it bypasses the 2FA
+A new login entry point must route through `beginOrEstablish`, or it bypasses the 2FA
 challenge. The allowlist is the enumeration of doors that legitimately mint without one.
 
 ### Every door captures the session epoch before reading the credential
@@ -55,18 +53,9 @@ password change revokes first and re-issues after.
 
 **Enforced by:** `lint-meta:procedures-require-guard`, `lint-meta:procedure-requires-output`
 
-### Revocation reaches live sockets, not only future requests
-
-**Enforced by:** `unenforced`, follow-up in `docs/invariants/README.md#unenforced-invariants`
-
-`session-revocation.service.ts` and the events gateway do it today, but nothing mechanical requires
-a new revoking path to broadcast, so a fifth revocation site would revoke the cookie and leave the
-socket connected.
-
 ## Review checklist
 
 - [ ] Does the change add a path that ends in a session? If so, does it go through
       `beginOrEstablish` rather than `establishSession`?
 - [ ] Is the epoch read BEFORE the credential, and passed into the seam?
 - [ ] Does the minted blob carry every field the other doors write?
-- [ ] Does a revocation path also disconnect live sockets?

@@ -444,7 +444,7 @@ export function isolationSpec(n: IModuleNames): string {
  * case proves the service would ignore it even if it arrived.
  *
  * A removed member's live session is refused at the session layer, not here:
- * see oauth-removed-member.isolation.spec.ts and membership-lock.isolation.spec.ts.
+ * see membership-lock.isolation.spec.ts.
  */
 import { randomUUID } from 'node:crypto';
 import type { PrismaClient } from '@repo/database' with { 'resolution-mode': 'import' };

@@ -74,16 +74,6 @@ export const PUBLIC_PROCEDURES: readonly IPublicProcedure[] = [
   },
   {
     router: 'auth',
-    procedure: 'acceptStaffInvite',
-    reason: 'The single-use invite token is the authorization; establishes no session.',
-  },
-  {
-    router: 'auth',
-    procedure: 'staffInviteState',
-    reason: 'Staff invite-form pre-check on the token; does not consume it.',
-  },
-  {
-    router: 'auth',
     procedure: 'verifyEmail',
     reason: 'Mailed verification link; the clicker may not be signed in.',
   },
