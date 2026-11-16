@@ -6,7 +6,6 @@ import { UserPurgeService } from './user-purge.service';
 import { SessionModule } from '../auth/session.module';
 import { AuthMiddlewareModule } from '../auth/auth-middleware.module';
 import { LockoutModule } from '../auth/lockout.module';
-import { IdempotencyModule } from '../../common/idempotency/idempotency.module';
 
 /**
  * UserModule imports AuthMiddlewareModule (not AuthModule) so its routers
@@ -17,12 +16,9 @@ import { IdempotencyModule } from '../../common/idempotency/idempotency.module';
  * LockoutModule is imported the same way: UserRouter.adminUnlock injects
  * LockoutService, and routing it through the standalone module keeps the
  * cycle broken (importing AuthModule directly would reintroduce it).
- *
- * IdempotencyModule provides the IdempotencyMiddleware that UserRouter wires
- * method-level after auth on its mutations.
  */
 @Module({
-  imports: [SessionModule, AuthMiddlewareModule, LockoutModule, IdempotencyModule],
+  imports: [SessionModule, AuthMiddlewareModule, LockoutModule],
   providers: [UserRepository, UserService, UserRouter, UserPurgeService],
   exports: [UserService, UserRepository],
 })

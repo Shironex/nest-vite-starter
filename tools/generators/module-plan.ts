@@ -69,12 +69,12 @@ export const POLICIES: Readonly<Record<string, IPolicy>> = {
   'organization-read-write': {
     id: 'organization-read-write',
     summary: 'every member of the organization reads and writes.',
-    writeMiddlewares: ['AuthMiddleware', 'IdempotencyMiddleware'],
+    writeMiddlewares: ['AuthMiddleware'],
   },
   'organization-read-admin-write': {
     id: 'organization-read-admin-write',
     summary: 'every member of the organization reads; only an ADMIN writes.',
-    writeMiddlewares: ['AuthMiddleware', 'AdminMiddleware', 'IdempotencyMiddleware'],
+    writeMiddlewares: ['AuthMiddleware', 'AdminMiddleware'],
   },
 };
 

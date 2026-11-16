@@ -27,8 +27,6 @@ import {
   createSessionLandingDeclaredRule,
   createSessionMintCallersRule,
 } from '@noctcore/lint-meta-rules/session';
-import { createIdempotencyKeyParityRule } from '@noctcore/lint-meta-rules/trpc';
-
 import {
   HAND_SCOPED_MODELS,
   HAND_SCOPE_PENDING,
@@ -179,9 +177,8 @@ const serviceImageDigestPinRule = adoptHarnessRule(
 );
 
 /*
- * The four fences around the seam that mints a session, and the idempotency
- * parity check, from the package. They were this repo's own rules; the package
- * versions are the same checks with every literal made an option, so the ids
+ * The four fences around the seam that mints a session, from the package. They
+ * were this repo's own rules; the package versions are the same checks with every literal made an option, so the ids
  * stay and the facts below (which method mints, which files may call it, where
  * each door lands) are this repo's.
  *
@@ -302,23 +299,6 @@ const sessionLandingDeclaredRule = adoptHarnessRule(
   }),
 );
 
-/*
- * IdempotencyMiddleware only acts when the web sends a key, and neither half
- * fails when the other is missing: a guarded procedure whose web caller never
- * sends a key is silently unguarded. A guarded procedure with no web
- * caller yet passes. The honest fix for "a key will never be sent" is to drop
- * the middleware, so nothing is exempt.
- */
-const idempotencyKeyParityRule = adoptHarnessRule(
-  createIdempotencyKeyParityRule({
-    middleware: 'IdempotencyMiddleware',
-    routerGlobs: ['apps/api/src/**/*.router.ts'],
-    clientGlobs: ['apps/web/src/**/*.{ts,tsx}'],
-    skipDirs: SKIP_DIRS,
-    hint: "Thread `trpc: { context: { idempotencyKey } }` through the hook's mutationOptions (see hooks/use-idempotency-key.ts).",
-  }),
-);
-
 export const META_RULES: readonly IHarnessMetaRule[] = assertEveryRuleBlocks([
   eslintConfigNoWarnRule,
   ...[
@@ -332,7 +312,6 @@ export const META_RULES: readonly IHarnessMetaRule[] = assertEveryRuleBlocks([
     apiModuleEdgesRule,
   ].map(adoptLocalRule),
   establishSessionCallersRule,
-  idempotencyKeyParityRule,
   ...[routeI18nSideEffectRule].map(adoptLocalRule),
   sessionEpochCapturedRule,
   sessionLandingDeclaredRule,

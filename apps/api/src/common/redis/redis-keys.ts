@@ -15,7 +15,6 @@ export const REDIS_KEY_PREFIXES = {
   USER_SESSIONS: 'user_sessions',
   SESSION_EPOCH: 'session_epoch',
   PERMISSIONS: 'permissions',
-  IDEMPOTENCY: 'idem',
   RATE_LIMIT: 'ratelimit',
   // 2FA: all cookie-borne tokens are stored keyed by sha256(token), mirroring
   // `session`; the `*_USER` / `*_DEVICES` SETs index a user's records for
@@ -77,16 +76,6 @@ export const RedisKeys = {
    */
   permissions: (userId: string, role: string): string =>
     `${REDIS_KEY_PREFIXES.PERMISSIONS}${SEP}${userId}${SEP}${role}`,
-
-  /**
-   * Idempotency cache key. `bodyHash` is a sha256 of (idempotency-key + raw
-   * body) so the same key with a different payload doesn't collide (per
-   * Stripe's idempotency contract). `scope` is the caller identity, either
-   * `<userId>` or `<tenantId>:<userId>` when the request context carries a
-   * tenant, so neither users nor tenants can share a record.
-   */
-  idempotency: (scope: string, path: string, bodyHash: string): string =>
-    `${REDIS_KEY_PREFIXES.IDEMPOTENCY}${SEP}${scope}${SEP}${path}${SEP}${bodyHash}`,
 
   /** Fixed-window rate-limit counter, e.g. `ratelimit:login:1.2.3.4`. */
   rateLimit: (scope: string): string => `${REDIS_KEY_PREFIXES.RATE_LIMIT}${SEP}${scope}`,

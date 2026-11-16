@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { UserModule } from '../user/user.module';
 import { MailModule } from '../mail/mail.module';
 import { SecurityModule } from '../../common/security/security.module';
-import { IdempotencyModule } from '../../common/idempotency/idempotency.module';
 import { SessionModule } from './session.module';
 import { AuthMiddlewareModule } from './auth-middleware.module';
 import { LockoutModule } from './lockout.module';
@@ -39,9 +38,6 @@ import { TwoFactorRouter } from './two-factor.router';
  * inverse edge (UserModule needing AuthMiddleware) is handled via the
  * standalone AuthMiddlewareModule, which UserModule imports directly. That
  * removes the circular dependency that previously required `forwardRef`.
- *
- * IdempotencyModule provides the IdempotencyMiddleware that AuthRouter wires
- * method-level after auth on changePassword.
  */
 @Module({
   imports: [
@@ -51,7 +47,6 @@ import { TwoFactorRouter } from './two-factor.router';
     SessionModule,
     AuthMiddlewareModule,
     LockoutModule,
-    IdempotencyModule,
   ],
   providers: [
     SudoService,

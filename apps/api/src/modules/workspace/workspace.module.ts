@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { SessionModule } from '../auth/session.module';
 import { AuthMiddlewareModule } from '../auth/auth-middleware.module';
-import { IdempotencyModule } from '../../common/idempotency/idempotency.module';
 import { WorkspaceRepository } from './workspace.repository';
 import { WorkspaceService } from './workspace.service';
 import { WorkspaceLookupService } from './workspace-lookup.service';
@@ -16,12 +15,11 @@ import { WorkspacesRouter } from './workspaces.router';
  * (for the Workspace gate on their writes); it imports none of them.
  *
  * Imports the cycle-breaker pair (SessionModule + AuthMiddlewareModule, never
- * AuthModule) for the router guards and IdempotencyModule for the row-creating
- * mutations. PrismaService and AuditService need no import: their modules are
+ * AuthModule) for the router guards. PrismaService and AuditService need no import: their modules are
  * `@Global()`.
  */
 @Module({
-  imports: [SessionModule, AuthMiddlewareModule, IdempotencyModule],
+  imports: [SessionModule, AuthMiddlewareModule],
   providers: [WorkspaceRepository, WorkspaceService, WorkspaceLookupService, WorkspacesRouter],
   exports: [
     // The read half only: the tenant gate for a caller-supplied workspaceId and the

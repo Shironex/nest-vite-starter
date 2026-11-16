@@ -9,7 +9,6 @@ import {
 } from '@repo/shared/schemas';
 import { AuthMiddleware } from '../auth/middleware/auth.middleware';
 import { AdminMiddleware } from '../auth/middleware/role.middleware';
-import { IdempotencyMiddleware } from '../../common/idempotency/idempotency.middleware';
 import { WorkspaceService } from './workspace.service';
 
 /**
@@ -33,13 +32,13 @@ export class WorkspacesRouter {
   }
 
   @Mutation({ input: workspaceCreateInput, output: workspaceCreateOutput })
-  @UseMiddlewares(AuthMiddleware, AdminMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
   async create(@Input() input: z.infer<typeof workspaceCreateInput>) {
     return this.workspaceService.create(input);
   }
 
   @Mutation({ input: workspaceUpdateInput, output: workspaceUpdateOutput })
-  @UseMiddlewares(AuthMiddleware, AdminMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
   async update(@Input() input: z.infer<typeof workspaceUpdateInput>) {
     return this.workspaceService.update(input);
   }

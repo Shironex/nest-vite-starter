@@ -32,7 +32,6 @@ import { SudoService } from './services/sudo.service';
 import { EmailChangeService } from './services/email-change.service';
 import { TwoFactorChallengeService } from './services/two-factor-challenge.service';
 import { AuthMiddleware } from './middleware/auth.middleware';
-import { IdempotencyMiddleware } from '../../common/idempotency/idempotency.middleware';
 import type { IAppContextType, IAuthenticatedContextType } from '../../trpc/trpc.context';
 import { getClientIp, getUserAgent } from '../../common/utils/request';
 
@@ -195,7 +194,7 @@ export class AuthRouter {
   }
 
   @Mutation({ input: changePasswordSchema, output: authAckOutput })
-  @UseMiddlewares(AuthMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware)
   async changePassword(
     @Input() input: z.infer<typeof changePasswordSchema>,
     @Ctx() ctx: IAuthenticatedContextType,
@@ -222,7 +221,7 @@ export class AuthRouter {
    * address consumes the mailed link (`confirmEmailChange`).
    */
   @Mutation({ input: requestEmailChangeSchema, output: authAckOutput })
-  @UseMiddlewares(AuthMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware)
   async requestEmailChange(
     @Input() input: z.infer<typeof requestEmailChangeSchema>,
     @Ctx() ctx: IAuthenticatedContextType,
@@ -254,7 +253,7 @@ export class AuthRouter {
    * session cookie cleared, so the client is logged out by construction.
    */
   @Mutation({ input: deleteAccountSchema, output: accountDeletedOutput })
-  @UseMiddlewares(AuthMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware)
   async deleteAccount(
     @Input() input: z.infer<typeof deleteAccountSchema>,
     @Ctx() ctx: IAuthenticatedContextType,

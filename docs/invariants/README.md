@@ -69,7 +69,6 @@ The subsystems covered, written from the code rather than from memory:
 | `sessions.md`          | session mint, epoch, landing and procedure guards                  |
 | `account-lifecycle.md` | deleted, locked and removed accounts at every authentication door  |
 | `audit.md`             | the audit trail and what is actually enforced about it             |
-| `idempotency.md`       | the `Idempotency-Key` seam and its two halves                      |
 | `queues.md`            | BullMQ registration, job context and processors                    |
 
 Subsystems deliberately NOT covered yet, because nobody has read them closely enough to write a
@@ -83,5 +82,5 @@ holds in the code today, but nothing mechanical stops a future change from break
 means adding a lint-meta rule, an ESLint rule or a spec and replacing the `unenforced` citation.
 
 - `sessions.md`: revocation reaches live sockets, not only future requests.
-- `idempotency.md`, `queues.md`, `audit.md`, `account-lifecycle.md`, `tenancy.md`: see the
+- `queues.md`, `audit.md`, `account-lifecycle.md`, `tenancy.md`: see the
   invariant marked `unenforced` in each manifest.

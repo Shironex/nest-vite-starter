@@ -45,7 +45,7 @@ describe('procedures-require-guard', () => {
         @UseMiddlewares(
           AuthMiddleware,
           AdminMiddleware,
-          IdempotencyMiddleware,
+          ThrottleMiddleware,
         )
         create() { return {}; }
         @UseMiddlewares(AuthMiddleware, ApiKeyMiddleware)
@@ -80,7 +80,7 @@ describe('procedures-require-guard', () => {
   it('does not accept a non-auth middleware as a guard', () => {
     const source = `
       @Router({ alias: 'example' })
-      @UseMiddlewares(IdempotencyMiddleware)
+      @UseMiddlewares(ThrottleMiddleware)
       export class ExampleRouter {
         @Mutation({ output: ackOutput })
         open() { return { ok: true }; }

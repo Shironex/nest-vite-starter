@@ -13,7 +13,6 @@ import { UserService } from './user.service';
 import { LockoutService } from '../auth/services/lockout.service';
 import { AuthMiddleware } from '../auth/middleware/auth.middleware';
 import { AdminMiddleware } from '../auth/middleware/role.middleware';
-import { IdempotencyMiddleware } from '../../common/idempotency/idempotency.middleware';
 import type { IAuthenticatedContextType } from '../../trpc/trpc.context';
 
 const listUsersInputSchema = z
@@ -85,7 +84,7 @@ export class UserRouter {
    * Resets all lockout state: failedAttempts, lockoutCount, lockedUntil.
    */
   @Mutation({ input: unlockUserInputSchema, output: ackOutput })
-  @UseMiddlewares(AuthMiddleware, AdminMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
   async unlockUser(@Input() input: z.infer<typeof unlockUserInputSchema>) {
     await this.lockoutService.adminUnlock(input.userId);
     return { success: true as const };
@@ -97,7 +96,7 @@ export class UserRouter {
    * instead of staying frozen in their Redis session up to the TTL.
    */
   @Mutation({ input: updateUserRoleInputSchema, output: ackOutput })
-  @UseMiddlewares(AuthMiddleware, AdminMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
   async updateUserRole(
     @Input() input: z.infer<typeof updateUserRoleInputSchema>,
     @Ctx() ctx: IAuthenticatedContextType,
@@ -113,7 +112,7 @@ export class UserRouter {
    * refuses ADMIN targets. Revokes the target's sessions.
    */
   @Mutation({ input: adminDeleteUserInputSchema, output: accountDeletedOutput })
-  @UseMiddlewares(AuthMiddleware, AdminMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
   async adminDeleteUser(
     @Ctx() ctx: IAuthenticatedContextType,
     @Input() input: z.infer<typeof adminDeleteUserInputSchema>,
@@ -133,7 +132,7 @@ export class UserRouter {
    * role predicate.
    */
   @Mutation({ input: memberActionSchema, output: ackOutput })
-  @UseMiddlewares(AuthMiddleware, AdminMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
   async removeMember(
     @Input() input: z.infer<typeof memberActionSchema>,
     @Ctx() ctx: IAuthenticatedContextType,
@@ -144,7 +143,7 @@ export class UserRouter {
 
   /** Put a removed member back (admin only). */
   @Mutation({ input: memberActionSchema, output: ackOutput })
-  @UseMiddlewares(AuthMiddleware, AdminMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
   async restoreMember(@Input() input: z.infer<typeof memberActionSchema>) {
     await this.userService.restoreMember(input.userId);
     return { success: true as const };

@@ -189,16 +189,13 @@ describe('planModule on the real tree', () => {
       plan(realTree()),
       'apps/api/src/modules/invoices/invoices.router.ts',
     ).content;
-    assert.match(
-      admin,
-      /@UseMiddlewares\(AuthMiddleware, AdminMiddleware, IdempotencyMiddleware\)/u,
-    );
+    assert.match(admin, /@UseMiddlewares\(AuthMiddleware, AdminMiddleware\)/u);
     const open = edit(
       plan(realTree(), 'Invoice', 'organization-read-write'),
       'apps/api/src/modules/invoices/invoices.router.ts',
     ).content;
     assert.doesNotMatch(open, /AdminMiddleware/u);
-    assert.match(open, /@UseMiddlewares\(AuthMiddleware, IdempotencyMiddleware\)/u);
+    assert.match(open, /@UseMiddlewares\(AuthMiddleware\)/u);
   });
 
   it('refuses a model the registry already isolates', () => {

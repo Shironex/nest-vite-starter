@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { activeSessionsOutput, authAckOutput, revokeSessionSchema } from '@repo/shared/schemas';
 import { getClientIp, getUserAgent } from '../../common/utils/request';
 import type { IAuthenticatedContextType } from '../../trpc/trpc.context';
-import { IdempotencyMiddleware } from '../../common/idempotency/idempotency.middleware';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { SessionManagementService } from './services/session-management.service';
 
@@ -53,11 +52,10 @@ export class SessionsRouter {
   /**
    * Sign out every OTHER session and keep this one: the one epoch-bumping
    * revocation path plus an immediate re-issue for the caller (the password-
-   * change pattern). Same idempotency guard as changePassword: the flow
-   * mints a session, so a client retry must not mint two.
+   * change pattern).
    */
   @Mutation({ output: authAckOutput })
-  @UseMiddlewares(AuthMiddleware, IdempotencyMiddleware)
+  @UseMiddlewares(AuthMiddleware)
   async revokeOthers(@Ctx() ctx: IAuthenticatedContextType) {
     await this.sessionManagement.revokeOtherSessions(
       ctx.session.token,

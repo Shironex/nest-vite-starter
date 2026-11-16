@@ -45,9 +45,8 @@ transient failure, or a worker crash mid-process). Design for re-execution.
   safely; a missed or doubled tick is harmless. `@Cron` fires on EVERY replica,
   so this is mandatory for any sweep (see token-cleanup.service.ts).
 - **Reach for an `Idempotency-Key` table only for money or external-retry
-  sources** (a payment, a webhook a third party may resend). The repo already
-  has `common/idempotency/` for HTTP-level replay; use it at the boundary, not
-  inside every worker.
+  sources** (a payment, a webhook a third party may resend), and put it at the
+  boundary, not inside every worker.
 
 ## `@Cron` vs BullMQ repeatable: the fork in the road
 

@@ -90,12 +90,7 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
       // superjson preserves Date, Map, Set, BigInt, Decimal across the wire.
       // Must match the transformer wired on the tRPC client (apps/web/src/lib/trpc.ts).
       transformer: superjson,
-      // Applied to every procedure. IdempotencyMiddleware is deliberately NOT
-      // here: global middlewares run before route-level AuthMiddleware, so
-      // ctx.user would never be set and it would no-op on every request. It is
-      // wired method-level after AuthMiddleware on the mutation routers
-      // instead (e.g. user.router.ts, auth.router.ts). See
-      // idempotency.middleware.ts.
+      // Applied to every procedure.
       // TrpcRequestContextMiddleware MUST stay first: it opens the ALS request
       // scope that AuthMiddleware writes `userId`/`tenantId` into, and that the
       // Prisma tenant-scope extension reads. nestjs-trpc mounts outside the
