@@ -279,9 +279,6 @@ export const config = [
       'noctcore-prisma/mutation-entry-must-reach-audit': [
         'error',
         {
-          // Tour progress is deliberately unaudited: the answer it would record
-          // is worth less than the dilution. See tour-progress.service.ts.
-          unauditedModels: ['tourProgress'],
           // Notification read state is deliberately unaudited: Notification
           // .readAt already persists exactly the fact an audit row would.
           // See the NotificationsService docblock.
