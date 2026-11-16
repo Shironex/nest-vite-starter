@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { config as loadEnvFile } from 'dotenv';
-import { PrismaClient } from '../generated/prisma/client.js';
+import { PrismaClient, type Prisma } from '../generated/prisma/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from '@node-rs/argon2';
 
@@ -84,32 +84,21 @@ const E2E_FIXTURE_USERS = [
   'e2e-2fa-trust@example.com',
 ] as const;
 
+/**
+ * What a re-seed hands back on every account it owns: no lockout, not
+ * disabled. A prior run (a misconfigured load test, an e2e killed mid-journey)
+ * may have left either behind, and the seed promises a login-able account.
+ */
+const FRESH_ACCOUNT_STATE = {
+  failedAttempts: 0,
+  lockoutCount: 0,
+  lockedUntil: null,
+  disabledAt: null,
+} satisfies Prisma.UserUpdateInput;
+
 async function main() {
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
-
-  // Create the default Tenant (an organization) so the seeded admin has a tenant.
-  // Registration will create an organization per signup later; for now the admin is
-  // attached to this default one. Idempotent on the unique slug.
-  console.log('Creating default tenant (organization)...');
-  const defaultTenant = await prisma.tenant.upsert({
-    where: { slug: 'default-organization' },
-    update: {},
-    create: { name: 'Default Organization', slug: 'default-organization' },
-  });
-  console.log(`Default tenant ready: ${defaultTenant.slug}`);
-
-  // Create a default Workspace under that organization, so the second
-  // tenancy tier is populated on a freshly seeded database and every
-  // Workspace-scoped flow has a workspace to act on. Idempotent on the
-  // @@unique([tenantId, name]).
-  console.log('Creating default workspace...');
-  const defaultWorkspace = await prisma.workspace.upsert({
-    where: { tenantId_name: { tenantId: defaultTenant.id, name: 'Example Workspace' } },
-    update: {},
-    create: { tenantId: defaultTenant.id, name: 'Example Workspace' },
-  });
-  console.log(`Default workspace ready: ${defaultWorkspace.name}`);
 
   // Create admin user if credentials provided
   if (adminEmail && adminPassword) {
@@ -130,28 +119,24 @@ async function main() {
         passwordHash,
         role: 'ADMIN',
         emailVerified: true,
-        tenantId: defaultTenant.id,
         // Reset lockout state on re-seed so a prior run that locked the admin
         // (e.g. failed logins from a misconfigured load test) hands back a
         // login-able account instead of staying ACCOUNT_LOCKED.
-        failedAttempts: 0,
-        lockoutCount: 0,
-        lockedUntil: null,
-      },
+        ...FRESH_ACCOUNT_STATE,
+      } satisfies Prisma.UserUpdateInput,
       create: {
         email: normalizedEmail,
         passwordHash,
         role: 'ADMIN',
         emailVerified: true,
-        tenantId: defaultTenant.id,
-      },
+      } satisfies Prisma.UserCreateInput,
     });
     console.log(`Admin user created/updated: ${admin.email}`);
   } else {
     console.log('Skipping admin user creation (ADMIN_EMAIL and ADMIN_PASSWORD not set)');
   }
 
-  // Dev/e2e fixture: a second member in the admin's tenant with 2FA enabled, so
+  // Dev/e2e fixture: a second user with 2FA enabled, so
   // the admin members UI (and its "reset two-factor" e2e) has a real member to act on.
   // Never seeded in production. A placeholder TOTP secret is enough because the
   // reset flow only deletes the factor row; it is never decrypted for this user
@@ -173,18 +158,14 @@ async function main() {
         passwordHash: memberPasswordHash,
         role: 'USER',
         emailVerified: true,
-        tenantId: defaultTenant.id,
-        failedAttempts: 0,
-        lockoutCount: 0,
-        lockedUntil: null,
-      },
+        ...FRESH_ACCOUNT_STATE,
+      } satisfies Prisma.UserUpdateInput,
       create: {
         email: memberEmail,
         passwordHash: memberPasswordHash,
         role: 'USER',
         emailVerified: true,
-        tenantId: defaultTenant.id,
-      },
+      } satisfies Prisma.UserCreateInput,
     });
 
     // Give the member exactly one ACTIVE TOTP factor so they show as "2FA on".
@@ -226,7 +207,6 @@ async function main() {
           displayName: null,
           role: 'USER',
           emailVerified: true,
-          tenantId: defaultTenant.id,
           failedAttempts: 0,
           lockoutCount: 0,
           lockedUntil: null,
@@ -236,7 +216,6 @@ async function main() {
           passwordHash: fixturePasswordHash,
           role: 'USER',
           emailVerified: true,
-          tenantId: defaultTenant.id,
         },
       });
 

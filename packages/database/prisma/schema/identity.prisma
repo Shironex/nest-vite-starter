@@ -2,7 +2,7 @@
 // Identity: accounts, the tokens that authenticate them, and second factors.
 // ---------------------------------------------------------------------------
 
-// USER and ADMIN are the member roles of an organization. A new role is added here and
+// USER and ADMIN are the account roles. A new role is added here and
 // mirrored in ROLES (@repo/shared/permissions); shared-enum-parity.spec.ts keeps
 // the two in step.
 enum Role {
@@ -49,34 +49,17 @@ model User {
   lockoutCount      Int       @default(0)
   lockedUntil       DateTime?
   deletedAt         DateTime?
-  // Set when a member is removed from the organization without deleting their account.
-  // Deliberately NOT modeled as `tenantId = null`: the tenantId comment below
-  // explains that a null-tenant user fails every fail-closed tenant-scoped
-  // operation AND is invisible to every admin list, which is a worse state than
-  // either alternative. Keeping tenantId intact makes the removal visible in the
-  // members list and reversible.
+  // Set when an admin disables the account without deleting it. Reversible:
+  // clearing it restores sign-in. The account keeps its data and its address.
   //
-  // Enforced at LOGIN and by revokeAuthState, never in auth.middleware, which
-  // reads the session blob and never touches the database; a clause there would
-  // put a per-request read on the hottest path in the app.
-  // The DB-token side door needs the same clause and is easy to miss:
-  // password reset.
-  membershipEndedAt DateTime?
+  // Enforced at LOGIN, at the session mint and by revokeAuthState, never in
+  // auth.middleware, which reads the session blob and never touches the
+  // database; a clause there would put a per-request read on the hottest path
+  // in the app. The DB-token side door needs the same clause and is easy to
+  // miss: password reset.
+  disabledAt        DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
-
-  // Tenant link is nullable so the existing seeded admin row backfills safely
-  // (greenfield) and the seed assigns it; registration will create an organization per
-  // signup later. User.email stays globally unique: it is the login identifier.
-  // onDelete: Restrict so a Tenant cannot be deleted while users reference it;
-  // SET NULL would strand those users with tenantId NULL, which every
-  // fail-closed tenant-scoped operation refuses to manage.
-  tenantId String?
-  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-
-  // Back-relation for Tenant.ownerId. A user owns at most one organization because
-  // tenantId is singular; the @unique on the owning side keeps it that way.
-  ownedTenant Tenant? @relation("TenantOwner")
 
   tokens        Token[]
   auditLogs     AuditLog[]
@@ -87,21 +70,19 @@ model User {
   // would only add write amplification.
 
   // SQL-only partial index "User_deletedAt_idx" ON ("deletedAt") WHERE
-  // "deletedAt" IS NOT NULL (in the 0_init baseline): serves the daily
-  // user-purge sweep's deletedAt-only predicate, which the composite index
-  // above cannot (its leading column is tenantId). Prisma cannot express
-  // partial indexes, so it is documented here and lives in the migration.
+  // "deletedAt" IS NOT NULL (in the 0001_init migration): serves the daily
+  // user-purge sweep's deletedAt-only predicate. Prisma cannot express partial
+  // indexes, so it is documented here and lives in the migration.
 
-  // The admin user list filters by { tenantId, deletedAt: null } and orders by
+  // The admin user list filters by { deletedAt: null } and orders by
   // createdAt DESC, id DESC (keyset pagination). The index covers both the
   // filter and the order-by, so the read is index-ordered instead of a
   // full-table scan plus sort.
-  @@index([tenantId, deletedAt, createdAt(sort: Desc), id(sort: Desc)])
-  // The last-admin and live-member guards count over { tenantId, deletedAt:
-  // null, membershipEndedAt: null }; the members list reads membershipEndedAt
-  // for its status column. This index answers those counts without touching
-  // the table.
-  @@index([tenantId, deletedAt, membershipEndedAt])
+  @@index([deletedAt, createdAt(sort: Desc), id(sort: Desc)])
+  // The last-admin guard counts over { role: ADMIN, deletedAt: null,
+  // disabledAt: null }. This index answers that count without touching the
+  // table.
+  @@index([role, deletedAt, disabledAt])
 }
 
 model Token {
@@ -124,9 +105,8 @@ model Token {
 }
 
 // SecondFactor: one type-discriminated table for every second factor.
-// It is USER-scoped credential data, like Token (NOT tenant-scoped domain
-// data), so it is intentionally absent from TENANT_SCOPED_MODELS and its
-// repository lives in the auth module. onDelete: Cascade means the existing
+// It is USER-scoped credential data, like Token, and its repository lives in
+// the auth module. onDelete: Cascade means the existing
 // user-deletion + purge lifecycle cleans factors for free (no purge-cron change).
 //
 // Payloads are sparse-nullable by type:
@@ -160,7 +140,7 @@ model SecondFactor {
 
   // SQL-only partial UNIQUE index "SecondFactor_active_totp_per_user_key" ON
   // ("userId") WHERE "type" = 'TOTP' AND "status" = 'ACTIVE' (in the
-  // 0_init baseline): enforces at most one ACTIVE TOTP factor per user, which the
+  // 0001_init migration): enforces at most one ACTIVE TOTP factor per user, which the
   // @@unique above cannot (codeHash is NULL for TOTP, so those rows never
   // collide). Prevents a two-tab enrollment race from minting two active secrets
   // + two recovery-code batches. Prisma cannot express partial indexes, so it

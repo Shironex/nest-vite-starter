@@ -1,53 +1,23 @@
 /**
  * DEV PLAYGROUND SEED
  *
- * File name: `dev.seed.ts`, not `seed-dev.ts`. The allowlist nestjs.js gives
- * `noctcore-prisma/no-unscoped-prisma-outside-allowlist` carries a double-star glob for
- * any file ending in `.seed.ts`, but pins the other two seeds by literal path.
- * That rule does not reach packages/database today, so this is purely
- * defensive: if seeding logic ever moves under apps/api, or nestjs.js is ever
- * spread into this package, the glob already covers this file.
+ * `prisma/seed.ts` is the BASELINE seed: the admin, the member and the e2e
+ * fixture accounts. It is a bootstrap, not a dataset.
  *
- * ---------------------------------------------------------------------------
- * WHAT THIS IS
- * ---------------------------------------------------------------------------
- * `prisma/seed.ts` is the BASELINE seed: the default organization, one
- * baseline Workspace, the admin, the member, the e2e fixture accounts. It is a
- * bootstrap, not a dataset.
- *
- * This script fills the SAME tenant with a small, fixed playground: a few staff
- * members of each role, two more workspaces and an
- * audit trail, so the platform screens have something to render without a human
- * creating rows by hand. It also seeds a SECOND, deliberately tiny organization so
- * tenant isolation is eyeballable by hand rather than only assertable in a test.
+ * This script adds a small, fixed playground on top: two more user accounts
+ * and an audit trail, so the admin screens have something to render without a
+ * human creating rows by hand. Together with the baseline admin that is one
+ * admin plus two playground users.
  *
  * It re-creates nothing that `seed.ts` owns. Run order:
  *
- *   pnpm --filter @repo/database db:seed        # baseline (admin, workspace, e2e)
+ *   pnpm --filter @repo/database db:seed        # baseline (admin, member, e2e)
  *   pnpm --filter @repo/database db:seed:dev    # this file
  *
  * `db:seed:dev` chains both, so `pnpm db:seed:dev` from the repo root is enough.
  *
- * Add your product's own playground rows here, next to the platform ones, and
- * extend `resetTenantData` and `verifySeed` for every table you add.
- *
- * ---------------------------------------------------------------------------
- * THE TENANCY CONTRACT: read before changing any write below
- * ---------------------------------------------------------------------------
- * The app's only isolation boundary is the Prisma `$extends` tenant-scope
- * extension in `apps/api/src/common/database/tenant-scope.extension.ts`,
- * applied by `PrismaService.onModuleInit`. It lives in apps/api. It is not part
- * of `@repo/database`, and it is not part of the generated client. There is no
- * Postgres RLS behind it.
- *
- * This script therefore never loads it, and nothing injects `tenantId` /
- * `workspaceId` here. Every row written below must carry them EXPLICITLY and
- * CORRECTLY, because the app reads them back through the scoped client with
- * `WHERE tenantId = ...` merged in. A row written with a wrong or absent
- * tenantId is not a crash. It is an invisible row that the UI can never show
- * and no test will notice. `verifySeed()` re-reads every table with an explicit
- * `where: { tenantId }` and asserts the counts match what was written, for BOTH
- * tenants, and that neither tenant can see the other's Workspaces.
+ * Add your product's own playground rows here, and extend `resetPlayground`
+ * and `verifySeed` for every table you add.
  *
  * ARGON2_OPTIONS mirrors apps/api/src/modules/auth/services/password.service.ts:
  * nothing below imports from apps/api (it compiles to CJS while this package is
@@ -122,7 +92,7 @@ function assertSafeTarget(target: IDatabaseTarget): void {
   if (process.env.NODE_ENV === 'production') {
     throw new Error(
       'Refusing to run the dev playground seed with NODE_ENV=production. ' +
-        "This script DELETES the target tenants' playground data before rewriting it.",
+        'This script DELETES its own playground rows before rewriting them.',
     );
   }
 
@@ -156,76 +126,21 @@ function assertSafeTarget(target: IDatabaseTarget): void {
 // severity.
 // ---------------------------------------------------------------------------
 
-/**
- * The tenant to fill: the organization `seed.ts` creates and the seeded admin belongs
- * to. A constant rather than a knob because the admin's tenant is the only one
- * the seeded admin can see, so pointing this elsewhere produces data nobody can
- * log in and look at.
- */
-const TENANT_SLUG = 'default-organization';
-
-/**
- * The Workspace `seed.ts` creates. Preserved across resets: this script does not
- * own it, and the e2e suite may select it by name.
- */
-const BASELINE_WORKSPACE_NAME = 'Example Workspace';
-
 /** Reserved email prefix marking the users this script owns and may delete. */
-const STAFF_EMAIL_PREFIX = 'dev-';
+const PLAYGROUND_EMAIL_PREFIX = 'dev-';
 
-type StaffRole = 'ADMIN' | 'USER';
-
-interface IStaffSeed {
+interface IPlaygroundUser {
   /** Local part after the reserved prefix. */
   readonly handle: string;
-  /** Null on purpose for some rows: the UI falls back to the email. */
+  /** Null on purpose for one row: the UI falls back to the email. */
   readonly displayName: string | null;
-  readonly role: StaffRole;
 }
 
-/**
- * The primary organization's extra staff, beyond the baseline admin and member. More
- * than one of each role, so the members list shows both roles and the
- * last-admin guard has other admins to count.
- */
-const PRIMARY_STAFF: readonly IStaffSeed[] = [
-  { handle: 'alex.morgan', displayName: 'Alex Morgan', role: 'ADMIN' },
-  { handle: 'sam.rivera', displayName: 'Sam Rivera', role: 'ADMIN' },
-  { handle: 'jordan.lee', displayName: 'Jordan Lee', role: 'USER' },
-  { handle: 'taylor.brooks', displayName: null, role: 'USER' },
-  { handle: 'casey.nguyen', displayName: 'Casey Nguyen', role: 'USER' },
+/** The two playground users, beside the baseline admin. */
+const PLAYGROUND_USERS: readonly IPlaygroundUser[] = [
+  { handle: 'jordan.lee', displayName: 'Jordan Lee' },
+  { handle: 'taylor.brooks', displayName: null },
 ];
-
-/** The primary organization's playground workspaces, beside the baseline one. */
-const PRIMARY_WORKSPACES: readonly { readonly name: string }[] = [
-  { name: 'Northwind Trading Ltd' },
-  { name: 'Contoso Logistics Ltd' },
-];
-
-/**
- * A SECOND organization, deliberately tiny.
- *
- * Isolation in this product rests solely on the Prisma `$extends` extension:
- * there is no RLS backstop, and a mis-stamped `tenantId` is a silent bug, not an
- * error. One tenant on its own cannot show that: an empty screen looks the same
- * whether isolation works or whether the seed wrote nothing. Two tenants make it
- * a five-second manual check: sign in here, see exactly these people and these
- * workspaces, and none of the other organization's.
- */
-const SECOND_TENANT = {
-  slug: 'control-organization',
-  name: 'Control Organization',
-  staff: [
-    { handle: 'control.admin', displayName: 'Control Organization (admin)', role: 'ADMIN' },
-    { handle: 'control.user', displayName: 'Control Organization (user)', role: 'USER' },
-  ],
-  workspaces: [{ name: 'Fabrikam Services Ltd' }, { name: 'Tailspin Audit Ltd' }],
-} as const satisfies {
-  slug: string;
-  name: string;
-  staff: readonly IStaffSeed[];
-  workspaces: readonly { name: string }[];
-};
 
 /**
  * Password for every account this script creates.
@@ -243,141 +158,56 @@ const ARGON2_OPTIONS = { algorithm: 2, memoryCost: 19456, timeCost: 2, paralleli
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+/** Marks the audit rows this script owns, so a re-run removes only those. */
+const AUDIT_CORRELATION_PREFIX = 'dev-seed-';
+
+const AUDIT_ROWS = 40;
+
 /** A date `days` from now. Negative is the past. */
 function dayOffset(days: number): Date {
   return new Date(Date.now() + days * MS_PER_DAY);
 }
 
-function staffEmail(handle: string): string {
-  return `${STAFF_EMAIL_PREFIX}${handle}@example.com`;
+function playgroundEmail(handle: string): string {
+  return `${PLAYGROUND_EMAIL_PREFIX}${handle}@example.com`;
 }
 
 // ---------------------------------------------------------------------------
 // 3. The reset.
 //
-// Scoped to one tenant at a time, in foreign-key order, inside ONE transaction,
-// and run for BOTH tenants before anything is written. Deliberately NOT a
-// TRUNCATE: TRUNCATE ... CASCADE would also take out the e2e fixture users Playwright depends on, in a script whose whole
-// purpose is to be run casually and often.
-//
-// What survives on purpose: the Tenant rows, the baseline admin / member / e2e
-// fixture users, and the baseline Workspace. Only rows this script owns go: users
-// under STAFF_EMAIL_PREFIX, every Workspace not preserved, and the tenant's
-// audit rows.
+// One transaction, and deliberately NOT a TRUNCATE: TRUNCATE ... CASCADE would
+// also take out the e2e fixture users Playwright depends on, in a script whose
+// whole purpose is to be run casually and often. Only rows this script owns go:
+// users under PLAYGROUND_EMAIL_PREFIX and audit rows under
+// AUDIT_CORRELATION_PREFIX.
 //
 // Why delete-then-rewrite rather than upsert: dates below are relative to now,
-// so a re-run re-anchors the audit trail instead of leaving them to
-// age.
+// so a re-run re-anchors the audit trail instead of leaving it to age.
 // ---------------------------------------------------------------------------
 
 interface IRemoved {
-  readonly workspaces: number;
-  readonly staff: number;
+  readonly users: number;
   readonly audits: number;
 }
 
-async function resetTenantData(
-  prisma: PrismaClient,
-  tenantId: string,
-  /** Workspace names to keep (the baseline workspace); empty removes them all. */
-  preserveWorkspaceNames: readonly string[],
-): Promise<IRemoved> {
+async function resetPlayground(prisma: PrismaClient): Promise<IRemoved> {
   return prisma.$transaction(
     async (tx) => {
-      const audits = await tx.auditLog.deleteMany({ where: { tenantId } });
-
-      const workspaces = await tx.workspace.deleteMany({
-        where:
-          preserveWorkspaceNames.length === 0
-            ? { tenantId }
-            : { tenantId, name: { notIn: [...preserveWorkspaceNames] } },
+      const audits = await tx.auditLog.deleteMany({
+        where: { correlationId: { startsWith: AUDIT_CORRELATION_PREFIX } },
       });
-
-      // Only the staff users this script created, identified by the reserved
-      // email prefix. The baseline admin, the member and the e2e fixtures never
-      // match. Their tokens and factors cascade; their audit rows
-      // (already gone above) and a Tenant.ownerId pointing at them SetNull.
-      const staff = await tx.user.deleteMany({
-        where: { tenantId, email: { startsWith: STAFF_EMAIL_PREFIX } },
+      // Their tokens and factors cascade.
+      const users = await tx.user.deleteMany({
+        where: { email: { startsWith: PLAYGROUND_EMAIL_PREFIX } },
       });
-
-      return {
-        workspaces: workspaces.count,
-        staff: staff.count,
-        audits: audits.count,
-      };
+      return { users: users.count, audits: audits.count };
     },
     { timeout: 60_000, maxWait: 30_000 },
   );
 }
 
-function logRemoved(label: string, removed: IRemoved): void {
-  console.log(
-    `[dev.seed]   ${label}: removed ${removed.workspaces} workspaces, ${removed.staff} staff users, ` +
-      `${removed.audits} audit rows`,
-  );
-}
-
 // ---------------------------------------------------------------------------
-// 4. Writers.
-// ---------------------------------------------------------------------------
-
-/**
- * Upsert rather than create: User.email is globally unique, so a row left in
- * another tenant by an older run would otherwise fail the whole seed on P2002.
- * Every field the seed owns is stated on update too, so a re-run takes a
- * drifted row all the way back.
- */
-async function upsertStaff(
-  prisma: PrismaClient,
-  tenantId: string,
-  staff: readonly IStaffSeed[],
-  passwordHash: string,
-): Promise<string[]> {
-  const ids: string[] = [];
-  for (const member of staff) {
-    const fields = {
-      passwordHash,
-      displayName: member.displayName,
-      role: member.role,
-      emailVerified: true,
-      tenantId,
-      failedAttempts: 0,
-      lockoutCount: 0,
-      lockedUntil: null,
-      deletedAt: null,
-      membershipEndedAt: null,
-    } as const satisfies Prisma.UserUncheckedUpdateInput;
-    const email = staffEmail(member.handle);
-    const user = await prisma.user.upsert({
-      where: { email },
-      update: fields,
-      create: { email, ...fields },
-      select: { id: true },
-    });
-    ids.push(user.id);
-  }
-  return ids;
-}
-
-async function createWorkspaces(
-  prisma: PrismaClient,
-  tenantId: string,
-  workspaces: readonly { readonly name: string }[],
-): Promise<string[]> {
-  const ids: string[] = [];
-  for (const workspace of workspaces) {
-    const row = await prisma.workspace.create({
-      data: { tenantId, name: workspace.name, legalName: workspace.name },
-      select: { id: true },
-    });
-    ids.push(row.id);
-  }
-  return ids;
-}
-
-// ---------------------------------------------------------------------------
-// 5. Main.
+// 4. Main.
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
@@ -393,52 +223,41 @@ async function main(): Promise<void> {
   const prisma = new PrismaClient({ adapter });
 
   try {
-    const tenant = await prisma.tenant.findUnique({ where: { slug: TENANT_SLUG } });
-    if (!tenant) {
-      throw new Error(
-        `No tenant with slug "${TENANT_SLUG}". Run the baseline seed first:\n` +
-          '  pnpm --filter @repo/database db:seed',
-      );
-    }
     const admin = await prisma.user.findFirst({
-      where: { tenantId: tenant.id, role: 'ADMIN', deletedAt: null },
+      where: { role: 'ADMIN', deletedAt: null },
       orderBy: { createdAt: 'asc' },
     });
     if (!admin) {
       throw new Error(
-        `Tenant "${TENANT_SLUG}" has no ADMIN user. Set ADMIN_EMAIL and ADMIN_PASSWORD, then ` +
-          'run `pnpm --filter @repo/database db:seed`.',
+        'No ADMIN user. Set ADMIN_EMAIL and ADMIN_PASSWORD, then run ' +
+          '`pnpm --filter @repo/database db:seed`.',
       );
     }
-    const tenantId = tenant.id;
 
-    console.log(`[dev.seed] target ${target.database}@${target.host} | tenant "${TENANT_SLUG}"`);
-
-    // BOTH resets run before ANY insert, so a staff email or a Workspace left in the
-    // other tenant by an older run is gone before either tenant is written.
-    const secondTenant = await prisma.tenant.upsert({
-      where: { slug: SECOND_TENANT.slug },
-      update: {},
-      create: { name: SECOND_TENANT.name, slug: SECOND_TENANT.slug },
-    });
+    console.log(`[dev.seed] target ${target.database}@${target.host}`);
     console.log('[dev.seed] Resetting...');
-    logRemoved(TENANT_SLUG, await resetTenantData(prisma, tenantId, [BASELINE_WORKSPACE_NAME]));
-    logRemoved(SECOND_TENANT.slug, await resetTenantData(prisma, secondTenant.id, []));
+    const removed = await resetPlayground(prisma);
+    console.log(`[dev.seed]   removed ${removed.users} users, ${removed.audits} audit rows`);
 
     // One argon2 hash reused across every account: the parameters cost roughly
     // 100 ms a call.
     const passwordHash = await hash(DEV_PASSWORD, ARGON2_OPTIONS);
 
-    // --- primary organization -----------------------------------------------------
-    const staffIds = await upsertStaff(prisma, tenantId, PRIMARY_STAFF, passwordHash);
-    const newWorkspaceIds = await createWorkspaces(prisma, tenantId, PRIMARY_WORKSPACES);
-    const baselineWorkspace = await prisma.workspace.findFirst({
-      where: { tenantId, name: BASELINE_WORKSPACE_NAME },
-      select: { id: true },
-    });
-    const workspaceIds = [...(baselineWorkspace ? [baselineWorkspace.id] : []), ...newWorkspaceIds];
+    const userIds: string[] = [];
+    for (const user of PLAYGROUND_USERS) {
+      const created = await prisma.user.create({
+        data: {
+          email: playgroundEmail(user.handle),
+          passwordHash,
+          displayName: user.displayName,
+          role: 'USER',
+          emailVerified: true,
+        } satisfies Prisma.UserCreateInput,
+        select: { id: true },
+      });
+      userIds.push(created.id);
+    }
 
-    // --- audit log ---------------------------------------------------------
     // Real action strings from @repo/shared/audit, inlined: packages/database
     // does not depend on @repo/shared. A minority of failures, so any "failures
     // only" view has rows to find.
@@ -448,177 +267,64 @@ async function main(): Promise<void> {
       'user.role.changed',
       'auth.password.change',
     ] as const;
-    const actorIds = [admin.id, ...staffIds];
-    const AUDIT_ROWS = 40;
+    const actorIds = [admin.id, ...userIds];
     const auditRows = Array.from({ length: AUDIT_ROWS }, (_row, index) => {
       const action = auditActions[index % auditActions.length] ?? 'auth.login.success';
       const actorId = actorIds[index % actorIds.length] ?? admin.id;
       return {
         userId: actorId,
-        tenantId,
-        workspaceId: null,
         action,
         targetType: 'User',
         targetId: actorId,
         ipAddress: `192.168.${index % 4}.${10 + index}`,
-        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) SaaSStarter/dev-seed',
-        correlationId: `dev-seed-${index}`,
+        userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Starter/dev-seed',
+        correlationId: `${AUDIT_CORRELATION_PREFIX}${index}`,
         success: action !== 'auth.login.failure',
         createdAt: dayOffset(-Math.floor(index / 4)),
-      };
+      } satisfies Prisma.AuditLogCreateManyInput;
     });
     await prisma.auditLog.createMany({ data: auditRows });
 
-    // --- second organization ------------------------------------------------------
-    const secondStaffIds = await upsertStaff(
-      prisma,
-      secondTenant.id,
-      SECOND_TENANT.staff,
-      passwordHash,
-    );
-    const secondWorkspaceIds = await createWorkspaces(
-      prisma,
-      secondTenant.id,
-      SECOND_TENANT.workspaces,
-    );
-
-    await verifySeed(prisma, [
-      {
-        label: TENANT_SLUG,
-        tenantId,
-        workspaces: workspaceIds.length,
-        staff: PRIMARY_STAFF.length,
-        audits: AUDIT_ROWS,
-        foreignWorkspaceIds: secondWorkspaceIds,
-      },
-      {
-        label: SECOND_TENANT.slug,
-        tenantId: secondTenant.id,
-        workspaces: secondWorkspaceIds.length,
-        staff: SECOND_TENANT.staff.length,
-        audits: 0,
-        foreignWorkspaceIds: workspaceIds,
-      },
-    ]);
-
-    printSummary({
-      tenantId,
-      adminEmail: admin.email,
-      staffCount: staffIds.length,
-      workspaceCount: workspaceIds.length,
-      secondTenantId: secondTenant.id,
-      secondStaffCount: secondStaffIds.length,
-      secondWorkspaceCount: secondWorkspaceIds.length,
-    });
+    await verifySeed(prisma, { users: PLAYGROUND_USERS.length, audits: AUDIT_ROWS });
+    printSummary(admin.email);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-interface ITenantExpectation {
-  readonly label: string;
-  readonly tenantId: string;
-  readonly workspaces: number;
-  readonly staff: number;
-  readonly audits: number;
-  /** Workspace ids belonging to the OTHER tenant. None of them may be reachable. */
-  readonly foreignWorkspaceIds: readonly string[];
-}
-
-/**
- * Prove the rows are readable the way the APP reads them, and only by the tenant
- * that owns them.
- *
- * Every count below re-filters by the explicit `tenantId` the tenant-scope
- * extension would have injected, so a mismatch means a row carries a scope the
- * application can never match: an invisible row. The cross-tenant check is the
- * other direction, and it matters because the `$extends` extension is the only
- * isolation boundary in this system; there is no RLS to catch a leak behind
- * it.
- */
+/** Re-read what was written, so a silent write failure is loud here. */
 async function verifySeed(
   prisma: PrismaClient,
-  expectations: readonly ITenantExpectation[],
+  expected: { readonly users: number; readonly audits: number },
 ): Promise<void> {
+  const [users, audits] = await Promise.all([
+    prisma.user.count({
+      where: { email: { startsWith: PLAYGROUND_EMAIL_PREFIX }, deletedAt: null },
+    }),
+    prisma.auditLog.count({ where: { correlationId: { startsWith: AUDIT_CORRELATION_PREFIX } } }),
+  ]);
   const problems: string[] = [];
-
-  for (const expected of expectations) {
-    const { tenantId, label } = expected;
-    const [workspaces, staff, audits, foreignWorkspaces] = await Promise.all([
-      prisma.workspace.count({ where: { tenantId } }),
-      prisma.user.count({ where: { tenantId, email: { startsWith: STAFF_EMAIL_PREFIX } } }),
-      prisma.auditLog.count({ where: { tenantId } }),
-      expected.foreignWorkspaceIds.length > 0
-        ? prisma.workspace.count({
-            where: { tenantId, id: { in: [...expected.foreignWorkspaceIds] } },
-          })
-        : Promise.resolve(0),
-    ]);
-
-    if (workspaces !== expected.workspaces) {
-      problems.push(
-        `${label} workspaces: expected ${expected.workspaces}, tenant-scoped read sees ${workspaces}`,
-      );
-    }
-    if (staff !== expected.staff) {
-      problems.push(`${label} staff: wrote ${expected.staff}, tenant-scoped read sees ${staff}`);
-    }
-    if (audits !== expected.audits) {
-      problems.push(
-        `${label} audit rows: wrote ${expected.audits}, tenant-scoped read sees ${audits}`,
-      );
-    }
-    if (foreignWorkspaces > 0) {
-      problems.push(`${label}: ${foreignWorkspaces} Workspaces are visible from the WRONG tenant`);
-    }
-
-    if (problems.length === 0) {
-      console.log(
-        `[dev.seed] Verified "${label}" through a tenant-scoped read: ${workspaces} workspaces, ` +
-          `${staff} dev staff, ${audits} audit rows, ` +
-          'no cross-tenant rows.',
-      );
-    }
+  if (users !== expected.users) {
+    problems.push(`users: wrote ${expected.users}, read back ${users}`);
   }
-
+  if (audits !== expected.audits) {
+    problems.push(`audit rows: wrote ${expected.audits}, read back ${audits}`);
+  }
   if (problems.length > 0) {
     throw new Error(`Seed verification FAILED:\n  - ${problems.join('\n  - ')}`);
   }
-}
-
-interface ISummaryInput {
-  readonly tenantId: string;
-  readonly adminEmail: string;
-  readonly staffCount: number;
-  readonly workspaceCount: number;
-  readonly secondTenantId: string;
-  readonly secondStaffCount: number;
-  readonly secondWorkspaceCount: number;
+  console.log(`[dev.seed] Verified: ${users} playground users, ${audits} audit rows.`);
 }
 
 /** What was created and, more usefully, what to go and click on. */
-function printSummary(input: ISummaryInput): void {
+function printSummary(adminEmail: string): void {
   console.log('');
   console.log('[dev.seed] Done.');
-  console.log(`  tenant             ${TENANT_SLUG} (${input.tenantId})`);
-  console.log(`  sign in as         ${input.adminEmail} / ${DEV_PASSWORD}`);
-  console.log(`  extra staff        ${STAFF_EMAIL_PREFIX}*@example.com / ${DEV_PASSWORD}`);
-  console.log('');
-  console.log(`  workspaces              ${input.workspaceCount}`);
-  console.log(`  staff users        ${input.staffCount} (plus the baseline admin and member)`);
-  console.log('');
-  console.log(`  second organization       ${SECOND_TENANT.slug} (${input.secondTenantId})`);
-  console.log(
-    `    sign in as       ${staffEmail(SECOND_TENANT.staff[0].handle)} / ${DEV_PASSWORD}`,
-  );
-  console.log(
-    `    holds            ${input.secondStaffCount} staff across ${input.secondWorkspaceCount} ` +
-      'workspaces, and must see NONE of the above',
-  );
+  console.log(`  sign in as         ${adminEmail} / ${DEV_PASSWORD}`);
+  console.log(`  playground users   ${PLAYGROUND_EMAIL_PREFIX}*@example.com / ${DEV_PASSWORD}`);
   console.log('');
   console.log('  worth clicking:');
-  console.log('    /settings -> Members   staff list, roles, two-factor column (ADMIN)');
-  console.log('    both admins in turn    the tenant boundary, checked by eye');
+  console.log('    /settings -> Members   user list, roles, two-factor column (ADMIN)');
   console.log('');
 }
 

@@ -14,10 +14,6 @@
 model AuditLog {
   id            String   @id @default(cuid())
   userId        String?
-  // tenantId / workspaceId are nullable because audit writes can fire pre-auth
-  // (e.g. a failed login on an unknown email) with no tenant context yet.
-  tenantId      String?
-  workspaceId   String?
   action        String
   targetType    String?
   targetId      String?
@@ -35,21 +31,10 @@ model AuditLog {
 
   @@index([userId])
   @@index([action])
-  @@index([createdAt])
   @@index([targetType, targetId])
   @@index([correlationId])
-  // Tenant-scoped "what happened to <entity> within this organization/workspace" lookup.
-  @@index([tenantId, workspaceId, targetType, targetId])
-  // The audit screen: one organization's trail, newest first, keyset-paged on
-  // (createdAt desc, id desc). Without a tenant-leading index carrying the
-  // order, Postgres either walks "AuditLog_createdAt_idx" backwards discarding
-  // every other organization's rows one at a time, or bitmaps the tenant range and
-  // sorts it; both scale with the TOTAL size of the fastest-growing table in
-  // the product rather than with the reader's own slice.
-  //
-  // Serves the `tenantId = $1` arm of the visibility clause only. The second
-  // arm (tenantId IS NULL AND the actor belongs to the tenant, which is how
-  // pre-auth login rows are attributed) is a join no single-table index can
-  // cover; see AuditReadRepository.listPage.
-  @@index([tenantId, createdAt(sort: Desc), id(sort: Desc)])
+  // The admin audit list: the whole trail, newest first, keyset-paged on
+  // (createdAt desc, id desc). Also serves the retention sweep's createdAt
+  // range (a B-tree scans either direction).
+  @@index([createdAt(sort: Desc), id(sort: Desc)])
 }
