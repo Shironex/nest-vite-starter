@@ -1,9 +1,7 @@
 import { useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Palette, Shield, User, Users } from 'lucide-react';
-import { ROLES } from '@repo/shared/permissions';
+import { Palette, Shield, User } from 'lucide-react';
 import { pageTitle } from '@/lib/page-title';
-import { useAuth } from '@/hooks/use-auth';
 import { useSetTopbarSubtitle } from '@/stores/topbar-store';
 import { ProfileSection } from '@/features/settings/components/ProfileSection';
 import { DataExportSection } from '@/features/settings/components/DataExportSection';
@@ -13,7 +11,6 @@ import { DangerZoneSection } from '@/features/settings/components/DangerZoneSect
 import { SettingsShell } from '@/features/settings/components/SettingsShell';
 import type { ISettingsSection } from '@/features/settings/components/SettingsShell';
 import { SecurityCard } from '@/features/two-factor/components/SecurityCard';
-import { MembersSection } from '@/features/admin/components/MembersSection';
 import { ThemeSection } from '@/features/settings/components/ThemeSection';
 import { EmailChangeSection } from '@/features/auth/components/EmailChangeSection';
 import { SETTINGS_SECTION } from '@/features/settings/Settings.constants';
@@ -37,11 +34,11 @@ export const Route = createFileRoute('/_authenticated/settings/')({
 /**
  * `/settings`, composed onto the rail from the design.
  *
- * THE RAIL SHIPS THREE OF THE DESIGN'S SIX ROWS. The mockup lists Profile,
- * Users, Notifications, Security, Billing and Integrations. Notifications,
- * Billing and Integrations (third-party integrations) have no procedure, no schema and no
- * code behind them, so they are absent rather than present-and-empty. A rail
- * row that opens onto a placeholder is a promise the app cannot keep.
+ * THE RAIL SHIPS ONLY ROWS WITH CODE BEHIND THEM. Notifications, Billing and
+ * Integrations have no procedure, no schema and no code behind them, so they
+ * are absent rather than present-and-empty. A rail row that opens onto a
+ * placeholder is a promise the app cannot keep. User administration lives on
+ * its own admin-only page (`/admin`), not in personal settings.
  *
  * ONE ROW THE DESIGN DOES NOT DRAW IS HERE ANYWAY. `Appearance` is real
  * shipped functionality the mockup never covered, the mirror of the case `Layout.nav.ts` documents for the compliance calendar:
@@ -56,10 +53,8 @@ export const Route = createFileRoute('/_authenticated/settings/')({
  * would be a second one competing with it.
  */
 function SettingsPage() {
-  const { user } = useAuth();
   const { section } = Route.useSearch();
   const navigate = useNavigate();
-  const isAdmin = user?.role === ROLES.ADMIN;
 
   // The design puts the strapline under the page TITLE, in the shell topbar,
   // not in the page body. The shell owns that row, so the page publishes into it.
@@ -99,20 +94,6 @@ function SettingsPage() {
       panel: <ThemeSection />,
     },
   ];
-
-  /*
-   * Admin-only, and hiding it is a courtesy rather than the control: every
-   * procedure behind these panels carries AdminMiddleware and the server
-   * refuses regardless of what the rail shows.
-   */
-  if (isAdmin) {
-    sections.splice(1, 0, {
-      id: SETTINGS_SECTION.members,
-      label: settingsStrings.sections.members,
-      icon: Users,
-      panel: <MembersSection />,
-    });
-  }
 
   /*
    * `section` is a one-shot request, not the rail's state: the shell adopts it

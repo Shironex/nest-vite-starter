@@ -1,0 +1,165 @@
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ReactNode } from 'react';
+import { useUsersSection } from './UsersSection.hooks';
+
+const { listUsersFn } = vi.hoisted(() => ({
+  listUsersFn: vi.fn(),
+}));
+
+vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ user: { id: 'u-self' } }) }));
+vi.mock('@/lib/trpc', () => ({
+  trpc: {
+    audit: { list: { pathFilter: () => ({ queryKey: ['audit', 'list'] }) } },
+    user: {
+      listUsers: {
+        queryOptions: (input?: { cursor?: string; limit?: number }) => ({
+          queryKey: ['user', 'listUsers', input],
+          queryFn: () => listUsersFn(input),
+        }),
+      },
+    },
+  },
+}));
+
+function wrapper({ children }: { children: ReactNode }) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+}
+
+const userA = {
+  id: 'u-1',
+  email: 'a@example.com',
+  displayName: 'Alice',
+  role: 'ADMIN',
+  emailVerified: true,
+  lockedUntil: null,
+  createdAt: new Date(),
+  twoFactorEnabled: true,
+  disabledAt: null,
+  status: 'active' as const,
+};
+const userB = {
+  id: 'u-2',
+  email: 'b@example.com',
+  displayName: null,
+  role: 'USER',
+  emailVerified: false,
+  lockedUntil: null,
+  createdAt: new Date(),
+  twoFactorEnabled: false,
+  disabledAt: null,
+  status: 'active' as const,
+};
+
+afterEach(() => vi.clearAllMocks());
+
+describe('useUsersSection', () => {
+  it('holds one page and states the position against the total', async () => {
+    listUsersFn.mockResolvedValue({ items: [userA], nextCursor: 'u-1', total: 2 });
+    const { result } = renderHook(() => useUsersSection(), { wrapper });
+
+    await waitFor(() => expect(result.current.users).toHaveLength(1));
+    expect(result.current.users[0]?.email).toBe('a@example.com');
+    expect(result.current.pagination).toMatchObject({
+      summary: 'Showing 1-1 of 2',
+      hasNext: true,
+      hasPrevious: false,
+    });
+  });
+
+  it('REPLACES the page rather than accumulating it, and can walk back', async () => {
+    listUsersFn.mockResolvedValueOnce({ items: [userA], nextCursor: 'u-1', total: 2 });
+    const { result } = renderHook(() => useUsersSection(), { wrapper });
+    await waitFor(() => expect(result.current.users).toHaveLength(1));
+
+    listUsersFn.mockResolvedValueOnce({ items: [userB], nextCursor: null, total: 2 });
+    act(() => result.current.pagination?.onNext());
+
+    await waitFor(() => expect(result.current.users.map((m) => m.id)).toEqual(['u-2']));
+    expect(result.current.pagination).toMatchObject({
+      summary: 'Showing 51-51 of 2',
+      hasNext: false,
+      hasPrevious: true,
+    });
+
+    // Back is a pop off the visited-cursor stack; a keyset API cannot be asked
+    // for the previous page any other way.
+    listUsersFn.mockResolvedValueOnce({ items: [userA], nextCursor: 'u-1', total: 2 });
+    act(() => result.current.pagination?.onPrevious());
+    await waitFor(() => expect(result.current.users.map((m) => m.id)).toEqual(['u-1']));
+  });
+
+  it('replaces the table while the first page is loading, and when it is empty', async () => {
+    listUsersFn.mockResolvedValue({ items: [], nextCursor: null, total: 0 });
+    const { result } = renderHook(() => useUsersSection(), { wrapper });
+
+    expect(result.current.state).toBe('loading');
+    await waitFor(() => expect(result.current.state).toBe('empty'));
+    // No footer over an empty card: there is no position to state.
+    expect(result.current.pagination).toBeNull();
+  });
+
+  it('tracks the dialog opened for a user and clears it on close', async () => {
+    listUsersFn.mockResolvedValue({ items: [], nextCursor: null, total: 2 });
+    const { result } = renderHook(() => useUsersSection(), { wrapper });
+
+    act(() => result.current.onOpenDialog('resetTwoFactor', userA));
+    expect(result.current.dialogTarget?.kind).toBe('resetTwoFactor');
+    expect(result.current.dialogTarget?.user.id).toBe('u-1');
+
+    act(() => result.current.onCloseDialog());
+    expect(result.current.dialogTarget).toBeNull();
+  });
+
+  it('replaces the open dialog when another action is chosen', async () => {
+    listUsersFn.mockResolvedValue({ items: [], nextCursor: null, total: 2 });
+    const { result } = renderHook(() => useUsersSection(), { wrapper });
+
+    act(() => result.current.onOpenDialog('changeRole', userA));
+    act(() => result.current.onOpenDialog('delete', userB));
+
+    expect(result.current.dialogTarget?.kind).toBe('delete');
+    expect(result.current.dialogTarget?.user.id).toBe('u-2');
+  });
+});
+
+/**
+ * A failed listUsers is a failed read, not an empty user list.
+ *
+ * Without the isError branch the panel rendered "No users found." plus
+ * nothing else while the api was 500ing, i.e. it stated that the app has
+ * no users. Nothing corrected it: the query cache toasts a BACKGROUND
+ * refetch failure only, never an initial load.
+ */
+describe('useUsersSection failure', () => {
+  it('reports a failed load as an error, not as an empty list', async () => {
+    listUsersFn.mockRejectedValue(new Error('boom'));
+    const { result } = renderHook(() => useUsersSection(), { wrapper });
+
+    await waitFor(() => expect(result.current.state).toBe('error'));
+    expect(result.current.state).not.toBe('empty');
+    expect(result.current.users).toEqual([]);
+  });
+
+  it('offers a retry that refetches', async () => {
+    listUsersFn.mockRejectedValueOnce(new Error('boom'));
+    const { result } = renderHook(() => useUsersSection(), { wrapper });
+    await waitFor(() => expect(result.current.state).toBe('error'));
+
+    listUsersFn.mockResolvedValue({ items: [userA, userB], nextCursor: null, total: 2 });
+    act(() => result.current.onRetry());
+
+    await waitFor(() => expect(result.current.state).toBe('ready'));
+    expect(result.current.users).toHaveLength(2);
+  });
+
+  it('hides the pager while the load is failing, so it cannot page a broken list', async () => {
+    listUsersFn.mockRejectedValue(new Error('boom'));
+    const { result } = renderHook(() => useUsersSection(), { wrapper });
+
+    await waitFor(() => expect(result.current.state).toBe('error'));
+    expect(result.current.pagination).toBeNull();
+  });
+});

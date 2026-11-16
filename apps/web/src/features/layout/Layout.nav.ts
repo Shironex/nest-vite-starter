@@ -1,4 +1,4 @@
-import { History, LayoutDashboard, Settings } from 'lucide-react';
+import { LayoutDashboard, Settings, ShieldCheck } from 'lucide-react';
 import { ROLES } from '@repo/shared/permissions';
 import { commonStrings } from '@/lib/strings';
 import { layoutStrings } from './Layout.strings';
@@ -23,14 +23,14 @@ export const NAV_GROUPS: readonly INavGroupConfig[] = [
         icon: LayoutDashboard,
       },
       /*
-       * ADMIN-only like the reminder settings below: hiding the link is a
-       * courtesy, the audit.list procedure's AdminMiddleware is the control.
+       * ADMIN-only: hiding the link is a courtesy, the AdminMiddleware on
+       * every procedure behind the page is the control.
        */
       {
-        title: layoutStrings.nav.audit,
-        pageTitle: commonStrings.pageTitle.audit,
-        href: '/audit',
-        icon: History,
+        title: layoutStrings.nav.admin,
+        pageTitle: commonStrings.pageTitle.admin,
+        href: '/admin',
+        icon: ShieldCheck,
         role: ROLES.ADMIN,
       },
     ],
@@ -49,7 +49,7 @@ export const NAV_GROUPS: readonly INavGroupConfig[] = [
 ];
 
 /**
- * Segment-aware match, so `/audit/a-1` lights up `/audit` while `/settings`
+ * Segment-aware match, so `/admin/a-1` lights up `/admin` while `/settings`
  * stays dark on `/settings-archive`. A bare `startsWith` would match a sibling
  * route that merely shares a name prefix.
  */

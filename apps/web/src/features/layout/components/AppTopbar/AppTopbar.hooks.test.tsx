@@ -26,7 +26,7 @@ describe('useAppTopbar', () => {
   });
 
   it('resolves a nested route to its parent entry', () => {
-    expect(titleFor('/audit/a-1')).toBe(commonStrings.pageTitle.audit);
+    expect(titleFor('/admin/a-1')).toBe(commonStrings.pageTitle.admin);
   });
 
   it('prefers the deepest matching entry', () => {

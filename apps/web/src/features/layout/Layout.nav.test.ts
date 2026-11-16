@@ -6,15 +6,15 @@ import { NAV_GROUPS, findNavItemForPath, isActivePath } from './Layout.nav';
 
 describe('isActivePath', () => {
   it('matches the route exactly', () => {
-    expect(isActivePath('/audit', '/audit')).toBe(true);
+    expect(isActivePath('/admin', '/admin')).toBe(true);
   });
 
   it('matches a nested route', () => {
-    expect(isActivePath('/audit/a-1', '/audit')).toBe(true);
+    expect(isActivePath('/admin/a-1', '/admin')).toBe(true);
   });
 
   it('does not match a sibling that merely shares a prefix', () => {
-    expect(isActivePath('/audit-archive', '/audit')).toBe(false);
+    expect(isActivePath('/admin-archive', '/admin')).toBe(false);
   });
 
   it('does not match an unrelated route', () => {
@@ -24,7 +24,7 @@ describe('isActivePath', () => {
 
 describe('findNavItemForPath', () => {
   it('finds the entry owning the route', () => {
-    expect(findNavItemForPath('/audit/a-1')?.href).toBe('/audit');
+    expect(findNavItemForPath('/admin/a-1')?.href).toBe('/admin');
   });
 
   it('returns null outside the nav', () => {
@@ -53,14 +53,14 @@ describe('NAV_GROUPS', () => {
   });
 
   /**
-   * `audit.list` carries `AdminMiddleware`, so the link is hidden from a USER:
+   * Every admin procedure carries `AdminMiddleware`, so the link is hidden from a USER:
    * a link to a screen the server refuses is worse than no link.
    */
-  it('gates the audit log to admins', () => {
-    const audit = NAV_GROUPS.flatMap((group) => group.items).find((item) => item.href === '/audit');
+  it('gates the admin page to admins', () => {
+    const admin = NAV_GROUPS.flatMap((group) => group.items).find((item) => item.href === '/admin');
 
-    expect(audit).toBeDefined();
-    expect(audit?.role).toBe('ADMIN');
+    expect(admin).toBeDefined();
+    expect(admin?.role).toBe('ADMIN');
   });
 
   /**

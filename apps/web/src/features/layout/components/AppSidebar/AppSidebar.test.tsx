@@ -12,7 +12,7 @@ vi.mock('./AppSidebar.hooks', () => ({
         label: 'Main',
         items: [
           { title: 'Dashboard', href: '/dashboard', icon: () => null, isActive: true },
-          { title: 'Audit log', href: '/audit', icon: () => null, isActive: false },
+          { title: 'Admin', href: '/admin', icon: () => null, isActive: false },
         ],
       },
       {
@@ -39,7 +39,7 @@ describe('AppSidebar', () => {
   it('renders every nav item supplied by the hook', () => {
     renderSidebar();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Audit log')).toBeInTheDocument();
+    expect(screen.getByText('Admin')).toBeInTheDocument();
   });
 
   it('renders each group under its own heading', () => {
@@ -63,7 +63,7 @@ describe('AppSidebar', () => {
   it('marks only the active entry with aria-current', () => {
     renderSidebar();
     const active = screen.getByText('Dashboard').closest('a');
-    const inactive = screen.getByText('Audit log').closest('a');
+    const inactive = screen.getByText('Admin').closest('a');
     expect(active).toHaveAttribute('aria-current', 'page');
     expect(inactive).not.toHaveAttribute('aria-current');
   });

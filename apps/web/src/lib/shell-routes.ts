@@ -57,4 +57,4 @@ export function pendingSkeletonForPath(pathname: string): PageSkeletonVariant {
 }
 
 /** Surfaces that are a table or a roster. */
-const LIST_PATH_PREFIXES = ['/audit'] as const;
+const LIST_PATH_PREFIXES = ['/admin'] as const;

@@ -90,7 +90,7 @@ export const commonStrings = {
     confirmEmailChange: 'Change email address',
     twoFactor: 'Two-factor verification',
     dashboard: 'Dashboard',
-    audit: 'Audit log',
+    admin: 'Admin',
     settings: 'Settings',
   },
 } as const;

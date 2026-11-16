@@ -5,7 +5,7 @@ export const layoutStrings = {
     groupMain: 'Main',
     groupSettings: 'Settings',
     dashboard: 'Dashboard',
-    audit: 'Audit log',
+    admin: 'Admin',
     settings: 'Settings',
   },
   userMenu: {

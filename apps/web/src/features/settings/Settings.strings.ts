@@ -4,7 +4,6 @@ export const settingsStrings = {
   subtitle: 'Account and app preferences',
   sections: {
     profile: 'Profile',
-    members: 'Members',
     security: 'Security',
     appearance: 'Appearance',
   },

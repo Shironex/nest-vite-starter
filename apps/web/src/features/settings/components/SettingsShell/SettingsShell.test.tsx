@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { Shield, User, Users } from 'lucide-react';
+import { Palette, Shield, User } from 'lucide-react';
 import { describe, expect, it } from 'vitest';
 import SettingsShell from './SettingsShell';
 import type { ISettingsSection } from './SettingsShell.types';
@@ -7,7 +7,7 @@ import type { ISettingsSection } from './SettingsShell.types';
 const SECTIONS: ISettingsSection[] = [
   { id: 'profile', label: 'Profile', icon: User, panel: <p>Profile panel</p> },
   { id: 'security', label: 'Security', icon: Shield, panel: <p>Security panel</p> },
-  { id: 'members', label: 'Members', icon: Users, panel: <p>Members panel</p> },
+  { id: 'appearance', label: 'Appearance', icon: Palette, panel: <p>Appearance panel</p> },
 ];
 
 describe('SettingsShell', () => {
@@ -61,17 +61,17 @@ describe('SettingsShell', () => {
   it('keeps a manual selection while the initial section is unchanged', () => {
     const { rerender } = render(<SettingsShell sections={SECTIONS} initialSectionId="security" />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Members' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
     rerender(<SettingsShell sections={SECTIONS} initialSectionId="security" />);
 
-    expect(screen.getByText('Members panel')).toBeInTheDocument();
+    expect(screen.getByText('Appearance panel')).toBeInTheDocument();
   });
 
   it('mounts only the selected panel', () => {
     render(<SettingsShell sections={SECTIONS} />);
 
     expect(screen.queryByText('Security panel')).not.toBeInTheDocument();
-    expect(screen.queryByText('Members panel')).not.toBeInTheDocument();
+    expect(screen.queryByText('Appearance panel')).not.toBeInTheDocument();
   });
 
   it('swaps the panel when another row is pressed', () => {
@@ -88,20 +88,20 @@ describe('SettingsShell', () => {
   });
 
   /*
-   * The admin-only row arrives after the first render, so a
+   * The section list is the caller's to change between renders, so a
    * selection can outlive the row that produced it. Falling back to the first
    * row is what keeps the panel area from going blank.
    */
   it('falls back to the first row when the selected section disappears', () => {
     const { rerender } = render(<SettingsShell sections={SECTIONS} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Members' }));
-    expect(screen.getByText('Members panel')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
+    expect(screen.getByText('Appearance panel')).toBeInTheDocument();
 
     rerender(<SettingsShell sections={SECTIONS.slice(0, 2)} />);
 
     expect(screen.getByText('Profile panel')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Members' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Appearance' })).not.toBeInTheDocument();
   });
 
   it('renders nothing when there is no section to show', () => {

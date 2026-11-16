@@ -9,16 +9,16 @@ import { commonStrings } from './strings';
  */
 describe('pageTitle', () => {
   it('names the page from the strings table and keeps the product on the end', () => {
-    expect(pageTitle(commonStrings.pageTitle.audit)).toEqual({
-      meta: [{ title: `${commonStrings.pageTitle.audit} | ${PRODUCT_NAME}` }],
+    expect(pageTitle(commonStrings.pageTitle.admin)).toEqual({
+      meta: [{ title: `${commonStrings.pageTitle.admin} | ${PRODUCT_NAME}` }],
     });
   });
 
   it('uses the same keys the topbar heading reads', () => {
-    // findNavItemForPath resolves /audit to `commonStrings.pageTitle.audit`; the tab title and
+    // findNavItemForPath resolves /admin to `commonStrings.pageTitle.admin`; the tab title and
     // the visible <h1> must not be able to say different things.
-    expect(pageTitle(commonStrings.pageTitle.audit).meta[0]?.title).toBe(
-      `${commonStrings.pageTitle.audit} | ${PRODUCT_NAME}`,
+    expect(pageTitle(commonStrings.pageTitle.admin).meta[0]?.title).toBe(
+      `${commonStrings.pageTitle.admin} | ${PRODUCT_NAME}`,
     );
   });
 

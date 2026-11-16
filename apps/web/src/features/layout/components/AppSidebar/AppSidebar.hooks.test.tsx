@@ -32,14 +32,14 @@ describe('useAppSidebar', () => {
     expect(hrefs()).toEqual(['/dashboard', '/settings']);
   });
 
-  it('adds the admin-only audit log for an admin', () => {
+  it('adds the admin-only admin page for an admin', () => {
     user.current = { role: ROLES.ADMIN };
-    expect(hrefs()).toContain('/audit');
+    expect(hrefs()).toContain('/admin');
   });
 
   it('hides the admin-only entry from a signed-out reader', () => {
     user.current = null;
-    expect(hrefs()).not.toContain('/audit');
+    expect(hrefs()).not.toContain('/admin');
   });
 
   it('marks the entry for the current route active', () => {
