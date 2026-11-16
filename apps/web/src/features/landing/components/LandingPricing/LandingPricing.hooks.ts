@@ -29,7 +29,7 @@ const PLANS: IPricingPlan[] = [
     features: [
       'Everything in Starter',
       'Multiple organizations',
-      'Invitations and roles',
+      'Roles and access',
       'Audit log',
       'Priority support',
     ],

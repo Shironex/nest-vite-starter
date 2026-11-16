@@ -9,7 +9,7 @@ const ITEMS: IFaqItem[] = [
   {
     question: 'What is included out of the box?',
     answer:
-      'Accounts with email verification and Google sign-in, two-factor authentication, organizations with role-based access, team invitations and an audit log.',
+      'Accounts with email verification, two-factor authentication, organizations with role-based access and an audit log.',
   },
   {
     question: 'Can I import data from another tool?',
@@ -25,10 +25,6 @@ const ITEMS: IFaqItem[] = [
     question: 'How is my data kept apart from other customers?',
     answer:
       'Every record belongs to one organization, and the data layer scopes every query to it, so one customer cannot read the records of another.',
-  },
-  {
-    question: 'Is there a desktop app?',
-    answer: 'Yes. The same app also ships as a desktop build that keeps itself up to date.',
   },
 ];
 

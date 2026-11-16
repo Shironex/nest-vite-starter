@@ -20,7 +20,7 @@ describe('LandingFeatures', () => {
   it('gives the signature cell the inverted surface and the first cell the brand tint', () => {
     render(<LandingFeatures />);
 
-    const signature = screen.getByRole('heading', { name: 'Web and desktop' }).closest('li');
+    const signature = screen.getByRole('heading', { name: 'Session control' }).closest('li');
     const tint = screen.getByRole('heading', { name: 'Accounts and sessions' }).closest('li');
     const plain = screen.getByRole('heading', { name: 'Organizations' }).closest('li');
 

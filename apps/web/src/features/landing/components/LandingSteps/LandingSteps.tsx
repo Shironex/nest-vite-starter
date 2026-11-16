@@ -36,7 +36,7 @@ export default function LandingSteps() {
               From sign-up to a working team in minutes.
             </h2>
             <p className="mt-4 type-body-regular text-text-muted">
-              No onboarding project and no training. Sign up, invite people and get to work.
+              No onboarding project and no training. Sign up, set up and get to work.
             </p>
           </div>
 

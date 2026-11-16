@@ -17,7 +17,7 @@ const CELLS: IFeatureCell[] = [
     icon: KeyRound,
     title: 'Accounts and sessions',
     description:
-      'Email sign-up with verification, Google sign-in, server-side sessions and Argon2id password hashing.',
+      'Email sign-up with verification, server-side sessions and Argon2id password hashing.',
     variant: 'tint',
   },
   {
@@ -50,8 +50,8 @@ const CELLS: IFeatureCell[] = [
   },
   {
     icon: MonitorSmartphone,
-    title: 'Web and desktop',
-    description: 'The same app runs in the browser and as a desktop build that updates itself.',
+    title: 'Session control',
+    description: 'See every device signed in to your account and sign the others out in one step.',
     variant: 'signature',
   },
 ];
