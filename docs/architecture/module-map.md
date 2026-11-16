@@ -54,15 +54,15 @@ an edge you did not expect can be opened rather than argued about.
 
 | Directory    | Purpose                                                                                                          | Files | Fan-out | Fan-in |
 | ------------ | ---------------------------------------------------------------------------------------------------------------- | ----- | ------- | ------ |
-| `admin`      | Organization member management: roles, lockout, two-factor reset and deletion.                                   | 28    | 1       | 0      |
+| `admin`      | Organization member management: roles, lockout, two-factor reset and deletion.                                   | 29    | 1       | 0      |
 | `audit`      | Audit log browser with filters and per-entry detail.                                                             | 21    | 1       | 0      |
 | `auth`       | Sign in, register, verify, reset password and the Turnstile challenge.                                           | 63    | 1       | 0      |
 | `dashboard`  | The authenticated landing page and its widgets.                                                                  | 6     | 0       | 0      |
 | `landing`    | The public marketing page.                                                                                       | 37    | 0       | 0      |
-| `layout`     | Authenticated app shell: sidebar, top bar, organization identity and user menu.                                  | 18    | 0       | 0      |
-| `settings`   | Profile, password, sessions, GDPR export, theme and account deletion.                                            | 30    | 1       | 0      |
+| `layout`     | Authenticated app shell: sidebar, top bar, organization identity and user menu.                                  | 19    | 0       | 0      |
+| `settings`   | Profile, password, sessions, GDPR export, theme and account deletion.                                            | 31    | 1       | 0      |
 | `shared`     | Components used by more than one domain.                                                                         | 17    | 0       | 5      |
-| `two-factor` | TOTP enrollment, the challenge screen and recovery codes.                                                        | 26    | 0       | 0      |
+| `two-factor` | TOTP enrollment, the challenge screen and recovery codes.                                                        | 27    | 0       | 0      |
 | `workspace`  | Platform Organization -> Workspace tier: the Workspaces screen, the Workspace picker and the create/edit dialog. | 15    | 1       | 0      |
 
 ### Cross-directory edges in `apps/web/src/features`
@@ -72,8 +72,8 @@ an edge you did not expect can be opened rather than argued about.
 
 | From        | To       | Imports | First witness                                                                           |
 | ----------- | -------- | ------- | --------------------------------------------------------------------------------------- |
-| `admin`     | `shared` | 1       | `apps/web/src/features/admin/components/MembersSection/MembersSection.hooks.ts:5`       |
+| `admin`     | `shared` | 1       | `apps/web/src/features/admin/components/MembersSection/MembersSection.hooks.ts:4`       |
 | `audit`     | `shared` | 3       | `apps/web/src/features/audit/components/AuditLogFilters/AuditLogFilters.tsx:3`          |
-| `auth`      | `shared` | 2       | `apps/web/src/features/auth/components/RegisterForm/RegisterForm.tsx:3`                 |
-| `settings`  | `shared` | 1       | `apps/web/src/features/settings/components/PasswordSection/PasswordSection.tsx:7`       |
+| `auth`      | `shared` | 2       | `apps/web/src/features/auth/components/RegisterForm/RegisterForm.tsx:2`                 |
+| `settings`  | `shared` | 1       | `apps/web/src/features/settings/components/PasswordSection/PasswordSection.tsx:6`       |
 | `workspace` | `shared` | 1       | `apps/web/src/features/workspace/components/WorkspaceListPage/WorkspaceListPage.tsx:11` |

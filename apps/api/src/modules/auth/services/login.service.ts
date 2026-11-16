@@ -85,7 +85,7 @@ export class LoginService {
        *
        * INVALID_CREDENTIALS rather than the generic UNAUTHORIZED, and all three
        * refusals below use it too. The code is what the web renders copy from
-       * now that `translateAppError` prefers the catalog over the server's
+       * now that `translateAppError` prefers the strings table over the server's
        * English sentence, and UNAUTHORIZED reads "Sign in to perform this
        * action.", which is what the person is already trying to do. It leaks
        * nothing: unknown email, wrong password and ended membership are all

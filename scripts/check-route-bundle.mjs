@@ -7,7 +7,7 @@
  * heavy route pulls are hash-named and named after their own source modules,
  * so no glob can express them. The size-limit entries in
  * `apps/web/.size-limit.json` gate each route's OWN chunks, which is the thing
- * that regresses when a route pulls a catalog or a library eagerly, and each entry's
+ * that regresses when a route pulls a large module or a library eagerly, and each entry's
  * name says so rather than implying more. This is the number those entries
  * cannot state.
  *

@@ -72,7 +72,7 @@ The subsystems covered, written from the code rather than from memory:
 | `queues.md`            | BullMQ registration, job context and processors                    |
 
 Subsystems deliberately NOT covered yet, because nobody has read them closely enough to write a
-manifest that is a record rather than a guess: mail delivery and the web i18n and routing
+manifest that is a record rather than a guess: mail delivery and the web routing
 conventions.
 
 ## Unenforced invariants

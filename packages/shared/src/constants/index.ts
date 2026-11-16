@@ -11,12 +11,12 @@ export * from './list-limits.js';
 
 /**
  * The BCP 47 locale every date, number and money formatter defaults to: the web
- * formatters in `apps/web/src/lib/i18n/format.ts`, the web `DateField` (month
+ * formatters in `apps/web/src/lib/format.ts`, the web `DateField` (month
  * and weekday names, and the order a date is typed in) and anything the api
  * renders for a person to read.
  *
  * One constant rather than an env key because it is a build-time property of
- * the product copy, like the English catalogs it sits next to: change it here
+ * the product copy, like the English strings tables it sits next to: change it here
  * (to `en-GB` for day-first dates, say) and every formatter follows. A product
  * that grows a language switcher derives it from the active language instead.
  */

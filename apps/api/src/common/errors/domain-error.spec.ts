@@ -19,7 +19,7 @@ describe('DomainError subclasses', () => {
     expect(error.code).toBe(code);
     expect(error.appCode).toBe(appCode);
     // With no message the message IS the code, which is what the web reads
-    // when the catalog has no sentence for it.
+    // when the web strings table has no sentence for it.
     expect(error.message).toBe(appCode);
   });
 
