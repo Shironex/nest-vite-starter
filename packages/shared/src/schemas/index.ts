@@ -85,9 +85,6 @@ export {
 export {
   AUDIT_LOG_LIST_DEFAULT_LIMIT,
   AUDIT_LOG_LIST_MAX_LIMIT,
-  AUDIT_LOG_MAX_RANGE_DAYS,
-  AUDIT_LOG_MAX_ACTIONS,
-  auditActionSchema,
   auditLogListInput,
   auditLogListOutput,
   type AuditLogListInput,

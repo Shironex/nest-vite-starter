@@ -10,9 +10,9 @@ const buildSubject = () => {
 };
 
 describe('AuditReadService', () => {
-  it('hands the filters to the repository unchanged', async () => {
+  it('hands the page request to the repository unchanged', async () => {
     const { service, repository } = buildSubject();
-    await service.list({ limit: 25, actorId: 'u-1' });
-    expect(repository.listPage).toHaveBeenCalledWith({ limit: 25, actorId: 'u-1' });
+    await service.list({ limit: 25, cursor: 'a-25' });
+    expect(repository.listPage).toHaveBeenCalledWith({ limit: 25, cursor: 'a-25' });
   });
 });

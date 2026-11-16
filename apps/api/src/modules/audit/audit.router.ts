@@ -18,9 +18,8 @@ export class AuditRouter {
   constructor(private readonly auditReadService: AuditReadService) {}
 
   /**
-   * One keyset page of the audit history, newest first (admin only).
-   * Filters: actor, event types (OR set), date range. No free-text search by
-   * design.
+   * One keyset page of the audit history, newest first (admin only). No
+   * filters, no search and no export: the admin list is a plain feed.
    */
   @Query({ input: auditLogListInput, output: auditLogListOutput })
   @UseMiddlewares(AuthMiddleware, AdminMiddleware)

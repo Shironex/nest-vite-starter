@@ -25,13 +25,3 @@
 
 export const AUDIT_LOG_LIST_DEFAULT_LIMIT = 25;
 export const AUDIT_LOG_LIST_MAX_LIMIT = 100;
-
-/**
- * Longest date range one list call may ask for, to bound the scan. Generous on
- * purpose: default retention keeps 365 days, and an inspection question ("every
- * reveal last year") must fit in one filter set.
- */
-export const AUDIT_LOG_MAX_RANGE_DAYS = 400;
-
-/** How many actions one quick filter / multi-select may OR together. */
-export const AUDIT_LOG_MAX_ACTIONS = 20;

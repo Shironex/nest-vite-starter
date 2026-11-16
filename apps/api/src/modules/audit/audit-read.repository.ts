@@ -1,15 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import type { Prisma } from '@repo/database' with { 'resolution-mode': 'import' };
 import type { AuditLogItem } from '@repo/shared/schemas';
 import { BaseRepository } from '../../common/database/base.repository';
 import { PrismaService } from '../../common/database/prisma.service';
 import { idCursorArgs, pageByIdCursor } from '../../common/utils/cursor-page';
 
 export interface IAuditLogListParams {
-  readonly actorId?: string | undefined;
-  readonly actions?: readonly string[] | undefined;
-  readonly from?: Date | undefined;
-  readonly to?: Date | undefined;
   readonly cursor?: string | undefined;
   readonly limit: number;
 }
@@ -20,23 +15,15 @@ export interface IAuditLogListPage {
 }
 
 /**
- * The wire projection. `before`/`after`/`metadata` ride along verbatim (they
- * are what the screen exists to show); the credential-ish columns the row does
- * NOT carry (there are none) make an allowlist cheap insurance against future
- * additions.
+ * The wire projection, an allowlist: only what the list renders. Snapshots,
+ * metadata, IP address and user agent stay in the table, so a column added to
+ * AuditLog later never reaches the wire by default.
  */
 const LIST_SELECT = {
   id: true,
   action: true,
   targetType: true,
   targetId: true,
-  before: true,
-  after: true,
-  metadata: true,
-  reason: true,
-  ipAddress: true,
-  userAgent: true,
-  correlationId: true,
   success: true,
   createdAt: true,
   user: { select: { id: true, email: true, displayName: true } },
@@ -49,9 +36,9 @@ export class AuditReadRepository extends BaseRepository {
   }
 
   /**
-   * List one keyset page of the audit trail, newest first. The caller is an
-   * admin (the router is admin-gated), and in a single-user-account app an
-   * admin reads the whole trail.
+   * List one keyset page of the audit trail, newest first, unfiltered. The
+   * caller is an admin (the router is admin-gated), and an admin reads the
+   * whole trail.
    *
    * Pagination: keyset on the unique `id` (Prisma `cursor` + `skip: 1`),
    * ordered `createdAt desc, id desc`. The id tiebreaker keeps the cursor
@@ -59,27 +46,9 @@ export class AuditReadRepository extends BaseRepository {
    * presence of a next page is known without a COUNT.
    */
   async listPage(params: IAuditLogListParams): Promise<IAuditLogListPage> {
-    const { actorId, actions, from, to, cursor, limit } = params;
-
-    // Every filter is ANDed, so none can widen another.
-    const clauses: Prisma.AuditLogWhereInput[] = [];
-    if (actorId !== undefined) {
-      clauses.push({ userId: actorId });
-    }
-    if (actions !== undefined) {
-      clauses.push({ action: { in: [...actions] } });
-    }
-    if (from !== undefined || to !== undefined) {
-      clauses.push({
-        createdAt: {
-          ...(from !== undefined && { gte: from }),
-          ...(to !== undefined && { lte: to }),
-        },
-      });
-    }
+    const { cursor, limit } = params;
 
     const rows = await this.client.auditLog.findMany({
-      where: { AND: clauses },
       select: LIST_SELECT,
       orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
       take: limit + 1,

@@ -21,13 +21,6 @@ const row = (id: string, overrides: Record<string, unknown> = {}) => ({
   action: 'user.role.changed',
   targetType: 'User',
   targetId: 'u-2',
-  before: { role: 'USER' },
-  after: { role: 'ADMIN' },
-  metadata: null,
-  reason: null,
-  ipAddress: '10.0.0.1',
-  userAgent: 'jest',
-  correlationId: 'req-1',
   success: true,
   createdAt: new Date('2026-01-01T00:00:00Z'),
   user: { id: 'u-1', email: 'a@example.com', displayName: 'A' },
@@ -35,32 +28,16 @@ const row = (id: string, overrides: Record<string, unknown> = {}) => ({
 });
 
 describe('AuditReadRepository', () => {
-  it('sends no clause at all when no filter is set: an admin reads the whole trail', async () => {
+  it('reads the whole trail with no where clause and only the listed columns', async () => {
     const { repo, findMany } = await buildSubject();
     await repo.listPage({ limit: 25 });
 
     expect(findMany).toHaveBeenCalledTimes(1);
-    expect(findMany.mock.calls[0][0].where).toEqual({ AND: [] });
-  });
-
-  it('ANDs every filter', async () => {
-    const { repo, findMany } = await buildSubject();
-    const from = new Date('2026-01-01T00:00:00Z');
-    const to = new Date('2026-01-31T00:00:00Z');
-    await repo.listPage({
-      limit: 25,
-      actorId: 'u-9',
-      actions: ['auth.login.failure', 'auth.login.locked'],
-      from,
-      to,
-    });
-
     const args = findMany.mock.calls[0][0];
-    expect(args.where.AND).toEqual([
-      { userId: 'u-9' },
-      { action: { in: ['auth.login.failure', 'auth.login.locked'] } },
-      { createdAt: { gte: from, lte: to } },
-    ]);
+    expect(args).not.toHaveProperty('where');
+    expect(Object.keys(args.select).sort()).toEqual(
+      ['action', 'createdAt', 'id', 'success', 'targetId', 'targetType', 'user'].sort(),
+    );
   });
 
   it('orders newest first with the id tiebreaker and pages by keyset cursor', async () => {
