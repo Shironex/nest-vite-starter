@@ -6,8 +6,7 @@
     "src/types/*.d.ts",
     "e2e/**/*.spec.ts",
     "e2e/**/*.setup.ts",
-    "src/**/*.{test,spec}.{ts,tsx}",
-    "src/**/*.stories.tsx"
+    "src/**/*.{test,spec}.{ts,tsx}"
   ],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": [

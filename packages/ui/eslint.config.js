@@ -3,7 +3,7 @@ import { config as reactArchitectureConfig } from '@repo/eslint-config/react-arc
 
 /** @type {import("eslint").Linter.Config[]} */
 export default [
-  { ignores: ['storybook-static/**', 'dist/**', 'node_modules/**'] },
+  { ignores: ['dist/**', 'node_modules/**'] },
   ...reactConfig,
   // Activates only `interface-prefix-i` here: @repo/ui has no `src/features/`
   // dir, so the structural component-folder rules stay inert.
@@ -29,14 +29,6 @@ export default [
     files: ['src/components/date-field.tsx'],
     rules: {
       'jsx-a11y/no-static-element-interactions': 'off',
-    },
-  },
-  {
-    files: ['**/*.stories.{ts,tsx}', '**/.storybook/**/*.{ts,tsx}'],
-    rules: {
-      // Storybook story render functions and decorators legitimately call hooks inline.
-      'react-hooks/rules-of-hooks': 'off',
-      'react/no-unescaped-entities': 'off',
     },
   },
 ];

@@ -221,9 +221,3 @@ An `onConfirm` that returns a promise disables both buttons until it settles.
 The library defaults are English, matching the rest of `@repo/ui`. Screens pass
 their catalog copy through the props, for example `label={t('actions.close')}`,
 `confirmLabel={t('actions.delete')}`, `cancelLabel={t('actions.cancel')}`.
-
-## Where to look
-
-Storybook: **Starter / Overlays**, stories `DrawerWithDoubleSheet`,
-`SheetWithoutDrawer` and `DeleteConfirmation`.
-Run `pnpm --filter @repo/ui storybook`.

@@ -9,8 +9,8 @@ shape the codebase must keep, not a suggestion.
 
 Each top-level folder under `src/features/` is a domain. The list is **generated**, not kept here:
 the table in this README once named seven domains while seventeen directories shipped, so the
-inventory now lives on the Module Map page in `apps/docs`
-(`apps/docs/src/content/docs/architecture/module-map.md`), with one hand-written purpose line per
+inventory now lives on the Module Map page
+(`docs/architecture/module-map.md`), with one hand-written purpose line per
 domain, the file counts, and every cross-domain import with a `file:line` witness. Regenerate it
 with `pnpm generate:arch-map`; `lint:meta` fails when it is stale or when a new domain has no
 purpose line in `tools/arch/registry.ts`.
@@ -30,7 +30,6 @@ LoginForm/
   LoginForm.tsx          # thin presentational shell (the default export)
   LoginForm.hooks.ts     # all state, effects, queries, mutations, store reads
   LoginForm.types.ts     # I-prefixed interfaces (ILoginFormView, ...)
-  LoginForm.stories.tsx  # Storybook stories
   LoginForm.test.tsx     # component test
   index.ts               # barrel: re-exports the default + the types
 ```

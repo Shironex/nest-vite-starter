@@ -36,9 +36,9 @@ if (target === 'ui') {
 }
 
 // ---------------------------------------------------------------------------
-// Feature component: the 6-file folder convention under apps/web, as
-// apps/web/src/features/README.md defines it (shell, hooks, types, stories,
-// test, barrel).
+// Feature component: the 5-file folder convention under apps/web, as
+// apps/web/src/features/README.md defines it (shell, hooks, types, test,
+// barrel).
 // ---------------------------------------------------------------------------
 
 function generateFeatureComponent(feature: string, rawName: string): void {
@@ -57,7 +57,6 @@ function generateFeatureComponent(feature: string, rawName: string): void {
   writeNew(`${dir}/${name}.tsx`, componentShell(name, kebab, i18n));
   writeNew(`${dir}/${name}.hooks.ts`, componentHooks(name, i18n));
   writeNew(`${dir}/${name}.types.ts`, componentTypes(name));
-  writeNew(`${dir}/${name}.stories.tsx`, componentStories(name, feature));
   writeNew(`${dir}/${name}.test.tsx`, componentTest(name, i18n?.title ?? name));
   writeNew(`${dir}/index.ts`, componentBarrel(name));
 
@@ -170,23 +169,6 @@ function componentTypes(name: string): string {
   return `export interface I${name}View {
   readonly label: string;
 }
-`;
-}
-
-function componentStories(name: string, feature: string): string {
-  return `import type { Meta, StoryObj } from '@storybook/react-vite';
-import ${name} from './${name}';
-
-const meta: Meta<typeof ${name}> = {
-  title: '${feature}/${name}',
-  component: ${name},
-};
-
-export default meta;
-
-type Story = StoryObj<typeof ${name}>;
-
-export const Default: Story = {};
 `;
 }
 

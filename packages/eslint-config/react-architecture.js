@@ -29,7 +29,7 @@ const FEATURE_FILES = ['src/features/**/*.{ts,tsx}'];
  * -feature rules must not gate them. The component-only rules already key off a
  * single-segment PascalCase `.tsx`, so these sidecars are doubly safe.
  */
-const SIDECAR_FILES = ['src/features/**/*.stories.{ts,tsx}', 'src/features/**/*.test.{ts,tsx}'];
+const SIDECAR_FILES = ['src/features/**/*.test.{ts,tsx}'];
 
 const COMPONENT_IGNORE_PATHS = ['**/packages/ui/**', '**/components/ui/**'];
 
@@ -69,7 +69,11 @@ export const config = [
     rules: {
       'architecture/component-folder-structure': [
         'error',
-        { componentRoot: 'src/features', ignorePaths: COMPONENT_IGNORE_PATHS },
+        {
+          componentRoot: 'src/features',
+          requiredSiblings: ['.hooks.ts', '.types.ts', '.test.tsx', 'index.ts'],
+          ignorePaths: COMPONENT_IGNORE_PATHS,
+        },
       ],
       'architecture/no-cross-feature-imports': [
         'error',

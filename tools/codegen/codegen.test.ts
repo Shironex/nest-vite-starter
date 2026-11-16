@@ -28,7 +28,7 @@ function stripAnsi(text: string): string {
  *
  * `new-feature.ts` and `new-component.ts` encode conventions that keep moving
  * (the tRPC option proxy, `pathKey()` invalidation, `route-i18n-side-effect`
- * placement, the six-file sibling set). Nothing imported them, so nothing failed
+ * placement, the five-file sibling set). Nothing imported them, so nothing failed
  * when a convention moved underneath them, and the first person to notice would
  * be whoever ran `pnpm new:feature` next. A generator that imports a missing
  * helper makes every generated resource fail type-check, and nobody notices
@@ -225,7 +225,6 @@ describe('codegen generators', () => {
 
     assert.deepEqual(readdirSync(join(root, componentPath)).sort(), [
       `${component}.hooks.ts`,
-      `${component}.stories.tsx`,
       `${component}.test.tsx`,
       `${component}.tsx`,
       `${component}.types.ts`,
@@ -303,14 +302,14 @@ describe('codegen generators', () => {
     const added = metaViolations().filter((violation) => !baseline.has(fingerprint(violation)));
 
     /*
-     * The follow-ups the generator prints, and only those. No generator writes
-     * product docs, so a new feature directory needs a row in the web features
-     * inventory and a purpose line in tools/arch/registry.ts; the map is stale
-     * until both land and `pnpm generate:arch-map` runs.
+     * The follow-up the generator prints, and only that. No generator writes
+     * product docs, so a new feature directory needs a purpose line in
+     * tools/arch/registry.ts; the map is stale until it lands and
+     * `pnpm generate:arch-map` runs.
      */
     assert.deepEqual(
       [...new Set(added.map((violation) => violation.rule))].sort(),
-      ['arch-map-fresh', 'docs-feature-inventory-complete'],
+      ['arch-map-fresh'],
       `Unexpected lint:meta violations:\n${added.map((v) => `${v.rule}: ${v.message}`).join('\n')}`,
     );
     assert.ok(

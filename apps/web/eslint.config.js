@@ -102,15 +102,6 @@ export default [
     },
   },
   {
-    // Storybook story render functions and decorators legitimately call hooks
-    // inline and embed copy with apostrophes.
-    files: ['**/*.stories.{ts,tsx}', '.storybook/**/*.{ts,tsx}'],
-    rules: {
-      'react-hooks/rules-of-hooks': 'off',
-      'react/no-unescaped-entities': 'off',
-    },
-  },
-  {
     // The '@api' Vite alias points at ../api/src and exists ONLY so the tRPC
     // client can `import type { AppRouter }`. A value import would pull NestJS
     // server code (and its node-only dependency graph) into the browser bundle.
