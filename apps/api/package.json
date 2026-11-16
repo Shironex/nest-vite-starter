@@ -28,6 +28,7 @@
     "test:cov": "jest --coverage",
     "test:cov:check": "jest --coverage && node ../../scripts/check-coverage.mjs ./coverage/coverage-summary.json --lines 85 --functions 82",
     "knip": "knip",
+    "user:promote": "tsx src/cli/user-promote.ts",
     "check": "pnpm check-types && pnpm lint && pnpm knip && pnpm -w lint:meta && pnpm -w check:lint-meta-docs"
   },
   "dependencies": {
