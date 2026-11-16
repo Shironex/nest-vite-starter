@@ -159,7 +159,7 @@ describe('config-surface-complete', () => {
         [JOI]: JOI_SOURCE.replace('}).and(', '  JOI_ONLY: Joi.string().optional(),\n}).and('),
         'apps/web/src/lib/env.ts': 'export const X = import.meta.env.VITE_NEW_THING;\n',
         'docker-compose.yml': COMPOSE.replace('image: mailpit', 'image: mailpit:${MAILPIT_TAG}'),
-        'apps/desktop/src/main/index.ts': "const url = process.env['DESKTOP_ONLY'];\n",
+        'apps/api/src/main.ts': "const url = process.env['DESKTOP_ONLY'];\n",
       });
       for (const key of ['JOI_ONLY', 'VITE_NEW_THING', 'MAILPIT_TAG', 'DESKTOP_ONLY']) {
         assert.ok(

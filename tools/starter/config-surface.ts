@@ -13,21 +13,16 @@ const JOI_SCHEMA = 'apps/api/src/config/configuration.config.ts';
 /** `env-no-direct-import-meta-env` already makes this the only reader of `VITE_*` in the SPA. */
 const WEB_ENV_MODULE = 'apps/web/src/lib/env.ts';
 const VITE_CONFIG = 'apps/web/vite.config.ts';
-const COMPOSE_FILES = [
-  'docker-compose.yml',
-  'docker-compose.prod.yml',
-  'observability/docker-compose.obs.yml',
-] as const;
+const COMPOSE_FILES = ['docker-compose.yml', 'docker-compose.prod.yml'] as const;
 
 /*
- * Where a `process.env` read counts as a config key. The api, the Electron main
- * process and the database package (client, seeds, load seed) are the processes
+ * Where a `process.env` read counts as a config key. The api and the database
+ * package (client and seeds) are the processes
  * a deployment configures. Specs and tests are not: they set keys to prove
  * behavior, and those are not part of what an operator configures.
  */
 const PROCESS_ENV_GLOBS = [
   'apps/api/src/**/*.ts',
-  'apps/desktop/src/**/*.ts',
   'packages/database/src/**/*.ts',
   'packages/database/prisma/*.ts',
 ] as const;

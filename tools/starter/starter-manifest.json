@@ -159,40 +159,15 @@
       "secrets": [],
       "required": [],
       "prodRequired": [],
-      "services": ["otel-collector", "tempo"]
+      "services": []
     },
     "observability-stack": {
       "kind": "core",
-      "description": "The LGTM overlay (observability/docker-compose.obs.yml) and the /metrics credential it scrapes with.",
-      "keys": [
-        "GRAFANA_ADMIN_PASSWORD",
-        "METRICS_USER",
-        "METRICS_PASSWORD",
-        "METRICS_BASIC_AUTH",
-        "LOKI_RETENTION_PERIOD",
-        "TEMPO_RETENTION_HOURS",
-        "PROM_RETENTION_DAYS"
-      ],
-      "secrets": ["GRAFANA_ADMIN_PASSWORD", "METRICS_PASSWORD", "METRICS_BASIC_AUTH"],
+      "description": "The /metrics endpoint credential.",
+      "keys": ["METRICS_BASIC_AUTH"],
+      "secrets": ["METRICS_BASIC_AUTH"],
       "required": [],
       "prodRequired": ["METRICS_BASIC_AUTH"],
-      "services": [
-        "prometheus",
-        "loki",
-        "promtail",
-        "grafana",
-        "postgres-exporter",
-        "redis-exporter",
-        "node-exporter"
-      ]
-    },
-    "desktop": {
-      "kind": "core",
-      "description": "The Electron main process: which api it talks to and where crash dumps go.",
-      "keys": ["API_URL", "CRASH_REPORTER_URL"],
-      "secrets": [],
-      "required": [],
-      "prodRequired": [],
       "services": []
     },
     "web-dev": {
@@ -206,7 +181,7 @@
     },
     "seed": {
       "kind": "core",
-      "description": "The database seeds: the admin and member accounts, the dev playground and the load-test users.",
+      "description": "The database seeds: the admin and member accounts and the dev playground.",
       "keys": [
         "ADMIN_EMAIL",
         "ADMIN_PASSWORD",
@@ -215,11 +190,9 @@
         "ALLOW_PRODUCTION_SEED",
         "SEED_2FA_POLICY",
         "SEED_DEV_ALLOW_REMOTE",
-        "SEED_DEV_CONFIRM_DATABASE",
-        "LOAD_USERS",
-        "LOAD_USER_PASSWORD"
+        "SEED_DEV_CONFIRM_DATABASE"
       ],
-      "secrets": ["ADMIN_PASSWORD", "MEMBER_PASSWORD", "LOAD_USER_PASSWORD"],
+      "secrets": ["ADMIN_PASSWORD", "MEMBER_PASSWORD"],
       "required": [],
       "prodRequired": [],
       "services": []

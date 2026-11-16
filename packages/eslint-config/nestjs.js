@@ -37,7 +37,6 @@ const PRISMA_CLIENT_PROPERTIES = ['client'];
 // below the tenant boundary. Every allowlist below starts from these.
 const SEED_AND_MIGRATION_FILES = [
   '**/prisma/seed.ts',
-  '**/prisma/seed-load.ts',
   '**/*.seed.ts',
   '**/prisma/migrations/**',
   '**/*.isolation.spec.ts',
