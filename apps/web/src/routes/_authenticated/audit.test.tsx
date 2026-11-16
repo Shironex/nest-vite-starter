@@ -1,10 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { Route } from './audit';
-// Side effect: registers the feature catalog the route's errorComponent reads.
-// In the browser it arrives with the screen component the route's split chunk
-// imports; this suite MOCKS that component away, so the registration has to be
-// stated here instead of silently rendering bare keys.
 
 const { invalidate } = vi.hoisted(() => ({ invalidate: vi.fn() }));
 
