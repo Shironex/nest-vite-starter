@@ -376,31 +376,4 @@ describe('tenant isolation (live DB, app-layer extension is the only boundary)',
     expect(ids).toContain(workspaceA.id);
     expect(ids).toContain(workspaceB.id);
   });
-
-  // TwoFactorPolicy joins TENANT_SCOPED_MODELS (2FA enforcement, T07), so it
-  // rides the exact same extension boundary. These assert the 2FA policy is
-  // isolated per Organization admin and fails closed with no context.
-  describe('two-factor policy isolation', () => {
-    afterEach(async () => {
-      await unscoped.twoFactorPolicy.deleteMany({
-        where: { tenantId: { in: [tenantA.id, tenantB.id] } },
-      });
-    });
-
-    it('P1 a policy created for tenant A is invisible to tenant B', async () => {
-      await unscoped.twoFactorPolicy.create({ data: { tenantId: tenantA.id, required: true } });
-      await run(tenantB.id, async () => {
-        const row = await client.twoFactorPolicy.findUnique({ where: { tenantId: tenantA.id } });
-        expect(row).toBeNull();
-      });
-      await run(tenantA.id, async () => {
-        const row = await client.twoFactorPolicy.findUnique({ where: { tenantId: tenantA.id } });
-        expect(row).not.toBeNull();
-      });
-    });
-
-    it('P2 fail-closed: a policy query with no tenant in context throws', async () => {
-      await expect(client.twoFactorPolicy.findMany()).rejects.toThrow('Tenant context required');
-    });
-  });
 });

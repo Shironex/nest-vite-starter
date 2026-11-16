@@ -309,11 +309,9 @@ describe('tenant-scope extension', () => {
     });
 
     it('maps the PascalCase model name to the camelCase accessor', async () => {
-      // TwoFactorPolicy -> twoFactorPolicy must resolve as scoped, not pass through.
+      // Workspace -> workspace must resolve as scoped, not pass through.
       const query = makeQuery();
-      await withTenant(() =>
-        hook({ model: 'TwoFactorPolicy', operation: 'findMany', args: {}, query }),
-      );
+      await withTenant(() => hook({ model: 'Workspace', operation: 'findMany', args: {}, query }));
       expect(query).toHaveBeenCalledWith({ where: { tenantId: TENANT_ID } });
     });
   });

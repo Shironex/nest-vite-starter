@@ -30,12 +30,8 @@ model Tenant {
   ownerId String? @unique
   owner   User?   @relation("TenantOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
-  users           User[]
-  workspaces      Workspace[]
-  // Pending staff invitations INTO this organization whose invitee already has an
-  // account elsewhere. Cascade, so deleting an organization takes its open invitations.
-  staffInvites    Token[]          @relation("StaffInviteTenant")
-  twoFactorPolicy TwoFactorPolicy?
+  users      User[]
+  workspaces Workspace[]
 }
 
 // Workspace: a workspace inside an organization. Scoped under a Tenant.

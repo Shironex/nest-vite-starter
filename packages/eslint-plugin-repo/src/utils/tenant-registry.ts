@@ -23,8 +23,6 @@
 export const UNSCOPED_BY_DESIGN: Readonly<Record<string, string>> = {
   auditLog:
     'The audit trail must accept pre-auth writes (a failed login on an unknown email has no tenant yet), which is why the column is nullable. A fail-closed $allOperations hook would reject exactly the security events that matter most. Reads are scoped by hand in audit-read.repository.ts, which filters on the ALS tenantId.',
-  notification:
-    'Mirrors AuditLog: a nullable scope column with no FK, written by crons and workers that run outside any tenant context. Every read is self-scoped by userId (a notification belongs to one user, not to a tenant), so the boundary is the session, not the extension.',
   user: 'User is the row that CARRIES the tenant, so the extension cannot scope it without a circular dependency: login, registration and password reset all have to read a user BEFORE any tenant context exists, and a fail-closed hook would break every unauthenticated path. Scoped by hand instead: every read keys on ctx.user.id or passes an explicit tenantId from the ALS.',
 };
 
@@ -45,10 +43,6 @@ export const UNSCOPED_BY_DESIGN: Readonly<Record<string, string>> = {
  *     clause in audit-read.repository.ts also matches rows whose tenantId is
  *     null through their actor (`user: { tenantId }`), which still mentions the
  *     field, so the rule sees the scope in either arm.
- *   - `notification`: `userId`, because a notification belongs to a user rather
- *     than to a tenant, so the session is the boundary. `jobId` is the one
- *     legitimate exception: the dispatch worker's retry-idempotency lookup keys
- *     on the globally unique job id it just handled, before any user is in hand.
  *
  * A model listed here is policed on EVERY receiver (the extended client, `tx`
  * and `unscoped` alike), unlike the extension-scoped models, which only need the
@@ -56,7 +50,6 @@ export const UNSCOPED_BY_DESIGN: Readonly<Record<string, string>> = {
  */
 export const HAND_SCOPED_MODELS: Readonly<Record<string, readonly string[]>> = {
   auditLog: ['tenantId'],
-  notification: ['userId', 'jobId'],
 };
 
 /**
@@ -82,7 +75,7 @@ export const HAND_SCOPE_PENDING: Readonly<Record<string, string>> = {
  * whichever side. Add a model to the extension without adding it here (or vice
  * versa) and `pnpm lint:meta` is red before the push.
  */
-export const TENANT_MODELS: readonly string[] = ['workspace', 'twoFactorPolicy'];
+export const TENANT_MODELS: readonly string[] = ['workspace'];
 
 /**
  * Files exempt from `tenant-scoped-tables-require-where` ONLY. Exact files,

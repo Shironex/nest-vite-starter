@@ -170,7 +170,6 @@
         "MEMBER_EMAIL",
         "MEMBER_PASSWORD",
         "ALLOW_PRODUCTION_SEED",
-        "SEED_2FA_POLICY",
         "SEED_DEV_ALLOW_REMOTE",
         "SEED_DEV_CONFIRM_DATABASE"
       ],

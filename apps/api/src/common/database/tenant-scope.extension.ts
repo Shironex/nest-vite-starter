@@ -47,10 +47,6 @@ import { InvariantError } from '../errors/invariant-error';
  */
 export const TENANT_SCOPED_MODELS = {
   workspace: ['tenantId'],
-  // Per-Organization 2FA enforcement policy. Scoped so an Organization admin can only ever
-  // read/write their own tenant's policy; the login-time and cron reads that run
-  // outside tenant context deliberately use `unscoped` (allowlisted).
-  twoFactorPolicy: ['tenantId'],
   // A Workspace-owned domain model is scoped by `tenantId` ONLY, even though its
   // rows also carry a `workspaceId`: `workspaceId` is never written into the request
   // ALS, so listing it here would throw on EVERY query rather than isolate

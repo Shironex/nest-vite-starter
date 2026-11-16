@@ -64,7 +64,7 @@ const REQUIRED_RULES: readonly IRequiredRule[] = [
     packageDir: 'apps/api',
     probe: 'src/modules/example/example.service.ts',
     rationale:
-      "A query on the unscoped client, or on a model the extension deliberately does not scope (AuditLog, Notification), gets no runtime tenant filter. Without this rule such a read without a tenant column in its where returns every organization's rows and type-checks.",
+      "A query on the unscoped client, or on a model the extension deliberately does not scope (AuditLog), gets no runtime tenant filter. Without this rule such a read without a tenant column in its where returns every organization's rows and type-checks.",
   },
   {
     ruleId: 'noctcore-prisma/no-unscoped-prisma-outside-allowlist',

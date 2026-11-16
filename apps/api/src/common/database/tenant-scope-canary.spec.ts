@@ -16,11 +16,10 @@ describe('resolveCanaryModels', () => {
     expect(resolveCanaryModels('', 'production')).toBe(TENANT_SCOPED_MODELS);
   });
 
-  it('drops exactly one model and keeps every other scope key', () => {
-    const models = resolveCanaryModels('twoFactorPolicy', 'test');
-    expect(models.twoFactorPolicy).toBeUndefined();
+  it('drops exactly one model', () => {
+    const models = resolveCanaryModels('workspace', 'test');
+    expect(models.workspace).toBeUndefined();
     expect(Object.keys(models)).toHaveLength(Object.keys(TENANT_SCOPED_MODELS).length - 1);
-    expect(models.workspace).toEqual(TENANT_SCOPED_MODELS.workspace);
   });
 
   it('scopes nothing at all for the pass-through mutant', () => {

@@ -11,12 +11,12 @@
  * ---------------------------------------------------------------------------
  * WHAT THIS IS
  * ---------------------------------------------------------------------------
- * `prisma/seed.ts` is the BASELINE seed: permissions, the default organization, one
+ * `prisma/seed.ts` is the BASELINE seed: the default organization, one
  * baseline Workspace, the admin, the member, the e2e fixture accounts. It is a
  * bootstrap, not a dataset.
  *
  * This script fills the SAME tenant with a small, fixed playground: a few staff
- * members of each role, two more workspaces, an unread bell and an
+ * members of each role, two more workspaces and an
  * audit trail, so the platform screens have something to render without a human
  * creating rows by hand. It also seeds a SECOND, deliberately tiny organization so
  * tenant isolation is eyeballable by hand rather than only assertable in a test.
@@ -151,9 +151,9 @@ function assertSafeTarget(target: IDatabaseTarget): void {
 //
 // A fixed dataset, not a knob: the playground is small enough to read in full,
 // and the same rows on every run make a bug report reproducible by name. The
-// only env var besides the two safety overrides is SEED_2FA_POLICY, and every
-// one of them MUST also appear in turbo.json globalEnv or
-// `turbo/no-undeclared-env-vars` fails lint at error severity.
+// only env vars are the two safety overrides, and each of them MUST also appear
+// in turbo.json globalEnv or `turbo/no-undeclared-env-vars` fails lint at error
+// severity.
 // ---------------------------------------------------------------------------
 
 /**
@@ -228,29 +228,6 @@ const SECOND_TENANT = {
 };
 
 /**
- * Opt-in: write a `TwoFactorPolicy` row requiring two-factor for the primary
- * tenant, with a grace deadline seven days out (TWO_FACTOR_GRACE_PERIOD_MS in
- * apps/api/src/modules/auth/auth.constants.ts).
- *
- * OFF by default, and the reset DELETES the row on every run, so the default is
- * genuinely off rather than merely "not written this time". Left behind, an
- * expired grace deadline would flip `enforced` true a week later and bounce
- * every seeded account to /enroll-two-factor, a playground that locks you out
- * of itself on a timer.
- *
- * Turned on, the deadline is in the FUTURE, so
- * `TwoFactorPolicyService.isEnrollmentRequiredForTenant` still returns false and
- * nobody is bounced: sessions stay normal while `OrgTwoFactorPolicyCard` renders
- * its required state and `GraceBanner` renders the countdown. The second tenant
- * is deliberately left without a policy row, so the two organizations also differ on
- * this axis.
- */
-const SEED_2FA_POLICY = process.env.SEED_2FA_POLICY === 'true';
-
-/** Grace window applied when SEED_2FA_POLICY is on. Mirrors TWO_FACTOR_GRACE_PERIOD_MS. */
-const TWO_FACTOR_GRACE_DAYS = 7;
-
-/**
  * Password for every account this script creates.
  *
  * The same literal the baseline seed uses for its member and e2e fixtures, so
@@ -280,24 +257,22 @@ function staffEmail(handle: string): string {
 //
 // Scoped to one tenant at a time, in foreign-key order, inside ONE transaction,
 // and run for BOTH tenants before anything is written. Deliberately NOT a
-// TRUNCATE: TRUNCATE ... CASCADE would also take out Permission, RolePermission
-// and the e2e fixture users Playwright depends on, in a script whose whole
+// TRUNCATE: TRUNCATE ... CASCADE would also take out the e2e fixture users Playwright depends on, in a script whose whole
 // purpose is to be run casually and often.
 //
 // What survives on purpose: the Tenant rows, the baseline admin / member / e2e
 // fixture users, and the baseline Workspace. Only rows this script owns go: users
 // under STAFF_EMAIL_PREFIX, every Workspace not preserved, and the tenant's
-// notifications, audit rows and two-factor policy.
+// audit rows.
 //
 // Why delete-then-rewrite rather than upsert: dates below are relative to now,
-// so a re-run re-anchors the bell and the audit trail instead of leaving them to
+// so a re-run re-anchors the audit trail instead of leaving them to
 // age.
 // ---------------------------------------------------------------------------
 
 interface IRemoved {
   readonly workspaces: number;
   readonly staff: number;
-  readonly notifications: number;
   readonly audits: number;
 }
 
@@ -309,12 +284,7 @@ async function resetTenantData(
 ): Promise<IRemoved> {
   return prisma.$transaction(
     async (tx) => {
-      const notifications = await tx.notification.deleteMany({ where: { tenantId } });
       const audits = await tx.auditLog.deleteMany({ where: { tenantId } });
-
-      // Unconditional, so SEED_2FA_POLICY defaulting to off actually TAKES the
-      // policy away rather than merely declining to write one.
-      await tx.twoFactorPolicy.deleteMany({ where: { tenantId } });
 
       const workspaces = await tx.workspace.deleteMany({
         where:
@@ -325,7 +295,7 @@ async function resetTenantData(
 
       // Only the staff users this script created, identified by the reserved
       // email prefix. The baseline admin, the member and the e2e fixtures never
-      // match. Their tokens, factors and preferences cascade; their audit rows
+      // match. Their tokens and factors cascade; their audit rows
       // (already gone above) and a Tenant.ownerId pointing at them SetNull.
       const staff = await tx.user.deleteMany({
         where: { tenantId, email: { startsWith: STAFF_EMAIL_PREFIX } },
@@ -334,7 +304,6 @@ async function resetTenantData(
       return {
         workspaces: workspaces.count,
         staff: staff.count,
-        notifications: notifications.count,
         audits: audits.count,
       };
     },
@@ -345,7 +314,7 @@ async function resetTenantData(
 function logRemoved(label: string, removed: IRemoved): void {
   console.log(
     `[dev.seed]   ${label}: removed ${removed.workspaces} workspaces, ${removed.staff} staff users, ` +
-      `${removed.notifications} notifications, ${removed.audits} audit rows`,
+      `${removed.audits} audit rows`,
   );
 }
 
@@ -443,10 +412,7 @@ async function main(): Promise<void> {
     }
     const tenantId = tenant.id;
 
-    console.log(
-      `[dev.seed] target ${target.database}@${target.host} | tenant "${TENANT_SLUG}" | ` +
-        `2fa policy ${SEED_2FA_POLICY ? 'on' : 'off'}`,
-    );
+    console.log(`[dev.seed] target ${target.database}@${target.host} | tenant "${TENANT_SLUG}"`);
 
     // BOTH resets run before ANY insert, so a staff email or a Workspace left in the
     // other tenant by an older run is gone before either tenant is written.
@@ -472,43 +438,6 @@ async function main(): Promise<void> {
     });
     const workspaceIds = [...(baselineWorkspace ? [baselineWorkspace.id] : []), ...newWorkspaceIds];
 
-    // --- two-factor policy (opt-in) ----------------------------------------
-    const graceEndsAt = SEED_2FA_POLICY ? dayOffset(TWO_FACTOR_GRACE_DAYS) : null;
-    if (SEED_2FA_POLICY) {
-      await prisma.twoFactorPolicy.create({
-        data: { tenantId, required: true, graceEndsAt },
-      });
-    }
-
-    // --- notifications -----------------------------------------------------
-    // `jobId` stays null: these rows were not produced by a BullMQ job, and the
-    // unique index on that column is what makes the real worker idempotent under
-    // retry. The types cover the whole 'info' | 'success' | 'warning' | 'error'
-    // union, so every icon color has a row. The bell clamps its badge to "9+"
-    // above nine, so twelve rows are unread.
-    const notificationTemplates = [
-      { type: 'info', title: 'Welcome aboard', message: 'Your workspace is ready to use.' },
-      { type: 'success', title: 'Settings saved', message: 'Your changes were saved.' },
-      { type: 'warning', title: 'Two-factor recommended', message: 'Protect your account.' },
-      { type: 'error', title: 'Sign-in blocked', message: 'A sign-in attempt was refused.' },
-    ] as const;
-    const UNREAD_NOTIFICATIONS = 12;
-    const NOTIFICATIONS = 18;
-    const notificationRows = Array.from({ length: NOTIFICATIONS }, (_row, index) => {
-      const template = notificationTemplates[index % notificationTemplates.length];
-      return {
-        userId: admin.id,
-        tenantId,
-        type: template?.type ?? 'info',
-        title: template?.title ?? 'Notification',
-        message: template?.message ?? '',
-        jobId: null,
-        readAt: index < UNREAD_NOTIFICATIONS ? null : dayOffset(-(index % 5)),
-        createdAt: dayOffset(-index),
-      };
-    });
-    await prisma.notification.createMany({ data: notificationRows });
-
     // --- audit log ---------------------------------------------------------
     // Real action strings from @repo/shared/audit, inlined: packages/database
     // does not depend on @repo/shared. A minority of failures, so any "failures
@@ -517,8 +446,6 @@ async function main(): Promise<void> {
       'auth.login.success',
       'auth.login.failure',
       'user.role.changed',
-      'staff.invite.sent',
-      'staff.invite.accepted',
       'auth.password.change',
     ] as const;
     const actorIds = [admin.id, ...staffIds];
@@ -561,7 +488,6 @@ async function main(): Promise<void> {
         tenantId,
         workspaces: workspaceIds.length,
         staff: PRIMARY_STAFF.length,
-        notifications: NOTIFICATIONS,
         audits: AUDIT_ROWS,
         foreignWorkspaceIds: secondWorkspaceIds,
       },
@@ -570,7 +496,6 @@ async function main(): Promise<void> {
         tenantId: secondTenant.id,
         workspaces: secondWorkspaceIds.length,
         staff: SECOND_TENANT.staff.length,
-        notifications: 0,
         audits: 0,
         foreignWorkspaceIds: workspaceIds,
       },
@@ -581,8 +506,6 @@ async function main(): Promise<void> {
       adminEmail: admin.email,
       staffCount: staffIds.length,
       workspaceCount: workspaceIds.length,
-      unread: UNREAD_NOTIFICATIONS,
-      graceEndsAt,
       secondTenantId: secondTenant.id,
       secondStaffCount: secondStaffIds.length,
       secondWorkspaceCount: secondWorkspaceIds.length,
@@ -597,7 +520,6 @@ interface ITenantExpectation {
   readonly tenantId: string;
   readonly workspaces: number;
   readonly staff: number;
-  readonly notifications: number;
   readonly audits: number;
   /** Workspace ids belonging to the OTHER tenant. None of them may be reachable. */
   readonly foreignWorkspaceIds: readonly string[];
@@ -622,10 +544,9 @@ async function verifySeed(
 
   for (const expected of expectations) {
     const { tenantId, label } = expected;
-    const [workspaces, staff, notifications, audits, foreignWorkspaces] = await Promise.all([
+    const [workspaces, staff, audits, foreignWorkspaces] = await Promise.all([
       prisma.workspace.count({ where: { tenantId } }),
       prisma.user.count({ where: { tenantId, email: { startsWith: STAFF_EMAIL_PREFIX } } }),
-      prisma.notification.count({ where: { tenantId } }),
       prisma.auditLog.count({ where: { tenantId } }),
       expected.foreignWorkspaceIds.length > 0
         ? prisma.workspace.count({
@@ -642,11 +563,6 @@ async function verifySeed(
     if (staff !== expected.staff) {
       problems.push(`${label} staff: wrote ${expected.staff}, tenant-scoped read sees ${staff}`);
     }
-    if (notifications !== expected.notifications) {
-      problems.push(
-        `${label} notifications: wrote ${expected.notifications}, tenant-scoped read sees ${notifications}`,
-      );
-    }
     if (audits !== expected.audits) {
       problems.push(
         `${label} audit rows: wrote ${expected.audits}, tenant-scoped read sees ${audits}`,
@@ -659,7 +575,7 @@ async function verifySeed(
     if (problems.length === 0) {
       console.log(
         `[dev.seed] Verified "${label}" through a tenant-scoped read: ${workspaces} workspaces, ` +
-          `${staff} dev staff, ${notifications} notifications, ${audits} audit rows, ` +
+          `${staff} dev staff, ${audits} audit rows, ` +
           'no cross-tenant rows.',
       );
     }
@@ -675,8 +591,6 @@ interface ISummaryInput {
   readonly adminEmail: string;
   readonly staffCount: number;
   readonly workspaceCount: number;
-  readonly unread: number;
-  readonly graceEndsAt: Date | null;
   readonly secondTenantId: string;
   readonly secondStaffCount: number;
   readonly secondWorkspaceCount: number;
@@ -692,14 +606,6 @@ function printSummary(input: ISummaryInput): void {
   console.log('');
   console.log(`  workspaces              ${input.workspaceCount}`);
   console.log(`  staff users        ${input.staffCount} (plus the baseline admin and member)`);
-  console.log(`  unread bell rows   ${input.unread}`);
-  console.log(
-    `  2FA org policy     ${
-      input.graceEndsAt === null
-        ? 'not required (set SEED_2FA_POLICY=true to seed it)'
-        : `required, grace until ${input.graceEndsAt.toISOString().slice(0, 10)}`
-    }`,
-  );
   console.log('');
   console.log(`  second organization       ${SECOND_TENANT.slug} (${input.secondTenantId})`);
   console.log(
@@ -712,7 +618,6 @@ function printSummary(input: ISummaryInput): void {
   console.log('');
   console.log('  worth clicking:');
   console.log('    /settings -> Members   staff list, roles, two-factor column (ADMIN)');
-  console.log('    the bell               unread badge and every notification type');
   console.log('    both admins in turn    the tenant boundary, checked by eye');
   console.log('');
 }

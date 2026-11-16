@@ -16,8 +16,7 @@ import type { IRequestContext } from '../context/request-context';
  *
  * What depends on it: AuthMiddleware needs a store to write `tenantId` into, and
  * without that write EVERY query against a tenant-scoped model fails closed with
- * "Tenant context required": `workspace` and
- * `twoFactorPolicy`. Less visibly, `requestId` never reaches the structured logs
+ * "Tenant context required" (`workspace`). Less visibly, `requestId` never reaches the structured logs
  * and `AuditService` cannot see the caller.
  *
  * Registered FIRST in `globalMiddlewares` (app.module.ts) so the scope is open

@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { config as loadEnvFile } from 'dotenv';
-import { PrismaClient, Prisma } from '../generated/prisma/client.js';
+import { PrismaClient } from '../generated/prisma/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from '@node-rs/argon2';
 
@@ -35,14 +35,6 @@ const adapter = new PrismaPg({
 
 const prisma = new PrismaClient({ adapter });
 
-const STARTER_PERMISSIONS = [
-  { name: 'manage_users', description: 'Create, update, and delete user accounts' },
-  { name: 'manage_roles', description: 'Assign and modify user roles and permissions' },
-  { name: 'view_admin_panel', description: 'Access the administration dashboard' },
-  { name: 'manage_settings', description: 'Modify application settings' },
-  { name: 'view_audit_log', description: 'View the audit log of admin actions' },
-] as const;
-
 /**
  * Password shared by every dev/e2e fixture user below. Same value as the
  * ADMIN_PASSWORD / MEMBER_PASSWORD defaults, hashed the same way.
@@ -57,40 +49,6 @@ const STARTER_PERMISSIONS = [
  * MUST match E2E_FIXTURE_PASSWORD in apps/web/e2e/support/auth.ts.
  */
 const E2E_FIXTURE_PASSWORD = 'P@ssw0rd!Change.Me';
-
-/**
- * The one dev/e2e account that has never answered a guided tour.
- *
- * Every other fixture is seeded as having seen all of them (see
- * `E2E_ANSWERED_TOURS`), which is what makes the Playwright suite
- * deterministic. Seeding them all would be an easy way to turn the feature off
- * in tests without anybody noticing it had stopped working in the product, so
- * one account is deliberately held back and `help-tour.spec.ts` signs in as it
- * to prove a tour still starts on its own.
- *
- * MUST match TOUR_FIXTURE_EMAIL in apps/web/e2e/support/auth.ts.
- */
-const E2E_TOUR_FIXTURE_EMAIL = 'e2e-tour@example.com';
-
-/**
- * Every guided tour the web app registers, by id.
- *
- * The seed writes an answered entry for each one against every dev/e2e account
- * except `E2E_TOUR_FIXTURE_EMAIL`, because a tour auto-starts for anybody who
- * has never answered and CI runs against a database where nobody has. A live
- * driver.js overlay masks everything outside its spotlight, so a spec's click
- * lands on the mask and retries until it times out, red on CI while passing on
- * a local database whose admin had already answered.
- *
- * "A user who has seen the tours" is an ordinary state, not a test-only
- * pretense, so this leaves the feature fully live for real users and for the
- * fixture held back above.
- *
- * MUST match TOURS in apps/web/src/features/help/Help.tours.ts. The client
- * decides on the tour ID alone, so an id added there and not here silently
- * re-arms an auto-start in CI; `Help.seed.test.ts` fails when the two drift.
- */
-const E2E_ANSWERED_TOURS = ['dashboard'] as const;
 
 /**
  * One dedicated account per e2e spec family, so no two Playwright spec files
@@ -124,31 +82,11 @@ const E2E_FIXTURE_USERS = [
   'e2e-2fa-totp@example.com',
   'e2e-2fa-recovery@example.com',
   'e2e-2fa-trust@example.com',
-  // help-tour.spec.ts. Held back from the answered-tours write below, and
-  // nothing else touches it, so its tour state is its own.
-  E2E_TOUR_FIXTURE_EMAIL,
 ] as const;
 
 async function main() {
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
-  // Hoisted because the dev/e2e block below needs the same address the admin
-  // row was written under, and it runs whether or not admin credentials were
-  // supplied.
-  const normalizedAdminEmail = adminEmail?.trim().toLowerCase() ?? null;
-
-  // Create starter permissions
-  console.log('Creating starter permissions...');
-  const permissions = await Promise.all(
-    STARTER_PERMISSIONS.map((perm) =>
-      prisma.permission.upsert({
-        where: { name: perm.name },
-        update: { description: perm.description },
-        create: perm,
-      }),
-    ),
-  );
-  console.log(`Created/updated ${permissions.length} permissions`);
 
   // Create the default Tenant (an organization) so the seeded admin has a tenant.
   // Registration will create an organization per signup later; for now the admin is
@@ -209,32 +147,6 @@ async function main() {
       },
     });
     console.log(`Admin user created/updated: ${admin.email}`);
-
-    // Assign all permissions to ADMIN role (role-wide, userId: null).
-    // Uniqueness is enforced by the partial index
-    // RolePermission_role_permission_global_key (role, permissionId WHERE
-    // userId IS NULL), so create directly and treat a unique violation as
-    // "already granted". A findFirst-then-create check would race with a
-    // concurrent seed; the index makes the create itself the gate.
-    console.log('Assigning permissions to ADMIN role...');
-    for (const permission of permissions) {
-      try {
-        await prisma.rolePermission.create({
-          data: {
-            role: 'ADMIN',
-            permissionId: permission.id,
-            userId: null,
-          },
-        });
-      } catch (error) {
-        const isUniqueViolation =
-          error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
-        if (!isUniqueViolation) {
-          throw error;
-        }
-      }
-    }
-    console.log('Admin role permissions assigned');
   } else {
     console.log('Skipping admin user creation (ADMIN_EMAIL and ADMIN_PASSWORD not set)');
   }
@@ -335,59 +247,6 @@ async function main() {
       await prisma.secondFactor.deleteMany({ where: { userId: fixtureUser.id } });
     }
     console.log(`E2E fixture users ready: ${E2E_FIXTURE_USERS.length}`);
-
-    /*
-     * Every dev/e2e account has already answered every guided tour, except the
-     * one account that exists to prove they still run (E2E_TOUR_FIXTURE_EMAIL).
-     *
-     * WHY THIS IS SEEDED AND NOT SWITCHED OFF. A tour auto-starts for a user
-     * who has never answered, driver.js masks everything outside its spotlight
-     * while it is up, and CI runs against a database where nobody has answered
-     * anything. So a spec's click lands on the mask and retries until it times
-     * out, on whichever screen happens to have a tour, while the same spec
-     * passes locally against a database whose admin answered days ago. A flag
-     * that disabled tours under test would fix the flake and take the feature
-     * out of the suite with it; seeding the answer leaves the product code
-     * identical in CI and in production, and "somebody who has seen the tours"
-     * is the state most real users are in anyway.
-     *
-     * `dismissed: false` and `version: 1`: the client's auto-start decision
-     * reads only whether an entry EXISTS (TourLauncher.hooks.ts), so neither
-     * field changes behavior here. They are the honest values for "walked to
-     * the end of version 1" rather than placeholders.
-     */
-    const answeredAt = new Date().toISOString();
-    const answeredTours = Object.fromEntries(
-      E2E_ANSWERED_TOURS.map((tourId) => [
-        tourId,
-        { completedAt: answeredAt, version: 1, dismissed: false },
-      ]),
-    );
-    const answeredEmails = [normalizedAdminEmail, memberEmail, ...E2E_FIXTURE_USERS].filter(
-      (email): email is string => email !== null && email !== E2E_TOUR_FIXTURE_EMAIL,
-    );
-
-    const answeredUsers = await prisma.user.findMany({
-      where: { email: { in: answeredEmails } },
-      select: { id: true },
-    });
-    for (const { id } of answeredUsers) {
-      await prisma.tourProgress.upsert({
-        where: { userId: id },
-        update: { tours: answeredTours },
-        create: { userId: id, tours: answeredTours },
-      });
-    }
-
-    // Explicitly cleared, not merely skipped: a previous run of the spec that
-    // proves auto-start leaves this account having answered, and a re-seed has
-    // to be able to take that back.
-    await prisma.tourProgress.deleteMany({
-      where: { user: { email: E2E_TOUR_FIXTURE_EMAIL } },
-    });
-    console.log(
-      `Tour progress seeded: ${answeredUsers.length} answered, ${E2E_TOUR_FIXTURE_EMAIL} left unanswered`,
-    );
   }
 
   console.log('Seed complete!');

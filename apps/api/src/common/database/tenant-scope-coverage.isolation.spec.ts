@@ -95,11 +95,8 @@ async function createScopedRows(ctx: IFixtureContext): Promise<Record<string, st
   const workspace = await unscoped.workspace.create({
     data: { name: `iso-cov-second-workspace-${uid}`, tenantId },
   });
-  const twoFactorPolicy = await unscoped.twoFactorPolicy.create({ data: { tenantId } });
-
   return {
     workspace: workspace.id,
-    twoFactorPolicy: twoFactorPolicy.id,
   };
 }
 
@@ -116,7 +113,6 @@ beforeAll(async () => {
 afterAll(async () => {
   // Children before parents; every fixture row carries one of the two tenants.
   const where = { tenantId: { in: createdTenantIds } };
-  await unscoped.twoFactorPolicy.deleteMany({ where });
   await unscoped.user.deleteMany({ where });
   await unscoped.workspace.deleteMany({ where });
   await unscoped.tenant.deleteMany({ where: { id: { in: createdTenantIds } } });
