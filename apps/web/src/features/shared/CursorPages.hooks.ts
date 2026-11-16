@@ -3,11 +3,10 @@ import { useState } from 'react';
 /**
  * Forward-and-back traversal of a keyset-paged list.
  *
- * WHY THIS EXISTS. Four list screens (the audit log and the admin member list
- * among them) each kept their own
- * `useState<string | undefined>(cursor)` plus a `previousPages` array that
- * APPENDED every page onto the last, behind a "Show more" button. Four
- * copies of the same twenty lines, and four different footers.
+ * WHY THIS EXISTS. Both admin lists (users and the audit log) page by keyset,
+ * and each used to keep its own `useState<string | undefined>(cursor)` plus a
+ * `previousPages` array that APPENDED every page onto the last, behind a
+ * "Show more" button: the same twenty lines twice, and two different footers.
  *
  * A keyset cursor cannot answer "give me page 7" (it names a row, not a
  * position), so no list in this app has numbered pages. What they all have is

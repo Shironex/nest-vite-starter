@@ -11,8 +11,7 @@
   "ignore": [
     "src/features/auth/components/FormError/FormError.hooks.ts",
     "src/features/auth/components/FormSuccess/FormSuccess.hooks.ts",
-    "src/features/landing/components/LandingPage/LandingPage.hooks.ts",
-    "src/features/shared/components/ListSearchField/index.ts"
+    "src/features/landing/components/LandingPage/LandingPage.hooks.ts"
   ],
   "ignoreDependencies": ["tailwindcss", "tw-animate-css", "@fontsource-variable/geist"]
 }
