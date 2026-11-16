@@ -37,9 +37,6 @@ vi.mock('@/hooks/use-auth', () => ({
   useAuth: () => ({ isAuthenticated: true }),
   USER_ME_STALE_TIME: 0,
 }));
-vi.mock('@/features/notifications/components/NotificationBell', () => ({
-  NotificationBell: () => null,
-}));
 vi.mock('@/features/two-factor/components/GraceBanner', () => ({ GraceBanner: () => null }));
 
 /*

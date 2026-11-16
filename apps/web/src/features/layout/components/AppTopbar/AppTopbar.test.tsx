@@ -20,7 +20,7 @@ vi.mock('@/features/layout/components/UserMenu', () => ({
 function renderTopbar() {
   return render(
     <SidebarProvider>
-      <AppTopbar notifications={<button type="button">Notifications</button>} />
+      <AppTopbar />
     </SidebarProvider>,
   );
 }
@@ -61,11 +61,10 @@ describe('AppTopbar', () => {
     expect(screen.getByText('12 workspaces')).toBeInTheDocument();
   });
 
-  it('keeps the sidebar trigger, connection status and notifications', () => {
+  it('keeps the sidebar trigger, connection status and user menu', () => {
     renderTopbar();
     expect(screen.getByRole('button', { name: /sidebar/i })).toBeInTheDocument();
     expect(screen.getByTestId('connection-indicator')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'User menu' })).toBeInTheDocument();
   });
 });

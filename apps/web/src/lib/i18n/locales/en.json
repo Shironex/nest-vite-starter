@@ -79,7 +79,8 @@
     "uiLabels": {
       "toggleSidebar": "Toggle sidebar",
       "sidebarTitle": "Sidebar",
-      "sidebarDescription": "Displays the mobile sidebar."
+      "sidebarDescription": "Displays the mobile sidebar.",
+      "notifications": "Notifications"
     },
     "fallback": {
       "errorTitle": "Something went wrong",
@@ -215,7 +216,6 @@
       "sections": {
         "profile": "Profile",
         "members": "Members",
-        "notifications": "Notifications",
         "security": "Security",
         "appearance": "Appearance",
         "updates": "Updates"
@@ -462,19 +462,6 @@
       "lostDescription": "Live updates are paused until the connection is restored.",
       "reconnect": "Reconnect"
     },
-    "notifications": {
-      "title": "Notifications",
-      "bellLabel": "Notifications",
-      "bellLabelUnread_one": "Notifications ({{count}} unread)",
-      "bellLabelUnread_other": "Notifications ({{count}} unread)",
-      "loading": "Loading notifications",
-      "markAllRead": "Mark all as read",
-      "empty": "No notifications",
-      "markAllFailed": "Could not mark notifications as read",
-      "markOneFailed": "Could not mark notification as read",
-      "itemRead": "Read notification ({{type}})",
-      "itemUnread": "Unread notification ({{type}})"
-    },
     "time": {
       "justNow": "just now",
       "minutesAgo": "{{count}}m ago",
@@ -608,26 +595,6 @@
         "confirm": "Withdraw invitation",
         "success": "If an invitation to this organization was pending for {{email}}, it has been withdrawn.",
         "error": "Could not withdraw the invitation"
-      }
-    },
-    "notificationPrefs": {
-      "title": "Notifications",
-      "description": "Choose which notifications you want to receive and on which channels.",
-      "saveSuccess": "Notification settings saved.",
-      "loadError": "Failed to load notification settings.",
-      "channels": {
-        "inApp": "In-app",
-        "digest": "Email digest"
-      },
-      "categories": {
-        "WORKSPACE_CREATED": {
-          "label": "New workspace",
-          "description": "When a new workspace is added."
-        },
-        "ADMIN_ACTIONS": {
-          "label": "Admin actions",
-          "description": "Role changes and user account removals."
-        }
       }
     },
     "sessions": {

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Bell, Download, Palette, Shield, User, Users } from 'lucide-react';
+import { Download, Palette, Shield, User, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ROLES } from '@repo/shared/permissions';
 import { pageTitle } from '@/lib/page-title';
@@ -16,7 +16,6 @@ import type { ISettingsSection } from '@/features/settings/components/SettingsSh
 import { SecurityCard } from '@/features/two-factor/components/SecurityCard';
 import { OrgTwoFactorPolicyCard } from '@/features/two-factor/components/OrgTwoFactorPolicyCard';
 import { MembersSection } from '@/features/admin/components/MembersSection';
-import { NotificationsSection } from '@/features/settings/components/NotificationsSection';
 import { ThemeSection } from '@/features/settings/components/ThemeSection';
 import { ConnectedAccountsSection } from '@/features/auth/components/ConnectedAccountsSection';
 import { EmailChangeSection } from '@/features/auth/components/EmailChangeSection';
@@ -55,14 +54,12 @@ export const Route = createFileRoute('/_authenticated/settings/')({
 /**
  * `/settings`, composed onto the rail from the design.
  *
- * THE RAIL SHIPS FIVE OF THE DESIGN'S SEVEN ROWS. The mockup lists Profile,
+ * THE RAIL SHIPS THREE OF THE DESIGN'S SEVEN ROWS. The mockup lists Profile,
  * Organization, Users, Notifications, Security, Billing and Integrations.
- * Organization (organization master data), Billing and Integrations
- * (third-party integrations) have no procedure, no
- * schema and no code behind them, so they are absent rather than
- * present-and-empty. A rail row that opens onto a placeholder is a promise
- * the app cannot keep, which is the same reason `DashboardPage` renders one
- * stat tile instead of four.
+ * Organization (organization master data), Notifications, Billing and
+ * Integrations (third-party integrations) have no procedure, no schema and no
+ * code behind them, so they are absent rather than present-and-empty. A rail
+ * row that opens onto a placeholder is a promise the app cannot keep.
  *
  * TWO ROWS THE DESIGN DOES NOT DRAW ARE HERE ANYWAY. `Appearance` and
  * `Updates` are real shipped functionality the mockup never covered, the
@@ -101,12 +98,6 @@ function SettingsPage() {
           <DataExportSection />
         </>
       ),
-    },
-    {
-      id: SETTINGS_SECTION.notifications,
-      label: t('settings.sections.notifications'),
-      icon: Bell,
-      panel: <NotificationsSection />,
     },
     {
       id: SETTINGS_SECTION.security,

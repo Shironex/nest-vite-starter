@@ -12,7 +12,6 @@
 export const SETTINGS_SECTION = {
   profile: 'profile',
   members: 'members',
-  notifications: 'notifications',
   security: 'security',
   appearance: 'appearance',
   updates: 'updates',

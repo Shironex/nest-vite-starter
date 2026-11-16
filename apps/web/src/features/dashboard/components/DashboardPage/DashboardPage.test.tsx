@@ -10,10 +10,6 @@ vi.mock('./DashboardPage.hooks', () => ({
   }),
 }));
 
-// The page is a composition; each panel has its own test, so they are stubbed
-// here to pin the LAYOUT rather than re-render four screens' worth of markup.
-vi.mock('../ActivityFeed', () => ({ ActivityFeed: () => <div data-testid="activity-feed" /> }));
-
 const { setTopbarSubtitle } = vi.hoisted(() => ({ setTopbarSubtitle: vi.fn() }));
 vi.mock('@/stores/topbar-store', () => ({ useSetTopbarSubtitle: setTopbarSubtitle }));
 
@@ -37,11 +33,5 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
     expect(setTopbarSubtitle).toHaveBeenCalledWith('Tuesday, July 14, 2026');
     expect(screen.queryByText('Tuesday, July 14, 2026')).not.toBeInTheDocument();
-  });
-
-  it('renders the greeting and the activity feed', () => {
-    render(<DashboardPage />);
-
-    expect(screen.getByTestId('activity-feed')).toBeInTheDocument();
   });
 });

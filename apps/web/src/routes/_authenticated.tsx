@@ -24,7 +24,6 @@ import { useAuth, USER_ME_STALE_TIME } from '@/hooks/use-auth';
 import { pendingSkeletonForPath } from '@/lib/shell-routes';
 import { AppSidebar } from '@/features/layout/components/AppSidebar';
 import { AppTopbar } from '@/features/layout/components/AppTopbar';
-import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { GraceBanner } from '@/features/two-factor/components/GraceBanner';
 
 /** 240px, matching the design's sidebar. The primitive defaults to 256px. */
@@ -176,7 +175,7 @@ function AuthenticatedLayout() {
        * and keeps banner and main as siblings.
        */}
       <div className="relative flex w-full min-w-0 flex-1 flex-col bg-bg">
-        <AppTopbar notifications={<NotificationBell />} />
+        <AppTopbar />
         <main id="main-content" className="flex-1 p-6">
           <GraceBanner />
           <ErrorBoundary

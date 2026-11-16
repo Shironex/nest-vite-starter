@@ -105,7 +105,7 @@ function RootLayout() {
       toggleSidebar: t('uiLabels.toggleSidebar'),
       sidebarTitle: t('uiLabels.sidebarTitle'),
       sidebarDescription: t('uiLabels.sidebarDescription'),
-      notifications: t('notifications.title'),
+      notifications: t('uiLabels.notifications'),
     }),
     [t],
   );

@@ -1,14 +1,3 @@
-import type { ReactNode } from 'react';
-
-export interface IAppTopbarProps {
-  /**
-   * Slot for the notification bell. The bell belongs to the `notifications`
-   * feature, and `no-cross-feature-imports` stops `layout` reaching for it, so
-   * the layout route composes the two instead.
-   */
-  readonly notifications?: ReactNode;
-}
-
 export interface IAppTopbarView {
   /**
    * The `<h1>` for the current route. The shell owns it, so no page inside

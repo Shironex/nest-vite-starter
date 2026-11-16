@@ -1,16 +1,15 @@
 import { useSetTopbarSubtitle } from '@/stores/topbar-store';
-import { ActivityFeed } from '../ActivityFeed';
 // Side effect: registers this feature's catalogs. Needed HERE and not only in
 // the hook file, because a component test mocks the hook module away.
 import '../../Dashboard.i18n';
 import { useDashboardPage } from './DashboardPage.hooks';
 
 /**
- * The authenticated landing page: a greeting, then the activity feed.
+ * The authenticated landing page: a greeting.
  *
  * It starts deliberately small. A dashboard tile with no real figure behind
  * it is a false claim, so this page carries only what the platform has: who
- * is signed in and what has happened lately. Add a panel here when a feature
+ * is signed in. Add a panel here when a feature
  * has a number worth putting on the first screen.
  *
  * There is deliberately no `<h1>` here. The app shell's topbar renders the
@@ -30,8 +29,6 @@ export default function DashboardPage() {
         <p className="type-heading-h1 text-text">{v.greeting}</p>
         <p className="type-body-regular text-text-muted">{v.subtitle}</p>
       </header>
-
-      <ActivityFeed />
     </div>
   );
 }

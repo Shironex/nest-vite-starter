@@ -2,9 +2,8 @@ import { SidebarTrigger } from '@repo/ui/sidebar';
 import { ConnectionIndicator } from '@/features/layout/components/ConnectionIndicator';
 import { UserMenu } from '@/features/layout/components/UserMenu';
 import { useAppTopbar } from './AppTopbar.hooks';
-import type { IAppTopbarProps } from './AppTopbar.types';
 
-export default function AppTopbar({ notifications }: IAppTopbarProps) {
+export default function AppTopbar() {
   const { title, subtitle } = useAppTopbar();
 
   const subtitleNode = subtitle ? (
@@ -28,7 +27,6 @@ export default function AppTopbar({ notifications }: IAppTopbarProps) {
         {subtitleNode}
       </div>
       <ConnectionIndicator />
-      {notifications}
       <UserMenu />
     </header>
   );
