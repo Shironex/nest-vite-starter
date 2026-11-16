@@ -12,7 +12,6 @@ import {
   parseDescriptor,
   readDescriptor,
   removeDescriptor,
-  s3Endpoint,
   servicePort,
   smtpPort,
   withPorts,
@@ -41,7 +40,6 @@ function descriptor(overrides: Partial<ISandboxDescriptor> = {}): ISandboxDescri
         image: 'redis:7-alpine',
         ports: { '6379': 49_201 },
       },
-      s3: { container: 'saas-starter-sbx-abc12345-s3', image: 's3rver', ports: { '4569': 49_202 } },
       mailpit: {
         container: 'saas-starter-sbx-abc12345-mailpit',
         image: 'mailpit',
@@ -122,7 +120,6 @@ describe('sandbox descriptor', () => {
       databaseUrl(subject, 'saas_starter_template'),
       'postgresql://postgres:postgres@127.0.0.1:49200/saas_starter_template',
     );
-    assert.equal(s3Endpoint(subject), 'http://127.0.0.1:49202');
     assert.equal(smtpPort(subject), 49_203);
   });
 

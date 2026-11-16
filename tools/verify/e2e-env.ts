@@ -16,8 +16,6 @@ export interface IE2eEnvInput {
   readonly webPort: number;
   readonly databaseUrl: string;
   readonly redisUrl: string;
-  readonly s3Endpoint: string;
-  readonly s3Bucket: string;
   readonly smtpHost: string;
   readonly smtpPort: number;
 }
@@ -50,11 +48,6 @@ export function e2eApiEnv(input: IE2eEnvInput): Record<string, string> {
     CSRF_SECRET: 'ci-e2e-csrf-secret-not-used-by-these-specs-0000',
     METRICS_BASIC_AUTH: 'ci-metrics-user:ci-metrics-not-a-real-credential',
     ENCRYPTION_KEY: '6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81',
-    S3_ENDPOINT: input.s3Endpoint,
-    S3_REGION: 'us-east-1',
-    S3_BUCKET: input.s3Bucket,
-    S3_ACCESS_KEY: 'S3RVER',
-    S3_SECRET_KEY: 'S3RVER',
   };
 }
 
@@ -64,8 +57,6 @@ export const CI_E2E_ENV_INPUT: IE2eEnvInput = {
   webPort: 5173,
   databaseUrl: 'postgresql://postgres:postgres@localhost:5432/test',
   redisUrl: 'redis://localhost:6379',
-  s3Endpoint: 'http://localhost:4569',
-  s3Bucket: 'saas-starter-uploads',
   smtpHost: 'localhost',
   smtpPort: 1025,
 };

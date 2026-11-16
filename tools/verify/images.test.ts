@@ -13,11 +13,9 @@ const WORKFLOW = `jobs:
         ports:
           - 5432:5432
       redis:
-        image: redis:7-alpine
-      s3:
         # A comment inside the block must not be read as a service.
-        image: ghcr.io/clockwisesoftware/s3rver:latest
-        options: --workdir /app
+        image: redis:7-alpine
+        options: --appendonly yes
       mailpit:
         image: axllent/mailpit
     steps:
@@ -29,7 +27,6 @@ describe('CI service images', () => {
     assert.deepEqual(parseServiceImages(WORKFLOW), {
       postgres: 'postgres:17-alpine',
       redis: 'redis:7-alpine',
-      s3: 'ghcr.io/clockwisesoftware/s3rver:latest',
       mailpit: 'axllent/mailpit',
     });
   });
@@ -51,7 +48,7 @@ describe('CI service images', () => {
   });
 
   it('refuses to choose when two jobs pin the same service differently', () => {
-    const drifted = `${WORKFLOW}\n  boot-smoke:\n    services:\n      postgres:\n        image: postgres:16-alpine\n      redis:\n        image: redis:7-alpine\n      s3:\n        image: ghcr.io/clockwisesoftware/s3rver:latest\n      mailpit:\n        image: axllent/mailpit\n`;
+    const drifted = `${WORKFLOW}\n  boot-smoke:\n    services:\n      postgres:\n        image: postgres:16-alpine\n      redis:\n        image: redis:7-alpine\n      mailpit:\n        image: axllent/mailpit\n`;
 
     assert.throws(() => parseServiceImages(drifted), /more than one image/u);
   });
@@ -62,7 +59,6 @@ describe('CI service images', () => {
 
     assert.match(images.postgres, /^postgres:/u);
     assert.match(images.redis, /^redis:/u);
-    assert.match(images.s3, /s3rver/u);
     assert.match(images.mailpit, /mailpit/u);
   });
 });

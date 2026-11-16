@@ -166,17 +166,6 @@ export async function up(root: string): Promise<IUpResult> {
     ['5432'],
   );
   const redis = startService(id, owner, 'redis', images.redis, {}, ['6379']);
-  const s3 = startService(
-    id,
-    owner,
-    's3',
-    images.s3,
-    { BUCKETS: LANES.map((lane) => lane.bucket).join(',') },
-    ['4569'],
-    // The image declares /app as its workdir and runs a relative `node
-    // server.js`; ci.yml pins it for the same reason.
-    ['--workdir', '/app'],
-  );
   const mailpit = startService(
     id,
     owner,
@@ -185,7 +174,7 @@ export async function up(root: string): Promise<IUpResult> {
     { MP_SMTP_AUTH_ACCEPT_ANY: '1', MP_SMTP_AUTH_ALLOW_INSECURE: '1' },
     ['1025', '8025'],
   );
-  const services: Readonly<Record<string, ISandboxService>> = { postgres, redis, s3, mailpit };
+  const services: Readonly<Record<string, ISandboxService>> = { postgres, redis, mailpit };
 
   const descriptor: ISandboxDescriptor = {
     schemaVersion: DESCRIPTOR_SCHEMA_VERSION,

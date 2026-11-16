@@ -88,7 +88,7 @@ Turbo `lint` and `check-types` alone are NOT the gate. Format with
 
 ### The verification sandbox (one per worktree)
 
-Every worktree can have its own Postgres, Redis, s3rver and mailpit, so two of them verify at the
+Every worktree can have its own Postgres, Redis and mailpit, so two of them verify at the
 same time without sharing a database or a port. Plain `docker run`, bound to a random loopback port,
 labeled with `sha256(realpath(worktree))`, and described by a 0600 file in the gitignored
 `.agent-state/sandboxes/`. The images come from `ci.yml`, so local and CI run the same bytes.

@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 
 import type { ISandboxDescriptor } from './descriptor';
-import { laneDatabaseUrl, laneRedisUrl, mailpitHttpUrl, s3Endpoint, smtpPort } from './descriptor';
+import { laneDatabaseUrl, laneRedisUrl, mailpitHttpUrl, smtpPort } from './descriptor';
 import { docker } from './docker';
 import { E2E_ADMIN, e2eApiEnv } from './e2e-env';
 import { childEnv, run, waitFor } from './exec';
@@ -129,8 +129,6 @@ export async function runE2eLane(options: IE2eLaneOptions): Promise<IE2eLaneResu
       webPort,
       databaseUrl,
       redisUrl,
-      s3Endpoint: s3Endpoint(descriptor),
-      s3Bucket: LANE.bucket,
       smtpHost: '127.0.0.1',
       smtpPort: smtpPort(descriptor),
     });

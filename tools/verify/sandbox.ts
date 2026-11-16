@@ -1,6 +1,6 @@
 import { assertKnownFlags, boolFlag, parseArgs, stringFlag } from './args';
 import { stopWritingOnClosedPipe } from './cli-io';
-import { laneDatabaseUrl, laneRedisUrl, mailpitHttpUrl, s3Endpoint } from './descriptor';
+import { laneDatabaseUrl, laneRedisUrl, mailpitHttpUrl } from './descriptor';
 import { LANES, laneById } from './lanes';
 import { createLanes, current, down, up } from './sandbox-lifecycle';
 
@@ -31,7 +31,6 @@ function describe(root: string): number {
           .join(' ')}`,
     ),
     `  lanes     ${LANES.map((lane) => `${lane.id}=${lane.database}(redis ${lane.redisDb})`).join(' ')}`,
-    `  s3        ${s3Endpoint(descriptor)}`,
     `  mailpit   ${mailpitHttpUrl(descriptor)}`,
   ];
   process.stdout.write(`${lines.join('\n')}\n`);

@@ -97,10 +97,9 @@ describe('verify profiles', () => {
 });
 
 describe('sandbox lanes', () => {
-  it('gives each lane its own database, redis index and bucket', () => {
+  it('gives each lane its own database and redis index', () => {
     assert.equal(new Set(LANES.map((lane) => lane.database)).size, LANES.length);
     assert.equal(new Set(LANES.map((lane) => lane.redisDb)).size, LANES.length);
-    assert.equal(new Set(LANES.map((lane) => lane.bucket)).size, LANES.length);
   });
 
   it('never uses redis db 0, which is what an unconfigured URL selects', () => {

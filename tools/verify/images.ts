@@ -9,9 +9,9 @@
  * disagreement is reported rather than resolved, because "local runs what CI
  * runs" is the whole point of reading the file.
  */
-export type ServiceName = 'postgres' | 'redis' | 's3' | 'mailpit';
+export type ServiceName = 'postgres' | 'redis' | 'mailpit';
 
-export const REQUIRED_SERVICES: readonly ServiceName[] = ['postgres', 'redis', 's3', 'mailpit'];
+export const REQUIRED_SERVICES: readonly ServiceName[] = ['postgres', 'redis', 'mailpit'];
 
 export type ServiceImages = Readonly<Record<ServiceName, string>>;
 
@@ -79,7 +79,6 @@ export function parseServiceImages(workflowText: string): ServiceImages {
   return {
     postgres: resolve('postgres'),
     redis: resolve('redis'),
-    s3: resolve('s3'),
     mailpit: resolve('mailpit'),
   };
 }

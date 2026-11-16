@@ -168,10 +168,6 @@ export function laneRedisUrl(descriptor: ISandboxDescriptor, lane: ILane): strin
   return `redis://127.0.0.1:${servicePort(descriptor, 'redis', '6379')}/${lane.redisDb}`;
 }
 
-export function s3Endpoint(descriptor: ISandboxDescriptor): string {
-  return `http://127.0.0.1:${servicePort(descriptor, 's3', '4569')}`;
-}
-
 export function smtpPort(descriptor: ISandboxDescriptor): number {
   return servicePort(descriptor, 'mailpit', '1025');
 }

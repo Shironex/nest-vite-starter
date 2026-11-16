@@ -365,32 +365,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      # Object storage and a mail catcher, both MIRRORING docker-compose.yml
-      # rather than configured independently: same images, same bucket, same
-      # ports. A CI service that differs from the local one produces the failure
+      # A mail catcher MIRRORING docker-compose.yml rather than configured
+      # independently: same image, same ports. A CI service that differs from the local one produces the failure
       # mode where the suite passes in exactly one of the two places.
       #
-      # Neither is optional: the journeys follow invitations through the mail
+      # Not optional: the journeys follow invitations through the mail
       # they were actually sent, which is the only automated proof that an
       # invited user receives a link that works.
       #
-      # No `--health-cmd` on either: a service health check runs INSIDE the
-      # container and neither image is guaranteed to carry a shell or curl. The
+      # No `--health-cmd`: a service health check runs INSIDE the
+      # container and the image is not guaranteed to carry a shell or curl. The
       # readiness gate is an explicit step below instead, polled from the runner,
       # which fails loudly rather than letting the api race them on startup.
-      s3:
-        image: ghcr.io/clockwisesoftware/s3rver:latest@sha256:51774e8e3bd4ebd04646f5ddfb6937c348ec3a5ae3af25e3fe0756c905dcca96
-        ports:
-          - 4569:4569
-        env:
-          BUCKETS: saas-starter-uploads
-        # Pins the working directory the image already declares. Redundant on
-        # GitHub, and NOT redundant under `act`, which starts a service
-        # container with the workspace path as its working directory: this
-        # image's command is the relative `node server.js` from /app, so under
-        # act it resolved against the repo instead and the container exited 1
-        # before anything could reach port 4569.
-        options: --workdir /app
       mailpit:
         image: axllent/mailpit:latest@sha256:74d609a42ec279aa63c6b4622a6fa9b5408d1ad5b1d76a1c4be40a265ce0863d
         ports:
@@ -487,29 +473,23 @@ jobs:
         if: ${{ steps.aff.outputs.run == 'true' && steps.playwright-cache.outputs.cache-hit == 'true' }}
         run: pnpm --filter @repo/web exec playwright install chromium
 
-      # Start the API (built, dummy SMTP/S3/Turnstile/CSRF env; the e2e specs
+      # Start the API (built, dummy SMTP/Turnstile/CSRF env; the e2e specs
       # never exercise those transports) and the built web app served by vite
       # preview (which proxies /trpc -> :3000). Both backgrounded; wait for each
       # to listen before running Playwright.
-      # Both new services, polled from the runner. The bucket is asserted by NAME
-      # rather than the endpoint merely answering: s3rver creates its buckets
-      # from BUCKETS at startup and answers the list API either way, so a drift
-      # between that value and the api's S3_BUCKET would otherwise surface as
-      # every upload failing halfway through a journey instead of here.
-      - name: Wait for S3 and the mail catcher
+      # The mail catcher, polled from the runner.
+      - name: Wait for the mail catcher
         if: steps.aff.outputs.run == 'true'
         run: |
           up=0
           for i in $(seq 1 30); do
-            if curl -sf http://localhost:4569/ | grep -q 'saas-starter-uploads' \
-              && curl -sf 'http://localhost:8025/api/v1/messages?limit=1' > /dev/null; then
-              up=1; echo "s3 + mailpit up"; break
+            if curl -sf 'http://localhost:8025/api/v1/messages?limit=1' > /dev/null; then
+              up=1; echo "mailpit up"; break
             fi
-            echo "waiting for s3 + mailpit ($i)"; sleep 2
+            echo "waiting for mailpit ($i)"; sleep 2
           done
           if [ "$up" -ne 1 ]; then
-            echo "s3 (bucket saas-starter-uploads) or mailpit never became ready"
-            curl -s http://localhost:4569/ || true
+            echo "mailpit never became ready"
             exit 1
           fi
 
@@ -555,11 +535,6 @@ jobs:
           # ENCRYPTION_KEY is Joi-required(): this step boots the real validated
           # API, so it fails closed at startup without a valid key. CI-only.
           ENCRYPTION_KEY: 6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81
-          S3_ENDPOINT: http://localhost:4569
-          S3_REGION: us-east-1
-          S3_BUCKET: saas-starter-uploads
-          S3_ACCESS_KEY: S3RVER
-          S3_SECRET_KEY: S3RVER
 
       - name: Start web (built app via vite preview)
         if: steps.aff.outputs.run == 'true'

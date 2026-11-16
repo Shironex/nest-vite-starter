@@ -58,7 +58,7 @@ describe('e2e env parity with CI', () => {
     const ciEnv = envBlockAfter(lines, stepIndex);
     const ours = e2eApiEnv(CI_E2E_ENV_INPUT);
 
-    assert.ok(Object.keys(ciEnv).length > 10, 'the Start API env block did not parse');
+    assert.ok(Object.keys(ciEnv).length > 5, 'the Start API env block did not parse');
     for (const [key, value] of Object.entries(ciEnv)) {
       assert.equal(ours[key], value, `${key} differs between ci.yml and tools/verify/e2e-env.ts`);
     }

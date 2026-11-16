@@ -57,18 +57,6 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
-  s3:
-    image: ghcr.io/clockwisesoftware/s3rver:latest@sha256:51774e8e3bd4ebd04646f5ddfb6937c348ec3a5ae3af25e3fe0756c905dcca96
-    container_name: saas-starter-s3
-    restart: unless-stopped
-    ports:
-      - '4569:4569'
-    environment:
-      BUCKETS: saas-starter-uploads
-    volumes:
-      - saas-starter-s3-data:/data
-
 volumes:
   saas-starter-pgdata:
   saas-starter-redis-data:
-  saas-starter-s3-data:
