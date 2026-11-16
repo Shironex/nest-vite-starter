@@ -20,7 +20,6 @@ import { nowMs } from '../../common/clock';
 import { detach } from '../../common/utils/detach';
 import { getSessionCookieName } from '../auth/auth.constants';
 import { SessionService } from '../auth/services/session.service';
-import { TwoFactorEnrollmentReader } from '../auth/services/two-factor-enrollment.reader';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EventsService } from './events.service';
 
@@ -117,7 +116,6 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     private readonly notificationsService: NotificationsService,
     @Inject(CustomLogger) private readonly logger: CustomLogger,
     private readonly configService: ConfigService,
-    private readonly enrollmentReader: TwoFactorEnrollmentReader,
   ) {
     this.sessionCookieName = getSessionCookieName(
       this.configService.get<string>('NODE_ENV') === 'production',
@@ -168,20 +166,6 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
             const session = await this.sessionService.validateSession(sessionToken);
             if (!session) {
               return next(new Error('Authentication failed: invalid session'));
-            }
-
-            // A session still flagged for 2FA enrollment may not open a socket: no
-            // live data until the member enrolls. Re-derived against live state
-            // (same reader as AuthMiddleware) so a stale flag does not wrongly
-            // reject a session the tRPC gate already heals.
-            if (
-              session.twoFactorEnrollmentRequired &&
-              (await this.enrollmentReader.isEnrollmentStillRequired(
-                session.userId,
-                session.tenantId,
-              ))
-            ) {
-              return next(new Error('Authentication failed: two-factor enrollment required'));
             }
 
             // Attach user data to socket for later use

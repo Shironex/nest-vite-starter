@@ -21,8 +21,6 @@ import {
   sendTwoFactorDisabledJobSchema,
   sendRecoveryCodeUsedJobSchema,
   sendTwoFactorAdminResetJobSchema,
-  sendTwoFactorPolicyAnnouncementJobSchema,
-  sendTwoFactorEnforcementReminderJobSchema,
   sendTwoFactorSupportResetContestJobSchema,
   sendEmailChangeVerificationJobSchema,
   sendEmailChangeRequestedJobSchema,
@@ -117,26 +115,6 @@ export class EmailDeliveryProcessor extends TracedWorkerHost {
         await this.provider.send({
           to,
           subject: 'Your two-factor authentication was reset',
-          html,
-        });
-        return;
-      }
-      case EMAIL_DELIVERY_JOB_NAMES.SEND_TWO_FACTOR_POLICY_ANNOUNCEMENT: {
-        const { to, props } = parseJobData(sendTwoFactorPolicyAnnouncementJobSchema, job);
-        const html = await this.renderer.renderTwoFactorPolicyAnnouncementEmail(props);
-        await this.provider.send({
-          to,
-          subject: 'Two-factor authentication is now required',
-          html,
-        });
-        return;
-      }
-      case EMAIL_DELIVERY_JOB_NAMES.SEND_TWO_FACTOR_ENFORCEMENT_REMINDER: {
-        const { to, props } = parseJobData(sendTwoFactorEnforcementReminderJobSchema, job);
-        const html = await this.renderer.renderTwoFactorEnforcementReminderEmail(props);
-        await this.provider.send({
-          to,
-          subject: 'Reminder: two-factor authentication required soon',
           html,
         });
         return;

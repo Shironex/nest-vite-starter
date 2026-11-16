@@ -21,16 +21,12 @@ const buildGateway = (nodeEnv = 'development') => {
   const configService = {
     get: jest.fn((key: string) => (key === 'NODE_ENV' ? nodeEnv : undefined)),
   };
-  // Default false: an unflagged session never consults it; the flagged tests
-  // override it. Its derivation is unit-tested in the reader's own spec.
-  const enrollmentReader = { isEnrollmentStillRequired: jest.fn().mockResolvedValue(false) };
   const gateway = new EventsGateway(
     sessionService as unknown as ConstructorParameters<typeof EventsGateway>[0],
     eventsService as unknown as ConstructorParameters<typeof EventsGateway>[1],
     notificationsService as unknown as ConstructorParameters<typeof EventsGateway>[2],
     logger as unknown as ConstructorParameters<typeof EventsGateway>[3],
     configService as unknown as ConstructorParameters<typeof EventsGateway>[4],
-    enrollmentReader as unknown as ConstructorParameters<typeof EventsGateway>[5],
   );
   return {
     gateway,
@@ -38,7 +34,6 @@ const buildGateway = (nodeEnv = 'development') => {
     eventsService,
     notificationsService,
     configService,
-    enrollmentReader,
   };
 };
 
@@ -128,7 +123,7 @@ describe('EventsGateway', () => {
       validateImpl: jest.Mock,
       nodeEnv = 'development',
     ) => {
-      const { gateway, enrollmentReader } = buildGateway(nodeEnv);
+      const { gateway } = buildGateway(nodeEnv);
       // Override sessionService.validateSession via the closure captured at construction.
       (gateway as unknown as { sessionService: { validateSession: jest.Mock } }).sessionService = {
         validateSession: validateImpl,
@@ -151,7 +146,7 @@ describe('EventsGateway', () => {
         mw(socket, next);
         await new Promise((resolve) => setImmediate(resolve));
       };
-      return { run, next, socket, enrollmentReader };
+      return { run, next, socket };
     };
 
     it('next(Error) when no cookie header present', async () => {
@@ -224,43 +219,6 @@ describe('EventsGateway', () => {
       const { run, next } = runMiddleware('session_id=tok', validate);
       await run();
       expect(next).toHaveBeenCalledWith();
-    });
-
-    it('next(Error) for a flagged session the reader confirms still needs enrollment', async () => {
-      const validate = jest.fn().mockResolvedValue({
-        userId: 'u-1',
-        email: 'e@x.c',
-        role: 'USER',
-        tenantId: 'ten-1',
-        twoFactorEnrollmentRequired: true,
-      });
-      const { run, next, socket, enrollmentReader } = runMiddleware('session_id=tok', validate);
-      enrollmentReader.isEnrollmentStillRequired.mockResolvedValue(true);
-      await run();
-      expect((next.mock.calls[0]?.[0] as Error).message).toBe(
-        'Authentication failed: two-factor enrollment required',
-      );
-      expect(enrollmentReader.isEnrollmentStillRequired).toHaveBeenCalledWith('u-1', 'ten-1');
-      expect((socket as { user?: unknown }).user).toBeUndefined();
-    });
-
-    it('lets a flagged session through when the reader reports the flag is stale', async () => {
-      const validate = jest.fn().mockResolvedValue({
-        userId: 'u-1',
-        email: 'e@x.c',
-        role: 'USER',
-        tenantId: 'ten-1',
-        twoFactorEnrollmentRequired: true,
-      });
-      const { run, next, socket, enrollmentReader } = runMiddleware('session_id=tok', validate);
-      enrollmentReader.isEnrollmentStillRequired.mockResolvedValue(false);
-      await run();
-      expect(next).toHaveBeenCalledWith();
-      expect((socket as { user: unknown }).user).toEqual({
-        id: 'u-1',
-        email: 'e@x.c',
-        role: 'USER',
-      });
     });
 
     it('next(Error) and logs when validateSession throws', async () => {

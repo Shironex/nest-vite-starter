@@ -215,7 +215,6 @@ describe('SessionManagementService', () => {
         userAgent: 'new-ua',
         rememberMe: false,
         tenantId: 'tenant-1',
-        twoFactorEnrollmentRequired: undefined,
       });
       // NO epoch: the mint must read the counter the revocation just bumped.
       expect(params).not.toHaveProperty('epoch');
@@ -230,20 +229,6 @@ describe('SessionManagementService', () => {
 
       expect(sessionService.isRememberMeSession).toHaveBeenCalledWith(currentBlob);
       expect(shared.establishSession.mock.calls[0]![2]).toMatchObject({ rememberMe: true });
-    });
-
-    it('carries the 2FA enrollment gate forward instead of silently ungating', async () => {
-      const { service, sessionService, shared } = buildSubject();
-      sessionService.validateSession.mockResolvedValue({
-        ...currentBlob,
-        twoFactorEnrollmentRequired: true,
-      });
-
-      await callIt(service);
-
-      expect(shared.establishSession.mock.calls[0]![2]).toMatchObject({
-        twoFactorEnrollmentRequired: true,
-      });
     });
 
     it('audits auth.logout.others for the caller', async () => {

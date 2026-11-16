@@ -32,8 +32,6 @@ export const EMAIL_DELIVERY_JOB_NAMES = {
   SEND_TWO_FACTOR_DISABLED: 'send-two-factor-disabled',
   SEND_RECOVERY_CODE_USED: 'send-recovery-code-used',
   SEND_TWO_FACTOR_ADMIN_RESET: 'send-two-factor-admin-reset',
-  SEND_TWO_FACTOR_POLICY_ANNOUNCEMENT: 'send-two-factor-policy-announcement',
-  SEND_TWO_FACTOR_ENFORCEMENT_REMINDER: 'send-two-factor-enforcement-reminder',
   SEND_TWO_FACTOR_SUPPORT_RESET_CONTEST: 'send-two-factor-support-reset-contest',
   // Email change. The verification link to the NEW address is
   // critical like send-verification: the flow cannot complete without it. The

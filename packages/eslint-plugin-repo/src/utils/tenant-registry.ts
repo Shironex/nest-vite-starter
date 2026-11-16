@@ -85,23 +85,11 @@ export const HAND_SCOPE_PENDING: Readonly<Record<string, string>> = {
 export const TENANT_MODELS: readonly string[] = ['workspace', 'twoFactorPolicy'];
 
 /**
- * Files exempt from `tenant-scoped-tables-require-where` ONLY.
+ * Files exempt from `tenant-scoped-tables-require-where` ONLY. Exact files,
+ * never a glob over a directory: each exemption is for one sweep, not for
+ * anything that later lands beside it.
  *
- * `twoFactorPolicy` is tenant-scoped at runtime and policed statically like
- * every other scoped model, but the 2FA enforcement scheduler is a genuine
- * cross-tenant system sweep: `enforceExpiredDeadlines` and the reminder pass
- * each read EVERY tenant's policy through the (separately allowlisted)
- * `unscoped` client precisely because no single tenantId applies, and then hand
- * write the resolved tenantId into every follow-up read. A `where` carrying one
- * tenantId on the sweep itself would be the wrong query, so the rule's premise
- * does not hold for these two calls.
- *
- * Deliberately one exact file, not a glob over the directory: the exemption is
- * for these two sweeps, not for anything that later lands beside them. The
- * other two tenant rules keep policing this file: `unscoped` creates and
- * untrusted-tenantId provenance are still wrong here.
- *
- * The two retention sweeps are the same shape for the HAND-SCOPED half of the
+ * The two retention sweeps are exempt for the HAND-SCOPED half of the
  * rule (`HAND_SCOPED_MODELS`, above): each pages every tenant's expired AuditLog
  * / Notification rows by `createdAt` and deletes them by id, which is a system
  * job with no tenant and no user, so neither `tenantId` nor `userId` belongs in
@@ -117,7 +105,6 @@ export const TENANT_MODELS: readonly string[] = ['workspace', 'twoFactorPolicy']
  * is exempted by exact path for the same reason.
  */
 export const TENANT_WHERE_ALLOW_IN: readonly string[] = [
-  '**/modules/auth/two-factor-enforcement/two-factor-enforcement.processor.ts',
   '**/modules/audit/audit-retention.service.ts',
   '**/modules/notifications/notification-retention.service.ts',
   '**/modules/audit/audit-pii-scrub.service.ts',

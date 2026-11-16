@@ -39,7 +39,7 @@ const EXPECTED: Record<string, { gated: number; total: number }> = {
   notifications: { gated: 0, total: 5 },
   sessions: { gated: 0, total: 3 },
   storage: { gated: 0, total: 3 },
-  twoFactor: { gated: 3, total: 9 },
+  twoFactor: { gated: 1, total: 7 },
   // 9, not 8: user.tenant was added (the sidebar's organization identity block).
   // Deliberately ungated: every colleague, any role, needs to see the name
   // of the organization they are in, not just an ADMIN.

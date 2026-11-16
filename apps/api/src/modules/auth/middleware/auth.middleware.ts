@@ -3,29 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { TRPCMiddleware, MiddlewareOptions, MiddlewareResponse } from 'nestjs-trpc';
 import { AppErrorCode } from '@repo/shared/errors';
 import { SessionService } from '../services/session.service';
-import { TwoFactorEnrollmentReader } from '../services/two-factor-enrollment.reader';
 import type { IAppContextType } from '../../../trpc/trpc.context';
 import { requestContext } from '../../../common/context/request-context';
-import { ForbiddenError, UnauthorizedError } from '../../../common/errors';
+import { UnauthorizedError } from '../../../common/errors';
 import { getSessionCookieName } from '../auth.constants';
 import { createAppLogger } from '../../logger/logger.service';
 import { InvariantError } from '../../../common/errors/invariant-error';
 
 const logger = createAppLogger('AuthMiddleware');
-
-/**
- * Procedures a 2FA-enforced (enroll-only) session may still reach: enrolling,
- * checking status, and logging out. Everything else returns
- * TWO_FACTOR_ENROLLMENT_REQUIRED so the SPA routes to the enroll-only screen.
- * Central here (not per-procedure) so a forgotten check can never be a bypass.
- */
-const TWO_FACTOR_ENROLL_ALLOWLIST = new Set<string>([
-  'twoFactor.beginEnrollment',
-  'twoFactor.activate',
-  'twoFactor.status',
-  'auth.logout',
-  'auth.logoutAll',
-]);
 
 @Injectable()
 export class AuthMiddleware implements TRPCMiddleware {
@@ -34,7 +19,6 @@ export class AuthMiddleware implements TRPCMiddleware {
 
   constructor(
     private readonly sessionService: SessionService,
-    private readonly enrollmentReader: TwoFactorEnrollmentReader,
     configService: ConfigService,
   ) {
     this.sessionCookieName = getSessionCookieName(
@@ -54,21 +38,6 @@ export class AuthMiddleware implements TRPCMiddleware {
     const session = await this.sessionService.validateSession(sessionToken);
     if (!session) {
       throw new UnauthorizedError(AppErrorCode.UNAUTHORIZED, 'Invalid or expired session');
-    }
-
-    // Enforcement gate (single chokepoint): a member of a 2FA-required Organization who
-    // is past grace and not yet enrolled may only reach the enroll/logout
-    // allowlist; everything else is refused until they enroll. The stored flag
-    // is re-verified against live state so a stale flag cannot brick the session.
-    if (
-      session.twoFactorEnrollmentRequired &&
-      !TWO_FACTOR_ENROLL_ALLOWLIST.has(opts.path) &&
-      (await this.enrollmentReader.isEnrollmentStillRequired(session.userId, session.tenantId))
-    ) {
-      throw new ForbiddenError(
-        AppErrorCode.TWO_FACTOR_ENROLLMENT_REQUIRED,
-        'Two-factor authentication setup is required',
-      );
     }
 
     // Populate userId + tenantId in ALS so AuditService, the Prisma tenant-scope

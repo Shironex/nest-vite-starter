@@ -196,50 +196,6 @@ export class MailService {
     this.logger.log('Two-factor admin reset email enqueued');
   }
 
-  /** Enqueue the org-wide 2FA policy announcement with its grace deadline. QUEUED (non-critical class). */
-  async sendTwoFactorPolicyAnnouncementEmail(to: string, graceEndsAt: Date): Promise<void> {
-    // Deterministic id keyed on (recipient + deadline instant): a cron may
-    // enqueue the announcement, so a repeated tick for the same recipient and
-    // the same grace window collapses to one mail. A new policy window (new
-    // graceEndsAt) yields a fresh id and re-announces. Hashed because the
-    // recipient address can contain characters BullMQ rejects in a job id.
-    const jobId = `two-factor-policy-announcement-${sha256Hex(`${to}:${graceEndsAt.getTime()}`)}`;
-    await this.queue.add(
-      EMAIL_DELIVERY_JOB_NAMES.SEND_TWO_FACTOR_POLICY_ANNOUNCEMENT,
-      withJobContext({
-        to,
-        props: {
-          appName: this.appName,
-          settingsUrl: this.settingsUrl(),
-          deadline: graceEndsAt.toUTCString(),
-        },
-      }),
-      { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, jobId },
-    );
-    this.logger.log('Two-factor policy announcement email enqueued');
-  }
-
-  /** Enqueue the 2FA enforcement reminder before the grace deadline. QUEUED (non-critical class). */
-  async sendTwoFactorEnforcementReminderEmail(to: string, graceEndsAt: Date): Promise<void> {
-    // Same deterministic (recipient + deadline instant) key as the
-    // announcement: a reminder cron for the same recipient and grace window is
-    // idempotent, so a doubled tick sends one reminder, not two.
-    const jobId = `two-factor-enforcement-reminder-${sha256Hex(`${to}:${graceEndsAt.getTime()}`)}`;
-    await this.queue.add(
-      EMAIL_DELIVERY_JOB_NAMES.SEND_TWO_FACTOR_ENFORCEMENT_REMINDER,
-      withJobContext({
-        to,
-        props: {
-          appName: this.appName,
-          settingsUrl: this.settingsUrl(),
-          deadline: graceEndsAt.toUTCString(),
-        },
-      }),
-      { priority: EMAIL_DELIVERY_NON_CRITICAL_PRIORITY, jobId },
-    );
-    this.logger.log('Two-factor enforcement reminder email enqueued');
-  }
-
   /** Enqueue the support-initiated 2FA reset contest window. QUEUED (non-critical class). */
   async sendTwoFactorSupportResetContestEmail(
     to: string,

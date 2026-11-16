@@ -24,7 +24,7 @@ import { AuthSharedService } from '../src/modules/auth/services/auth-shared.serv
 import { ProvisioningService } from '../src/modules/auth/services/provisioning.service';
 import { TurnstileService } from '../src/modules/auth/services/turnstile.service';
 import { TwoFactorChallengeService } from '../src/modules/auth/services/two-factor-challenge.service';
-import { TwoFactorPolicyService } from '../src/modules/auth/services/two-factor-policy.service';
+import { TwoFactorAdminResetService } from '../src/modules/auth/services/two-factor-admin-reset.service';
 import { TotpService } from '../src/modules/auth/services/totp.service';
 import { StepUpService } from '../src/modules/auth/services/step-up.service';
 import { TrustedDeviceService } from '../src/modules/auth/services/trusted-device.service';
@@ -112,8 +112,6 @@ export interface AuthMocks {
     sendTwoFactorDisabledEmail: jest.Mock;
     sendRecoveryCodeUsedEmail: jest.Mock;
     sendTwoFactorAdminResetEmail: jest.Mock;
-    sendTwoFactorPolicyAnnouncementEmail: jest.Mock;
-    sendTwoFactorEnforcementReminderEmail: jest.Mock;
     sendTwoFactorSupportResetContestEmail: jest.Mock;
     sendEmailChangeVerificationEmail: jest.Mock;
     sendEmailChangeRequestedEmail: jest.Mock;
@@ -159,10 +157,7 @@ export interface AuthMocks {
     beginOrEstablish: jest.Mock;
     verifyChallenge: jest.Mock;
   };
-  twoFactorPolicy: {
-    isEnrollmentRequiredForTenant: jest.Mock;
-    getTenantPolicy: jest.Mock;
-    setTenantPolicy: jest.Mock;
+  twoFactorAdminReset: {
     resetMemberTwoFactor: jest.Mock;
   };
   totp: {
@@ -236,11 +231,9 @@ export interface PrismaServiceMock {
   };
   /**
    * The raw, UNSCOPED client (`prismaService.unscoped`), exposed so specs for
-   * cross-tenant system jobs (e.g. the two-factor-enforcement sweep) can drive
-   * its delegates. Kept minimal: the models those jobs actually read.
+   * cross-tenant system jobs can drive its delegates. Kept minimal: the models those jobs actually read.
    */
   unscoped: {
-    twoFactorPolicy: PrismaTwoFactorPolicyDelegateMock;
     user: PrismaUserDelegateMock;
     secondFactor: PrismaSecondFactorDelegateMock;
     tenant: PrismaHrDelegateMock;
@@ -289,12 +282,6 @@ export interface PrismaSecondFactorDelegateMock {
   count: jest.Mock;
 }
 
-export interface PrismaTwoFactorPolicyDelegateMock {
-  findUnique: jest.Mock;
-  findMany: jest.Mock;
-  upsert: jest.Mock;
-}
-
 const buildPrismaUserDelegate = (): PrismaUserDelegateMock => ({
   findFirst: jest.fn(),
   findMany: jest.fn(),
@@ -336,12 +323,6 @@ const buildPrismaHrDelegate = (): PrismaHrDelegateMock => ({
   count: jest.fn(),
 });
 
-const buildPrismaTwoFactorPolicyDelegate = (): PrismaTwoFactorPolicyDelegateMock => ({
-  findUnique: jest.fn(),
-  findMany: jest.fn(),
-  upsert: jest.fn(),
-});
-
 export const buildPrismaMock = (): PrismaServiceMock => {
   const client = {
     $transaction: jest.fn(),
@@ -360,7 +341,6 @@ export const buildPrismaMock = (): PrismaServiceMock => {
   // The unscoped client (cross-tenant escape hatch): its own delegate stubs so a
   // system-job spec asserting `prisma.unscoped.*` never aliases the scoped ones.
   const unscoped = {
-    twoFactorPolicy: buildPrismaTwoFactorPolicyDelegate(),
     user: buildPrismaUserDelegate(),
     secondFactor: buildPrismaSecondFactorDelegate(),
     // The tenant list the cross-tenant sweeps iterate.
@@ -578,8 +558,6 @@ const buildAuthMocks = (
       sendTwoFactorDisabledEmail: jest.fn().mockResolvedValue(undefined),
       sendRecoveryCodeUsedEmail: jest.fn().mockResolvedValue(undefined),
       sendTwoFactorAdminResetEmail: jest.fn().mockResolvedValue(undefined),
-      sendTwoFactorPolicyAnnouncementEmail: jest.fn().mockResolvedValue(undefined),
-      sendTwoFactorEnforcementReminderEmail: jest.fn().mockResolvedValue(undefined),
       sendTwoFactorSupportResetContestEmail: jest.fn().mockResolvedValue(undefined),
       sendEmailChangeVerificationEmail: jest.fn().mockResolvedValue(undefined),
       sendEmailChangeRequestedEmail: jest.fn().mockResolvedValue(undefined),
@@ -633,16 +611,7 @@ const buildAuthMocks = (
       }),
       verifyChallenge: jest.fn(),
     },
-    twoFactorPolicy: {
-      // Default: no tenant policy in force, so enforcement gates stay inert
-      // unless a spec opts in (mirrors the secondFactor "no factors" default).
-      isEnrollmentRequiredForTenant: jest.fn().mockResolvedValue(false),
-      getTenantPolicy: jest
-        .fn()
-        .mockResolvedValue({ required: false, graceEndsAt: null, enforced: false }),
-      setTenantPolicy: jest
-        .fn()
-        .mockResolvedValue({ required: false, graceEndsAt: null, enforced: false }),
+    twoFactorAdminReset: {
       resetMemberTwoFactor: jest.fn().mockResolvedValue(undefined),
     },
     totp: {
@@ -748,7 +717,7 @@ export const createAuthTestModule = async (
       { provide: CsrfService, useValue: mocks.csrf },
       { provide: TurnstileService, useValue: mocks.turnstile },
       { provide: TwoFactorChallengeService, useValue: mocks.twoFactorChallenge },
-      { provide: TwoFactorPolicyService, useValue: mocks.twoFactorPolicy },
+      { provide: TwoFactorAdminResetService, useValue: mocks.twoFactorAdminReset },
       { provide: TotpService, useValue: mocks.totp },
       { provide: TrustedDeviceService, useValue: mocks.trustedDevice },
       { provide: SecondFactorRepository, useValue: mocks.secondFactor },

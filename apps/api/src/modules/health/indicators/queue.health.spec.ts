@@ -50,7 +50,7 @@ describe('QueueHealthIndicator', () => {
     indicator.isHealthy('queue');
     expect(up).toHaveBeenCalledWith({
       failed: { [QUEUE_NAMES.EMAIL_DELIVERY]: 0 },
-      unscraped: [QUEUE_NAMES.NOTIFICATION_DISPATCH, QUEUE_NAMES.TWO_FACTOR_ENFORCEMENT],
+      unscraped: [QUEUE_NAMES.NOTIFICATION_DISPATCH],
     });
   });
 
@@ -68,7 +68,7 @@ describe('QueueHealthIndicator', () => {
     indicator.isHealthy('queue');
     expect(down).toHaveBeenCalledWith({
       failed: { [QUEUE_NAMES.EMAIL_DELIVERY]: QUEUE_FAILED_ALERT_THRESHOLD },
-      unscraped: [QUEUE_NAMES.NOTIFICATION_DISPATCH, QUEUE_NAMES.TWO_FACTOR_ENFORCEMENT],
+      unscraped: [QUEUE_NAMES.NOTIFICATION_DISPATCH],
       threshold: QUEUE_FAILED_ALERT_THRESHOLD,
     });
   });

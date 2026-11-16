@@ -8,13 +8,11 @@ import {
   twoFactorDisableSchema,
   twoFactorRegenerateSchema,
   twoFactorStatusOutput,
-  tenantTwoFactorPolicyOutput,
-  setTenantTwoFactorPolicySchema,
   resetMemberTwoFactorSchema,
   authAckOutput,
 } from '@repo/shared/schemas';
 import { TwoFactorService } from './services/two-factor.service';
-import { TwoFactorPolicyService } from './services/two-factor-policy.service';
+import { TwoFactorAdminResetService } from './services/two-factor-admin-reset.service';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { AdminMiddleware } from './middleware/role.middleware';
 import type { IAuthenticatedContextType } from '../../trpc/trpc.context';
@@ -30,7 +28,7 @@ import { getClientIp, getUserAgent } from '../../common/utils/request';
 export class TwoFactorRouter {
   constructor(
     private readonly twoFactorService: TwoFactorService,
-    private readonly twoFactorPolicyService: TwoFactorPolicyService,
+    private readonly twoFactorAdminResetService: TwoFactorAdminResetService,
   ) {}
 
   @Query({ output: twoFactorStatusOutput })
@@ -99,26 +97,9 @@ export class TwoFactorRouter {
   }
 
   // ---------------------------------------------------------------------------
-  // Tenant-admin procedures (Organization 2FA enforcement). ALS-scoped: the service
-  // reads getTenantId() fail-closed, so an admin can only touch their own tenant.
+  // Tenant-admin procedure. ALS-scoped: the service reads getTenantId()
+  // fail-closed, so an admin can only touch their own tenant.
   // ---------------------------------------------------------------------------
-
-  @Query({ output: tenantTwoFactorPolicyOutput })
-  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
-  async getTenantPolicy() {
-    return this.twoFactorPolicyService.getTenantPolicy();
-  }
-
-  @Mutation({ input: setTenantTwoFactorPolicySchema, output: tenantTwoFactorPolicyOutput })
-  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
-  async setTenantPolicy(
-    @Input() input: z.infer<typeof setTenantTwoFactorPolicySchema>,
-    @Ctx() ctx: IAuthenticatedContextType,
-  ) {
-    const ip = getClientIp(ctx.req);
-    const userAgent = getUserAgent(ctx.req);
-    return this.twoFactorPolicyService.setTenantPolicy(input.required, ip, userAgent);
-  }
 
   @Mutation({ input: resetMemberTwoFactorSchema, output: authAckOutput })
   @UseMiddlewares(AuthMiddleware, AdminMiddleware)
@@ -128,7 +109,7 @@ export class TwoFactorRouter {
   ) {
     const ip = getClientIp(ctx.req);
     const userAgent = getUserAgent(ctx.req);
-    await this.twoFactorPolicyService.resetMemberTwoFactor(
+    await this.twoFactorAdminResetService.resetMemberTwoFactor(
       ctx.user.id,
       input.userId,
       ip,

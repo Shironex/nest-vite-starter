@@ -26,7 +26,7 @@ import { TotpService } from './services/totp.service';
 import { TwoFactorService } from './services/two-factor.service';
 import { StepUpService } from './services/step-up.service';
 import { TwoFactorChallengeService } from './services/two-factor-challenge.service';
-import { TwoFactorPolicyService } from './services/two-factor-policy.service';
+import { TwoFactorAdminResetService } from './services/two-factor-admin-reset.service';
 import { TrustedDeviceService } from './services/trusted-device.service';
 import { TokenRepository } from './repositories/token.repository';
 import { SecondFactorRepository } from './repositories/second-factor.repository';
@@ -34,9 +34,6 @@ import { SessionManagementService } from './services/session-management.service'
 import { AuthRouter } from './auth.router';
 import { SessionsRouter } from './sessions.router';
 import { TwoFactorRouter } from './two-factor.router';
-import { TwoFactorEnforcementQueueModule } from './two-factor-enforcement/two-factor-enforcement-queue.module';
-import { TwoFactorEnforcementProcessor } from './two-factor-enforcement/two-factor-enforcement.processor';
-import { TwoFactorEnforcementScheduler } from './two-factor-enforcement/two-factor-enforcement.scheduler';
 
 /**
  * AuthModule depends on UserModule (for UserService data lookups). The
@@ -61,12 +58,6 @@ import { TwoFactorEnforcementScheduler } from './two-factor-enforcement/two-fact
     AuthMiddlewareModule,
     LockoutModule,
     IdempotencyModule,
-    // Two-factor enforcement (SPEC 6.4, T07). The queue registration lives in
-    // this leaf so the scheduler (producer) and processor (consumer) below share
-    // one queue instance; the processor's collaborators (TrustedDeviceService
-    // here, SessionRevocationService via EventsModule, MailService via
-    // MailModule, AuditService global) all resolve inside this injector.
-    TwoFactorEnforcementQueueModule,
   ],
   providers: [
     SudoService,
@@ -90,14 +81,12 @@ import { TwoFactorEnforcementScheduler } from './two-factor-enforcement/two-fact
     StepUpService,
     TwoFactorService,
     TwoFactorChallengeService,
-    TwoFactorPolicyService,
+    TwoFactorAdminResetService,
     TrustedDeviceService,
     SessionManagementService,
     AuthRouter,
     SessionsRouter,
     TwoFactorRouter,
-    TwoFactorEnforcementProcessor,
-    TwoFactorEnforcementScheduler,
   ],
   exports: [LockoutModule],
 })

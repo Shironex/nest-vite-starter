@@ -72,8 +72,6 @@ export const AUDIT_ACTIONS = {
   AUTH_2FA_RECOVERY_USED: 'auth.2fa.recovery.used',
   AUTH_2FA_RECOVERY_REGENERATED: 'auth.2fa.recovery.regenerated',
   AUTH_2FA_TRUST_REVOKED: 'auth.2fa.trust.revoked',
-  AUTH_2FA_POLICY_CHANGED: 'auth.2fa.policy.changed',
-  AUTH_2FA_ENFORCED: 'auth.2fa.enforced',
   AUTH_2FA_ADMIN_RESET: 'auth.2fa.admin_reset',
   // metadata: { ticketRef, verificationMethod, operatorId }
   AUTH_2FA_SUPPORT_RESET: 'auth.2fa.support_reset',

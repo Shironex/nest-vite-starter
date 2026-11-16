@@ -34,12 +34,6 @@ export interface IEstablishSessionParams {
    */
   tenantId?: string | null | undefined;
   /**
-   * Stamped onto the session blob when an Organization requires 2FA past grace and the
-   * member is not yet enrolled (see TwoFactorChallengeService). The middleware
-   * then gates the session to the enroll-only allowlist.
-   */
-  twoFactorEnrollmentRequired?: true | undefined;
-  /**
    * Session-epoch fence value, captured by the flow that authenticated this
    * user BEFORE it read the state that authenticates them (see
    * `SessionService.readEpoch`). Passing it is what makes a revocation that

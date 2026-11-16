@@ -8,8 +8,6 @@ import type {
   TwoFactorDisabledEmailProps,
   RecoveryCodeUsedEmailProps,
   TwoFactorAdminResetEmailProps,
-  TwoFactorPolicyAnnouncementEmailProps,
-  TwoFactorEnforcementReminderEmailProps,
   TwoFactorSupportResetContestEmailProps,
   EmailChangeVerificationEmailProps,
   EmailChangeRequestedEmailProps,
@@ -25,12 +23,6 @@ interface IEmailRenderModule {
   renderTwoFactorDisabledEmail(props: TwoFactorDisabledEmailProps): Promise<string>;
   renderRecoveryCodeUsedEmail(props: RecoveryCodeUsedEmailProps): Promise<string>;
   renderTwoFactorAdminResetEmail(props: TwoFactorAdminResetEmailProps): Promise<string>;
-  renderTwoFactorPolicyAnnouncementEmail(
-    props: TwoFactorPolicyAnnouncementEmailProps,
-  ): Promise<string>;
-  renderTwoFactorEnforcementReminderEmail(
-    props: TwoFactorEnforcementReminderEmailProps,
-  ): Promise<string>;
   renderTwoFactorSupportResetContestEmail(
     props: TwoFactorSupportResetContestEmailProps,
   ): Promise<string>;
@@ -87,18 +79,6 @@ export class EmailRendererService {
 
   async renderTwoFactorAdminResetEmail(props: TwoFactorAdminResetEmailProps): Promise<string> {
     return (await this.getModule()).renderTwoFactorAdminResetEmail(props);
-  }
-
-  async renderTwoFactorPolicyAnnouncementEmail(
-    props: TwoFactorPolicyAnnouncementEmailProps,
-  ): Promise<string> {
-    return (await this.getModule()).renderTwoFactorPolicyAnnouncementEmail(props);
-  }
-
-  async renderTwoFactorEnforcementReminderEmail(
-    props: TwoFactorEnforcementReminderEmailProps,
-  ): Promise<string> {
-    return (await this.getModule()).renderTwoFactorEnforcementReminderEmail(props);
   }
 
   async renderTwoFactorSupportResetContestEmail(

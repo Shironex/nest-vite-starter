@@ -44,17 +44,13 @@ const SEED_AND_MIGRATION_FILES = [
 
 // Files allowed to touch the `unscoped` Prisma client (or call
 // `runWithoutTenantScope`). Each is a system path with no single tenant: the
-// PrismaService that builds the client, the 2FA policy read and enforcement
-// sweep, the enrollment reader that runs before a tenant is in hand, the
-// cross-tenant iterator every sweep goes through, and any resolver that
+// PrismaService that builds the client, the cross-tenant iterator every sweep
+// goes through, and any resolver that
 // authenticates by token before a tenant exists. Exact files, never a directory
 // glob.
 const UNSCOPED_CLIENT_ALLOW_IN = [
   ...SEED_AND_MIGRATION_FILES,
   '**/common/database/prisma.service.ts',
-  '**/modules/auth/services/two-factor-policy.service.ts',
-  '**/modules/auth/two-factor-enforcement/two-factor-enforcement.processor.ts',
-  '**/modules/auth/services/two-factor-enrollment.reader.ts',
   '**/common/tenancy/cross-tenant-iterator.ts',
 ];
 

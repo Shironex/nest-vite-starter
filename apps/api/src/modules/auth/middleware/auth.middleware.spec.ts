@@ -2,7 +2,6 @@ import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { AuthMiddleware } from './auth.middleware';
 import { SessionService } from '../services/session.service';
-import { TwoFactorEnrollmentReader } from '../services/two-factor-enrollment.reader';
 import { requestContext } from '../../../common/context/request-context';
 
 const buildSubject = async (nodeEnv = 'test') => {
@@ -10,19 +9,14 @@ const buildSubject = async (nodeEnv = 'test') => {
   const config = {
     get: jest.fn((key: string) => (key === 'NODE_ENV' ? nodeEnv : undefined)),
   };
-  // Default: enrollment is genuinely still required, so the enforcement-gate
-  // tests below fire; the stale-flag test overrides it to false. The derivation
-  // itself is unit-tested in two-factor-enrollment.reader.spec.ts.
-  const reader = { isEnrollmentStillRequired: jest.fn().mockResolvedValue(true) };
   const module = await Test.createTestingModule({
     providers: [
       AuthMiddleware,
       { provide: SessionService, useValue: session },
-      { provide: TwoFactorEnrollmentReader, useValue: reader },
       { provide: ConfigService, useValue: config },
     ],
   }).compile();
-  return { service: module.get(AuthMiddleware), session, reader };
+  return { service: module.get(AuthMiddleware), session };
 };
 
 const buildOpts = (cookies: Record<string, string>, path = 'user.me') => {
@@ -50,21 +44,6 @@ const useInScope = async (
   opts: Parameters<AuthMiddleware['use']>[0],
 ): Promise<unknown> =>
   requestContext.run({ requestId: 'test-request' }, async () => service.use(opts));
-
-const flaggedSession = {
-  sessionId: 'sid',
-  userId: 'u-1',
-  email: 'e',
-  role: 'USER',
-  emailVerified: true,
-  ip: '',
-  userAgent: '',
-  createdAt: 0,
-  lastActive: 0,
-  expiresAt: 0,
-  tenantId: 'ten-1',
-  twoFactorEnrollmentRequired: true as const,
-};
 
 describe('AuthMiddleware', () => {
   it('throws UNAUTHORIZED when no session_id cookie is present', async () => {
@@ -156,59 +135,6 @@ describe('AuthMiddleware', () => {
     // Generic on the wire: tRPC copies a plain Error's message straight to the
     // client, so the diagnostic detail is logged rather than thrown.
     await expect(service.use(opts)).rejects.toThrow(/Request context unavailable/);
-  });
-
-  it('enforcement gate: a flagged session is refused on a non-allowlisted path', async () => {
-    const { service, session } = await buildSubject();
-    session.validateSession.mockResolvedValue(flaggedSession);
-    const { opts } = buildOpts({ session_id: 'tok' }, 'user.updateProfile');
-    await expect(service.use(opts)).rejects.toMatchObject({
-      code: 'FORBIDDEN',
-      message: 'Two-factor authentication setup is required',
-    });
-  });
-
-  it('enforcement gate: a flagged session may still reach the enroll/logout allowlist', async () => {
-    const { service, session } = await buildSubject();
-    session.validateSession.mockResolvedValue(flaggedSession);
-    for (const path of [
-      'twoFactor.beginEnrollment',
-      'twoFactor.activate',
-      'twoFactor.status',
-      'auth.logout',
-      'auth.logoutAll',
-    ]) {
-      const { opts } = buildOpts({ session_id: 'tok' }, path);
-      await expect(useInScope(service, opts)).resolves.toBe('next-result');
-    }
-  });
-
-  it('re-derives against live state: the flagged session and its tenant are passed to the reader', async () => {
-    const { service, session, reader } = await buildSubject();
-    session.validateSession.mockResolvedValue(flaggedSession);
-    const { opts } = buildOpts({ session_id: 'tok' }, 'user.updateProfile');
-    await expect(service.use(opts)).rejects.toMatchObject({ code: 'FORBIDDEN' });
-    expect(reader.isEnrollmentStillRequired).toHaveBeenCalledWith('u-1', 'ten-1');
-  });
-
-  it('stale flag: passes through when the reader reports enrollment is no longer required', async () => {
-    const { service, session, reader } = await buildSubject();
-    session.validateSession.mockResolvedValue(flaggedSession);
-    reader.isEnrollmentStillRequired.mockResolvedValue(false);
-    const { opts } = buildOpts({ session_id: 'tok' }, 'user.updateProfile');
-    // No loop: the gate re-checks live state, sees the requirement is gone, allows.
-    await expect(useInScope(service, opts)).resolves.toBe('next-result');
-  });
-
-  it('does not consult the reader for an unflagged session (hot path stays read-free)', async () => {
-    const { service, session, reader } = await buildSubject();
-    session.validateSession.mockResolvedValue({
-      ...flaggedSession,
-      twoFactorEnrollmentRequired: false,
-    });
-    const { opts } = buildOpts({ session_id: 'tok' }, 'user.updateProfile');
-    await expect(useInScope(service, opts)).resolves.toBe('next-result');
-    expect(reader.isEnrollmentStillRequired).not.toHaveBeenCalled();
   });
 
   it('production reads the __Host- prefixed cookie name (bare session_id is ignored)', async () => {

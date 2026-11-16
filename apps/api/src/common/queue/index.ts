@@ -20,5 +20,4 @@ export {
   type QueueJobDefaults,
 } from './queue.constants';
 export { registerQueueWithDefaults } from './register-queue';
-export { removeStaleJobSchedulers } from './stale-job-schedulers';
 export { QueueMetricsService, type IQueueCounts } from './queue-metrics.service';

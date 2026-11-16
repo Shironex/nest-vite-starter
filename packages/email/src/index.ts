@@ -23,14 +23,6 @@ import {
   type TwoFactorAdminResetEmailProps,
 } from './templates/two-factor-admin-reset.js';
 import {
-  TwoFactorPolicyAnnouncementEmail,
-  type TwoFactorPolicyAnnouncementEmailProps,
-} from './templates/two-factor-policy-announcement.js';
-import {
-  TwoFactorEnforcementReminderEmail,
-  type TwoFactorEnforcementReminderEmailProps,
-} from './templates/two-factor-enforcement-reminder.js';
-import {
   TwoFactorSupportResetContestEmail,
   type TwoFactorSupportResetContestEmailProps,
 } from './templates/two-factor-support-reset-contest.js';
@@ -54,8 +46,6 @@ export type {
   TwoFactorDisabledEmailProps,
   RecoveryCodeUsedEmailProps,
   TwoFactorAdminResetEmailProps,
-  TwoFactorPolicyAnnouncementEmailProps,
-  TwoFactorEnforcementReminderEmailProps,
   TwoFactorSupportResetContestEmailProps,
 };
 
@@ -99,18 +89,6 @@ export async function renderTwoFactorAdminResetEmail(
   props: TwoFactorAdminResetEmailProps,
 ): Promise<string> {
   return await render(TwoFactorAdminResetEmail(props));
-}
-
-export async function renderTwoFactorPolicyAnnouncementEmail(
-  props: TwoFactorPolicyAnnouncementEmailProps,
-): Promise<string> {
-  return await render(TwoFactorPolicyAnnouncementEmail(props));
-}
-
-export async function renderTwoFactorEnforcementReminderEmail(
-  props: TwoFactorEnforcementReminderEmailProps,
-): Promise<string> {
-  return await render(TwoFactorEnforcementReminderEmail(props));
 }
 
 export async function renderTwoFactorSupportResetContestEmail(

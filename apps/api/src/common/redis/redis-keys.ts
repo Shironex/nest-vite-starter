@@ -25,7 +25,6 @@ export const REDIS_KEY_PREFIXES = {
   TRUSTED_DEVICE: 'trusted_device',
   TRUSTED_DEVICES: 'trusted_devices',
   TWOFA_USED: 'twofa_used',
-  TWOFA_ENFORCED: 'twofa_enforced',
   // Pending email change: the link-borne token is stored keyed by
   // sha256(token), mirroring `session`; the `*_USER` key indexes the one live
   // pending change per user for replace-on-new-request and for the
@@ -147,16 +146,6 @@ export const RedisKeys = {
    */
   twoFactorUsed: (userId: string, counter: number): string =>
     `${REDIS_KEY_PREFIXES.TWOFA_USED}${SEP}${userId}${SEP}${counter}`,
-
-  /**
-   * Daily-enforcement idempotency marker, SET-NX-claimed before a non-enrolled
-   * member is forced out of a tenant whose grace has passed, so the sweep revokes
-   * / audits / counts that member at most once per grace window. `graceEndsAtMs`
-   * is the policy's `graceEndsAt` epoch ms, so a policy re-enable (fresh
-   * graceEndsAt) yields a new key and correctly re-enforces. TTL 90 d.
-   */
-  twoFactorEnforced: (userId: string, graceEndsAtMs: number): string =>
-    `${REDIS_KEY_PREFIXES.TWOFA_ENFORCED}${SEP}${userId}${SEP}${graceEndsAtMs}`,
 
   /**
    * One replica's claim on one day's run of one cron sweep.

@@ -26,7 +26,6 @@ import type { CustomLogger } from '../logger/logger.service';
 import type { CsrfService } from '../../common/security/csrf.service';
 import type { AuditService } from '../audit/audit.service';
 import type { NotificationsService } from '../notifications/notifications.service';
-import type { TwoFactorEnrollmentReader } from '../auth/services/two-factor-enrollment.reader';
 import { AuthSharedService } from '../auth/services/auth-shared.service';
 import { LoginService } from '../auth/services/login.service';
 import { SessionManagementService } from '../auth/services/session-management.service';
@@ -176,11 +175,6 @@ const buildSubject = () => {
     {} as NotificationsService,
     silentLogger,
     config,
-    // No session under test carries the enrollment flag, so the reader is never
-    // consulted; it answers "no" if it ever is.
-    {
-      isEnrollmentStillRequired: jest.fn().mockResolvedValue(false),
-    } as unknown as TwoFactorEnrollmentReader,
   );
 
   const shared = new AuthSharedService(

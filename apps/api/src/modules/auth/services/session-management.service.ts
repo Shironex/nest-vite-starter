@@ -149,10 +149,6 @@ export class SessionManagementService {
       userAgent,
       rememberMe,
       tenantId: current.tenantId,
-      // Carried forward defensively: an enrollment-gated session cannot reach
-      // this procedure today, but if the middleware allowlist ever grows,
-      // dropping the flag here would silently ungate the account.
-      twoFactorEnrollmentRequired: current.twoFactorEnrollmentRequired,
     });
 
     await this.auditService.log({

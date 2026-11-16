@@ -7,16 +7,13 @@ import { PrismaService } from '../database/prisma.service';
  *
  * Sweeps run from a queue or a cron, outside any request, so nothing has
  * seeded the tenant ALS, and the tenant-scope extension fails closed without
- * it. Rather than hand-writing `tenantId` into every `unscoped` where clause
- * (what two-factor-enforcement.processor.ts does, and the reason
- * `twoFactorPolicy` carries a documented `tenant-scoped-tables-require-where`
- * gap), a sweep asks this reader for the tenant LIST and then re-enters
+ * it. Rather than hand-writing `tenantId` into every `unscoped` where clause,
+ * a sweep asks this reader for the tenant LIST and then re-enters
  * `requestContext.run({ tenantId })` per tenant. Everything after that point
  * goes through the scoped client, so the extension (not reviewer discipline)
  * stays the isolation boundary.
  *
- * That is why this file is the allowlisted one and the processor is not: the
- * escape hatch is a single id projection over a table that is not tenant-scoped
+ * That is why this file is the allowlisted one: the escape hatch is a single id projection over a table that is not tenant-scoped
  * to begin with.
  *
  * It lives in `common/` rather than beside any one sweep because the sweeps

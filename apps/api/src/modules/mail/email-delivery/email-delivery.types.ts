@@ -7,8 +7,6 @@ import type {
   TwoFactorDisabledEmailProps,
   RecoveryCodeUsedEmailProps,
   TwoFactorAdminResetEmailProps,
-  TwoFactorPolicyAnnouncementEmailProps,
-  TwoFactorEnforcementReminderEmailProps,
   TwoFactorSupportResetContestEmailProps,
   EmailChangeVerificationEmailProps,
   EmailChangeRequestedEmailProps,
@@ -68,16 +66,6 @@ export interface ISendTwoFactorAdminResetJobData {
   readonly props: TwoFactorAdminResetEmailProps;
 }
 
-export interface ISendTwoFactorPolicyAnnouncementJobData {
-  readonly to: string;
-  readonly props: TwoFactorPolicyAnnouncementEmailProps;
-}
-
-export interface ISendTwoFactorEnforcementReminderJobData {
-  readonly to: string;
-  readonly props: TwoFactorEnforcementReminderEmailProps;
-}
-
 export interface ISendTwoFactorSupportResetContestJobData {
   readonly to: string;
   readonly props: TwoFactorSupportResetContestEmailProps;
@@ -102,8 +90,6 @@ export type EmailDeliveryJobData =
   | ISendTwoFactorDisabledJobData
   | ISendRecoveryCodeUsedJobData
   | ISendTwoFactorAdminResetJobData
-  | ISendTwoFactorPolicyAnnouncementJobData
-  | ISendTwoFactorEnforcementReminderJobData
   | ISendTwoFactorSupportResetContestJobData
   | ISendEmailChangeVerificationJobData
   | ISendEmailChangeRequestedJobData;

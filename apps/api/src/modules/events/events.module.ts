@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { SessionModule } from '../auth/session.module';
-import { TwoFactorEnrollmentModule } from '../auth/two-factor-enrollment.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { EventsGateway } from './events.gateway';
 import { EventsService } from './events.service';
@@ -15,7 +14,7 @@ import { SessionRevocationService } from './session-revocation.service';
  * downstream NotificationDispatchModule. That split keeps this graph acyclic.
  */
 @Module({
-  imports: [SessionModule, NotificationsModule, TwoFactorEnrollmentModule],
+  imports: [SessionModule, NotificationsModule],
   providers: [EventsGateway, EventsService, SessionRevocationService],
   exports: [EventsService, SessionRevocationService],
 })

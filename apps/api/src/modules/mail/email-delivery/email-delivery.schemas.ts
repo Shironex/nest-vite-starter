@@ -8,8 +8,6 @@ import type {
   ISendTwoFactorDisabledJobData,
   ISendRecoveryCodeUsedJobData,
   ISendTwoFactorAdminResetJobData,
-  ISendTwoFactorPolicyAnnouncementJobData,
-  ISendTwoFactorEnforcementReminderJobData,
   ISendTwoFactorSupportResetContestJobData,
   ISendEmailChangeVerificationJobData,
   ISendEmailChangeRequestedJobData,
@@ -92,24 +90,6 @@ export const sendTwoFactorAdminResetJobSchema = z.object({
     appName: z.string().min(1),
   }),
 }) satisfies z.ZodType<ISendTwoFactorAdminResetJobData>;
-
-export const sendTwoFactorPolicyAnnouncementJobSchema = z.object({
-  to: z.string().min(1),
-  props: z.object({
-    appName: z.string().min(1),
-    settingsUrl: z.string().min(1),
-    deadline: z.string().min(1),
-  }),
-}) satisfies z.ZodType<ISendTwoFactorPolicyAnnouncementJobData>;
-
-export const sendTwoFactorEnforcementReminderJobSchema = z.object({
-  to: z.string().min(1),
-  props: z.object({
-    appName: z.string().min(1),
-    settingsUrl: z.string().min(1),
-    deadline: z.string().min(1),
-  }),
-}) satisfies z.ZodType<ISendTwoFactorEnforcementReminderJobData>;
 
 export const sendTwoFactorSupportResetContestJobSchema = z.object({
   to: z.string().min(1),

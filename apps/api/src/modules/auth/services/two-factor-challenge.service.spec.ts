@@ -83,22 +83,6 @@ describe('TwoFactorChallengeService', () => {
       expect(mocks.redis.multi).not.toHaveBeenCalled();
     });
 
-    it('non-enrolled member past grace: stamps the enroll-only flag on the session', async () => {
-      const { service, mocks, repo } = await buildCtx();
-      const { req, res } = reqWithCookie();
-      repo.findActiveNonRecovery.mockResolvedValue(null);
-      mocks.twoFactorPolicy.isEnrollmentRequiredForTenant.mockResolvedValue(true);
-
-      const result = await service.beginOrEstablish(req, res, user, opts);
-
-      expect(result).toMatchObject({ kind: 'session', via: 'no_factor' });
-      expect(mocks.shared.establishSession).toHaveBeenCalledWith(
-        req,
-        res,
-        expect.objectContaining({ twoFactorEnrollmentRequired: true }),
-      );
-    });
-
     it('active factor: mints a pending record + cookie and returns a challenge (no session)', async () => {
       const { service, mocks, repo } = await buildCtx();
       const { req, res } = reqWithCookie();

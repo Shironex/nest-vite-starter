@@ -311,7 +311,7 @@ describe('TwoFactorService', () => {
   });
 
   describe('status', () => {
-    it('derives enabled + low-codes flag; policy/trusted are Step 4/5 placeholders', async () => {
+    it('derives enabled + low-codes flag and the trusted device count', async () => {
       const { service, repo } = await buildCtx();
       repo.findActiveNonRecovery.mockResolvedValue({ type: 'TOTP' });
       repo.findPendingTotp.mockResolvedValue(null);
@@ -325,7 +325,6 @@ describe('TwoFactorService', () => {
         lowRecoveryCodes: true,
         pendingEnrollment: false,
         trustedDeviceCount: 0,
-        policy: { required: false, graceEndsAt: null, enforced: false },
       });
     });
 

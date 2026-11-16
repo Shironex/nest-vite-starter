@@ -84,21 +84,6 @@ export const TRUSTED_DEVICE_TTL_SECONDS = 30 * 24 * 60 * 60;
 export const TRUSTED_DEVICE_CAP = 5;
 
 /**
- * Per-Organization enforcement: enabling a policy starts a 7-day grace window
- * (graceEndsAt = now + this) before non-enrolled members are forced into the
- * enroll-only state.
- */
-export const TWO_FACTOR_GRACE_PERIOD_MS = 7 * 24 * 60 * 60 * 1000;
-
-/**
- * TTL for the daily-sweep idempotency marker keyed on (member, graceEndsAt). 90
- * days comfortably outlives any 7-day grace window, so a member who ignores
- * enforcement is forced out (and audited / counted) at most once per window; a
- * policy re-enable mints a fresh graceEndsAt whose new key re-enforces.
- */
-export const TWO_FACTOR_ENFORCED_MARKER_TTL_SECONDS = 90 * 24 * 60 * 60;
-
-/**
  * Authenticated 2FA management actions (activate/disable code checks) are
  * throttled per-user (not per-IP: a hijacked session could rotate addresses):
  * 5 attempts per 300 s. Challenge verify additionally rides the existing per-IP

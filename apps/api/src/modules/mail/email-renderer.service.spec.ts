@@ -15,8 +15,6 @@ const RENDER_METHODS = [
   'renderTwoFactorDisabledEmail',
   'renderRecoveryCodeUsedEmail',
   'renderTwoFactorAdminResetEmail',
-  'renderTwoFactorPolicyAnnouncementEmail',
-  'renderTwoFactorEnforcementReminderEmail',
   'renderTwoFactorSupportResetContestEmail',
   'renderEmailChangeVerificationEmail',
   'renderEmailChangeRequestedEmail',

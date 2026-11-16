@@ -59,10 +59,10 @@ transient failure, or a worker crash mid-process). Design for re-execution.
   single dispatch) only when a job must run **exactly once across the fleet**
   (e.g. a billing run) and cannot be made safely idempotent. That is the
   exception, not the default. Wrap the template data in `withJobContext(...)` by
-  hand (the `queue-add-must-wrap-job-context` rule only sees `.add`), and call
-  `removeStaleJobSchedulers` after the upsert so a scheduler left under an old id
-  cannot double the job. The legacy `queue.add(name, data, { repeat })` form was
-  removed in BullMQ 6. `TwoFactorEnforcementScheduler` is the worked example.
+  hand (the `queue-add-must-wrap-job-context` rule only sees `.add`), and remove
+  any scheduler left under an old id after the upsert so it cannot double the
+  job. The legacy `queue.add(name, data, { repeat })` form was removed in
+  BullMQ 6.
 
 ## Failure handling / DLQ
 

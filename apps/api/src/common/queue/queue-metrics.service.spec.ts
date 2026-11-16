@@ -61,7 +61,7 @@ describe('QueueMetricsService resolution', () => {
   it('fails the boot when a declared queue was never registered', () => {
     // Silently skipping it would re-open the same blind spot, and the symptom
     // (a queue nobody watches) surfaces only when its jobs start failing.
-    const missing = QUEUE_NAMES.TWO_FACTOR_ENFORCEMENT;
+    const missing = QUEUE_NAMES.NOTIFICATION_DISPATCH;
     const partial = allQueuesIdle().filter((queue) => queue.name !== missing);
 
     const service = new QueueMetricsService(containerWith(partial));
@@ -83,7 +83,6 @@ describe('QueueMetricsService.collect', () => {
     const service = boot([
       makeQueue(QUEUE_NAMES.EMAIL_DELIVERY, { waiting: 2, active: 1, failed: 3, delayed: 0 }),
       makeQueue(QUEUE_NAMES.NOTIFICATION_DISPATCH, { ...idle }),
-      makeQueue(QUEUE_NAMES.TWO_FACTOR_ENFORCEMENT, { ...idle }),
     ]);
 
     await service.collect();
@@ -106,7 +105,6 @@ describe('QueueMetricsService.collect', () => {
         failed: 0,
         delayed: 0,
       }),
-      makeQueue(QUEUE_NAMES.TWO_FACTOR_ENFORCEMENT, { ...idle }),
     ]);
 
     await expect(service.collect()).resolves.toBeUndefined();

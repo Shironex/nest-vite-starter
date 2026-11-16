@@ -98,18 +98,6 @@ export const userPurgeFailuresTotal = new Counter({
   help: 'Total per-user purge attempts that failed (S3 prefix delete or row delete) and were deferred to the next sweep',
 });
 
-// The daily two-factor-enforcement sweep force-logs-out members of tenants
-// whose 2FA grace has expired but who never enrolled. That is a security-
-// relevant, irreversible-for-the-session action, so the count of members
-// enforced per run must be visible (a spike means a policy just passed its
-// deadline; a flat line means the sweep is finding nobody, as expected once a
-// tenant is fully enrolled). Sweep FAILURES ride the shared
-// `cron_sweep_failures_total{sweep="two-factor-enforcement"}` counter above.
-export const twoFactorEnforcedTotal = new Counter({
-  name: 'two_factor_enforced_total',
-  help: 'Total tenant members force-revoked by the daily two-factor-enforcement sweep after their tenant grace deadline passed',
-});
-
 // The hourly stale-PENDING sweep deletes abandoned TOTP enrollment rows whose
 // 1-hour activation window elapsed. The activate() path is the correctness
 // backstop; this counter makes the hygiene sweep observable (0 in the normal

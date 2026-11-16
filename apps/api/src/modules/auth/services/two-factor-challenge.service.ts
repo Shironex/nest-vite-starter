@@ -27,7 +27,6 @@ import { LockoutService } from './lockout.service';
 import { StepUpService } from './step-up.service';
 import type { SecondFactorMethod } from './step-up.service';
 import { TrustedDeviceService } from './trusted-device.service';
-import { TwoFactorPolicyService } from './two-factor-policy.service';
 import { SecondFactorRepository } from '../repositories/second-factor.repository';
 import {} from '../two-factor.util';
 import { recordAuthOutcome } from '../../metrics/auth-outcome.recorder';
@@ -135,7 +134,6 @@ export class TwoFactorChallengeService {
     private readonly lockoutService: LockoutService,
     private readonly stepUpService: StepUpService,
     private readonly trustedDeviceService: TrustedDeviceService,
-    private readonly twoFactorPolicyService: TwoFactorPolicyService,
     private readonly secondFactorRepository: SecondFactorRepository,
     private readonly userService: UserService,
     private readonly auditService: AuditService,
@@ -181,17 +179,7 @@ export class TwoFactorChallengeService {
 
     const activeFactor = await this.secondFactorRepository.findActiveNonRecovery(user.id);
     if (!activeFactor) {
-      // A non-enrolled member of an Organization whose 2FA grace has passed still gets a
-      // session (they authenticated, and enrollment itself needs an authed
-      // session), but it carries the enroll-only flag so the middleware gates it.
-      const params = this.sessionParams(user, opts);
-      if (
-        user.tenantId != null &&
-        (await this.twoFactorPolicyService.isEnrollmentRequiredForTenant(user.tenantId))
-      ) {
-        params.twoFactorEnrollmentRequired = true;
-      }
-      const session = await this.shared.establishSession(req, res, params);
+      const session = await this.shared.establishSession(req, res, this.sessionParams(user, opts));
       return { kind: 'session', expiresAt: session.expiresAt, via: 'no_factor' };
     }
 

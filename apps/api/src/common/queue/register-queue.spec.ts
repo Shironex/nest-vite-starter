@@ -88,15 +88,15 @@ describe('registerQueueWithDefaults', () => {
   });
 
   it('is the same registration for every queue name, so a second queue cannot drift', () => {
-    const module = registerQueueWithDefaults(QUEUE_NAMES.TWO_FACTOR_ENFORCEMENT, DEFAULTS);
+    const module = registerQueueWithDefaults(QUEUE_NAMES.NOTIFICATION_DISPATCH, DEFAULTS);
     const provider = queueOptionsProvider(
       module.providers ?? [],
-      QUEUE_NAMES.TWO_FACTOR_ENFORCEMENT,
+      QUEUE_NAMES.NOTIFICATION_DISPATCH,
     );
     const resolved: unknown = provider.useFactory({ getDependencyRef: () => ({}) });
 
     expect(resolved).toMatchObject({
-      name: QUEUE_NAMES.TWO_FACTOR_ENFORCEMENT,
+      name: QUEUE_NAMES.NOTIFICATION_DISPATCH,
       defaultJobOptions: DEFAULTS.jobOptions,
     });
   });

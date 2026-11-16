@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AppErrorCode } from '@repo/shared/errors';
 import { AUDIT_ACTIONS } from '@repo/shared/audit';
 import { ConflictError, UnauthorizedError, ValidationError } from '../../../common/errors';
-import { getTenantId } from '../../../common/context/request-context';
 import { sha256Hex } from '../../../common/utils/crypto';
 import { now } from '../../../common/clock';
 import { PrismaService } from '../../../common/database/prisma.service';
@@ -19,7 +18,6 @@ import { AuthSharedService } from './auth-shared.service';
 import { TotpService } from './totp.service';
 import { StepUpService } from './step-up.service';
 import { TrustedDeviceService } from './trusted-device.service';
-import { TwoFactorPolicyService } from './two-factor-policy.service';
 import { SecondFactorRepository } from '../repositories/second-factor.repository';
 import {
   formatRecoveryCode,
@@ -42,7 +40,6 @@ export interface ITwoFactorStatus {
   lowRecoveryCodes: boolean;
   pendingEnrollment: boolean;
   trustedDeviceCount: number;
-  policy: { required: boolean; graceEndsAt: Date | null; enforced: boolean };
 }
 
 /**
@@ -63,7 +60,6 @@ export class TwoFactorService {
     private readonly totpService: TotpService,
     private readonly stepUpService: StepUpService,
     private readonly trustedDeviceService: TrustedDeviceService,
-    private readonly twoFactorPolicyService: TwoFactorPolicyService,
     private readonly secondFactorRepository: SecondFactorRepository,
     private readonly auditService: AuditService,
     private readonly mailService: MailService,
@@ -252,11 +248,6 @@ export class TwoFactorService {
       this.logger.error('Failed to send 2FA enabled email', error);
     }
 
-    // No session re-issue: the login-stamped enroll-only flag self-heals on the
-    // next request. AuthMiddleware and the WebSocket handshake re-derive the
-    // requirement live via TwoFactorEnrollmentReader, which now sees this active
-    // factor and lets the session through. Re-issuing here (the old behavior)
-    // dropped the caller's rememberMe and stranded the previous session token.
     return { recoveryCodes: plaintext };
   }
 
@@ -385,23 +376,15 @@ export class TwoFactorService {
   }
 
   /**
-   * Settings surface. `enabled` is derived (no User flag). trustedDeviceCount
-   * and policy are populated in Steps 4 and 5 respectively; until then they
-   * report the safe defaults (0 devices, no policy).
+   * Settings surface. `enabled` is derived (no User flag).
    */
   async status(userId: string): Promise<ITwoFactorStatus> {
-    const [activeFactor, pending, recoveryCodesRemaining, trustedDeviceCount, policy] =
-      await Promise.all([
-        this.secondFactorRepository.findActiveNonRecovery(userId),
-        this.secondFactorRepository.findPendingTotp(userId),
-        this.secondFactorRepository.countUnusedRecoveryCodes(userId),
-        this.trustedDeviceService.count(userId),
-        // Only a tenant member has a policy; ALS carries the tenant during this
-        // authenticated call. Tenant-less/platform users get the default.
-        getTenantId()
-          ? this.twoFactorPolicyService.getTenantPolicy()
-          : Promise.resolve({ required: false, graceEndsAt: null, enforced: false }),
-      ]);
+    const [activeFactor, pending, recoveryCodesRemaining, trustedDeviceCount] = await Promise.all([
+      this.secondFactorRepository.findActiveNonRecovery(userId),
+      this.secondFactorRepository.findPendingTotp(userId),
+      this.secondFactorRepository.countUnusedRecoveryCodes(userId),
+      this.trustedDeviceService.count(userId),
+    ]);
 
     const enabled = activeFactor !== null;
     return {
@@ -411,7 +394,6 @@ export class TwoFactorService {
       lowRecoveryCodes: enabled && recoveryCodesRemaining <= LOW_RECOVERY_CODES_THRESHOLD,
       pendingEnrollment: pending !== null,
       trustedDeviceCount,
-      policy,
     };
   }
 }

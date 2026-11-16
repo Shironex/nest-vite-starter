@@ -13,20 +13,14 @@ const buildRouter = () => {
     regenerateRecoveryCodes: jest.fn().mockResolvedValue({ recoveryCodes: ['C'] }),
     revokeTrustedDevices: jest.fn().mockResolvedValue(undefined),
   };
-  const policyService = {
-    getTenantPolicy: jest
-      .fn()
-      .mockResolvedValue({ required: false, graceEndsAt: null, enforced: false }),
-    setTenantPolicy: jest
-      .fn()
-      .mockResolvedValue({ required: true, graceEndsAt: null, enforced: false }),
+  const adminResetService = {
     resetMemberTwoFactor: jest.fn().mockResolvedValue(undefined),
   };
   const router = new TwoFactorRouter(
     twoFactorService as unknown as Services[0],
-    policyService as unknown as Services[1],
+    adminResetService as unknown as Services[1],
   );
-  return { router, twoFactorService, policyService };
+  return { router, twoFactorService, adminResetService };
 };
 
 const buildCtx = (ip = '1.2.3.4', ua = 'jest-ua') => {
@@ -108,30 +102,14 @@ describe('TwoFactorRouter (wiring)', () => {
     expect(result).toEqual({ success: true });
   });
 
-  it('getTenantPolicy delegates to the policy service', async () => {
-    const { router, policyService } = buildRouter();
-    await router.getTenantPolicy();
-    expect(policyService.getTenantPolicy).toHaveBeenCalled();
-  });
-
-  it('setTenantPolicy passes required + ip/ua', async () => {
-    const { router, policyService } = buildRouter();
-    const { ctx } = buildCtx();
-    await router.setTenantPolicy(
-      { required: true },
-      ctx as unknown as Parameters<typeof router.setTenantPolicy>[1],
-    );
-    expect(policyService.setTenantPolicy).toHaveBeenCalledWith(true, '1.2.3.4', 'jest-ua');
-  });
-
   it('resetMemberTwoFactor passes caller id, target id + ip/ua', async () => {
-    const { router, policyService } = buildRouter();
+    const { router, adminResetService } = buildRouter();
     const { ctx } = buildCtx();
     const result = await router.resetMemberTwoFactor(
       { userId: 'm1' },
       ctx as unknown as Parameters<typeof router.resetMemberTwoFactor>[1],
     );
-    expect(policyService.resetMemberTwoFactor).toHaveBeenCalledWith(
+    expect(adminResetService.resetMemberTwoFactor).toHaveBeenCalledWith(
       'u-1',
       'm1',
       '1.2.3.4',

@@ -48,7 +48,6 @@ import type { StepUpService } from './services/step-up.service';
 import { TokenService } from './services/token.service';
 import type { TrustedDeviceService } from './services/trusted-device.service';
 import { TwoFactorChallengeService } from './services/two-factor-challenge.service';
-import type { TwoFactorPolicyService } from './services/two-factor-policy.service';
 
 let unscoped: PrismaClient;
 let prismaService: PrismaService;
@@ -140,9 +139,6 @@ const buildSubject = () => {
     lockout,
     {} as StepUpService,
     { isTrusted: jest.fn().mockResolvedValue(false) } as unknown as TrustedDeviceService,
-    {
-      isEnrollmentRequiredForTenant: jest.fn().mockResolvedValue(false),
-    } as unknown as TwoFactorPolicyService,
     secondFactors,
     {} as UserService,
     audit as unknown as AuditService,

@@ -274,18 +274,6 @@ export const twoFactorRegenerateSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-/** Tenant 2FA policy view (admin surface + embedded in twoFactor.status). */
-export const tenantTwoFactorPolicyOutput = z.object({
-  required: z.boolean(),
-  graceEndsAt: z.date().nullable(),
-  enforced: z.boolean(),
-});
-
-/** `twoFactor.setTenantPolicy` input (tenant admin). */
-export const setTenantTwoFactorPolicySchema = z.object({
-  required: z.boolean(),
-});
-
 /** `twoFactor.resetMemberTwoFactor` input (tenant admin). */
 export const resetMemberTwoFactorSchema = z.object({
   userId: z.string().min(1, 'User id is required'),
@@ -299,11 +287,6 @@ export const twoFactorStatusOutput = z.object({
   lowRecoveryCodes: z.boolean(),
   pendingEnrollment: z.boolean(),
   trustedDeviceCount: z.number().int(),
-  policy: z.object({
-    required: z.boolean(),
-    graceEndsAt: z.date().nullable(),
-    enforced: z.boolean(),
-  }),
 });
 
 export type TwoFactorBeginEnrollmentInput = z.infer<typeof twoFactorBeginEnrollmentSchema>;
@@ -313,8 +296,6 @@ export type TwoFactorRecoveryCodesOutput = z.infer<typeof twoFactorRecoveryCodes
 export type TwoFactorDisableInput = z.infer<typeof twoFactorDisableSchema>;
 export type TwoFactorRegenerateInput = z.infer<typeof twoFactorRegenerateSchema>;
 export type TwoFactorStatusOutput = z.infer<typeof twoFactorStatusOutput>;
-export type TenantTwoFactorPolicyOutput = z.infer<typeof tenantTwoFactorPolicyOutput>;
-export type SetTenantTwoFactorPolicyInput = z.infer<typeof setTenantTwoFactorPolicySchema>;
 export type ResetMemberTwoFactorInput = z.infer<typeof resetMemberTwoFactorSchema>;
 export type VerifyTwoFactorInput = z.infer<typeof verifyTwoFactorSchema>;
 export type ResetPasswordTokenStateInput = z.infer<typeof resetPasswordTokenStateSchema>;

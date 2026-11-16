@@ -57,13 +57,6 @@ export interface ISessionData {
    * organization carries it so AuthMiddleware can seed the ALS without a DB round-trip.
    */
   tenantId?: string | undefined;
-  /**
-   * Set when the session belongs to a member whose Organization requires 2FA and whose
-   * grace has passed but who is not yet enrolled. The session-validating
-   * middleware rejects everything except the enroll/logout allowlist with
-   * TWO_FACTOR_ENROLLMENT_REQUIRED. Cleared by re-issuing the session on activate.
-   */
-  twoFactorEnrollmentRequired?: true | undefined;
 }
 
 /**
@@ -88,7 +81,6 @@ const sessionDataSchema = z.object({
   // them exactly like a stamped blob.
   epoch: z.number().default(0),
   tenantId: z.string().optional(),
-  twoFactorEnrollmentRequired: z.literal(true).optional(),
 });
 
 /** Extended session data returned from validateSession, includes the derived session ID. */
@@ -173,7 +165,6 @@ export class SessionService {
     userAgent: string;
     rememberMe: boolean;
     tenantId?: string | undefined;
-    twoFactorEnrollmentRequired?: true | undefined;
     /**
      * Session epoch captured by the caller BEFORE it read the state that
      * authenticates this login (see `readEpoch`). Stamped into the blob, and
@@ -212,11 +203,6 @@ export class SessionService {
     // present so pre-tenancy/platform sessions don't store `tenantId: undefined`.
     if (tenantId !== undefined) {
       sessionData.tenantId = tenantId;
-    }
-    // Only stamp the enrollment-required flag when set; a normal session must
-    // never carry it (its presence is what the middleware gate keys on).
-    if (params.twoFactorEnrollmentRequired) {
-      sessionData.twoFactorEnrollmentRequired = true;
     }
 
     // Write membership + blob in ONE transaction, SADD logically first: a

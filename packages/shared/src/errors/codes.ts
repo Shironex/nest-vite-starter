@@ -47,10 +47,6 @@ export const AppErrorCode = {
   // The pending challenge is gone (expired or attempts exhausted): the UI must
   // route back to the password step and start over.
   TWO_FACTOR_CHALLENGE_EXPIRED: 'TWO_FACTOR_CHALLENGE_EXPIRED',
-  // Enforcement gate: the session belongs to a member whose Organization requires 2FA
-  // and whose grace has passed; every non-allowlisted procedure returns this so
-  // the SPA can route to the enroll-only screen.
-  TWO_FACTOR_ENROLLMENT_REQUIRED: 'TWO_FACTOR_ENROLLMENT_REQUIRED',
 } as const;
 
 export type AppErrorCode = (typeof AppErrorCode)[keyof typeof AppErrorCode];
