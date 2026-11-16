@@ -548,7 +548,7 @@
       "AccountDeletionService > treats a zero-row soft delete (concurrent double-delete) as idempotent success and still tears down": 1
     },
     "apps/api/src/modules/auth/services/auth-shared.service.spec.ts": {
-      "AuthSharedService > clearSessionCookie > zeroes maxAge, keeps the set name + path, and stays request-independent (sameSite \"none\" in prod)": 1,
+      "AuthSharedService > clearSessionCookie > zeroes maxAge, keeps the set name + path, and mirrors the set options": 1,
       "AuthSharedService > enforceAuthRateLimit > allows hits up to the limit": 1,
       "AuthSharedService > enforceAuthRateLimit > propagates an INCR error from the MULTI reply": 1,
       "AuthSharedService > enforceAuthRateLimit > runs INCR + EXPIRE NX in one MULTI (no crash window can strand a TTL-less counter)": 1,
@@ -557,10 +557,8 @@
       "AuthSharedService > enforceRateLimit (generic fixed window) > uses the supplied scope, limit and window": 1,
       "AuthSharedService > establishSession > coerces a null tenantId to undefined so the session field stays absent": 1,
       "AuthSharedService > establishSession > creates the session, sets the cookie with the session-derived maxAge, and rotates CSRF": 1,
-      "AuthSharedService > setSessionCookie > development → secure: false, sameSite: \"lax\" even for the desktop origin": 1,
-      "AuthSharedService > setSessionCookie > production + desktop origin → __Host- prefixed name, secure: true, sameSite: \"none\"": 1,
-      "AuthSharedService > setSessionCookie > production + no Origin header → sameSite: \"lax\" (only the exact desktop origin gets \"none\")": 1,
-      "AuthSharedService > setSessionCookie > production + web origin → sameSite: \"lax\" (SPA is same-origin behind the platform router)": 1,
+      "AuthSharedService > setSessionCookie > development → secure: false, sameSite: \"lax\"": 1,
+      "AuthSharedService > setSessionCookie > production → __Host- prefixed name, secure: true, sameSite: \"lax\"": 1,
       "AuthSharedService > validateTurnstile > resolves when turnstile.validate returns true": 1,
       "AuthSharedService > validateTurnstile > throws FORBIDDEN/TURNSTILE_FAILED when turnstile.validate returns false": 1
     },
