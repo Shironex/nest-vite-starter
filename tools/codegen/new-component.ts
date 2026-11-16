@@ -4,7 +4,7 @@ import { assertPascalCase, fail, repoRoot, toKebab, writeNew } from './codegen-u
 
 /** A feature's strings table, as the generated component imports it. */
 interface IFeatureStrings {
-  /** Import specifier of the table, e.g. `@/features/audit/Audit.strings`. */
+  /** Import specifier of the table, e.g. `@/features/admin/Admin.strings`. */
   readonly module: string;
   /** The exported table, e.g. `auditStrings`. */
   readonly table: string;

@@ -73,10 +73,7 @@ const SKIPPED_TESTS_MARKERS = ['https?://\\S+', 'TODO\\([^\\s)]+\\)'];
 // a named debt, not a judgment that the mix is right, and the list only
 // shrinks: tests/single-semantic-module.test.js fails on an entry that no
 // longer breaks the rule. Paths are repo-relative, so the test can read them.
-export const SINGLE_SEMANTIC_CONSTANTS_BACKLOG = [
-  'apps/api/src/modules/auth/auth.constants.ts',
-  'apps/web/src/features/audit/Audit.constants.ts',
-];
+export const SINGLE_SEMANTIC_CONSTANTS_BACKLOG = ['apps/api/src/modules/auth/auth.constants.ts'];
 
 export const SINGLE_SEMANTIC_UTILS_BACKLOG = [];
 

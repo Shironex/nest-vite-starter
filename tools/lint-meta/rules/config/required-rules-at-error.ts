@@ -69,14 +69,14 @@ const REQUIRED_RULES: readonly IRequiredRule[] = [
   {
     ruleId: 'repo/effect-fired-mutation-must-bind-callbacks',
     packageDir: 'apps/web',
-    probe: 'src/features/audit/components/Example/Example.hooks.ts',
+    probe: 'src/features/admin/components/Example/Example.hooks.ts',
     rationale:
       'TanStack Query delivers a per-call `mutate(vars, { onSuccess })` handler only while the issuing observer still has listeners. An effect-fired probe is ref-guarded against a duplicate request, so once a remount detaches that observer there is no second call either: the screen holds its spinner forever with the failure path swallowed too, which means no retry control and no error anywhere. The verify-email and reset-password screens fire this way, and they are exactly the screens a locked-out person reaches.',
   },
   {
     ruleId: 'repo/trpc-invalidate-with-path-key',
     packageDir: 'apps/web',
-    probe: 'src/features/audit/Example.mutations.ts',
+    probe: 'src/features/admin/Example.mutations.ts',
     rationale:
       "An input-less `queryKey()` is `[path, { type: 'query' }]` and prefix-matches no infinite query, so an `invalidateQueries` written with it goes silently dead the day its procedure moves to `useInfiniteQuery`: the mutation reaches the server and the row on screen never changes. The compliance agenda shipped exactly that, and only the merged-tree e2e caught it. `pathKey()` reaches every entry of the procedure.",
   },
