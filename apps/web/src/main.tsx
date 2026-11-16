@@ -2,35 +2,16 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import type { ErrorComponentProps } from '@tanstack/react-router';
-import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
-import type { Metric } from 'web-vitals';
 import { Button } from '@repo/ui/button';
 import { PageSkeleton } from '@repo/ui/page-skeleton';
 import { routeTree } from './routeTree.gen';
 import { queryClient, UNAUTHORIZED_EVENT } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
 import { loginPathForExpiredSession, pendingSkeletonForPath } from '@/lib/shell-routes';
-import { initElectron, getApiBaseUrl } from '@/lib/electron';
+import { initElectron } from '@/lib/electron';
 import { initI18n, i18n } from '@/lib/i18n';
 import { initErrorReporting, captureException } from '@/lib/error-reporting';
 import './index.css';
-
-function reportVital(metric: Metric): void {
-  if (typeof navigator.sendBeacon === 'undefined') return;
-  const body = JSON.stringify({
-    name: metric.name,
-    value: metric.value,
-    id: metric.id,
-    navigationType: metric.navigationType,
-  });
-  // The base URL matters in packaged Electron: a bare '/api/vitals' would
-  // resolve against app:// and never reach the API. getApiBaseUrl() is safe
-  // here because the observers are registered inside the initElectron() chain.
-  // text/plain (not application/json) keeps the beacon a CORS-simple request,
-  // so the cross-origin Electron case needs no preflight (which sendBeacon
-  // cannot perform); the API's vitals controller JSON-parses the text body.
-  navigator.sendBeacon(`${getApiBaseUrl()}/api/vitals`, new Blob([body], { type: 'text/plain' }));
-}
 
 /**
  * What a route shows while it loads, unless it names its own.
@@ -163,14 +144,6 @@ void Promise.all([initElectron(), initI18n()])
         <RouterProvider router={router} />
       </StrictMode>,
     );
-
-    // Register web-vitals observers. Callbacks fire when the browser calculates
-    // each metric; CLS and INP are reported at page unload or on next paint.
-    onCLS(reportVital);
-    onFCP(reportVital);
-    onINP(reportVital);
-    onLCP(reportVital);
-    onTTFB(reportVital);
   })
   .catch((error: unknown) => {
     // Without this, a rejected init leaves the Electron window blank forever.

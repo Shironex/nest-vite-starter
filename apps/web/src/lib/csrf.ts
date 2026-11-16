@@ -97,9 +97,7 @@ export function resetCsrfToken(): void {
  * left is a mutation fired before any response has landed, where two sid-less
  * requests each mint one and last-write-wins; that surfaces as a 403 and is
  * exactly what the retry below repairs, and the retry cannot re-race because a
- * sid cookie provably exists by then. This is the same hazard /api/vitals is
- * exempted from in apps/api/src/main.ts, where an exempt path is kept out of
- * sid creation precisely so it can never mint a competing one.
+ * sid cookie provably exists by then.
  *
  * Exported for unit coverage: the cold-start login e2e never trips a CSRF 403
  * (login succeeds cleanly once the sid race is fixed), so this retry path is

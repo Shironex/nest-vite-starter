@@ -27,15 +27,6 @@ import {
  * same file resets it.
  */
 
-/**
- * Note: the web-vitals beacon is deliberately NOT blocked here. The API exempts
- * /api/vitals from BOTH sid-cookie creation and CSRF protection (apps/api/src/main.ts),
- * so a cold-start vitals beacon can no longer mint a competing `csrf-sid` and
- * clobber the one GET /api/csrf-token sets. Letting the beacon fire during login
- * is therefore regression coverage for that fix: if the sid race ever returns,
- * this real login starts failing CSRF.
- */
-
 test.describe('Authentication (real login)', () => {
   test('logs in with a seeded user and reaches the authenticated dashboard', async ({ page }) => {
     await fillLoginForm(page, LOGIN_FIXTURE_EMAIL, E2E_FIXTURE_PASSWORD);
