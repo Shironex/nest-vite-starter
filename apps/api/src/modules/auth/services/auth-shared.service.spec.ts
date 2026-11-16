@@ -54,58 +54,29 @@ const buildSubject = async (nodeEnv: 'production' | 'development' | 'test') => {
 
 describe('AuthSharedService', () => {
   describe('setSessionCookie', () => {
-    it('production + desktop origin → __Host- prefixed name, secure: true, sameSite: "none"', async () => {
+    it('production → __Host- prefixed name, secure: true, sameSite: "lax"', async () => {
       const { service } = await buildSubject('production');
-      const { req, res, cookieMock } = expressMocks({ headers: { origin: 'app://app' } });
-      service.setSessionCookie(req, res, 't', 1000);
+      const { res, cookieMock } = expressMocks();
+      service.setSessionCookie(res, 't', 1000);
       // __Host- requires secure + path '/' + NO domain attribute; the options
-      // object below satisfies all three (domain is simply never set). The
-      // packaged Electron renderer is a cross-site app:// origin, so its
-      // session cookie must be SameSite=None to be sent at all.
+      // object below satisfies all three (domain is simply never set).
       expect(cookieMock).toHaveBeenCalledWith(
         '__Host-session_id',
         't',
         expect.objectContaining({
           httpOnly: true,
           secure: true,
-          sameSite: 'none',
+          sameSite: 'lax',
           path: '/',
           maxAge: 1000,
         }),
       );
     });
 
-    it('production + web origin → sameSite: "lax" (SPA is same-origin behind the platform router)', async () => {
-      const { service } = await buildSubject('production');
-      const { req, res, cookieMock } = expressMocks({
-        headers: { origin: 'https://app.example.com' },
-      });
-      service.setSessionCookie(req, res, 't', 1000);
-      expect(cookieMock).toHaveBeenCalledWith(
-        '__Host-session_id',
-        't',
-        expect.objectContaining({
-          secure: true,
-          sameSite: 'lax',
-        }),
-      );
-    });
-
-    it('production + no Origin header → sameSite: "lax" (only the exact desktop origin gets "none")', async () => {
-      const { service } = await buildSubject('production');
-      const { req, res, cookieMock } = expressMocks();
-      service.setSessionCookie(req, res, 't', 1000);
-      expect(cookieMock).toHaveBeenCalledWith(
-        '__Host-session_id',
-        't',
-        expect.objectContaining({ sameSite: 'lax' }),
-      );
-    });
-
-    it('development → secure: false, sameSite: "lax" even for the desktop origin', async () => {
+    it('development → secure: false, sameSite: "lax"', async () => {
       const { service } = await buildSubject('development');
-      const { req, res, cookieMock } = expressMocks({ headers: { origin: 'app://app' } });
-      service.setSessionCookie(req, res, 't', 1000);
+      const { res, cookieMock } = expressMocks();
+      service.setSessionCookie(res, 't', 1000);
       expect(cookieMock).toHaveBeenCalledWith(
         'session_id',
         't',
@@ -118,11 +89,9 @@ describe('AuthSharedService', () => {
   });
 
   describe('clearSessionCookie', () => {
-    it('zeroes maxAge, keeps the set name + path, and stays request-independent (sameSite "none" in prod)', async () => {
+    it('zeroes maxAge, keeps the set name + path, and mirrors the set options', async () => {
       const { service } = await buildSubject('production');
       const { res, cookieMock } = expressMocks();
-      // Deletion matches on name + path only, so the clear takes no request
-      // and always uses the env-deterministic sameSite.
       service.clearSessionCookie(res);
       expect(cookieMock).toHaveBeenCalledWith(
         '__Host-session_id',
@@ -130,7 +99,7 @@ describe('AuthSharedService', () => {
         expect.objectContaining({
           maxAge: 0,
           secure: true,
-          sameSite: 'none',
+          sameSite: 'lax',
           path: '/',
         }),
       );

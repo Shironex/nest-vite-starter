@@ -503,7 +503,6 @@ export class TwoFactorChallengeService {
       )
       .exec();
     this.shared.setAuthCookie(
-      req,
       res,
       this.pendingCookieName,
       token,

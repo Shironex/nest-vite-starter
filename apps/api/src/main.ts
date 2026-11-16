@@ -23,7 +23,6 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { DESKTOP_APP_ORIGIN } from '@repo/shared/constants';
 import { AppModule } from './app.module';
 import { CustomLogger, createAppLogger } from './modules/logger/logger.service';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -183,16 +182,16 @@ async function bootstrap() {
     next();
   });
 
-  // CORS: explicit origin allowlist for web and desktop clients
+  // CORS: explicit origin allowlist for the web client
   const corsOrigins = (() => {
     if (!isProduction) {
-      return ['http://localhost:5173', DESKTOP_APP_ORIGIN];
+      return ['http://localhost:5173'];
     }
     const configured = configService.get<string>('CORS_ORIGINS');
     if (configured) {
       return configured.split(',').map((s) => s.trim());
     }
-    return [configService.getOrThrow<string>('APP_URL'), DESKTOP_APP_ORIGIN];
+    return [configService.getOrThrow<string>('APP_URL')];
   })();
 
   app.enableCors({

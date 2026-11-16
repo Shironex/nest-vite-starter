@@ -29,9 +29,8 @@ export const APP_LOCALE = 'en-US';
  * one-line change here rather than a repo-wide sweep.
  *
  * 'SaaS Starter' is a placeholder brand carried over from the design system and is
- * expected to change. Surfaces that cannot read a constant (electron-builder
- * appId/productName, index.html <title>, compose container names) are the only
- * places the literal is duplicated.
+ * expected to change. Surfaces that cannot read a constant (index.html <title>,
+ * compose container names) are the only places the literal is duplicated.
  */
 export const PRODUCT_NAME = 'SaaS Starter';
 
@@ -49,13 +48,6 @@ export const PRODUCT_SLUG = 'saas-starter';
  */
 export const CSRF_HEADER = 'x-csrf-token';
 export const CSRF_TOKEN_PATH = '/api/csrf-token';
-
-/**
- * Origin header value of the packaged Electron renderer (app:// scheme). It is
- * the only way the desktop client identifies itself to the api, which keys its
- * CORS allowlist and session-cookie SameSite decision on this exact value.
- */
-export const DESKTOP_APP_ORIGIN = 'app://app';
 
 /**
  * Auth token lifetimes. Owned here so the api's TokenService (which stamps

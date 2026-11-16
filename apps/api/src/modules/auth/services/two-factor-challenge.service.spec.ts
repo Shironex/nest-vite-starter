@@ -94,7 +94,6 @@ describe('TwoFactorChallengeService', () => {
       expect(mocks.shared.establishSession).not.toHaveBeenCalled();
       expect(mocks.redis.multi).toHaveBeenCalledTimes(1);
       expect(mocks.shared.setAuthCookie).toHaveBeenCalledWith(
-        req,
         res,
         PENDING_COOKIE,
         expect.any(String),

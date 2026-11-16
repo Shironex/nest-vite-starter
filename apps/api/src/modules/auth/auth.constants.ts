@@ -103,8 +103,7 @@ export const TWO_FACTOR_MANAGE_RATE_SCOPE = '2fa-manage';
  * Cookie names for the two 2FA cookies, mirroring `getSessionCookieName`: the
  * `__Host-` prefix in production binds each cookie to the exact host (Secure,
  * Path=/, no Domain), dev drops it because local http cannot satisfy Secure.
- * Both are set with httpOnly + `resolveSameSite(req)` so the raw token never
- * touches JS and the Electron app:// origin still receives them.
+ * Both are set httpOnly and SameSite=Lax so the raw token never touches JS.
  *
  * `__Host-2fa`       carries the pending-challenge token (5 min).
  * `__Host-2fa-trust` carries the trusted-device token (30 d).

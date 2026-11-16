@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 import type Redis from 'ioredis';
-import { DESKTOP_APP_ORIGIN } from '@repo/shared/constants';
 import { AppErrorCode } from '@repo/shared/errors';
 import { ForbiddenError } from '../../../common/errors';
 import { REDIS_CLIENT } from '../../../common/redis/redis.module';
@@ -97,51 +96,35 @@ export class AuthSharedService {
     });
 
     const maxAge = session.expiresAt.getTime() - nowMs();
-    this.setSessionCookie(req, res, session.token, maxAge);
+    this.setSessionCookie(res, session.token, maxAge);
     this.csrfService.rotate(req, res);
 
     return { token: session.token, expiresAt: session.expiresAt };
   }
 
-  /**
-   * Production SameSite depends on which client is asking. The packaged
-   * Electron renderer calls from the cross-site app:// origin, so its session
-   * cookie must be SameSite=None to ride along at all. The web SPA is
-   * same-origin behind the platform router and gets the stricter 'lax', which
-   * removes the cookie from cross-site POSTs entirely (CSRF defense in depth
-   * on top of the double-submit token). Dev is always 'lax': both clients talk
-   * to plain-http localhost, where 'none' would require `secure`.
-   */
-  private resolveSameSite(req: Request): 'none' | 'lax' {
-    if (!this.isProduction) {
-      return 'lax';
-    }
-    return req.headers.origin === DESKTOP_APP_ORIGIN ? 'none' : 'lax';
-  }
-
   // The production cookie options below satisfy every `__Host-` requirement:
   // secure: true, path: '/', and no `domain` attribute. clearSessionCookie
   // mirrors the name + path so the clear targets the same cookie the set wrote.
-  setSessionCookie(req: Request, res: Response, token: string, maxAge: number): void {
+  //
+  // SameSite is 'lax' everywhere: the web SPA is same-site with the api, and
+  // 'lax' keeps the cookie off cross-site POSTs entirely (CSRF defense in
+  // depth on top of the double-submit token).
+  setSessionCookie(res: Response, token: string, maxAge: number): void {
     res.cookie(this.sessionCookieName, token, {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: this.resolveSameSite(req),
+      sameSite: 'lax',
       path: '/',
       maxAge,
     });
   }
 
   clearSessionCookie(res: Response): void {
-    // Cookie deletion matches on name + path only, so the clear does not need
-    // to mirror the per-origin SameSite the set used; it stays deterministic
-    // (env-based, request-independent). Production keeps 'none' because a
-    // Lax/Strict Set-Cookie is dropped in cross-site responses, which would
-    // leave the desktop (app:// origin) unable to clear its cookie on logout.
+    // Cookie deletion matches on name + path only; the options mirror the set.
     res.cookie(this.sessionCookieName, '', {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: this.isProduction ? 'none' : 'lax',
+      sameSite: 'lax',
       path: '/',
       maxAge: 0,
     });
@@ -149,17 +132,16 @@ export class AuthSharedService {
 
   /**
    * Set an arbitrary httpOnly auth cookie with the SAME hardened options as the
-   * session cookie (Secure in prod, per-origin SameSite via resolveSameSite,
-   * Path=/). Used for the 2FA pending (`__Host-2fa`) and trusted-device
+   * session cookie (Secure in prod, SameSite=Lax, Path=/). Used for the 2FA pending (`__Host-2fa`) and trusted-device
    * (`__Host-2fa-trust`) cookies so their name is passed in but every security
    * attribute stays in this one place. `name` is a caller-controlled constant
    * (never user input).
    */
-  setAuthCookie(req: Request, res: Response, name: string, value: string, maxAge: number): void {
+  setAuthCookie(res: Response, name: string, value: string, maxAge: number): void {
     res.cookie(name, value, {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: this.resolveSameSite(req),
+      sameSite: 'lax',
       path: '/',
       maxAge,
     });
@@ -170,7 +152,7 @@ export class AuthSharedService {
     res.cookie(name, '', {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: this.isProduction ? 'none' : 'lax',
+      sameSite: 'lax',
       path: '/',
       maxAge: 0,
     });

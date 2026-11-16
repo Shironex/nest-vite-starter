@@ -18,7 +18,7 @@ following `export *` re-exports. Regenerate with `pnpm generate:arch-map`.
 ## `@repo/shared`
 
 - `@repo/shared/audit` (`packages/shared/src/audit/index.ts`): `AUDIT_ACTIONS`, `AUDIT_PII_ERASED_VALUE`, `AUDIT_PII_FIELDS`, `AuditAction`, `AuditPiiField`
-- `@repo/shared/constants` (`packages/shared/src/constants/index.ts`): `APP_LOCALE`, `AUDIT_LOG_LIST_DEFAULT_LIMIT`, `AUDIT_LOG_LIST_MAX_LIMIT`, `AUDIT_LOG_MAX_ACTIONS`, `AUDIT_LOG_MAX_RANGE_DAYS`, `CSRF_HEADER`, `CSRF_TOKEN_PATH`, `DESKTOP_APP_ORIGIN`, `EMAIL_CHANGE_TOKEN_TTL_MS`, `formatTokenTtl`, `PASSWORD_RESET_TOKEN_TTL_MS`, `PRODUCT_NAME`, `PRODUCT_SLUG`, `VERIFICATION_TOKEN_TTL_MS`
+- `@repo/shared/constants` (`packages/shared/src/constants/index.ts`): `APP_LOCALE`, `AUDIT_LOG_LIST_DEFAULT_LIMIT`, `AUDIT_LOG_LIST_MAX_LIMIT`, `AUDIT_LOG_MAX_ACTIONS`, `AUDIT_LOG_MAX_RANGE_DAYS`, `CSRF_HEADER`, `CSRF_TOKEN_PATH`, `EMAIL_CHANGE_TOKEN_TTL_MS`, `formatTokenTtl`, `PASSWORD_RESET_TOKEN_TTL_MS`, `PRODUCT_NAME`, `PRODUCT_SLUG`, `VERIFICATION_TOKEN_TTL_MS`
 - `@repo/shared/errors` (`packages/shared/src/errors/index.ts`): `AppErrorCode`, `AppErrorCodeType`
 - `@repo/shared/logger` (`packages/shared/src/logger/index.ts`): `createCredentialSegmentRedactor`, `createLogger`, `CREDENTIAL_PATH_PREFIXES`, `getLogLevel`, `isSensitiveKey`, `LogEntry`, `Logger`, `LoggerOptions`, `LogLevel`, `normalizeError`, `redactCredentialPath`, `redactCredentialSegments`, `redactSensitive`, `SAFE_KEY_ALLOWLIST`, `scrubText`, `SENSITIVE_KEY_PATTERNS`, `setColorsEnabled`, `setLogLevel`, `setTimestampsEnabled`, `TraceContext`
 - `@repo/shared/money` (`packages/shared/src/money/index.ts`): `asCurrencyCode`, `createMoney`, `CurrencyCode`, `formatMoney`, `isCurrencyCode`, `isMoneyAmount`, `Money`

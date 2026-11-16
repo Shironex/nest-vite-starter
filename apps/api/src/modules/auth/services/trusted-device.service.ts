@@ -81,7 +81,7 @@ export class TrustedDeviceService {
       .setex(RedisKeys.trustedDevice(deviceId), TRUSTED_DEVICE_TTL_SECONDS, JSON.stringify(blob))
       .exec();
     await this.enforceCap(userId);
-    this.shared.setAuthCookie(req, res, this.cookieName, token, TRUSTED_DEVICE_TTL_SECONDS * 1000);
+    this.shared.setAuthCookie(res, this.cookieName, token, TRUSTED_DEVICE_TTL_SECONDS * 1000);
   }
 
   /** Number of trusted devices for the settings card. */

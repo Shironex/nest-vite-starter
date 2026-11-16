@@ -38,11 +38,8 @@ export class CsrfService {
         (req.cookies?.[this.sidCookieName] as string | undefined) ?? '',
       cookieName: tokenCookieName,
       cookieOptions: {
-        // Deliberately static SameSite=None in prod (unlike the per-origin
-        // session cookie): this one doubleCsrf instance serves both the web
-        // SPA and the cross-site app:// desktop origin, and its options are
-        // fixed at construction, not per request.
-        sameSite: this.isProduction ? 'none' : 'lax',
+        // Lax like the session cookie: the web SPA is same-site with the api.
+        sameSite: 'lax',
         secure: this.isProduction,
         httpOnly: true,
         path: '/',

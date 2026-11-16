@@ -63,7 +63,6 @@ describe('TrustedDeviceService', () => {
 
       expect(mocks.redis.multi).toHaveBeenCalled();
       expect(mocks.shared.setAuthCookie).toHaveBeenCalledWith(
-        req,
         res,
         TRUST_COOKIE,
         expect.any(String),
