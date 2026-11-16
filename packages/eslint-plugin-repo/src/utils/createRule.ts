@@ -6,5 +6,5 @@ import { ESLintUtils } from '@typescript-eslint/utils';
  */
 export const createRule = ESLintUtils.RuleCreator(
   (ruleName) =>
-    `https://github.com/Shironex/nest-vite-saas-starter/blob/main/packages/eslint-plugin-repo/docs/rules/${ruleName}.md`,
+    `https://github.com/Shironex/nest-vite-starter/blob/main/packages/eslint-plugin-repo/docs/rules/${ruleName}.md`,
 );

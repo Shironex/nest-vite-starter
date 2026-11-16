@@ -10,7 +10,7 @@ Do not open a public issue, discussion or pull request for an unfixed vulnerabil
 
 Report it privately through GitHub private vulnerability reporting: open the repository's
 **Security** tab and choose **Report a vulnerability**, or go directly to
-[github.com/Shironex/nest-vite-saas-starter/security/advisories/new](https://github.com/Shironex/nest-vite-saas-starter/security/advisories/new).
+[github.com/Shironex/nest-vite-starter/security/advisories/new](https://github.com/Shironex/nest-vite-starter/security/advisories/new).
 
 Include where possible:
 
