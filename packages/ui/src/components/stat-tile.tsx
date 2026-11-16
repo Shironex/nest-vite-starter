@@ -29,7 +29,7 @@ const statFigureVariants = cva('type-stat-figure tabular-nums', {
 
 interface IStatTileProps
   extends React.ComponentProps<typeof Card>, VariantProps<typeof statFigureVariants> {
-  /** Short description of what the figure counts, e.g. "Active members". */
+  /** Short description of what the figure counts, e.g. "Active users". */
   label: React.ReactNode;
   /**
    * The figure itself.

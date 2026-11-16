@@ -10,16 +10,16 @@ function getTile() {
 
 describe('StatTile', () => {
   it('renders the label and the figure', () => {
-    render(<StatTile label="Active members" value={94} />);
+    render(<StatTile label="Active users" value={94} />);
 
-    expect(screen.getByText('Active members')).toBeInTheDocument();
+    expect(screen.getByText('Active users')).toBeInTheDocument();
     expect(screen.getByText('94')).toBeInTheDocument();
   });
 
   it('names the group with its label', () => {
-    render(<StatTile label="Active members" value={94} />);
+    render(<StatTile label="Active users" value={94} />);
 
-    expect(getTile()).toHaveAccessibleName('Active members');
+    expect(getTile()).toHaveAccessibleName('Active users');
   });
 
   // The state that usually disappears, because `{count && ...}` hides it.
@@ -49,7 +49,7 @@ describe('StatTile', () => {
   });
 
   it('sets the figure in the stat figure utility, not in a display style', () => {
-    render(<StatTile label="Active members" value={94} />);
+    render(<StatTile label="Active users" value={94} />);
 
     const figure = screen.getByText('94');
     expect(figure).toHaveClass('type-stat-figure');
@@ -59,7 +59,7 @@ describe('StatTile', () => {
   describe('loading', () => {
     it('replaces the figure with a skeleton', () => {
       const { container } = render(
-        <StatTile label="Active members" value={94} loading icon={<CalendarClock />} />,
+        <StatTile label="Active users" value={94} loading icon={<CalendarClock />} />,
       );
 
       expect(screen.queryByText('94')).not.toBeInTheDocument();
@@ -69,10 +69,10 @@ describe('StatTile', () => {
     // Hiding the label would drop the tile's accessible name for as long as the
     // query runs, so only the pending figure is skeletoned.
     it('keeps the label and its accessible name while pending', () => {
-      render(<StatTile label="Active members" value={94} loading />);
+      render(<StatTile label="Active users" value={94} loading />);
 
-      expect(screen.getByText('Active members')).toBeInTheDocument();
-      expect(getTile()).toHaveAccessibleName('Active members');
+      expect(screen.getByText('Active users')).toBeInTheDocument();
+      expect(getTile()).toHaveAccessibleName('Active users');
     });
 
     it('marks the tile busy only while loading', () => {
