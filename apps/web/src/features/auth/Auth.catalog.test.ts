@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import en from './locales/en.json';
 
 /**
- * The auth catalog, in the shape `Help.catalog.test.ts` uses. An empty leaf
+ * The auth catalog. An empty leaf
  * renders as a blank label or button on the sign-in screen, which no type check
  * and no lint rule would catch.
  */

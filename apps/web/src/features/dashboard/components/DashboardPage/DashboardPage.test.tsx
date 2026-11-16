@@ -44,17 +44,4 @@ describe('DashboardPage', () => {
 
     expect(screen.getByTestId('activity-feed')).toBeInTheDocument();
   });
-
-  /**
-   * The `data-tour` anchors the dashboard guided tour points at
-   * (`features/help/tours/dashboard.tour.ts`). Asserted HERE, in the screen's own
-   * test, because the tour is data in another folder and nothing else notices
-   * when a restyle drops an attribute: the tour would just quietly skip the step
-   * and get shorter.
-   */
-  it('carries the data-tour anchors its guided tour points at', () => {
-    const { container } = render(<DashboardPage />);
-
-    expect(container.querySelector('[data-tour="dashboard-activity"]')).not.toBeNull();
-  });
 });

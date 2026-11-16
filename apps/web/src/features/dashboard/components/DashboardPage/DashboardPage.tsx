@@ -31,9 +31,7 @@ export default function DashboardPage() {
         <p className="type-body-regular text-text-muted">{v.subtitle}</p>
       </header>
 
-      <div data-tour="dashboard-activity">
-        <ActivityFeed />
-      </div>
+      <ActivityFeed />
     </div>
   );
 }

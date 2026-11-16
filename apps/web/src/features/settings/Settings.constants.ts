@@ -15,7 +15,6 @@ export const SETTINGS_SECTION = {
   notifications: 'notifications',
   security: 'security',
   appearance: 'appearance',
-  help: 'help',
   updates: 'updates',
 } as const;
 

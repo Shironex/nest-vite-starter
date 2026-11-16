@@ -159,7 +159,6 @@ export default [
             AUTH_NS: 'auth',
             DASHBOARD_NS: 'dashboard',
             WORKSPACE_NS: 'workspace',
-            HELP_NS: 'help',
           },
         },
       ],

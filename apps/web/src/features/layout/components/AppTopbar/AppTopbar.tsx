@@ -4,7 +4,7 @@ import { UserMenu } from '@/features/layout/components/UserMenu';
 import { useAppTopbar } from './AppTopbar.hooks';
 import type { IAppTopbarProps } from './AppTopbar.types';
 
-export default function AppTopbar({ notifications, help }: IAppTopbarProps) {
+export default function AppTopbar({ notifications }: IAppTopbarProps) {
   const { title, subtitle } = useAppTopbar();
 
   const subtitleNode = subtitle ? (
@@ -28,17 +28,8 @@ export default function AppTopbar({ notifications, help }: IAppTopbarProps) {
         {subtitleNode}
       </div>
       <ConnectionIndicator />
-      {help}
-      {/*
-       * `data-tour` anchors, and nothing more: an attribute the orientation
-       * tour selects on. Deliberately not a class and deliberately not the
-       * component's own markup, so restyling either of these cannot break the
-       * tour that points at them.
-       */}
-      <span data-tour="app-notifications">{notifications}</span>
-      <span data-tour="app-user-menu">
-        <UserMenu />
-      </span>
+      {notifications}
+      <UserMenu />
     </header>
   );
 }

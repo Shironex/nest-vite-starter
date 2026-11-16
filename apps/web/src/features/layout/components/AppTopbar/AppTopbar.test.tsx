@@ -68,26 +68,4 @@ describe('AppTopbar', () => {
     expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'User menu' })).toBeInTheDocument();
   });
-
-  /**
-   * The `data-tour` anchors the orientation tour points at
-   * (`features/help/tours/dashboard.tour.ts`), plus the slot the help control
-   * itself fills. Asserted here because the tour is data in another folder and
-   * nothing else notices when a restyle drops an attribute: the tour would just
-   * quietly skip the step and get shorter.
-   */
-  it('carries the data-tour anchors the orientation tour points at', () => {
-    const { container } = render(
-      <SidebarProvider>
-        <AppTopbar
-          notifications={<button type="button">Notifications</button>}
-          help={<button type="button" data-tour="app-help" />}
-        />
-      </SidebarProvider>,
-    );
-
-    expect(container.querySelector('[data-tour="app-help"]')).not.toBeNull();
-    expect(container.querySelector('[data-tour="app-notifications"]')).not.toBeNull();
-    expect(container.querySelector('[data-tour="app-user-menu"]')).not.toBeNull();
-  });
 });

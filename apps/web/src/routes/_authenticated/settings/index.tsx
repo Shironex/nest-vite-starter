@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Bell, CircleHelp, Download, Palette, Shield, User, Users } from 'lucide-react';
+import { Bell, Download, Palette, Shield, User, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ROLES } from '@repo/shared/permissions';
 import { pageTitle } from '@/lib/page-title';
@@ -27,7 +27,6 @@ import type { SettingsSectionId } from '@/features/settings/Settings.constants';
 import type { OAuthProviderKey } from '@/features/auth/Auth.constants';
 import { IS_ELECTRON } from '@/lib/electron';
 import { UpdatesSection } from '@/features/settings/components/UpdatesSection';
-import { HelpToursSection } from '@/features/help/components/HelpToursSection';
 
 export const Route = createFileRoute('/_authenticated/settings/')({
   head: () => pageTitle('pageTitle.settings'),
@@ -128,21 +127,6 @@ function SettingsPage() {
       label: t('settings.sections.appearance'),
       icon: Palette,
       panel: <ThemeSection />,
-    },
-    /*
-     * A THIRD ROW THE DESIGN DOES NOT DRAW, on the same terms as Appearance and
-     * Updates above: real shipped functionality the mockup never covered.
-     *
-     * It is a rail row rather than a panel under Profile because it is not about
-     * this account at all; it is the index of every guided tour in the
-     * product, and the one place somebody who cannot remember which screen
-     * explained a thing can go and find it.
-     */
-    {
-      id: SETTINGS_SECTION.help,
-      label: t('settings.sections.help'),
-      icon: CircleHelp,
-      panel: <HelpToursSection />,
     },
   ];
 

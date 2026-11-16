@@ -7,15 +7,6 @@ export interface IAppTopbarProps {
    * the layout route composes the two instead.
    */
   readonly notifications?: ReactNode;
-  /**
-   * Slot for the per-screen guided-tour control, on the same terms as the bell:
-   * it belongs to the `help` feature, so the layout route composes it in.
-   *
-   * It sits BEFORE the bell rather than after it. The two are both topbar
-   * affordances, but one is a standing offer and the other is an interruption,
-   * and the reading order should put the thing you can always ask for first.
-   */
-  readonly help?: ReactNode;
 }
 
 export interface IAppTopbarView {

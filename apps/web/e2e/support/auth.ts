@@ -53,19 +53,6 @@ export const TWO_FACTOR_FIXTURE_EMAILS = {
 } as const;
 
 /**
- * help-tour.spec.ts. The one fixture the seed leaves with NO tour progress.
- *
- * Every other account in this file is seeded as having answered every guided
- * tour, so no tour can auto-start over a spec's click (see E2E_ANSWERED_TOURS
- * in packages/database/prisma/seed.ts). That determinism is worth exactly
- * nothing if it also means a broken tour would never be noticed, so this
- * account is held back and one spec signs in as it.
- *
- * MUST match E2E_TOUR_FIXTURE_EMAIL in packages/database/prisma/seed.ts.
- */
-export const TOUR_FIXTURE_EMAIL = 'e2e-tour@example.com';
-
-/**
  * The session cookie, matched by both spellings the API can issue.
  *
  * `getSessionCookieName(isProduction)` prefixes the name with `__Host-` only

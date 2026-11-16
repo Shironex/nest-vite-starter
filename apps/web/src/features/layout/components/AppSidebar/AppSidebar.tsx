@@ -81,8 +81,7 @@ export default function AppSidebar() {
          * to be declared here. It is a real element rather than `display:
          * contents` so the landmark is exposed reliably.
          */}
-        {/* `data-tour` anchor for the orientation tour. An attribute only. */}
-        <nav aria-label={navLabel} data-tour="app-sidebar" className="flex flex-col gap-0">
+        <nav aria-label={navLabel} className="flex flex-col gap-0">
           {groupSections}
         </nav>
       </SidebarContent>

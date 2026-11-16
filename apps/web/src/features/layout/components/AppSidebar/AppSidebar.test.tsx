@@ -84,11 +84,4 @@ describe('AppSidebar', () => {
     const disabled = document.querySelectorAll('[aria-disabled="true"]');
     expect(disabled).toHaveLength(0);
   });
-
-  /** The `data-tour` anchor the orientation tour's first step points at. */
-  it('carries the data-tour anchor the orientation tour points at', () => {
-    const { container } = renderSidebar();
-
-    expect(container.querySelector('[data-tour="app-sidebar"]')).not.toBeNull();
-  });
 });

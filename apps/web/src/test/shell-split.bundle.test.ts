@@ -14,9 +14,9 @@ import { describe, expect, it } from 'vitest';
  * leave `pendingComponent` in the entry graph. So the default put the shell in
  * front of every visitor, including the sign-in screen, which never renders it.
  *
- * `pnpm size:check` DOES catch a regression here, unlike the driver.js and
- * English cases, but it catches it as a number with no explanation, in a job
- * that runs after the change is written. Deleting one line from
+ * `pnpm size:check` DOES catch a regression here, unlike the English case, but
+ * it catches it as a number with no explanation, in a job that runs after the
+ * change is written. Deleting one line from
  * `codeSplittingOptions` looks like tidying an option back to its default, and
  * the failure it produces names a byte count rather than the cause. This test
  * is the one that says what actually broke.
