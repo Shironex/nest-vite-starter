@@ -1,11 +1,5 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
-import {
-  createTRPCClient,
-  httpBatchLink,
-  httpLink,
-  splitLink,
-  TRPCClientError,
-} from '@trpc/client';
+import { createTRPCClient, httpBatchLink, TRPCClientError } from '@trpc/client';
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
 import superjson from 'superjson';
 import { toast } from '@repo/ui/sonner';
@@ -118,39 +112,20 @@ export const queryClient = new QueryClient({
 // Re-export so existing consumers keep importing the CSRF reset from here.
 export { resetCsrfToken } from './csrf';
 
-/**
- * Per-operation context this client understands. Set it at the call site:
- *
- *   trpc.x.create.mutationOptions({ trpc: { context: { idempotencyKey } } })
- *
- * It must be set where the options are BUILT, not per call: TanStack's
- * `mutate(vars, opts)` keeps its options to itself and never forwards them to
- * the transport, so a per-call `context` compiles to nothing (and in fact does
- * not typecheck). In practice no screen writes this by hand: the shared
- * mutation hooks under each feature's `*.mutations.ts` mint, carry and reset
- * the key themselves. See `@/hooks/use-idempotency-key`.
- */
-export interface ITrpcOperationContext {
-  readonly idempotencyKey?: string;
-}
-
-/** The header the api's IdempotencyMiddleware reads. */
-const IDEMPOTENCY_HEADER = 'idempotency-key';
+/** Same-origin: the dev server and the platform router forward `/trpc` to the api. */
+const TRPC_URL = '/trpc';
 
 /**
- * Options both links share, so the two transports cannot drift apart.
+ * The batching link's options.
  *
- * The CSRF token rides on this `fetch` rather than on either link's `headers()`
+ * The CSRF token rides on this `fetch` rather than on the link's `headers()`
  * because only the fetch layer knows the HTTP method, and the method is what
  * decides whether the api validates a token at all. Asking for one in
  * `headers()` meant every query paid for a token it never used, which spent one
  * of GET /api/csrf-token's 30-per-60s-per-IP slots on every SPA boot. See
  * lib/csrf.ts.
  */
-/** Same-origin: the dev server and the platform router forward `/trpc` to the api. */
-const TRPC_URL = '/trpc';
-
-const sharedLinkOptions = () => ({
+const linkOptions = () => ({
   url: TRPC_URL,
   // Must match TRPCModule.forRoot transformer (apps/api/src/app.module.ts)
   transformer: superjson,
@@ -165,32 +140,7 @@ let _trpcClient: ReturnType<typeof createTRPCClient<AppRouter>> | null = null;
 function getTrpcClient() {
   if (!_trpcClient) {
     _trpcClient = createTRPCClient<AppRouter>({
-      links: [
-        /*
-         * An Idempotency-Key belongs to ONE request, but httpBatchLink sends a
-         * single set of headers for the whole batch, so an operation that
-         * carries a key leaves the batch and travels alone on httpLink, where
-         * its header is unambiguously its own. Everything else keeps batching
-         * exactly as before.
-         *
-         * The alternative (deriving one header from the batch's opList) happens
-         * to work today only because the server also hashes path + body into
-         * the cache key. That couples the client to a server implementation
-         * detail and breaks silently the first time one batch carries two keyed
-         * mutations, so it is deliberately not what this does.
-         */
-        splitLink({
-          condition: (op) => (op.context as ITrpcOperationContext).idempotencyKey !== undefined,
-          true: httpLink({
-            ...sharedLinkOptions(),
-            headers({ op }) {
-              const { idempotencyKey } = op.context as ITrpcOperationContext;
-              return idempotencyKey === undefined ? {} : { [IDEMPOTENCY_HEADER]: idempotencyKey };
-            },
-          }),
-          false: httpBatchLink(sharedLinkOptions()),
-        }),
-      ],
+      links: [httpBatchLink(linkOptions())],
     });
   }
   return _trpcClient;

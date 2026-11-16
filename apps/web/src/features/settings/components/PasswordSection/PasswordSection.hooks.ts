@@ -7,7 +7,6 @@ import { changePasswordSchema } from '@repo/shared/schemas';
 import type { ChangePasswordInput } from '@repo/shared/schemas';
 import { AppErrorCode } from '@repo/shared/errors';
 import { trpc } from '@/lib/trpc';
-import { useIdempotencyKey } from '@/hooks/use-idempotency-key';
 import { translateAppError } from '@/lib/trpc-errors';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import type { IPasswordSectionView } from './PasswordSection.types';
@@ -25,12 +24,9 @@ export function usePasswordSection(): IPasswordSectionView {
 
   const newPassword = form.watch('newPassword');
 
-  const { idempotencyKey, reset: resetIdempotencyKey } = useIdempotencyKey();
-
   const changePasswordMutation = useMutation({
-    ...trpc.auth.changePassword.mutationOptions({ trpc: { context: { idempotencyKey } } }),
+    ...trpc.auth.changePassword.mutationOptions(),
     onSuccess: () => {
-      resetIdempotencyKey();
       toast.success(t('settings.password.success'));
       form.reset();
     },

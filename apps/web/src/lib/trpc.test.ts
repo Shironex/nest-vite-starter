@@ -1,38 +1,23 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-/**
- * The transport half of the idempotency contract.
- *
- * The api dedupes a mutation only when it arrives with an `Idempotency-Key`
- * HEADER, and `httpBatchLink` sends one header set for a whole batch, so an
- * operation carrying a key has to leave the batch. These assertions pin the
- * splitLink that does it; without them the layer silently degrades to "wired
- * but inert", which is exactly the state this step was meant to fix.
- */
-
-/** The pieces of each link's config the chain calls back into. */
+/** The piece of the link config the chain calls back into. */
 interface ILinkOptions {
-  headers: (opts: { op: { context: Record<string, unknown> } }) => Record<string, string>;
+  headers?: unknown;
   fetch: (url: unknown, options: unknown) => unknown;
 }
 
 // Typed with an explicit parameter so `mock.calls[0][0]` is a real element
 // rather than an index into an empty tuple.
-const { httpLinkSpy, httpBatchLinkSpy, splitLinkSpy, createTRPCClientSpy, fetchWithCsrfRetrySpy } =
-  vi.hoisted(() => ({
-    httpLinkSpy: vi.fn((_options: unknown) => 'http-link'),
-    httpBatchLinkSpy: vi.fn((_options: unknown) => 'http-batch-link'),
-    splitLinkSpy: vi.fn((opts: unknown) => ({ kind: 'split', opts })),
-    createTRPCClientSpy: vi.fn((_options: unknown) => ({})),
-    fetchWithCsrfRetrySpy: vi.fn(),
-  }));
+const { httpBatchLinkSpy, createTRPCClientSpy, fetchWithCsrfRetrySpy } = vi.hoisted(() => ({
+  httpBatchLinkSpy: vi.fn((_options: unknown) => 'http-batch-link'),
+  createTRPCClientSpy: vi.fn((_options: unknown) => ({})),
+  fetchWithCsrfRetrySpy: vi.fn(),
+}));
 
 vi.mock('@trpc/client', () => ({
   createTRPCClient: createTRPCClientSpy,
-  httpLink: httpLinkSpy,
   httpBatchLink: httpBatchLinkSpy,
-  splitLink: splitLinkSpy,
   TRPCClientError: class TRPCClientError extends Error {},
 }));
 
@@ -52,82 +37,34 @@ vi.mock('./csrf', () => ({
 
 beforeEach(() => vi.clearAllMocks());
 
-/** Build the client and hand back the splitLink options it was configured with. */
-async function buildLinks() {
+/** Build the client and hand back the batching link's options. */
+async function buildLink(): Promise<ILinkOptions> {
   vi.resetModules();
   const { getTrpc } = await import('./trpc');
   getTrpc();
-  const options = splitLinkSpy.mock.calls[0]?.[0] as {
-    condition: (op: { context: Record<string, unknown> }) => boolean;
-  };
-  return options;
+  return httpBatchLinkSpy.mock.calls[0]?.[0] as ILinkOptions;
 }
 
 describe('trpc link chain', () => {
-  it('routes an operation carrying an idempotency key out of the batch', async () => {
-    const { condition } = await buildLinks();
-    expect(condition({ context: { idempotencyKey: 'abc' } })).toBe(true);
-  });
-
-  it('leaves everything else on the batching link', async () => {
-    const { condition } = await buildLinks();
-    expect(condition({ context: {} })).toBe(false);
-  });
-
-  it('wires both a batching and a non-batching transport', async () => {
-    await buildLinks();
-    expect(httpLinkSpy).toHaveBeenCalledTimes(1);
-    expect(httpBatchLinkSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it('puts the key on the header the api middleware actually reads', async () => {
-    await buildLinks();
-    const linkOptions = httpLinkSpy.mock.calls[0]?.[0] as ILinkOptions;
-
-    const headers = linkOptions.headers({ op: { context: { idempotencyKey: 'abc-123' } } });
-
-    expect(headers['idempotency-key']).toBe('abc-123');
-  });
-
-  it('omits the header entirely when no key is present, rather than sending an empty one', async () => {
-    await buildLinks();
-    const linkOptions = httpLinkSpy.mock.calls[0]?.[0] as ILinkOptions;
-
-    const headers = linkOptions.headers({ op: { context: {} } });
-
-    expect(headers).not.toHaveProperty('idempotency-key');
-  });
-
   /**
-   * CSRF is attached by the shared fetch, not by either link's `headers()`:
-   * only the fetch layer sees the HTTP method, and the method decides whether a
+   * CSRF is attached by the shared fetch, not by the link's `headers()`: only
+   * the fetch layer sees the HTTP method, and the method decides whether a
    * token is needed at all. Asking for one in `headers()` made every read-only
-   * boot spend a slot of the token endpoint's 30/60s throttle. These two pin
-   * that both transports go through that wrapper, so neither can quietly grow
-   * its own unprotected fetch.
+   * boot spend a slot of the token endpoint's 30/60s throttle.
    */
-  it.each([
-    ['single', () => httpLinkSpy.mock.calls[0]?.[0] as ILinkOptions],
-    ['batched', () => httpBatchLinkSpy.mock.calls[0]?.[0] as ILinkOptions],
-  ])('routes the %s transport through the CSRF-aware fetch', async (_name, getOptions) => {
-    await buildLinks();
+  it('routes the transport through the CSRF-aware fetch', async () => {
+    const options = await buildLink();
 
-    getOptions().fetch('/trpc/auth.login', { method: 'POST' });
+    options.fetch('/trpc/auth.login', { method: 'POST' });
 
     expect(fetchWithCsrfRetrySpy).toHaveBeenCalledWith('/trpc/auth.login', { method: 'POST' });
   });
 
-  it('does not ask either transport for a CSRF token up front', async () => {
+  it('does not ask the transport for a CSRF token up front', async () => {
     const { getCsrfToken } = await import('./csrf');
-    await buildLinks();
-    const single = httpLinkSpy.mock.calls[0]?.[0] as ILinkOptions;
-    const batched = httpBatchLinkSpy.mock.calls[0]?.[0] as Partial<ILinkOptions>;
+    const options = await buildLink();
 
-    single.headers({ op: { context: {} } });
-
-    // The batching link has no header factory left at all, and the single link's
-    // remaining one is idempotency-only.
-    expect(batched.headers).toBeUndefined();
+    expect(options.headers).toBeUndefined();
     expect(getCsrfToken).not.toHaveBeenCalled();
   });
 });

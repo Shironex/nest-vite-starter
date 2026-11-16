@@ -63,8 +63,6 @@ export function useWorkspaceFormDialog({
   // signal, so the reset happens inline (the React "derive state" pattern).
   const [seededFor, setSeededFor] = useState<string | null>(null);
 
-  // Both hooks mint, carry and reset their own Idempotency-Key, so a
-  // double-submit here cannot create two workspaces.
   const createWorkspace = useCreateWorkspace();
   const updateWorkspace = useUpdateWorkspace();
 

@@ -148,7 +148,7 @@ describe('lazy CSRF token fetching', () => {
     expect(csrfHeaderOn(fetchMock, 3)).toBe('post-login');
   });
 
-  it('preserves headers the caller set, such as the idempotency key', async () => {
+  it('preserves headers the caller set, such as the content type', async () => {
     const fetchMock = vi.fn();
     fetchMock
       .mockResolvedValueOnce(fakeResponse(200, { csrfToken: 'minted-token' }))
@@ -158,12 +158,12 @@ describe('lazy CSRF token fetching', () => {
     const { fetchWithCsrfRetry } = await import('@/lib/csrf');
     await fetchWithCsrfRetry('/trpc/user.create', {
       method: 'POST',
-      headers: { 'idempotency-key': 'abc-123' },
+      headers: { 'content-type': 'application/json' },
     });
 
     const init = fetchMock.mock.calls[1]?.[1] as RequestInit | undefined;
     const headers = new Headers(init?.headers);
-    expect(headers.get('idempotency-key')).toBe('abc-123');
+    expect(headers.get('content-type')).toBe('application/json');
     expect(headers.get('x-csrf-token')).toBe('minted-token');
   });
 

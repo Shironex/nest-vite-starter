@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { ROLES } from '@repo/shared/permissions';
 import { trpc } from '@/lib/trpc';
-import { useIdempotencyKey } from '@/hooks/use-idempotency-key';
 import { translateAppError } from '@/lib/trpc-errors';
 import type {
   IChangeMemberRoleDialogProps,
@@ -21,12 +20,9 @@ export function useChangeMemberRoleDialog({
   // Only two roles exist, so the dialog always offers the other one.
   const nextRole = memberRole === ROLES.ADMIN ? ROLES.USER : ROLES.ADMIN;
 
-  const { idempotencyKey, reset: resetIdempotencyKey } = useIdempotencyKey();
-
   const changeRoleMutation = useMutation({
-    ...trpc.user.updateUserRole.mutationOptions({ trpc: { context: { idempotencyKey } } }),
+    ...trpc.user.updateUserRole.mutationOptions(),
     onSuccess: () => {
-      resetIdempotencyKey();
       toast.success(t('admin.changeRoleDialog.success'));
       // Every cursor page carries a distinct query key, so invalidate the whole
       // listUsers query family to refresh the role on the affected row.

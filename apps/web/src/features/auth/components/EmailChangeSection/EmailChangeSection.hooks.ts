@@ -8,7 +8,6 @@ import { requestEmailChangeSchema } from '@repo/shared/schemas';
 import type { RequestEmailChangeInput } from '@repo/shared/schemas';
 import { AppErrorCode } from '@repo/shared/errors';
 import { trpc } from '@/lib/trpc';
-import { useIdempotencyKey } from '@/hooks/use-idempotency-key';
 import { getAppErrorCode, translateAppError } from '@/lib/trpc-errors';
 import { useAuth } from '@/hooks/use-auth';
 import type { IEmailChangeSectionView } from './EmailChangeSection.types';
@@ -45,12 +44,9 @@ export function useEmailChangeSection(): IEmailChangeSectionView {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [pendingRetry, setPendingRetry] = useState<RequestEmailChangeInput | null>(null);
 
-  const { idempotencyKey, reset: resetIdempotencyKey } = useIdempotencyKey();
-
   const requestMutation = useMutation({
-    ...trpc.auth.requestEmailChange.mutationOptions({ trpc: { context: { idempotencyKey } } }),
+    ...trpc.auth.requestEmailChange.mutationOptions(),
     onSuccess: (_data, variables) => {
-      resetIdempotencyKey();
       toast.success(t('auth.emailChange.requestedToast'));
       setPendingSentTo(variables.newEmail);
       form.reset();

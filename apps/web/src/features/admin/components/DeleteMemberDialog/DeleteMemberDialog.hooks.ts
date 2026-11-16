@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { trpc } from '@/lib/trpc';
-import { useIdempotencyKey } from '@/hooks/use-idempotency-key';
 import { translateAppError } from '@/lib/trpc-errors';
 import type { IDeleteMemberDialogProps, IDeleteMemberDialogView } from './DeleteMemberDialog.types';
 
@@ -13,12 +12,9 @@ export function useDeleteMemberDialog({
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
-  const { idempotencyKey, reset: resetIdempotencyKey } = useIdempotencyKey();
-
   const deleteMutation = useMutation({
-    ...trpc.user.adminDeleteUser.mutationOptions({ trpc: { context: { idempotencyKey } } }),
+    ...trpc.user.adminDeleteUser.mutationOptions(),
     onSuccess: () => {
-      resetIdempotencyKey();
       toast.success(t('admin.deleteDialog.success'));
       // Every cursor page carries a distinct query key, so invalidate the whole
       // listUsers query family to drop the deleted row from the table.

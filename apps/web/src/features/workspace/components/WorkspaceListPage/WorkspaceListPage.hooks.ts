@@ -63,8 +63,8 @@ function toRow(workspace: Workspace, t: TFunction<'workspace'>): IWorkspaceRowVi
  * total are on screen.
  *
  * Create and edit reuse `WorkspaceFormDialog`, the same dialog the picker opens, so
- * the validation, the duplicate-name mapping and the idempotency key are
- * the ones every other Workspace write path already has.
+ * the validation and the duplicate-name mapping are the ones every other
+ * Workspace write path already has.
  */
 export function useWorkspaceListPage(): IWorkspaceListPageView {
   const { t } = useTranslation(WORKSPACE_NS);

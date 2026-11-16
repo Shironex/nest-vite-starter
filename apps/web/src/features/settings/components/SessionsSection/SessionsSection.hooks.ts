@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@repo/ui/sonner';
 import { trpc } from '@/lib/trpc';
-import { useIdempotencyKey } from '@/hooks/use-idempotency-key';
 import { translateAppError } from '@/lib/trpc-errors';
 import { formatDate } from '@/lib/i18n';
 import type { ISessionRow, ISessionsSectionView } from './SessionsSection.types';
@@ -78,12 +77,9 @@ export function useSessionsSection(): ISessionsSectionView {
     },
   });
 
-  const { idempotencyKey, reset: resetIdempotencyKey } = useIdempotencyKey();
-
   const revokeOthersMutation = useMutation({
-    ...trpc.sessions.revokeOthers.mutationOptions({ trpc: { context: { idempotencyKey } } }),
+    ...trpc.sessions.revokeOthers.mutationOptions(),
     onSuccess: () => {
-      resetIdempotencyKey();
       toast.success(t('sessions.revokedOthersToast'));
       setIsConfirmOpen(false);
       invalidateList();

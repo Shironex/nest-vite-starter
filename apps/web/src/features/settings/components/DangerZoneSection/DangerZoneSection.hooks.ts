@@ -9,7 +9,6 @@ import { deleteAccountSchema } from '@repo/shared/schemas';
 import type { DeleteAccountInput } from '@repo/shared/schemas';
 import { AppErrorCode } from '@repo/shared/errors';
 import { trpc, resetCsrfToken } from '@/lib/trpc';
-import { useIdempotencyKey } from '@/hooks/use-idempotency-key';
 import { translateAppError } from '@/lib/trpc-errors';
 import { getAppErrorCode } from '@/lib/trpc-errors';
 import type { IDangerZoneSectionView } from './DangerZoneSection.types';
@@ -26,12 +25,9 @@ export function useDangerZoneSection(): IDangerZoneSectionView {
     defaultValues: { password: '' },
   });
 
-  const { idempotencyKey, reset: resetIdempotencyKey } = useIdempotencyKey();
-
   const deleteAccountMutation = useMutation({
-    ...trpc.auth.deleteAccount.mutationOptions({ trpc: { context: { idempotencyKey } } }),
+    ...trpc.auth.deleteAccount.mutationOptions(),
     onSuccess: () => {
-      resetIdempotencyKey();
       toast.success(t('settings.dangerZone.success'));
       // Same client teardown as logout (SidebarUserNav): the server already
       // revoked every session and cleared the cookie, so drop the CSRF token

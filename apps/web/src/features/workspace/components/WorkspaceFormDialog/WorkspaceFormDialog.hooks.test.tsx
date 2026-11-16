@@ -6,15 +6,12 @@ import type { Workspace } from '@repo/shared/schemas';
 import { useWorkspaceFormDialog } from './WorkspaceFormDialog.hooks';
 import type { IWorkspaceFormDialogProps } from './WorkspaceFormDialog.types';
 
-const { createFn, updateFn, createOptionsSpy, updateOptionsSpy, invalidateQueries, toastSuccess } =
-  vi.hoisted(() => ({
-    createFn: vi.fn(),
-    updateFn: vi.fn(),
-    createOptionsSpy: vi.fn(),
-    updateOptionsSpy: vi.fn(),
-    invalidateQueries: vi.fn(),
-    toastSuccess: vi.fn(),
-  }));
+const { createFn, updateFn, invalidateQueries, toastSuccess } = vi.hoisted(() => ({
+  createFn: vi.fn(),
+  updateFn: vi.fn(),
+  invalidateQueries: vi.fn(),
+  toastSuccess: vi.fn(),
+}));
 
 vi.mock('@repo/ui/sonner', () => ({ toast: { success: toastSuccess, error: vi.fn() } }));
 vi.mock('@tanstack/react-query', async (importOriginal) => {
@@ -27,16 +24,10 @@ vi.mock('@/lib/trpc', () => ({
     workspaces: {
       list: { queryKey: () => ['workspaces', 'list'], pathKey: () => ['workspaces', 'list'] },
       create: {
-        mutationOptions: (opts?: object) => {
-          createOptionsSpy(opts);
-          return { mutationFn: createFn, ...opts };
-        },
+        mutationOptions: (opts?: object) => ({ mutationFn: createFn, ...opts }),
       },
       update: {
-        mutationOptions: (opts?: object) => {
-          updateOptionsSpy(opts);
-          return { mutationFn: updateFn, ...opts };
-        },
+        mutationOptions: (opts?: object) => ({ mutationFn: updateFn, ...opts }),
       },
     },
   },
@@ -163,18 +154,6 @@ describe('useWorkspaceFormDialog (create)', () => {
     await waitFor(() =>
       expect(result.current.errors.name).toBe('A workspace with that name already exists'),
     );
-  });
-
-  it('carries an Idempotency-Key so a double submit cannot create two rows', () => {
-    renderSubject();
-
-    // The key must ride the BUILT mutation options (`trpc.context`), not the
-    // per-call mutate options: TanStack never forwards those to the transport,
-    // so a key passed there would silently never reach the server.
-    const options = createOptionsSpy.mock.calls[0]?.[0] as {
-      trpc?: { context?: { idempotencyKey?: string } };
-    };
-    expect(options?.trpc?.context?.idempotencyKey).toEqual(expect.any(String));
   });
 });
 
