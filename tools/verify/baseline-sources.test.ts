@@ -23,7 +23,7 @@ const CONTEXT: IParseContext = {
   packageDirs: new Map([
     ['@repo/api', 'apps/api'],
     ['@repo/web', 'apps/web'],
-    ['@repo/docs', 'apps/docs'],
+    ['@repo/ui', 'packages/ui'],
     ['nest-vite-saas-starter', ''],
   ]),
   exitCode: 1,
@@ -55,8 +55,8 @@ describe('turbo prefixes', () => {
   });
 
   it('reads the tasks turbo says failed', () => {
-    assert.deepEqual(parseTurboFailures('Failed:    @repo/docs#check-types, @repo/api#lint'), [
-      '@repo/docs#check-types',
+    assert.deepEqual(parseTurboFailures('Failed:    @repo/ui#check-types, @repo/api#lint'), [
+      '@repo/ui#check-types',
       '@repo/api#lint',
     ]);
   });
@@ -115,9 +115,9 @@ describe('ESLint output', () => {
   });
 
   it('blocks a failed turbo task no finding explains', () => {
-    const parsed = parseEslintOutput('Failed:    @repo/docs#lint', CONTEXT);
+    const parsed = parseEslintOutput('Failed:    @repo/ui#lint', CONTEXT);
 
-    assert.match(parsed.blocked ?? '', /@repo\/docs#lint failed, and no lint finding explains it/u);
+    assert.match(parsed.blocked ?? '', /@repo\/ui#lint failed, and no lint finding explains it/u);
   });
 
   it('accepts a clean run', () => {
@@ -159,19 +159,18 @@ describe('tsc output', () => {
     assert.equal(parsed.findings[0]?.file, 'tools/verify/baseline.ts');
   });
 
-  // apps/docs type-checks with `astro check`, whose format nothing here reads.
+  // A task may print a format nothing here reads.
   // Blocking is the point: a gate that skips what it cannot parse grades a lane
   // green on exactly the failure nobody was watching.
   it('blocks a failing task whose format it cannot read', () => {
     const parsed = parseTscOutput(
-      [
-        '@repo/docs:check-types: src/pages/index.astro:3:1 - error ts(2345): nope',
-        'Failed:    @repo/docs#check-types',
-      ].join('\n'),
+      ['@repo/ui:check-types: unrecognised output format', 'Failed:    @repo/ui#check-types'].join(
+        '\n',
+      ),
       CONTEXT,
     );
 
-    assert.match(parsed.blocked ?? '', /@repo\/docs#check-types failed/u);
+    assert.match(parsed.blocked ?? '', /@repo\/ui#check-types failed/u);
   });
 
   it('blocks a non-zero exit that parsed as nothing at all', () => {

@@ -1,7 +1,7 @@
 /**
  * A markdown table padded the way Prettier formats one.
  *
- * The generated pages sit under `apps/docs`, which `pnpm format:check` covers,
+ * The generated pages sit under `docs/architecture`, which `pnpm format:check` covers,
  * so a table this renderer emits unpadded would be rewritten by Prettier and
  * the freshness check would then call the committed page stale on every run.
  * Emitting the formatted shape directly keeps the two agreeing.

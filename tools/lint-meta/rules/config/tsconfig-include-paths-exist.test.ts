@@ -86,8 +86,7 @@ describe('literalIncludes', () => {
         'segments.ts',
         '**/*',
         'src/**/*.ts',
-        '.astro/types.d.ts',
-        '.storybook',
+        '.generated/types.d.ts',
         '../packages/eslint-plugin-repo/src/types/*.d.ts',
       ]),
     );

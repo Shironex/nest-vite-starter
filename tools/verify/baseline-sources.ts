@@ -15,8 +15,8 @@
  * parser found nothing is `blocked`, not "no violations", and a turbo task that
  * turbo itself reports as failed has to be accounted for by at least one parsed
  * finding, or the whole source is blocked and names the task. That matters
- * because not every check speaks a format this file reads (apps/docs runs
- * `astro check`), and a gate that silently skips what it cannot parse would
+ * because not every check speaks a format this file reads (a workspace may
+ * print any compiler format), and a gate that silently skips what it cannot parse would
  * grade a lane green on exactly the failures nobody was watching.
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';

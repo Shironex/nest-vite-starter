@@ -74,7 +74,7 @@ The subsystems covered, written from the code rather than from memory:
 
 Subsystems deliberately NOT covered yet, because nobody has read them closely enough to write a
 manifest that is a record rather than a guess: mail and notification delivery, storage and the S3
-ticket path, the Electron IPC surface, and the web i18n and routing conventions.
+ticket path, and the web i18n and routing conventions.
 
 ## Unenforced invariants
 

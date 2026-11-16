@@ -28,10 +28,6 @@ import { dirname, resolve } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CSS_PATH = resolve(HERE, '../packages/ui/src/styles/globals.css');
-// apps/docs cannot import the Tailwind theme, so it re-declares the same palette
-// as literal hexes. That duplication is how the hover-token AA failure escaped
-// notice on the docs landing page, so the copy is held to the original below.
-const DOCS_CSS_PATH = resolve(HERE, '../apps/docs/src/styles/theme.css');
 
 // WCAG 2.1 SC 1.4.3. Large text is 24px, or 18.66px at weight 700; in the
 // SaaS Starter ramp only type-display-hero, type-display-large and type-stat-figure
@@ -328,54 +324,11 @@ const MIN_HOVER_LUMINANCE_DELTA = 0.2;
 const SEPARATIONS = [{ resting: 'brand', hover: 'brand-hover', min: MIN_HOVER_LUMINANCE_DELTA }];
 
 /**
- * apps/docs `--sst-*` hexes that must equal the matching globals.css token.
- * Covers the semantic tones as well as the brand ramp. Limiting it to the
- * fill-versus-ink tokens is tempting, on the reasoning that those are the ones
- * that break silently, but tones drift exactly the same way: a brand-only list
- * leaves `--sst-success` unasserted beside seven asserted brand hexes. Anything
- * apps/docs retypes belongs here, so add the pair when you add the token.
- */
-const DOCS_MIRRORED = [
-  ['sst-brand', 'brand'],
-  ['sst-brand-hover', 'brand-hover'],
-  ['sst-brand-fg', 'brand-fg'],
-  ['sst-brand-ink', 'brand-ink'],
-  ['sst-brand-50', 'brand-50'],
-  ['sst-brand-100', 'brand-100'],
-  ['sst-brand-200', 'brand-200'],
-  ['sst-success', 'success'],
-  ['sst-success-bg', 'success-bg'],
-  ['sst-purple', 'purple'],
-  ['sst-purple-bg', 'purple-bg'],
-];
-
-/**
  * Tokens that are two names for one design variable. A duplicated literal drifts
  * the moment one copy is retuned, which is how `text-destructive` would have
  * kept an older red while `text-danger-strong` moved, on the same screens.
  */
 const ALIASED = [['destructive', 'danger-strong', 'color/danger/strong']];
-
-// Dark is the default in apps/docs, light is the opt-in override.
-const DOCS_BLOCKS = [
-  { name: 'Dark', selector: ':root' },
-  { name: 'Light', selector: ":root[data-theme='light']" },
-];
-
-/** Reads the literal `--sst-name: #rrggbb` hexes out of one apps/docs block. */
-function parseDocsHexBlock(css, selector) {
-  const start = css.indexOf(`${selector} {`);
-  if (start === -1) throw new Error(`selector not found in apps/docs theme.css: ${selector}`);
-  const block = css.slice(start, css.indexOf('\n}', start));
-
-  const hexes = new Map();
-  const decl = /--(sst-[\w-]+):\s*(#[0-9a-f]{3,8})\b/gi;
-  let match;
-  while ((match = decl.exec(block)) !== null) {
-    hexes.set(match[1], match[2].toLowerCase());
-  }
-  return hexes;
-}
 
 // --- run ------------------------------------------------------------------
 
@@ -429,12 +382,9 @@ const MODES = [
 const failures = [];
 /** Per-pairing pass/fail across every mode, so exemptions are judged globally. */
 const passesByPairing = PAIRINGS.map(() => []);
-/** Keyed by mode name, so the apps/docs mirror can be compared afterwards. */
-const tokensByMode = new Map();
 
 for (const mode of MODES) {
   const { tokens, drift } = parseTokenBlock(css, mode.selector);
-  tokensByMode.set(mode.name, tokens);
   const rows = measure(tokens);
   rows.forEach((row, i) => passesByPairing[i].push(row.pass));
 
@@ -493,34 +443,6 @@ for (const mode of MODES) {
   }
 }
 
-// The apps/docs duplicate. Same palette, retyped as hexes, so it drifts.
-const docsCss = readFileSync(DOCS_CSS_PATH, 'utf8');
-for (const block of DOCS_BLOCKS) {
-  const hexes = parseDocsHexBlock(docsCss, block.selector);
-  const tokens = tokensByMode.get(block.name);
-  if (!quiet) console.log(`\napps/docs mirror, ${block.name} (${block.selector})`);
-
-  for (const [docsName, uiName] of DOCS_MIRRORED) {
-    const documented = hexes.get(docsName);
-    const expected = toHex(tokens.get(uiName));
-    if (documented === undefined) {
-      failures.push(`apps/docs ${block.name}: --${docsName} is missing`);
-      continue;
-    }
-    const ok = documented === expected;
-    if (!quiet) {
-      console.log(
-        `  ${`--${docsName}`.padEnd(52)} ${documented}  ${ok ? `matches --${uiName}` : `DRIFTED from --${uiName} (${expected})`}`,
-      );
-    }
-    if (!ok) {
-      failures.push(
-        `apps/docs ${block.name}: --${docsName} is ${documented} but --${uiName} is ${expected}`,
-      );
-    }
-  }
-}
-
 // An exemption earns its place by failing somewhere. Most of these fail in only
 // one mode (`text-brand` on the tint is 5.62:1 in Light and 3.42:1 in Dark),
 // so the test is "passes in every mode", not "passes in this mode".
@@ -547,6 +469,5 @@ if (failures.length > 0) {
 console.log(
   `\n[check-contrast] OK: ${PAIRINGS.length} pairings x ${MODES.length} modes, ` +
     `${SEPARATIONS.length} hover separation, ` +
-    `${ALIASED.length * MODES.length} aliased tokens, ` +
-    `${DOCS_MIRRORED.length * DOCS_BLOCKS.length} apps/docs mirrored hexes.`,
+    `${ALIASED.length * MODES.length} aliased tokens.`,
 );

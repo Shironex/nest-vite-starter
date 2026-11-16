@@ -8,32 +8,14 @@ export default [
     // own directory rather than the working directory. Every app and package
     // that ships its own eslint.config.* therefore resolves that file, not this
     // one, no matter where eslint is invoked from. What this config actually
-    // governs is the rest of the tree: root-level files, scripts/, load/, and the
+    // governs is the rest of the tree: root-level files, scripts/, and the
     // two eslint-authoring packages (packages/eslint-config and
     // packages/eslint-plugin-repo), which have no local config of their own.
     // tools/ resolves its own tools/eslint.config.mjs (base policy plus
     // noInlineConfig), linted by `pnpm lint:tools`.
     // That now holds for lint-staged too, which used to resolve this config for
     // every staged file because it runs from the repo root.
-    //
-    // load/ is a standalone k6 + Node-CLI load-testing harness, not app source.
-    // Its scripts run in k6's own runtime (globals like __VU / __ENV, `k6/*`
-    // imports) or as Node CLIs that legitimately use process.exit / process.env
-    // / console, all of which the app rules forbid. Lint it on its own terms,
-    // not against the application ESLint config.
-    // `.astro` files need the astro parser, which only the app-local
-    // apps/docs/eslint.config.js provides. Per the scope note that config is
-    // what an `.astro` file resolves now, so this entry is a belt-and-braces
-    // guard for a root-level `eslint .` run rather than the load-bearing thing
-    // it was before. Lint them via `turbo lint` (the @repo/docs package script).
-    ignores: [
-      '**/src/@generated/**',
-      '**/dist/**',
-      '**/node_modules/**',
-      'load/**',
-      'apps/docs/**/*.astro',
-      'apps/docs/.astro/**',
-    ],
+    ignores: ['**/src/@generated/**', '**/dist/**', '**/node_modules/**'],
   },
   ...baseConfig,
   {
@@ -53,8 +35,7 @@ export default [
     // Repo tooling in scripts/ are standalone Node CLIs: they are invoked by
     // package scripts and CI steps, never bundled and never imported by an app.
     // They legitimately use console / process.argv / process.env / process.exit,
-    // which the application globals do not define. Unlike load/ (ignored
-    // outright above) these stay linted; they only need the right environment.
+    // which the application globals do not define. They only need the right environment.
     files: ['scripts/**/*.{mjs,js}'],
     languageOptions: {
       globals: {

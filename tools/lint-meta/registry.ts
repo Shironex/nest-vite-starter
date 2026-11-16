@@ -36,8 +36,6 @@ import {
 } from '../../packages/eslint-plugin-repo/src/utils/tenant-registry';
 import { adoptHarnessRule, adoptLocalRule, assertEveryRuleBlocks } from './harness';
 import type { IHarnessMetaRule } from './harness';
-import { docsFeatureInventoryCompleteRule } from './rules/config/docs-feature-inventory-complete';
-import { docsNoDuplicateTitleRule } from './rules/config/docs-no-duplicate-title';
 import { envCascadeDriftRule } from './rules/config/env-cascade-drift';
 import { eslintOverridePathsExistRule } from './rules/config/eslint-override-paths-exist';
 import { isolationCanaryCoverageRule } from './rules/config/isolation-canary-coverage';
@@ -54,7 +52,6 @@ import {
   queueRegistrationThroughHelperRule,
 } from './rules/source-text/forbidden-text';
 import { apiModuleEdgesRule } from './rules/source-text/api-module-edges';
-import { ipcHandlersGuardSenderRule } from './rules/source-text/ipc-handlers-guard-sender';
 import { routeI18nSideEffectRule } from './rules/source-text/route-i18n-side-effect';
 import { procedureRequiresOutputRule } from './rules/source-text/procedure-requires-output';
 import { proceduresRequireGuardRule } from './rules/source-text/procedures-require-guard';
@@ -207,7 +204,7 @@ const SESSION_SCOPE = {
  * that calls it skips the 2FA challenge in `beginOrEstablish`. The allowlist is
  * the method's home, the challenge seam, and the three flows with no challenge
  * to pass: signup (no factor yet), and two re-issues to a caller who already
- * holds a session. See apps/docs/src/content/docs/backend/two-factor-authentication.md.
+ * holds a session.
  */
 const establishSessionCallersRule = adoptHarnessRule(
   createSessionMintCallersRule({
@@ -221,7 +218,7 @@ const establishSessionCallersRule = adoptHarnessRule(
       `${AUTH}/services/password-change.service.ts`,
       `${AUTH}/services/session-management.service.ts`,
     ],
-    hint: 'The allowlist lives in tools/lint-meta/registry.ts; see apps/docs/src/content/docs/backend/two-factor-authentication.md.',
+    hint: 'The allowlist lives in tools/lint-meta/registry.ts.',
     ...SESSION_SCOPE,
   }),
 );
@@ -238,7 +235,7 @@ const sessionEpochCapturedRule = adoptHarnessRule(
     call: 'beginOrEstablish',
     exempt: [`${AUTH}/services/two-factor-challenge.service.ts`],
     captureCall: 'sessionService.readEpoch(userId) (see LoginService.login)',
-    hint: 'See apps/docs/src/content/docs/backend/auth-and-sessions.md, "The session-epoch fence".',
+    hint: 'Read SessionService.readEpoch(userId) before the credential and pass it into the challenge seam.',
     sourceGlobs: [
       'apps/*/{src,test,tests,security-spec}/**/*.{ts,tsx}',
       'packages/*/{src,test,tests,security-spec}/**/*.{ts,tsx}',
@@ -329,8 +326,6 @@ export const META_RULES: readonly IHarnessMetaRule[] = assertEveryRuleBlocks([
     requiredRulesAtErrorRule,
     logRedactionDenylistParityRule,
     envCascadeDriftRule,
-    docsFeatureInventoryCompleteRule,
-    docsNoDuplicateTitleRule,
     noInlineLintDisableRule,
     noTsIgnoreRule,
     queueRegistrationThroughHelperRule,
@@ -338,7 +333,7 @@ export const META_RULES: readonly IHarnessMetaRule[] = assertEveryRuleBlocks([
   ].map(adoptLocalRule),
   establishSessionCallersRule,
   idempotencyKeyParityRule,
-  ...[ipcHandlersGuardSenderRule, routeI18nSideEffectRule].map(adoptLocalRule),
+  ...[routeI18nSideEffectRule].map(adoptLocalRule),
   sessionEpochCapturedRule,
   sessionLandingDeclaredRule,
   ...[

@@ -14,14 +14,3 @@ apps/web/src/routeTree.gen.ts
 # Prettier reformatting them only creates churn the next regen overwrites.
 apps/api/src/@generated/
 packages/database/generated/
-
-# Packaged Electron output (gitignored); contains third-party framework files
-# prettier must not touch.
-apps/desktop/release/
-
-# Astro docs site. `.astro` and `.mdx` are left to the app's own tooling (astro
-# check / eslint-plugin-astro); the root Prettier + tailwind plugin can mangle
-# their component syntax. Plain `.md` content pages stay on the formatter.
-apps/docs/**/*.astro
-apps/docs/**/*.mdx
-apps/docs/.astro/

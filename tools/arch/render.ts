@@ -6,17 +6,16 @@ import type { IUnitGroup } from './scan';
 /*
  * The two generated pages.
  *
- * They live in apps/docs rather than beside the code because that is where
- * somebody orienting already looks, and because Starlight gives the tables
- * search and anchors for free. Both carry a do-not-edit banner: the page is an
+ * They live in docs/architecture rather than beside the code because that is
+ * where somebody orienting already looks. Both carry a do-not-edit banner: the page is an
  * artifact, and a hand edit to one is lost on the next `pnpm generate:arch-map`.
  */
 
 const BANNER =
   '<!-- GENERATED FILE. Run `pnpm generate:arch-map` to refresh it; hand edits are overwritten. -->';
 
-export const MODULE_MAP_PATH = 'apps/docs/src/content/docs/architecture/module-map.md';
-export const EXPORTS_CATALOG_PATH = 'apps/docs/src/content/docs/architecture/exports-catalog.md';
+export const MODULE_MAP_PATH = 'docs/architecture/module-map.md';
+export const EXPORTS_CATALOG_PATH = 'docs/architecture/exports-catalog.md';
 
 /** Purposes keyed by the group id `scan.ts` produces. */
 export function purposesFor(registry: IPurposeRegistry, groupId: string): IPurposeMap {
@@ -30,8 +29,7 @@ function yamlString(value: string): string {
 
 /*
  * Both values are quoted. A description reading "... and web features: one
- * purpose line ..." is a second mapping key to the YAML parser, and `astro
- * sync` fails on it rather than on anything a reader would recognize.
+ * purpose line ..." is a second mapping key to the YAML parser.
  */
 function frontmatter(title: string, description: string, order: number): string {
   return [

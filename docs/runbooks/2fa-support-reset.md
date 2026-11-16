@@ -181,8 +181,7 @@ does not exist and must not be built as one.
 
 ## Related
 
-- The 2FA feature page in `apps/docs` (Backend, "Two-Factor Authentication")
-  for the enrollment, challenge, trusted-device, and enforcement mechanics this
-  reset unwinds.
+- `apps/api/src/modules/auth` for the enrollment, challenge, trusted-device, and
+  enforcement mechanics this reset unwinds.
 - `docs/migration-playbook.md` for the general "prefer a reviewable script over
   hand-run SQL" guidance that applies once this is scripted.
