@@ -46,21 +46,16 @@
   },
   "actionGroups": {
     "auth": "Sign-in and account",
-    "oauth": "Google sign-in",
     "user": "User accounts",
     "data_export": "Data export",
-    "storage": "Files",
     "workspace": "Workspaces",
     "staff": "Organization team",
-    "notifications": "Notifications",
     "audit": "Audit log"
   },
   "targetTypes": {
     "User": "User",
     "Workspace": "Workspace",
     "Tenant": "Organization",
-    "StorageObject": "File",
-    "NotificationPreference": "Notification settings",
     "AuditLog": "Audit log"
   },
   "actions": {
@@ -70,10 +65,8 @@
     "auth_2fa_challenge_success": "Successful two-factor verification",
     "auth_2fa_disabled": "Two-factor disabled",
     "auth_2fa_enabled": "Two-factor enabled",
-    "auth_2fa_enforced": "Two-factor enforced",
     "auth_2fa_enroll_begin": "Two-factor setup started",
     "auth_2fa_locked": "Two-factor verification locked",
-    "auth_2fa_policy_changed": "Two-factor policy changed",
     "auth_2fa_recovery_regenerated": "Recovery codes regenerated",
     "auth_2fa_recovery_used": "Recovery code used",
     "auth_2fa_support_reset": "Two-factor reset by support",
@@ -97,25 +90,11 @@
     "data_export_downloaded": "Data export downloaded",
     "workspace_created": "Workspace added",
     "workspace_updated": "Workspace details edited",
-    "notifications_preferences_updated": "Notification settings changed",
-    "oauth_failure": "Failed Google sign-in",
-    "oauth_link": "Google account linked",
-    "oauth_login": "Signed in with Google",
-    "oauth_signup": "Registered with Google",
-    "oauth_unlink": "Google account unlinked",
-    "staff_invite_accepted": "Organization invitation accepted",
-    "staff_invite_expired": "Expired organization invitation removed",
-    "staff_invite_failed": "Organization invitation refused",
-    "staff_invite_revoked": "Organization invitation withdrawn",
-    "staff_invite_sent": "Organization invitation sent",
     "staff_member_removed": "Member removed from the organization",
     "staff_member_restored": "Member restored to the organization",
-    "storage_file_deleted": "File deleted",
     "user_account_admin_deleted": "Account deleted by an administrator",
     "user_account_deleted": "Own account deleted",
     "user_account_purged": "Account permanently purged after the grace period",
-    "user_avatar_changed": "Avatar changed",
-    "user_role_changed": "Role changed",
-    "user_tenant_moved": "Account moved to another organization"
+    "user_role_changed": "Role changed"
   }
 }

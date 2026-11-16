@@ -13,16 +13,15 @@ import { auditActionTone } from './Audit.constants';
 describe('auditActionTone: irreversible destruction is danger', () => {
   it('puts it with the destructions it belongs beside', () => {
     expect(auditActionTone(AUDIT_ACTIONS.USER_ACCOUNT_PURGED, true)).toBe('danger');
-    expect(auditActionTone(AUDIT_ACTIONS.STORAGE_FILE_DELETED, true)).toBe('danger');
+    expect(auditActionTone(AUDIT_ACTIONS.USER_ACCOUNT_ADMIN_DELETED, true)).toBe('danger');
   });
 });
 
 describe('auditActionTone: the rows that were already right', () => {
   it('still paints any row the server recorded as a failure danger', () => {
-    // Both refusals are written with success: false, so they reach danger
-    // through the first branch rather than through a marker.
-    expect(auditActionTone(AUDIT_ACTIONS.STAFF_INVITE_FAILED, false)).toBe('danger');
-    expect(auditActionTone(AUDIT_ACTIONS.OAUTH_LOGIN, false)).toBe('danger');
+    // A refusal is written with success: false, so it reaches danger through
+    // the first branch rather than through a marker.
+    expect(auditActionTone(AUDIT_ACTIONS.AUTH_LOGIN_SUCCESS, false)).toBe('danger');
   });
 
   it('leaves every other pre-existing action on the tone it already had', () => {

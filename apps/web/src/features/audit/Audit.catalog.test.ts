@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AUDIT_ACTIONS } from '@repo/shared/audit';
-import { auditActionLabelKey, auditTargetLabelKey } from './Audit.constants';
+import { auditActionLabelKey } from './Audit.constants';
 import en from './locales/en.json';
 
 /**
@@ -79,16 +79,6 @@ describe('audit target types', () => {
   it('never leaves a target-type label empty', () => {
     for (const label of Object.values<string>(en.targetTypes)) {
       expect(label.trim()).not.toBe('');
-    }
-  });
-
-  it('resolves a label for every target type the notification work introduced', () => {
-    const introduced = ['NotificationPreference'];
-    const catalog: Record<string, string> = en.targetTypes;
-
-    for (const targetType of introduced) {
-      expect(auditTargetLabelKey(targetType)).toBe(`targetTypes.${targetType}`);
-      expect(catalog[targetType]).toBeTruthy();
     }
   });
 });
