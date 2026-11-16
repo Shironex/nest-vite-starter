@@ -88,10 +88,11 @@ class C { shared: any; go() { res.redirect(302, ${url}); } }`;
 });
 
 describe('no-user-controlled-fetch-url wiring', () => {
-  it('accepts a validated ticket path on the api origin, and flags a raw one', async () => {
-    const pre = 'declare const url: string; declare const s: AbortSignal;';
-    const safe = `${pre} fetch(\`\${getApiBaseUrl()}\${toApiPath(url)}\`, { signal: s });`;
-    const raw = `${pre} fetch(\`\${getApiBaseUrl()}\${url}\`, { signal: s });`;
+  it('accepts the trusted csrf path, and flags a raw url', async () => {
+    const pre =
+      'declare const url: string; declare const CSRF_TOKEN_PATH: string; declare const s: AbortSignal;';
+    const safe = `${pre} fetch(CSRF_TOKEN_PATH, { signal: s });`;
+    const raw = `${pre} fetch(url, { signal: s });`;
     expect(await check(base, 'src/Thing.download.ts', safe, FETCH)).toEqual([]);
     expect(await check(base, 'src/Thing.download.ts', raw, FETCH)).toHaveLength(1);
   });

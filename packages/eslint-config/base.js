@@ -76,7 +76,6 @@ const SKIPPED_TESTS_MARKERS = ['https?://\\S+', 'TODO\\([^\\s)]+\\)'];
 export const SINGLE_SEMANTIC_CONSTANTS_BACKLOG = [
   'apps/api/src/modules/auth/auth.constants.ts',
   'apps/web/src/features/audit/Audit.constants.ts',
-  'apps/web/src/features/auth/Auth.constants.ts',
 ];
 
 export const SINGLE_SEMANTIC_UTILS_BACKLOG = [];
@@ -193,18 +192,11 @@ export const config = [
       // value's origin (`createHmac(...).digest()`, `crypto.subtle.sign`), not
       // its name. Measured 0 hits when wired.
       'noctcore-security/no-timing-unsafe-compare': 'error',
-      // Web client: `getApiBaseUrl()` is the configured api origin ('' in the
-      // browser). `CSRF_TOKEN_PATH` is an imported path constant the rule
-      // cannot read across files. `toApiPath` (apps/web/src/lib/api-path.ts)
-      // validates a server-issued ticket URL as a same-origin path before it is
-      // appended.
+      // Web client: requests go same-origin. `CSRF_TOKEN_PATH` is an imported
+      // path constant the rule cannot read across files.
       'noctcore-security/no-user-controlled-fetch-url': [
         'error',
-        {
-          trustedOrigins: ['getApiBaseUrl()'],
-          trustedPaths: ['CSRF_TOKEN_PATH'],
-          sanitizers: ['toApiPath'],
-        },
+        { trustedPaths: ['CSRF_TOKEN_PATH'] },
       ],
       // The plugin's default callees already read Express `res.redirect(status,
       // url)` by its LAST argument, so no callee override is needed (setting
