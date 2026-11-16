@@ -28,10 +28,9 @@ import { cn } from '@repo/ui/lib/utils';
  * a count still state it. `hasNext` comes from the response's `nextCursor` and
  * `hasPrevious` from the caller's stack of visited cursors.
  *
- * EVERY STRING IS A PROP. This package has no translation catalog, and the
- * summary is a sentence with numbers in it, which is exactly the kind of string
- * that cannot be assembled from fragments across languages. The consumer
- * formats it with `t()` and passes it in.
+ * EVERY STRING IS A PROP. This package carries no copy of its own, and the
+ * summary is a sentence with numbers in it, so the consumer formats it and
+ * passes it in.
  */
 
 interface IPaginationLabels {

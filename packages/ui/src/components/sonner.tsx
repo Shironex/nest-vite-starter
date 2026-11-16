@@ -53,7 +53,7 @@ function Toaster({ style, containerAriaLabel, ...props }: ToasterProps) {
     <SonnerToaster
       className="toaster group"
       // sonner's own default is the hard-coded "Notifications alt+T"; the
-      // label comes from the app's catalog like every other primitive's name.
+      // label comes from the app's strings like every other primitive's name.
       containerAriaLabel={containerAriaLabel ?? labels.notifications}
       style={{ ...TOASTER_STYLE, ...style }}
       toastOptions={{

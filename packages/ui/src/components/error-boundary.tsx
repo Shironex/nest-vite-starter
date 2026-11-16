@@ -6,10 +6,10 @@ import { cn } from '@repo/ui/lib/utils';
  * Copy for the default fallback.
  *
  * WITHOUT THESE the boundary's copy would be hard-coded here rather than taken
- * from the app's catalog, and it is the boundary the three shells wrap around
+ * from the app's strings table, and it is the boundary the three shells wrap around
  * `<Outlet/>`, so a render throw anywhere in the app would bypass the copy the
  * rest of the screen is written in. They are optional rather than required
- * because a consumer with no catalog still needs SOMETHING to render, and
+ * because a consumer with no copy of its own still needs SOMETHING to render, and
  * because the boundary is also mounted in tests and stories.
  */
 interface IErrorBoundaryLabels {

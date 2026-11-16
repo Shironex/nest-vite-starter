@@ -4,7 +4,7 @@ import * as React from 'react';
  * The screen-reader-only strings the primitives in this package render for
  * themselves.
  *
- * WHY A CONTEXT RATHER THAN PROPS. `@repo/ui` has no i18n catalog by design
+ * WHY A CONTEXT RATHER THAN PROPS. `@repo/ui` carries no copy by design
  * (see the note in pagination.tsx), so every user-facing string is normally a
  * required prop and the app supplies it. That works when there is ONE call site
  * per string. It does not work for these: `DialogContent` renders "Close" at 23
@@ -20,7 +20,7 @@ import * as React from 'react';
  *
  * The defaults are English so a consumer that mounts no provider still renders
  * a name rather than nothing; the apps mount one in their root layout
- * with their catalog copy.
+ * with their own copy.
  */
 export interface IUiLabels {
   /** Corner close button on a dialog, sheet or drawer. */

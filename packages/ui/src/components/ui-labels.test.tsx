@@ -11,7 +11,7 @@ import { UiLabelsProvider } from '@repo/ui/ui-labels';
  * mobile sidebar renders three strings from inside `Sidebar`, which no caller
  * passes through, so as props these would be the same literal in two dozen
  * files. The failure they guard is a screen-reader name on the most-used
- * controls that bypasses the app's catalog and drifts from the rest of the copy.
+ * controls that bypasses the app's strings and drifts from the rest of the copy.
  */
 function openDialog(labels?: Record<string, string>) {
   return render(
@@ -51,7 +51,7 @@ describe('UiLabelsProvider', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Loading');
   });
 
-  // A consumer with no catalog (a test, a story, apps/docs) must still get a
+  // A consumer with no provider (a test, a story, apps/docs) must still get a
   // name rather than an unnamed control.
   it('falls back to the English defaults with no provider mounted', () => {
     render(

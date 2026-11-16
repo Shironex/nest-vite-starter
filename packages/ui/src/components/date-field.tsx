@@ -33,7 +33,7 @@ import { cn } from '@repo/ui/lib/utils';
  * element's `lang` attribute and the browsing context's locale. A day-first
  * product on a Chrome installed in US English renders `03/04/2026`, which a
  * reader cannot disambiguate: 3 April and 4 March are both real deadlines and
- * they look identical. No attribute, stylesheet or i18next setting fixes it,
+ * they look identical. No attribute, stylesheet or app setting fixes it,
  * which is why the control itself is replaced rather than configured. Firefox
  * honors `lang`; Chrome does not.
  *

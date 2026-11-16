@@ -13,7 +13,7 @@
  * FLOATING UTC MIDNIGHT: `2026-07-24` is stored as `2026-07-24T00:00:00Z` and
  * means that calendar day in the app time zone, not an instant (see
  * `apps/api/src/common/clock/app-calendar.ts` and
- * `apps/web/src/lib/i18n/format.ts`).
+ * `apps/web/src/lib/format.ts`).
  * `new Date(y, m, d)` builds a LOCAL midnight, so for anyone west of UTC every
  * cell in the grid would sit one day off and a contract would appear to end a
  * day early. Every function here goes through `Date.UTC`, and every date it
