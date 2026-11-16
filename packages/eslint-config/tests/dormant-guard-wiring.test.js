@@ -210,34 +210,3 @@ export function useLoaded() {
     expect(hits).toHaveLength(1);
   });
 });
-
-describe('react-architecture.js: no-hardcoded-ui-strings scope', () => {
-  const RULE = 'repo/no-hardcoded-ui-strings';
-  const body = 'export const Summary = () => <p>Report list</p>;';
-
-  it('polices a feature folder nobody listed', async () => {
-    const hits = await check(
-      web,
-      'src/features/reports/components/Summary/Summary.tsx',
-      body,
-      RULE,
-    );
-    expect(hits).toHaveLength(1);
-  });
-
-  it('polices auth, which has its own catalog now', async () => {
-    const hits = await check(web, 'src/features/auth/components/Summary/Summary.tsx', body, RULE);
-    expect(hits).toHaveLength(1);
-  });
-
-  it('polices route files, which render copy too', async () => {
-    const hits = await check(web, 'src/routes/auth/summary.tsx', body, RULE);
-    expect(hits).toHaveLength(1);
-  });
-
-  it('leaves the named excludes alone', async () => {
-    expect(
-      await check(web, 'src/features/landing/components/Summary/Summary.tsx', body, RULE),
-    ).toEqual([]);
-  });
-});

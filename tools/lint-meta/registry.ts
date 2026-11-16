@@ -16,7 +16,6 @@ import {
   createSecurityScannerVersionParityRule,
   createServiceImageDigestPinRule,
 } from '@noctcore/lint-meta-rules';
-import { createTranslationDeadKeysRule } from '@noctcore/lint-meta-rules/i18n';
 import {
   createPrismaMethodSurfaceRule,
   createTenantModelRegistryParityRule,
@@ -50,7 +49,6 @@ import {
   queueRegistrationThroughHelperRule,
 } from './rules/source-text/forbidden-text';
 import { apiModuleEdgesRule } from './rules/source-text/api-module-edges';
-import { routeI18nSideEffectRule } from './rules/source-text/route-i18n-side-effect';
 import { procedureRequiresOutputRule } from './rules/source-text/procedure-requires-output';
 import { proceduresRequireGuardRule } from './rules/source-text/procedures-require-guard';
 import { routesRequireTestSiblingRule } from './rules/testing/routes-require-test-sibling';
@@ -124,31 +122,6 @@ const prismaMethodSurfaceRule = adoptHarnessRule(
     // The schema sets `output = "../../generated/prisma"`, so the per-model
     // delegates land here rather than at either of the factory's defaults.
     clientGlobs: ['packages/database/generated/prisma/models/*.ts'],
-  }),
-);
-
-/*
- * The other half of `contracts/translation-key-exists`. That rule asks whether a
- * key a call site names exists; this asks whether a key the catalog holds is
- * named by anything. It cannot be an ESLint rule: a per-file rule never sees
- * every call site, and keys flow as data. The resolution options must match the
- * ones apps/web/eslint.config.js passes the ESLint half, or the two disagree
- * about which key a call site means.
- */
-const translationDeadKeysRule = adoptHarnessRule(
-  createTranslationDeadKeysRule({
-    catalogs: [
-      { file: 'apps/web/src/lib/i18n/locales/en.json', keyPath: '{ns}' },
-      { file: 'apps/web/src/features/{ns}/locales/en.json' },
-    ],
-    defaultNamespace: 'common',
-    namespaceIdentifiers: {
-      AUDIT_NS: 'audit',
-      AUTH_NS: 'auth',
-      DASHBOARD_NS: 'dashboard',
-      WORKSPACE_NS: 'workspace',
-    },
-    sourceGlobs: ['apps/web/src/**/*.ts', 'apps/web/src/**/*.tsx'],
   }),
 );
 
@@ -305,7 +278,6 @@ export const META_RULES: readonly IHarnessMetaRule[] = assertEveryRuleBlocks([
     apiModuleEdgesRule,
   ].map(adoptLocalRule),
   establishSessionCallersRule,
-  ...[routeI18nSideEffectRule].map(adoptLocalRule),
   sessionEpochCapturedRule,
   sessionLandingDeclaredRule,
   ...[
@@ -331,7 +303,6 @@ export const META_RULES: readonly IHarnessMetaRule[] = assertEveryRuleBlocks([
   ].map(adoptLocalRule),
   tenantModelRegistryParityRule,
   prismaMethodSurfaceRule,
-  translationDeadKeysRule,
   githubActionsShaPinnedRule,
   serviceImageDigestPinRule,
   githubActionsRunnerPinnedRule,

@@ -1,7 +1,6 @@
 import { jobNameMustBeConstantRule } from './job-name-must-be-constant';
 import { processorMustExtendTracedWorkerHostRule } from './processor-must-extend-traced-worker-host';
 import { queueAddMustWrapJobContextRule } from './queue-add-must-wrap-job-context';
-import { noHardcodedUiStringsRule } from './no-hardcoded-ui-strings';
 import { noNativeDateInputRule } from './no-native-date-input';
 import { effectFiredMutationMustBindCallbacksRule } from './effect-fired-mutation-must-bind-callbacks';
 import { trpcInvalidateWithPathKeyRule } from './trpc-invalidate-with-path-key';
@@ -18,7 +17,6 @@ export const rules = {
   'processor-must-extend-traced-worker-host': processorMustExtendTracedWorkerHostRule,
   'queue-add-must-wrap-job-context': queueAddMustWrapJobContextRule,
   'job-name-must-be-constant': jobNameMustBeConstantRule,
-  'no-hardcoded-ui-strings': noHardcodedUiStringsRule,
   'no-native-date-input': noNativeDateInputRule,
   'effect-fired-mutation-must-bind-callbacks': effectFiredMutationMustBindCallbacksRule,
   // Zod wire-contract rule, framework-agnostic; a candidate for

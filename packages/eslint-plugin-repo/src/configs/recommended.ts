@@ -12,10 +12,6 @@ export const recommendedRules = {
   'repo/processor-must-extend-traced-worker-host': 'error',
   'repo/queue-add-must-wrap-job-context': 'error',
   'repo/job-name-must-be-constant': 'error',
-  // Path-scoped rules, 'off' here: no-hardcoded-ui-strings applies only to the
-  // translated feature folders, which a flat recommended map cannot express.
-  // Enabled in packages/eslint-config.
-  'repo/no-hardcoded-ui-strings': 'off',
   // Frontend rule, path-scoped to the app and component packages in
   // packages/eslint-config/react-architecture.js.
   'repo/no-native-date-input': 'off',

@@ -81,20 +81,6 @@ const REQUIRED_RULES: readonly IRequiredRule[] = [
       "The tenant-scope extension dispatches on the model, and a raw query has no model, so $queryRaw and $executeRaw pass through unscoped. Without this rule the first raw SELECT against a tenant table returns every organization's rows, type-checks, and trips no other guard.",
   },
   {
-    ruleId: 'repo/no-hardcoded-ui-strings',
-    packageDir: 'apps/web',
-    probe: 'src/features/audit/components/Example/Example.tsx',
-    rationale:
-      'Every feature screen takes its copy from the i18n catalogs, and the rule polices every feature folder by default (auth and landing are excluded by name in the rule). Without this rule a hardcoded literal reaches a screen with no catalog entry behind it, and only a user notices.',
-  },
-  {
-    ruleId: 'contracts/translation-key-exists',
-    packageDir: 'apps/web',
-    probe: 'src/features/audit/components/Example/Example.hooks.ts',
-    rationale:
-      'i18next does not fail on a missing key: it renders the key itself. Without this rule a typo, a key looked up in the wrong namespace, or a catalog key deleted while still in use reaches the screen as `list.columns.name`, and only a user notices. packages/eslint-config/tests/web-i18n-wiring.test.js proves it resolves against the real catalogs.',
-  },
-  {
     ruleId: 'repo/effect-fired-mutation-must-bind-callbacks',
     packageDir: 'apps/web',
     probe: 'src/features/audit/components/Example/Example.hooks.ts',

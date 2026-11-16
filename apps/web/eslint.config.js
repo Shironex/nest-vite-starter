@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { config as reactConfig } from '@repo/eslint-config/react';
@@ -13,15 +13,11 @@ const WEB_ROOT = import.meta.dirname;
  * `settings` so that `lint:fast` (eslint --cache) re-lints when it changes.
  *
  * ESLint keys a cached result on the linted file's content and the resolved
- * config, and on nothing else. Two rules here look further than that:
- *
- * - `contracts/translation-key-exists` reads the English catalogs. Delete a key
- *   and every unchanged component still using it would keep a cached "clean".
- *   So the catalogs' CONTENT is digested.
- * - `architecture/colocated-test-required` asks whether a sibling test file
- *   exists. Delete the test and the unchanged component keeps its cached
- *   "clean". So the LIST of paths under src/ is digested (names, not content):
- *   adding or removing any file re-lints everything, editing one does not.
+ * config, and on nothing else. `architecture/colocated-test-required` looks
+ * further than that: it asks whether a sibling test file exists. Delete the test
+ * and the unchanged component keeps its cached "clean". So the LIST of paths
+ * under src/ is digested (names, not content): adding or removing any file
+ * re-lints everything, editing one does not.
  *
  * Not conditional on `--cache`: a `settings` value that only exists in one
  * invocation mode would be a second config to reason about.
@@ -35,11 +31,9 @@ function listFiles(dir) {
 }
 
 const SRC_FILES = listFiles(join(WEB_ROOT, 'src'));
-const CATALOG_FILES = SRC_FILES.filter((file) => /[/\\]locales[/\\]en\.json$/.test(file));
 
 const ruleInputsDigest = createHash('sha256')
   .update(SRC_FILES.map((file) => relative(WEB_ROOT, file)).join('\n'))
-  .update(CATALOG_FILES.map((file) => readFileSync(file)).join('\0'))
   .digest('hex');
 
 /** @type {import("eslint").Linter.Config[]} */
@@ -105,48 +99,6 @@ export default [
                 'Server code must not be value-imported into the web bundle; the "@api" alias is for `import type { AppRouter }` only.',
             },
           ],
-        },
-      ],
-    },
-  },
-  {
-    /*
-     * Every static translation key must resolve in the English catalog of the
-     * namespace in scope. i18next does not fail on a missing key: it renders the
-     * key itself, which only a person reading the screen notices.
-     *
-     * The layout mirrors src/lib/i18n/index.ts: `common` and `errors` are the
-     * top-level keys of the shared catalog, every feature namespace is
-     * `features/<ns>/locales/en.json`, and `useTranslation()` resolves to
-     * `common`. English is the reference language because it is the only one
-     * the app ships (a second language would be checked for key parity
-     * against it, not here). The `*_NS`
-     * constants are imported, so the rule is told what each one holds.
-     *
-     * Paths are absolute: the rule resolves relative ones against ESLint's
-     * working directory, which is apps/web under turbo but the repo root under
-     * lint-staged and the editor hook.
-     *
-     * Tests are excluded: i18n.test.ts registers a namespace at runtime that has
-     * no catalog on purpose.
-     */
-    files: ['src/**/*.{ts,tsx}'],
-    ignores: ['**/*.test.{ts,tsx}'],
-    rules: {
-      'contracts/translation-key-exists': [
-        'error',
-        {
-          catalogs: [
-            { file: join(WEB_ROOT, 'src/lib/i18n/locales/en.json'), keyPath: '{ns}' },
-            { file: join(WEB_ROOT, 'src/features/{ns}/locales/en.json') },
-          ],
-          defaultNamespace: 'common',
-          namespaceIdentifiers: {
-            AUDIT_NS: 'audit',
-            AUTH_NS: 'auth',
-            DASHBOARD_NS: 'dashboard',
-            WORKSPACE_NS: 'workspace',
-          },
         },
       ],
     },

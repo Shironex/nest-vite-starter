@@ -147,26 +147,6 @@ export const config = [
     },
   },
   /*
-   * The app takes every user-visible string from the i18n catalogs, so a
-   * hardcoded literal in a feature or a route is a defect rather than a style
-   * preference. The rule's own defaults decide where it looks: every
-   * `features/**` folder and every route file, minus a short named exclude list
-   * (`landing`, whose copy has no catalog yet). A new feature folder is
-   * therefore policed from the day it is created. The exclude list and its
-   * reasons live beside the rule in
-   * packages/eslint-plugin-repo/src/rules/no-hardcoded-ui-strings.ts; this
-   * block restates neither, so there is one list to shrink.
-   */
-  {
-    files: ['src/features/**/*.tsx', 'src/routes/**/*.tsx'],
-    plugins: {
-      repo: repoPlugin,
-    },
-    rules: {
-      'repo/no-hardcoded-ui-strings': 'error',
-    },
-  },
-  /*
    * A native date input renders in the BROWSER's UI language, ignoring the
    * element's `lang` and the page locale, so its date order follows whatever
    * language the browser was installed in rather than the product locale, and

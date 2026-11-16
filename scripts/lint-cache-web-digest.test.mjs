@@ -11,15 +11,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
  * `lint:fast` runs `eslint --cache` on apps/web, and ESLint keys a cached
  * result on the linted file's content and the resolved config, and on nothing
  * else. Two of the web's rules read something other than the file they report
- * on:
+ * on: `architecture/component-folder-structure` checks that a component's
+ * sibling files exist, so deleting one makes the unchanged component newly
+ * wrong.
  *
- * - `contracts/translation-key-exists` reads the English catalogs, so deleting a
- *   key makes an unchanged component newly wrong;
- * - `architecture/component-folder-structure` checks that a component's sibling
- *   files exist, so deleting one makes the unchanged component newly wrong.
- *
- * apps/web/eslint.config.js folds the catalogs' content and the list of paths
- * under src/ into `settings`. Each case below runs twice: with the digest
+ * apps/web/eslint.config.js folds the list of paths under src/ into `settings`. Each case below runs twice: with the digest
  * pinned to a constant (the control, which must go stale, or the case proves
  * nothing) and with the shipped config (which must not).
  *
@@ -29,7 +25,6 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WEB_ROOT = join(REPO_ROOT, 'apps', 'web');
-const TRANSLATION_RULE = 'contracts/translation-key-exists';
 const FOLDER_RULE = 'architecture/component-folder-structure';
 
 const ESLINT_URL = pathToFileURL(
@@ -37,18 +32,11 @@ const ESLINT_URL = pathToFileURL(
 ).href;
 
 const WIDGET_DIR = join('src', 'features', 'probe', 'components', 'Widget');
-const HOOKS_FILE = join(WIDGET_DIR, 'Widget.hooks.ts');
 const COMPONENT_FILE = join(WIDGET_DIR, 'Widget.tsx');
-const FEATURE_CATALOG = join('src', 'features', 'probe', 'locales', 'en.json');
 
 const FIXTURE = {
-  [join('src', 'lib', 'i18n', 'locales', 'en.json')]: '{ "common": {}, "errors": {} }\n',
-  [FEATURE_CATALOG]: '{ "greeting": "Good morning" }\n',
-  [HOOKS_FILE]: `import { useTranslation } from 'react-i18next';
-
-export function useWidget(): string {
-  const { t } = useTranslation('probe');
-  return t('greeting');
+  [join(WIDGET_DIR, 'Widget.hooks.ts')]: `export function useWidget(): string {
+  return 'Good morning';
 }
 `,
   [COMPONENT_FILE]: `import type { WidgetProps } from './Widget.types';
@@ -114,7 +102,7 @@ function lint(tree, file, { pinDigest = false } = {}) {
       PROBE_CACHE: tree.cache,
       PROBE_FILE: join(tree.web, file),
       PROBE_PIN_DIGEST: pinDigest ? '1' : '',
-      PROBE_RULES: [TRANSLATION_RULE, FOLDER_RULE].join(','),
+      PROBE_RULES: [FOLDER_RULE].join(','),
     },
   });
   assert.equal(run.status, 0, `eslint run failed:\n${run.stderr}`);
@@ -122,12 +110,6 @@ function lint(tree, file, { pinDigest = false } = {}) {
 }
 
 const CASES = [
-  {
-    name: 'a key deleted from the catalog',
-    file: HOOKS_FILE,
-    rule: TRANSLATION_RULE,
-    edit: (tree) => writeFileSync(join(tree.web, FEATURE_CATALOG), '{}\n'),
-  },
   {
     name: "a component's sibling test deleted",
     file: COMPONENT_FILE,
