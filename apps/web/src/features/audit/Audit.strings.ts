@@ -91,5 +91,6 @@ export const auditStrings = {
     user_account_enabled: 'Account enabled by an administrator',
     user_account_purged: 'Account permanently purged after the grace period',
     user_role_changed: 'Role changed',
+    user_sessions_revoked: 'Signed out of every session by an administrator',
   },
 } as const;

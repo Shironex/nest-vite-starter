@@ -636,4 +636,46 @@ describe('UserService', () => {
       expect(audit.log).not.toHaveBeenCalled();
     });
   });
+
+  describe('revokeUserSessions', () => {
+    it('audits, then signs the target out of every session without touching the account', async () => {
+      const { service, repo, audit, sessionService } = await buildSubject();
+      repo.findRole.mockResolvedValue({ id: 'u-2', role: 'USER' });
+
+      await service.revokeUserSessions('u-1', 'u-2');
+
+      expect(audit.log).toHaveBeenCalledWith({
+        action: AUDIT_ACTIONS.USER_SESSIONS_REVOKED,
+        targetType: 'User',
+        targetId: 'u-2',
+      });
+      expect(sessionService.deleteAllUserSessions).toHaveBeenCalledWith('u-2');
+      expect(audit.log.mock.invocationCallOrder[0]!).toBeLessThan(
+        sessionService.deleteAllUserSessions.mock.invocationCallOrder[0]!,
+      );
+      expect(repo.updateRole).not.toHaveBeenCalled();
+      expect(repo.disable).not.toHaveBeenCalled();
+    });
+
+    it("refuses the caller's own account before it reads anything", async () => {
+      const { service, repo, sessionService } = await buildSubject();
+
+      await expect(service.revokeUserSessions('u-1', 'u-1')).rejects.toMatchObject({
+        code: AppErrorCode.FORBIDDEN,
+      });
+      expect(repo.findRole).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
+    });
+
+    it('throws NOT_FOUND for a missing target and never audits or revokes', async () => {
+      const { service, repo, audit, sessionService } = await buildSubject();
+      repo.findRole.mockResolvedValue(null);
+
+      await expect(service.revokeUserSessions('u-1', 'u-2')).rejects.toMatchObject({
+        code: 'NOT_FOUND',
+      });
+      expect(audit.log).not.toHaveBeenCalled();
+      expect(sessionService.deleteAllUserSessions).not.toHaveBeenCalled();
+    });
+  });
 });

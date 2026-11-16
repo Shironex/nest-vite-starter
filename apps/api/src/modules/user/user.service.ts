@@ -318,6 +318,42 @@ export class UserService {
   }
 
   /**
+   * Sign another user out of every session (admin only).
+   *
+   * Nothing about the account changes: role, password and 2FA stay, and the
+   * user can sign in again at once. It is the "this device was lost" lever an
+   * admin pulls without reaching for disable.
+   *
+   * Refuses the caller's own account: self-service "sign out everywhere" lives
+   * in the sessions settings, which keeps the caller's current session. The
+   * admin path would end the session it was called from as well.
+   *
+   * Audited BEFORE the teardown, for updateRole's reason: if Redis fails
+   * half-way the trail still says who asked.
+   */
+  async revokeUserSessions(actorUserId: string, targetUserId: string): Promise<void> {
+    if (actorUserId === targetUserId) {
+      throw new ForbiddenError(
+        AppErrorCode.FORBIDDEN,
+        'Use the sessions settings to sign out your own sessions',
+      );
+    }
+
+    const target = await this.userRepository.findRole(targetUserId);
+    if (!target) {
+      throw new NotFoundError();
+    }
+
+    await this.auditService.log({
+      action: AUDIT_ACTIONS.USER_SESSIONS_REVOKED,
+      targetType: 'User',
+      targetId: targetUserId,
+    });
+
+    await this.revokeAuthState(targetUserId);
+  }
+
+  /**
    * Refuse a self-service deletion that would strand everyone else.
    *
    * `deleteAccount` soft-deletes whatever role it is given, so the last ADMIN

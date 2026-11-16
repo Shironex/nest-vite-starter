@@ -134,4 +134,18 @@ export class UserRouter {
     await this.userService.enableUser(input.userId);
     return { success: true as const };
   }
+
+  /**
+   * Sign another user out of every session (admin only). The account itself
+   * is untouched; the self-target refusal is in the service.
+   */
+  @Mutation({ input: userActionSchema, output: ackOutput })
+  @UseMiddlewares(AuthMiddleware, AdminMiddleware)
+  async revokeUserSessions(
+    @Input() input: z.infer<typeof userActionSchema>,
+    @Ctx() ctx: IAuthenticatedContextType,
+  ) {
+    await this.userService.revokeUserSessions(ctx.user.id, input.userId);
+    return { success: true as const };
+  }
 }

@@ -10,6 +10,7 @@ const buildRouter = () => {
     adminDeleteUser: jest.fn().mockResolvedValue(undefined),
     disableUser: jest.fn().mockResolvedValue(undefined),
     enableUser: jest.fn().mockResolvedValue(undefined),
+    revokeUserSessions: jest.fn().mockResolvedValue(undefined),
   };
   const lockoutService = {
     adminUnlock: jest.fn().mockResolvedValue(undefined),
@@ -99,6 +100,18 @@ describe('UserRouter (wiring)', () => {
     const result = await router.enableUser({ userId: 'target-1' });
 
     expect(userService.enableUser).toHaveBeenCalledWith('target-1');
+    expect(result).toEqual({ success: true });
+  });
+
+  it('revokeUserSessions() delegates target + caller id to userService.revokeUserSessions', async () => {
+    const { router, userService } = buildRouter();
+
+    const result = await router.revokeUserSessions(
+      { userId: 'target-1' },
+      buildCtx('admin-1') as unknown as Parameters<UserRouter['revokeUserSessions']>[1],
+    );
+
+    expect(userService.revokeUserSessions).toHaveBeenCalledWith('admin-1', 'target-1');
     expect(result).toEqual({ success: true });
   });
 });

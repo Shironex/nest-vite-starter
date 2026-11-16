@@ -105,6 +105,10 @@ export const AUDIT_ACTIONS = {
   // ADMIN, because re-admitting one is a privilege grant that did not pass
   // through user.role.changed.
   USER_ENABLED: 'user.account.enabled',
+  // An admin signed another user out of every session. Nothing about the
+  // account changes (role, password and 2FA stay), so this row is the only
+  // trace of who forced the sign-out.
+  USER_SESSIONS_REVOKED: 'user.sessions.revoked',
 
   // audit. The retention cron is the ONLY sanctioned delete path for AuditLog
   // rows, so its own work needs a durable trace: a counter resets on restart and
