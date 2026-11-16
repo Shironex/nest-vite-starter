@@ -8,8 +8,7 @@ costs, so it is made on purpose later rather than by accident.
 This directory holds the decisions of record, starting with the ones a product built on the
 starter has to settle before its first migration.
 
-| Date       | Decision                                           | Status                                     |
-| ---------- | -------------------------------------------------- | ------------------------------------------ |
-| 2026-09-22 | [Timestamp column types](2026-09-22-timestamps.md) | Decided; not yet applied                   |
-| 2026-09-22 | [Money representation](2026-09-22-money.md)        | Deferred until billing lands               |
-| 2026-09-22 | [Tenant switching](2026-09-22-tenant-switching.md) | One tenant per user; upgrade path recorded |
+| Date       | Decision                                           | Status                       |
+| ---------- | -------------------------------------------------- | ---------------------------- |
+| 2026-09-22 | [Timestamp column types](2026-09-22-timestamps.md) | Decided; not yet applied     |
+| 2026-09-22 | [Money representation](2026-09-22-money.md)        | Deferred until billing lands |

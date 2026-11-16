@@ -75,8 +75,8 @@ Concretely:
 
 - **Renaming `Invoice.status` → `Invoice.state`**: Add `state`, dual-write, copy
   data, swap reads, drop `status` in a later release.
-- **Making `User.tenantId` `NOT NULL`**: Add nullable, backfill, only then add
-  `NOT NULL` constraint.
+- **Making `User.displayName` `NOT NULL`**: Add a default or backfill, only then
+  add the `NOT NULL` constraint.
 - **Splitting one column into two**: Add the new pair, dual-write, backfill,
   swap, drop.
 
@@ -170,7 +170,7 @@ pnpm --filter @repo/database exec prisma migrate diff \
 pnpm --filter @repo/database db:migrate:resolve --applied <timestamp>_baseline
 ```
 
-This starter's single baseline migration (`0_init`) was generated this way
+This starter's single baseline migration (`0001_init`) was generated this way
 before any production deployment. Until your product has deployed a database,
 regenerating that baseline is simpler than stacking new migrations on it.
 

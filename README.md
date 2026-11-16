@@ -11,10 +11,9 @@
 > its owner out by failing logins on purpose (victim lockout). Do not run this auth in production
 > before the swap.
 
-`nest-vite-saas-starter` is an open-source starter for multi-tenant SaaS products, built as a
-monorepo with **Vite + React** and **NestJS 11**: type-safe from database to browser, with
-authentication, tenancy, auditing, background jobs, observability and a strict verification harness
-already wired.
+`nest-vite-saas-starter` is an open-source starter for single-user web apps, built as a monorepo
+with **Vite + React** and **NestJS 11**: type-safe from database to browser, with authentication,
+auditing, background jobs, observability and a strict verification harness already wired.
 
 The display name ("SaaS Starter") lives in one place: `PRODUCT_NAME` in `@repo/shared/constants`.
 Rebranding is a one-line change there plus the handful of surfaces that cannot read a constant
@@ -75,6 +74,14 @@ pnpm --filter @repo/database db:seed
 
 # Start dev servers
 pnpm dev
+```
+
+Signup always creates a plain `USER`. To make an existing account an admin (the first admin
+included), run this from the repo root; it revokes the account's sessions so the role applies at
+its next sign-in, and writes the same audit row as an in-app role change:
+
+```bash
+pnpm --filter @repo/api user:promote someone@example.com
 ```
 
 The API runs on `http://localhost:3000` and the web app on `http://localhost:5173`.

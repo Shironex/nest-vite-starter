@@ -11,12 +11,12 @@ globs:
 # Account lifecycle
 
 Three states forbid a new session: the account is soft-deleted (`deletedAt`), locked
-(`lockedUntil`), or its membership of the organization has ended (`membershipEndedAt`). This subsystem is
+(`lockedUntil`), or an admin has disabled it (`disabledAt`). This subsystem is
 listed separately from sessions because the failure it exists for is not "the check is wrong" but
 "the check is missing from one door".
 
-The shape to guard against: removal is enforced at login, and a newly added door (password reset,
-a second-factor finish, a future provider sign-in) keeps letting a removed member back in, because
+The shape to guard against: disabling is enforced at login, and a newly added door (password reset,
+a second-factor finish, a future provider sign-in) keeps letting a disabled account back in, because
 every door reads the same three fields and one door reads only two of them.
 
 ## Entry points
@@ -33,11 +33,11 @@ every door reads the same three fields and one door reads only two of them.
 - A new door is easy to write by copying a neighbor that predates a field.
 - Deletion is soft, so "the row is missing" and "the row is deleted" must end the same way, and a
   query that forgets `deletedAt: null` resurrects the account.
-- Restoring a member is a real flow, so the checks cannot simply be permanent.
+- Enabling a disabled account is a real flow, so the checks cannot simply be permanent.
 
 ## Invariants
 
-### A new session is refused for a deleted, locked or removed account
+### A new session is refused for a deleted, locked or disabled account
 
 **Enforced by:** `lint-meta:establish-session-callers`, `file:apps/api/src/modules/auth/services/two-factor-challenge.service.ts`, `file:apps/api/src/modules/auth/services/two-factor-challenge.service.spec.ts`
 

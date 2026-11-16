@@ -3,7 +3,7 @@
 **Date:** 2026-09-22
 **Status:** decided; not yet applied to the schema
 **Touches:** `packages/database/prisma/schema/*.prisma`, the baseline migration
-(`packages/database/prisma/migrations/0_init`)
+(`packages/database/prisma/migrations/0001_init`)
 **Reopens when:** never. It stops being cheap to apply once a product built on the starter has
 deployed its first database, because from then on every change is a data migration.
 
@@ -47,7 +47,7 @@ A small `prisma-datetime-has-db-type` check in the lint-meta registry: read ever
 `schema/*.prisma`, and fail on any field whose type is `DateTime` or `DateTime?` with no
 `@db.Timestamptz(` or `@db.Date` attribute on the same line. About 60 lines plus a test, and no
 new dependency: the model and field shape is simple enough to read line by line, the same way
-`tenant-model-registry-parity` reads the schema today. There is no Prisma equivalent in
+`prisma-method-surface` reads the generated client today. There is no Prisma equivalent in
 `@noctcore/*` today.
 
 ## Applying it after a deployment: what it would cost

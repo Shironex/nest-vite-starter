@@ -106,12 +106,13 @@ Three lanes, each with its own database, Redis index and bucket: `isolation`, `e
 every run instead of drifting. Nothing here binds 5432, 6379, 1025 or 8025, and `sandbox:down`
 selects containers by label and never prunes, so the dev compose project is untouched.
 
-### Isolation lane and e2e (need Postgres)
+### Integration lane and e2e (need Postgres)
 
 The fast unit lane never touches a database. Two lanes do, and `pnpm verify` runs both against the
 sandbox. To run them by hand:
 
-- **Isolation** (`*.isolation.spec.ts`, proves the tenant-scope boundary against a real DB):
+- **Integration** (`*.isolation.spec.ts`, the specs a mocked Prisma cannot prove: advisory locks,
+  lockout under a real burst, flows across real rows):
   ```bash
   pnpm sandbox:up
   export DATABASE_URL="$(pnpm sandbox:inspect --lane-url=isolation | tail -n 1)"

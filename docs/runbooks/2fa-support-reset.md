@@ -1,14 +1,13 @@
 # Runbook: platform support reset of a user's two-factor authentication
 
 Applies to the last rung of the 2FA reset ladder: a user who has lost their
-authenticator app AND their recovery codes AND cannot be helped by an Organization
-admin reset (for example, they are the sole admin of their Organization, or the Organization
-admin has themselves lost their factor). This is a manual, operator-run process
-performed by platform support. It is not a self-service action and not a
-tenant-admin action.
+authenticator app AND their recovery codes AND cannot be helped by an admin
+reset (for example, they are the sole admin, or every admin has lost their own
+factor). This is a manual, operator-run process performed by platform support.
+It is not a self-service action and not an in-app admin action.
 
 Do not use this document for the earlier rungs. If the user still holds any
-recovery code, or an Organization admin can reach `twoFactor.resetMemberTwoFactor` on
+recovery code, or an admin can reach `twoFactor.resetMemberTwoFactor` on
 their behalf, that is the correct path and this runbook does not apply.
 
 ## The reset ladder
@@ -18,9 +17,8 @@ There are exactly three rungs, tried in order:
 1. **Recovery code (self-serve).** At the login challenge the user submits a
    16-character recovery code instead of a TOTP. No operator involvement. This
    is the primary lost-authenticator path.
-2. **Organization admin reset.** A tenant admin calls `twoFactor.resetMemberTwoFactor`
-   for a member of their own Organization (ALS-scoped, cannot cross tenants, cannot
-   target self). Wipes the member's factors and forces re-enrollment.
+2. **Admin reset.** An admin calls `twoFactor.resetMemberTwoFactor` for another
+   user (cannot target self). Wipes that user's factors and forces re-enrollment.
 3. **Platform support reset (this runbook).** Only when rungs 1 and 2 are both
    exhausted.
 
@@ -54,13 +52,13 @@ unblock a genuinely locked-out user in the meantime.
 
 ## When to use it
 
-Only after both self-serve recovery codes and the Organization-admin reset are
+Only after both self-serve recovery codes and the admin reset are
 genuinely unavailable. Concretely, all of the following hold:
 
 1. The user has lost access to their authenticator app (the active TOTP
    factor).
 2. The user has no remaining unused recovery code.
-3. No Organization admin can perform `twoFactor.resetMemberTwoFactor` for them (single
+3. No admin can perform `twoFactor.resetMemberTwoFactor` for them (single
    admin who is themselves locked out, or the admin's own factor is lost).
 
 If any earlier rung is still reachable, use it instead. A support reset is the
@@ -115,9 +113,8 @@ gets a chance to intervene before their second factor is removed.
 Once the contest window has elapsed with no objection, apply **admin-reset
 semantics PLUS a forced password reset**. The semantic template is
 `TwoFactorPolicyService.resetMemberTwoFactor`
-(`apps/api/src/modules/auth/services/two-factor-policy.service.ts`), minus its
-tenant scoping: support operates across tenants, so the tenant-membership check
-that method enforces does not apply here.
+(`apps/api/src/modules/auth/services/two-factor-policy.service.ts`), run by an
+operator rather than by an admin session.
 
 The admin-reset semantics, in order:
 
@@ -136,7 +133,7 @@ The admin-reset semantics, in order:
 4. **Revoke sessions.** Drop every Redis session and force-disconnect live
    sockets for the user (`SessionRevocationService.revokeAllAndDisconnect`).
 
-Then, the additional step that an Organization admin reset does not perform:
+Then, the additional step that an admin reset does not perform:
 
 5. **Force a password reset.** A support reset assumes the account may be
    compromised, so a fresh factor alone is not enough. Drive the account through
@@ -148,7 +145,7 @@ Then, the additional step that an Organization admin reset does not perform:
    closes the mailbox-only lockout attack rather than reopening it.
 
 After this, the account has no second factor, no trusted devices, no live
-sessions, and a pending password reset. If the user's Organization requires 2FA, they
+sessions, and a pending password reset. If the app requires 2FA, they
 re-enter enrollment grace and are prompted to re-enroll at next login, exactly
 like the admin-reset path (grace does not restart for them individually).
 
@@ -174,7 +171,7 @@ State this plainly to any user or operator who asks. Email is not a second
 factor and not a recovery channel anywhere in this system. There is no
 one-time-code-to-email path that bypasses the ladder, by explicit product
 decision. A user who has exhausted recovery codes and cannot
-reach an Organization admin has exactly one remaining path: this operator-run support
+reach an admin has exactly one remaining path: this operator-run support
 reset, gated by out-of-band identity verification and the 24-hour contest
 window. Anyone offering an "email us a code" shortcut is describing a flow that
 does not exist and must not be built as one.

@@ -16,7 +16,7 @@ Include where possible:
 
 - The affected area (api, web, or a package).
 - Steps to reproduce, or a proof of concept.
-- The impact you observed (data exposure, auth bypass, cross-tenant access, and so on).
+- The impact you observed (data exposure, auth bypass, privilege escalation, and so on).
 
 Maintainers acknowledge reports as soon as they can, coordinate a fix in a private advisory, and
 credit the reporter in the published advisory unless you ask otherwise.

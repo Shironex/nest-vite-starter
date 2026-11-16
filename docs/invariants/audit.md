@@ -31,9 +31,9 @@ The honest headline for this subsystem: **less is enforced here than the rule na
 - An action name is a string. A typo produces a row nobody will ever filter for, which is why the
   vocabulary is a const union in `@repo/shared` rather than literals at the call sites.
 - A refusal is worth more than a success and is the easier one to forget: the interesting audit row
-  for a removed member is the one written when they are turned away.
-- The retention sweep deletes rows. It reaches across tenants by design, so it is one of the few
-  places allowed outside the scope.
+  for a disabled account is the one written when it is turned away.
+- The retention sweep deletes rows by age alone, so it is one of the few places allowed to write
+  without naming a user.
 
 ## Invariants
 
@@ -51,9 +51,12 @@ transaction commits rather than inside it.
 `AUDIT_ACTIONS` is a const object with a derived union, so a call site passing a literal that is
 not in it is a compile error rather than a bad row.
 
-### Audit rows are tenant-scoped on read
+### Audit rows are readable by admins only
 
-**Enforced by:** `file:apps/api/src/modules/audit/audit-read.isolation.spec.ts`
+**Enforced by:** `file:apps/api/src/modules/auth/user-role-capability.spec.ts`
+
+The audit router is admin-gated end to end; the capability pin fails if a procedure on it loses
+its `AdminMiddleware`.
 
 ### Every mutation entry point reaches an audit write
 
@@ -92,4 +95,4 @@ a new refusal path to do the same.
 - [ ] Does every new mutation write an audit row, and is the row written outside the transaction?
 - [ ] Is the action name in `AUDIT_ACTIONS`, or is it a new one that belongs there?
 - [ ] Does the refusal path audit as well as the success path?
-- [ ] Does the row carry a tenant id where the entity has one, so the audit browser can find it?
+- [ ] Does the row carry a target type and id, so the audit browser can find it?

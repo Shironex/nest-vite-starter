@@ -10,9 +10,8 @@ code paths, and in each case the invariant is real but written down nowhere a re
 The classic shapes:
 
 - a new session re-issue path forgets a field every other door stamps into the session blob;
-- the tenant scope escapes through a transaction;
-- "enforce it at every door" updates login, but not password reset, so a removed member signs back
-  in through the reset link.
+- "enforce it at every door" updates login, but not password reset, so a disabled account signs
+  back in through the reset link.
 
 ## Format
 
@@ -20,9 +19,9 @@ Frontmatter carries the two machine-read fields:
 
 ```yaml
 ---
-subsystem: Tenant scope
+subsystem: Soft delete
 globs:
-  - apps/api/src/common/database/tenant-scope.extension.ts
+  - apps/api/src/common/database/base.repository.ts
   - apps/api/src/modules/**/*.repository.ts
 ---
 ```
@@ -31,7 +30,7 @@ The body is prose except for one convention: every invariant is a `###` heading,
 under it is
 
 ```markdown
-**Enforced by:** `lint-meta:tenant-model-registry-parity`, `eslint:noctcore-prisma/tenant-scoped-tables-require-where`
+**Enforced by:** `lint-meta:required-rules-at-error`, `eslint:noctcore-prisma/soft-deletable-tables-require-deleted-at`
 ```
 
 Citations are one of:
@@ -65,9 +64,8 @@ The subsystems covered, written from the code rather than from memory:
 
 | Manifest               | Covers                                                             |
 | ---------------------- | ------------------------------------------------------------------ |
-| `tenancy.md`           | the Organization/Workspace boundary and the Prisma scope extension |
 | `sessions.md`          | session mint, epoch, landing and procedure guards                  |
-| `account-lifecycle.md` | deleted, locked and removed accounts at every authentication door  |
+| `account-lifecycle.md` | deleted, locked and disabled accounts at every authentication door |
 | `audit.md`             | the audit trail and what is actually enforced about it             |
 | `queues.md`            | BullMQ registration, job context and processors                    |
 
@@ -81,5 +79,5 @@ Invariants cited as `unenforced` point here. Each is a known gap, not an oversig
 holds in the code today, but nothing mechanical stops a future change from breaking it. Closing one
 means adding a lint-meta rule, an ESLint rule or a spec and replacing the `unenforced` citation.
 
-- `queues.md`, `audit.md`, `account-lifecycle.md`, `tenancy.md`: see the
+- `queues.md`, `audit.md`, `account-lifecycle.md`: see the
   invariant marked `unenforced` in each manifest.
