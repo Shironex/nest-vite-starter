@@ -1,11 +1,11 @@
 /**
- * Shared SaaS Starter presentation classes for the auth screens.
+ * Shared Nest Vite Starter presentation classes for the auth screens.
  *
  * These exist because the pieces they style live in `@repo/ui` and are shaped
  * for the generic shadcn defaults (a 36px button, a 6px radius). The auth
  * screens need the treatment from the design (40/42px controls on a 10px
  * radius), and keeping the override in one constant beats repeating the same
- * class string across five forms. If `@repo/ui` ever grows a SaaS Starter-native
+ * class string across five forms. If `@repo/ui` ever grows a Nest Vite Starter-native
  * button/input size, these collapse into that instead.
  */
 

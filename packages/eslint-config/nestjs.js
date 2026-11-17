@@ -297,7 +297,7 @@ export const config = [
     // positives. Scoped to src/**/*.ts and ignoring specs/test, mirroring the
     // clock block above.
     //
-    // The published rules ship generic defaults, so every SaaS Starter convention is
+    // The published rules ship generic defaults, so every Nest Vite Starter convention is
     // passed here: the allowlists, the model registries, the soft-delete helper
     // and the single-writer fences. Each option reproduces what the former local
     // copy hardcoded, proven location-for-location on the whole repo before the

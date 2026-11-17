@@ -49,14 +49,14 @@ describe('EmailDeliveryProcessor', () => {
     await processor.processJob(
       makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION, {
         to: 'jane@example.com',
-        props: { verificationUrl: 'https://verify', appName: 'SaaS Starter' },
+        props: { verificationUrl: 'https://verify', appName: 'Nest Vite Starter' },
         _ctx: { requestId: 'r1' },
       }),
     );
 
     expect(renderer.renderVerificationEmail).toHaveBeenCalledWith({
       verificationUrl: 'https://verify',
-      appName: 'SaaS Starter',
+      appName: 'Nest Vite Starter',
     });
     expect(provider.send).toHaveBeenCalledWith({
       to: 'jane@example.com',
@@ -69,14 +69,18 @@ describe('EmailDeliveryProcessor', () => {
     await processor.processJob(
       makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_RESET, {
         to: 'a@b.c',
-        props: { resetUrl: 'https://reset', ipAddress: '203.0.113.5', appName: 'SaaS Starter' },
+        props: {
+          resetUrl: 'https://reset',
+          ipAddress: '203.0.113.5',
+          appName: 'Nest Vite Starter',
+        },
       }),
     );
 
     expect(renderer.renderPasswordResetEmail).toHaveBeenCalledWith({
       resetUrl: 'https://reset',
       ipAddress: '203.0.113.5',
-      appName: 'SaaS Starter',
+      appName: 'Nest Vite Starter',
     });
     expect(provider.send).toHaveBeenCalledWith(
       expect.objectContaining({ to: 'a@b.c', subject: 'Reset your password' }),
@@ -87,19 +91,19 @@ describe('EmailDeliveryProcessor', () => {
     await processor.processJob(
       makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_WELCOME, {
         to: 'jane@example.com',
-        props: { loginUrl: 'https://login', appName: 'SaaS Starter' },
+        props: { loginUrl: 'https://login', appName: 'Nest Vite Starter' },
         extra: { requestId: 'r1' },
       }),
     );
 
     expect(renderer.renderWelcomeEmail).toHaveBeenCalledWith({
       loginUrl: 'https://login',
-      appName: 'SaaS Starter',
+      appName: 'Nest Vite Starter',
     });
     expect(provider.send).toHaveBeenCalledTimes(1);
     expect(provider.send).toHaveBeenCalledWith({
       to: 'jane@example.com',
-      subject: 'Welcome to SaaS Starter!',
+      subject: 'Welcome to Nest Vite Starter!',
       html: '<welcome/>',
     });
   });
@@ -108,11 +112,13 @@ describe('EmailDeliveryProcessor', () => {
     await processor.processJob(
       makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_CHANGED, {
         to: 'a@b.c',
-        props: { appName: 'SaaS Starter' },
+        props: { appName: 'Nest Vite Starter' },
       }),
     );
 
-    expect(renderer.renderPasswordChangedEmail).toHaveBeenCalledWith({ appName: 'SaaS Starter' });
+    expect(renderer.renderPasswordChangedEmail).toHaveBeenCalledWith({
+      appName: 'Nest Vite Starter',
+    });
     expect(provider.send).toHaveBeenCalledWith(
       expect.objectContaining({ to: 'a@b.c', subject: 'Your password has been changed' }),
     );
@@ -122,14 +128,18 @@ describe('EmailDeliveryProcessor', () => {
     await processor.processJob(
       makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_EMAIL_CHANGE_VERIFICATION, {
         to: 'new@example.com',
-        props: { confirmUrl: 'https://x/confirm', appName: 'SaaS Starter', expiresIn: '1 hour' },
+        props: {
+          confirmUrl: 'https://x/confirm',
+          appName: 'Nest Vite Starter',
+          expiresIn: '1 hour',
+        },
         _ctx: { requestId: 'r1' },
       }),
     );
 
     expect(renderer.renderEmailChangeVerificationEmail).toHaveBeenCalledWith({
       confirmUrl: 'https://x/confirm',
-      appName: 'SaaS Starter',
+      appName: 'Nest Vite Starter',
       expiresIn: '1 hour',
     });
     expect(provider.send).toHaveBeenCalledWith({
@@ -144,7 +154,7 @@ describe('EmailDeliveryProcessor', () => {
       makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_EMAIL_CHANGE_REQUESTED, {
         to: 'old@example.com',
         props: {
-          appName: 'SaaS Starter',
+          appName: 'Nest Vite Starter',
           newEmail: 'new@example.com',
           settingsUrl: 'https://x/settings',
         },
@@ -153,7 +163,7 @@ describe('EmailDeliveryProcessor', () => {
     );
 
     expect(renderer.renderEmailChangeRequestedEmail).toHaveBeenCalledWith({
-      appName: 'SaaS Starter',
+      appName: 'Nest Vite Starter',
       newEmail: 'new@example.com',
       settingsUrl: 'https://x/settings',
     });
@@ -170,7 +180,7 @@ describe('EmailDeliveryProcessor', () => {
       processor.processJob(
         makeJob(
           EMAIL_DELIVERY_JOB_NAMES.SEND_WELCOME,
-          { to: 'a@b.c', props: { loginUrl: 'u', appName: 'SaaS Starter' } },
+          { to: 'a@b.c', props: { loginUrl: 'u', appName: 'Nest Vite Starter' } },
           { made: 0, max: 5 },
         ),
       ),
@@ -189,7 +199,7 @@ describe('EmailDeliveryProcessor', () => {
         makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_VERIFICATION, {
           to: 'a@b.c',
           // props.verificationUrl missing entirely.
-          props: { appName: 'SaaS Starter' },
+          props: { appName: 'Nest Vite Starter' },
         }),
       );
       await expect(failure).rejects.toBeInstanceOf(UnrecoverableError);
@@ -202,7 +212,7 @@ describe('EmailDeliveryProcessor', () => {
       const failure = processor.processJob(
         makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_WELCOME, {
           to: 'secret-recipient@example.com',
-          props: { loginUrl: 42, appName: 'SaaS Starter' },
+          props: { loginUrl: 42, appName: 'Nest Vite Starter' },
         }),
       );
       const err = await failure.then(
@@ -226,11 +236,13 @@ describe('EmailDeliveryProcessor', () => {
       await processor.processJob(
         makeJob(EMAIL_DELIVERY_JOB_NAMES.SEND_PASSWORD_CHANGED, {
           to: 'a@b.c',
-          props: { appName: 'SaaS Starter' },
+          props: { appName: 'Nest Vite Starter' },
           extra: { requestId: 'r1' },
         }),
       );
-      expect(renderer.renderPasswordChangedEmail).toHaveBeenCalledWith({ appName: 'SaaS Starter' });
+      expect(renderer.renderPasswordChangedEmail).toHaveBeenCalledWith({
+        appName: 'Nest Vite Starter',
+      });
       expect(provider.send).toHaveBeenCalledWith(
         expect.objectContaining({ to: 'a@b.c', subject: 'Your password has been changed' }),
       );

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { otpauthUriToQrDataUri } from './qr';
 
 const URI =
-  'otpauth://totp/SaaSStarter:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=SaaSStarter';
+  'otpauth://totp/NestViteStarter:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=NestViteStarter';
 const PIXELS_PER_MODULE = 8;
 
 /**

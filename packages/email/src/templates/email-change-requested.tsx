@@ -97,7 +97,7 @@ const link: React.CSSProperties = {
 };
 
 EmailChangeRequestedEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
   newEmail: 'new-address@example.com',
   settingsUrl: 'https://example.com/settings',
 } satisfies EmailChangeRequestedEmailProps;

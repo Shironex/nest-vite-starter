@@ -48,7 +48,7 @@ const button: React.CSSProperties = {
 };
 
 WelcomeEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
   loginUrl: 'https://example.com/login',
 } satisfies WelcomeEmailProps;
 

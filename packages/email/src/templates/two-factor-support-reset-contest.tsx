@@ -62,7 +62,7 @@ const warning: React.CSSProperties = {
 };
 
 TwoFactorSupportResetContestEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
   ticketRef: 'SUP-10432',
   contestDeadline: 'August 1, 2026',
 } satisfies TwoFactorSupportResetContestEmailProps;

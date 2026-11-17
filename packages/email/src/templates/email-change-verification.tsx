@@ -97,7 +97,7 @@ const link: React.CSSProperties = {
 };
 
 EmailChangeVerificationEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
   confirmUrl: 'https://example.com/auth/confirm-email-change?token=preview-token',
   expiresIn: '1 hour',
 } satisfies EmailChangeVerificationEmailProps;

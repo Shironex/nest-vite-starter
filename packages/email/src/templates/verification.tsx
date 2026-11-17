@@ -93,7 +93,7 @@ const link: React.CSSProperties = {
 };
 
 VerificationEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
   verificationUrl: 'https://example.com/verify-email?token=preview-token',
   expiresIn: '24 hours',
 } satisfies VerificationEmailProps;

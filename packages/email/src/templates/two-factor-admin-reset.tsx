@@ -44,7 +44,7 @@ const warning: React.CSSProperties = {
 };
 
 TwoFactorAdminResetEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
 } satisfies TwoFactorAdminResetEmailProps;
 
 export default TwoFactorAdminResetEmail;

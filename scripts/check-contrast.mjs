@@ -30,7 +30,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const CSS_PATH = resolve(HERE, '../packages/ui/src/styles/globals.css');
 
 // WCAG 2.1 SC 1.4.3. Large text is 24px, or 18.66px at weight 700; in the
-// SaaS Starter ramp only type-display-hero, type-display-large and type-stat-figure
+// Nest Vite Starter ramp only type-display-hero, type-display-large and type-stat-figure
 // clear that bar, so 4.5 is the default for every pairing here. Set `min: 3` on
 // a pairing only if it is provably unreachable by anything smaller.
 const AA_SMALL = 4.5;
@@ -63,7 +63,7 @@ const gammaEncode = (c) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) 
 const gammaDecode = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 
 /**
- * What the display actually shows. The gamut clip matters: several SaaS Starter
+ * What the display actually shows. The gamut clip matters: several Nest Vite Starter
  * oklch values sit outside sRGB and the browser clips them before compositing,
  * so measuring the unclipped linear values would disagree with the screen.
  */
@@ -135,7 +135,7 @@ function parseTokenBlock(css, selector) {
 
 /** @type {{ink: string, bg: string, alpha?: number, over?: string, min?: number, exempt?: string, label?: string}[]} */
 const PAIRINGS = [
-  // Brand ink on every SaaS Starter surface.
+  // Brand ink on every Nest Vite Starter surface.
   { ink: 'brand-ink', bg: 'brand-tint' },
   { ink: 'brand-ink', bg: 'brand-50' },
   { ink: 'brand-ink', bg: 'brand-100' },
@@ -288,7 +288,7 @@ const PAIRINGS = [
   // white `S`. 4.19:1 in Light and 3.29:1 in Dark, and the worst point of the
   // ramp is the `from-brand` end, which is exactly the corner the chip sits in,
   // so the endpoint below is the honest sample rather than the flattering one.
-  // Exempt under the WCAG 1.4.3 logotype exception: the glyph is the SaaS Starter
+  // Exempt under the WCAG 1.4.3 logotype exception: the glyph is the Nest Vite Starter
   // mark. The wordmark TEXT beside it is plain white on the gradient and is
   // covered by `brand-fg on brand` above at 4.64:1.
   {

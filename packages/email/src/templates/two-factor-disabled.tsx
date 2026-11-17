@@ -82,7 +82,7 @@ const link: React.CSSProperties = {
 };
 
 TwoFactorDisabledEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
   settingsUrl: 'https://example.com/settings/security',
 } satisfies TwoFactorDisabledEmailProps;
 

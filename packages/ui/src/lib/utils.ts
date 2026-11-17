@@ -2,7 +2,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { extendTailwindMerge } from 'tailwind-merge';
 
 /**
- * The 14 SaaS Starter type ramp utilities, defined as `@utility type-*` in
+ * The 14 Nest Vite Starter type ramp utilities, defined as `@utility type-*` in
  * `styles/globals.css`. Kept in sync with the ramp by hand: there is no way to
  * read `@utility` names out of the stylesheet at runtime.
  */

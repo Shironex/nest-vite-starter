@@ -38,7 +38,7 @@ const warning: React.CSSProperties = {
 };
 
 PasswordChangedEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
 } satisfies PasswordChangedEmailProps;
 
 export default PasswordChangedEmail;

@@ -101,7 +101,7 @@ function RootLayout() {
     <>
       {/*
        * Writes the per-route `head()` title into <head>. Without it every route
-       * is index.html's "SaaS Starter": nothing announces a navigation to assistive
+       * is index.html's "Nest Vite Starter": nothing announces a navigation to assistive
        * tech, and a user with several tabs cannot tell one from another.
        */}
       <HeadContent />

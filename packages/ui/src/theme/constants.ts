@@ -10,8 +10,8 @@ export const DEFAULT_COLOR_THEME: ColorTheme = 'starter';
 export const COLOR_THEMES: IColorThemeDefinition[] = [
   {
     id: 'starter',
-    name: 'SaaS Starter',
-    description: 'SaaS Starter brand palette, indigo on cool neutrals',
+    name: 'Nest Vite Starter',
+    description: 'Nest Vite Starter brand palette, indigo on cool neutrals',
     previewColors: {
       light: { bg: 'oklch(0.9819 0.0029 264.54)', accent: 'oklch(0.5025 0.2134 268.41)' },
       dark: {

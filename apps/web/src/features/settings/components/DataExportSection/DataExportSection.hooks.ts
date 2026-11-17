@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@repo/ui/sonner';
+import { PRODUCT_SLUG } from '@repo/shared/constants';
 import type { UserDataExport } from '@repo/shared/schemas';
 import { trpc } from '@/lib/trpc';
 import { translateAppError } from '@/lib/trpc-errors';
@@ -11,7 +12,7 @@ import { settingsStrings } from '@/features/settings/Settings.strings';
  * appended so exports taken on different days do not shadow each other on
  * disk. Deliberately not localized, matching `recovery-codes.txt`.
  */
-const EXPORT_FILENAME_PREFIX = 'saas-starter-account-export-';
+const EXPORT_FILENAME_PREFIX = `${PRODUCT_SLUG}-account-export-`;
 
 /**
  * Turn the export payload into a saved `.json` file, the same anchor-click

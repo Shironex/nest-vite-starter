@@ -103,7 +103,7 @@ const link: React.CSSProperties = {
 };
 
 PasswordResetEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
   resetUrl: 'https://example.com/reset-password?token=preview-token',
   ipAddress: '203.0.113.42',
   expiresIn: '1 hour',

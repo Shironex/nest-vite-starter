@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-/* SaaS Starter typefaces, self hosted through fontsource so an air gapped
+/* Nest Vite Starter typefaces, self hosted through fontsource so an air gapped
    deployment renders correctly with no request to fonts.googleapis.com.
    All three ship latin + latin-ext, which covers the accented Latin alphabets. */
 @import '@fontsource-variable/instrument-sans'; /* UI / body, wght 400-700 */
@@ -46,7 +46,7 @@
 }
 
 /* ============================================
-   STARTER - the default theme (SaaS Starter brand palette)
+   STARTER - the default theme (Nest Vite Starter brand palette)
    One variable collection with a Light and a Dark mode. The design source
    authors these as hex, they are converted to oklch here to match the
    convention every other theme in this file uses. The source hex is kept in a
@@ -460,9 +460,9 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* SaaS Starter design tokens. Every design color variable gets a Tailwind utility,
+  /* Nest Vite Starter design tokens. Every design color variable gets a Tailwind utility,
      named after the variable so the design source maps 1:1 onto code.
-     These are defined on :root, so they resolve under every theme, not only SaaS Starter. */
+     These are defined on :root, so they resolve under every theme, not only Nest Vite Starter. */
   --color-brand: var(--brand); /* color/brand/primary */
   --color-brand-hover: var(--brand-hover); /* color/brand/primary-hover */
   --color-brand-fg: var(--brand-fg); /* color/brand/primary-fg */
@@ -529,7 +529,7 @@
 }
 
 /* ============================================
-   TYPE RAMP - the 12 SaaS Starter text styles
+   TYPE RAMP - the 12 Nest Vite Starter text styles
    One utility per design text style, carrying family, weight, size, line height
    and tracking together, so a screen never needs a one off font size.
    The design authors line height as a percentage of the font size and tracking as a

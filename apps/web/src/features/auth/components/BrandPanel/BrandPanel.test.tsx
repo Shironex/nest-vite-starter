@@ -11,7 +11,7 @@ describe('BrandPanel', () => {
   it('renders the wordmark and the marketing headline', () => {
     render(<BrandPanel />);
 
-    expect(screen.getByText('SaaS Starter')).toBeInTheDocument();
+    expect(screen.getByText('Nest Vite Starter')).toBeInTheDocument();
     expect(screen.getByText(authStrings.brandPanel.headline)).toBeInTheDocument();
   });
 

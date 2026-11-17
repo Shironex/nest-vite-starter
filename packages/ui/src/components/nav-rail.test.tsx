@@ -49,14 +49,14 @@ describe('navRailItemClass', () => {
 
 describe('NavRailBrand', () => {
   it('draws the mark decoratively so the wordmark is the only name read', () => {
-    render(<NavRailBrand mark="S" wordmark="SaaS Starter" />);
+    render(<NavRailBrand mark="S" wordmark="Nest Vite Starter" />);
 
-    expect(screen.getByText('SaaS Starter')).toBeInTheDocument();
+    expect(screen.getByText('Nest Vite Starter')).toBeInTheDocument();
     expect(screen.getByText('S')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('carries a caption for a shell that is one surface of several', () => {
-    render(<NavRailBrand mark="S" wordmark="SaaS Starter" caption="Admin console" />);
+    render(<NavRailBrand mark="S" wordmark="Nest Vite Starter" caption="Admin console" />);
 
     expect(screen.getByText('Admin console')).toBeInTheDocument();
   });

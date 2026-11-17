@@ -14,7 +14,7 @@ import { config as nestjsConfig } from '../nestjs.js';
 
 /*
  * The Prisma rules come from @noctcore/eslint-plugin-prisma, which knows no
- * SaaS Starter model, file or schema path: every one of those is an option passed in
+ * Nest Vite Starter model, file or schema path: every one of those is an option passed in
  * nestjs.js. So what can break here is the WIRING, and two kinds of it break
  * silently:
  *

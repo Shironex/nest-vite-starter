@@ -78,7 +78,7 @@ describe('useDataExportSection', () => {
     act(() => result.current.onDownload());
 
     await waitFor(() => expect(click).toHaveBeenCalledOnce());
-    expect(anchor.download).toBe('saas-starter-account-export-2026-01-15.json');
+    expect(anchor.download).toBe('nest-vite-starter-account-export-2026-01-15.json');
     expect(queryFn).toHaveBeenCalledOnce();
     expect(result.current.errorMessage).toBeUndefined();
     createElement.mockRestore();

@@ -28,18 +28,18 @@ export const APP_LOCALE = 'en-US';
  * api's APP_NAME config default) derives from this, so rebranding is a
  * one-line change here rather than a repo-wide sweep.
  *
- * 'SaaS Starter' is a placeholder brand carried over from the design system and is
- * expected to change. Surfaces that cannot read a constant (index.html <title>,
- * compose container names) are the only places the literal is duplicated.
+ * 'Nest Vite Starter' is the starter's own name and is expected to change in a fork
+ * (the README lists the few surfaces that cannot read a constant, such as the
+ * index.html <title>, which duplicate the literal).
  */
-export const PRODUCT_NAME = 'SaaS Starter';
+export const PRODUCT_NAME = 'Nest Vite Starter';
 
 /**
  * Lowercase machine-safe form of PRODUCT_NAME, for identifiers that are not
- * display copy: crash-reporter grouping, iCalendar PRODID, bucket prefixes.
+ * display copy: the data-export filename prefix, crash-reporter grouping, bucket prefixes.
  * Kept next to PRODUCT_NAME so the two never drift.
  */
-export const PRODUCT_SLUG = 'saas-starter';
+export const PRODUCT_SLUG = 'nest-vite-starter';
 
 /**
  * CSRF wire contract, shared by the api (csrf.service.ts reads the header,

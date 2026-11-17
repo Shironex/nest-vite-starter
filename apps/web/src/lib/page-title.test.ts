@@ -4,7 +4,7 @@ import { pageTitle } from './page-title';
 import { commonStrings } from './strings';
 
 /**
- * Every route was titled "SaaS Starter" before this, so navigation was silent for
+ * Every route was titled "Nest Vite Starter" before this, so navigation was silent for
  * assistive tech and a user with several tabs could not tell one from another.
  */
 describe('pageTitle', () => {

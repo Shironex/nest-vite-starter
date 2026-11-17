@@ -9,7 +9,7 @@ import {
   renderEmailChangeRequestedEmail,
 } from './index.js';
 
-const appName = 'SaaS Starter';
+const appName = 'Nest Vite Starter';
 
 /**
  * Smoke test: every template renders to non-empty HTML that includes the app
@@ -25,7 +25,9 @@ describe('email templates render', () => {
     expect(html).toMatch(/This link expires in (?:<!-- -->)?24 hours/);
     // The owner of an address somebody else registered is told to
     // ignore the mail rather than click through.
-    expect(html).toMatch(/Didn&#x27;t create a (?:<!-- -->)?SaaS Starter(?:<!-- -->)? account\?/);
+    expect(html).toMatch(
+      /Didn&#x27;t create a (?:<!-- -->)?Nest Vite Starter(?:<!-- -->)? account\?/,
+    );
     expect(html).toContain('the address stays unverified');
   });
 

@@ -82,7 +82,7 @@ const link: React.CSSProperties = {
 };
 
 RecoveryCodeUsedEmail.PreviewProps = {
-  appName: 'SaaS Starter',
+  appName: 'Nest Vite Starter',
   settingsUrl: 'https://example.com/settings/security',
 } satisfies RecoveryCodeUsedEmailProps;
 

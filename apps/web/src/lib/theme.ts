@@ -10,7 +10,7 @@ const darkMediaQuery = '(prefers-color-scheme: dark)';
  * says when the preference is `system`.
  *
  * Exported because the app's resolution is NOT the same as
- * `prefers-color-scheme`. SaaS Starter applies a `.dark` class from a stored
+ * `prefers-color-scheme`. Nest Vite Starter applies a `.dark` class from a stored
  * preference, so any third-party surface that resolves the OS query on its own
  * (sonner's `theme="system"`, for one) disagrees with the app the moment a user
  * picks a theme in Settings. Such surfaces get this value instead.

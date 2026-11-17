@@ -3,7 +3,7 @@ import { APP_NAME } from '@/lib/env';
 /**
  * The `<title>` for one route, as TanStack's `head()` wants it.
  *
- * WITHOUT A PER-ROUTE TITLE every route in the app was "SaaS Starter": navigation was
+ * WITHOUT A PER-ROUTE TITLE every route in the app was "Nest Vite Starter": navigation was
  * silent for assistive tech (no title change, nothing announced), the browser
  * history read as one entry repeated, and a user with several tabs open could
  * not tell the audit log from settings.

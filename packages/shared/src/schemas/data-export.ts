@@ -7,7 +7,7 @@ import { userProfileOutput } from './user.js';
  * user can take it elsewhere or keep a copy.
  *
  * This is a PATTERN SKELETON. v1 carries only the user's account profile,
- * because that is the only user-owned data SaaS Starter ships so far. Each new domain
+ * because that is the only user-owned data Nest Vite Starter ships so far. Each new domain
  * extends `userDataExportOutput` with its own sections (each composed
  * from the same strict `*Output` projections the rest of the app uses, so the
  * export inherits the wire-strip guarantee that keeps internal columns,
