@@ -8,7 +8,7 @@
  *
  * One module, because a key read in two places grows two defaults and two "is it set"
  * tests, and the day they disagree is the day a production build quietly behaves like a
- * development one. `env-no-direct-import-meta-env` keeps the next reader here.
+ * development one.
  *
  * `import.meta.env.DEV`, `.PROD` and `.MODE` deliberately do NOT live here. Vite substitutes
  * those three literally at build time and the bundler's dead-code elimination depends on
