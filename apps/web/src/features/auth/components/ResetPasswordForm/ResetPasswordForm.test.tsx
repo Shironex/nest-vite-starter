@@ -36,7 +36,7 @@ describe('ResetPasswordForm', () => {
     requiresTwoFactor = false;
     isTokenMissing = false;
     render(<ResetPasswordForm />);
-    expect(screen.getByPlaceholderText('At least 10 characters')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('At least 8 characters')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save and sign in' })).toBeInTheDocument();
     expect(screen.queryByLabelText('Authenticator code or backup code')).not.toBeInTheDocument();
   });
@@ -60,7 +60,7 @@ describe('ResetPasswordForm', () => {
     render(<ResetPasswordForm />);
 
     expect(screen.getByRole('alert')).toHaveTextContent('Open the password reset link');
-    expect(screen.queryByPlaceholderText('At least 10 characters')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('At least 8 characters')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save and sign in' })).not.toBeInTheDocument();
     // The remedy differs from a spent token: ask for a fresh link.
     expect(screen.getByRole('link', { name: 'Request a new link' })).toBeInTheDocument();

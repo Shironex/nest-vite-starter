@@ -8,7 +8,7 @@ export const authStrings = {
     email: 'Email address',
     emailPlaceholder: 'anna@example.com',
     password: 'Password',
-    newPasswordPlaceholder: 'At least 10 characters',
+    newPasswordPlaceholder: 'At least 8 characters',
   },
   login: {
     forgotPassword: 'Forgot password?',
