@@ -38,12 +38,6 @@ importers:
       '@noctcore/eslint-plugin-prisma':
         specifier: ^0.5.2
         version: 0.5.2(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
-      '@noctcore/harness':
-        specifier: ^0.3.0
-        version: 0.3.0
-      '@noctcore/lint-meta-rules':
-        specifier: ^0.6.2
-        version: 0.6.2(@typescript-eslint/parser@8.70.0(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:packages/eslint-config
@@ -74,9 +68,6 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.8.1
         version: 0.8.1(prettier@3.9.6)
-      tsx:
-        specifier: ^4.23.13
-        version: 4.23.13
       turbo:
         specifier: ^2.10.13
         version: 2.10.13
@@ -2250,22 +2241,6 @@ packages:
     peerDependencies:
       eslint: '>=9.0.0 <11'
       typescript: '>=5.0.0 <7'
-
-  '@noctcore/harness@0.3.0':
-    resolution: {integrity: sha512-0AEu+R9IH21jALFUfT/OJdwZfaK1ljrHaQiPY7hDf4Ajqh5qE6rg4Ha+6S+PzkF//5vvZ38cU10XMIFz5LXk4Q==}
-    engines: {node: '>=22'}
-    hasBin: true
-
-  '@noctcore/lint-meta-rules@0.6.2':
-    resolution: {integrity: sha512-TZfBQkJHaSaoosmCGMBzcWhkthA7PGkn0Z6NL/juoCUTHpwy8IIX4NJoJzu0e26I/d8d1+XwXUD2daxBLviFXA==}
-    peerDependencies:
-      '@typescript-eslint/parser': ^8.0.0
-      eslint: '>=9.0.0'
-    peerDependenciesMeta:
-      '@typescript-eslint/parser':
-        optional: true
-      eslint:
-        optional: true
 
   '@node-rs/argon2-android-arm-eabi@2.2.1':
     resolution: {integrity: sha512-tvHjNf7XkLsuDKb6VhNZekA/Wq2Qf0yxygxQYWYcUUCawgg3QRDeXMBYa6QVQPHp1fpDXk42euRjVpHmQ5CwFQ==}
@@ -11471,15 +11446,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@noctcore/eslint-plugin-contracts@0.7.2(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)':
-    dependencies:
-      '@noctcore/eslint-utils': 0.1.2(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.70.0(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
-      eslint: 10.10.0(jiti@2.7.0)
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@noctcore/eslint-plugin-contracts@0.7.2(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
       '@noctcore/eslint-utils': 0.1.2(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3)
@@ -11566,21 +11532,6 @@ snapshots:
       typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
-
-  '@noctcore/harness@0.3.0': {}
-
-  '@noctcore/lint-meta-rules@0.6.2(@typescript-eslint/parser@8.70.0(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3))(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)':
-    dependencies:
-      '@noctcore/eslint-plugin-contracts': 0.7.2(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
-      '@noctcore/eslint-plugin-prisma': 0.5.2(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
-      '@noctcore/harness': 0.3.0
-      '@typescript-eslint/utils': 8.70.0(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
-    optionalDependencies:
-      '@typescript-eslint/parser': 8.70.0(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
-      eslint: 10.10.0(jiti@2.7.0)
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
 
   '@node-rs/argon2-android-arm-eabi@2.2.1':
     optional: true
@@ -13774,19 +13725,6 @@ snapshots:
       typescript: 6.0.3
     transitivePeerDependencies:
       - supports-color
-
-  '@typescript-eslint/parser@8.70.0(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)':
-    dependencies:
-      '@typescript-eslint/scope-manager': 8.70.0
-      '@typescript-eslint/types': 8.70.0
-      '@typescript-eslint/typescript-estree': 8.70.0(typescript@5.9.3)
-      '@typescript-eslint/visitor-keys': 8.70.0
-      debug: 4.4.3
-      eslint: 10.10.0(jiti@2.7.0)
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - supports-color
-    optional: true
 
   '@typescript-eslint/parser@8.70.0(eslint@10.7.0(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:

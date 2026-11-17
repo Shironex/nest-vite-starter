@@ -89,10 +89,7 @@
       "cache": false
     },
     "check-types": {
-      "dependsOn": ["^build", "//#check-types:tools"]
-    },
-    "//#check-types:tools": {
-      "inputs": ["tools/**/*.ts", "tools/tsconfig.json", "packages/tsconfig/base.json"]
+      "dependsOn": ["^build"]
     },
     "test": {
       "dependsOn": ["^build"],

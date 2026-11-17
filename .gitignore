@@ -33,11 +33,6 @@ test-results/
 # artifact, and it is re-minted on every run anyway.
 apps/web/e2e/.auth/
 
-# Per-worktree verification state (tools/verify): sandbox descriptors, which
-# carry the bound container ports and their credentials, and the JSON evidence
-# `pnpm verify` writes. Both are local to one worktree and one run.
-.agent-state/
-
 # OS files
 .DS_Store
 Thumbs.db
@@ -55,18 +50,5 @@ npm-debug.log*
 pnpm-debug.log*
 
 .mcp.json
-# Claude Code: settings.json IS tracked, because it carries the project hooks
-# (scripts/hooks) that give every checkout the same edit-time guard. Everything
-# else under .claude stays local: settings.local.json is machine-specific
-# permission state. Add `!.claude/skills/` here if you want to track project
-# skills.
-.claude/*
-!.claude/settings.json
-
-# act (local CI via nektos/act). .actrc, .env.act and .secrets.example are tracked;
-# the real secrets/vars and run artifacts are not.
-.secrets
-.vars
-.artifacts/
-event.json
-payload.json
+# Claude Code local settings (machine-specific).
+.claude/

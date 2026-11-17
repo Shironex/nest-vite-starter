@@ -1,5 +1,0 @@
--P ubuntu-24.04=catthehacker/ubuntu:act-latest
---network=host
---concurrent-jobs=1
---env-file=.env.act
---artifact-server-path=.artifacts

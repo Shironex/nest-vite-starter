@@ -11,8 +11,6 @@ export default [
     // governs is the rest of the tree: root-level files, scripts/, and the
     // eslint-authoring package (packages/eslint-config), which has no local
     // config of its own.
-    // tools/ resolves its own tools/eslint.config.mjs (base policy plus
-    // noInlineConfig), linted by `pnpm lint:tools`.
     // That now holds for lint-staged too, which used to resolve this config for
     // every staged file because it runs from the repo root.
     ignores: ['**/src/@generated/**', '**/dist/**', '**/node_modules/**'],
