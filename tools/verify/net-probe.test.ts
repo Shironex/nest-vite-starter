@@ -26,7 +26,7 @@ describe('service reachability', () => {
 
   it('reads the host and port out of a lane URL', () => {
     assert.deepEqual(
-      hostPortOf('postgresql://postgres:postgres@127.0.0.1:49200/saas_starter_isolation'),
+      hostPortOf('postgresql://postgres:postgres@127.0.0.1:49200/nest_vite_starter_isolation'),
       {
         host: '127.0.0.1',
         port: 49_200,
@@ -35,7 +35,10 @@ describe('service reachability', () => {
   });
 
   it('refuses a URL with no port rather than guessing 5432', () => {
-    assert.equal(hostPortOf('postgresql://postgres:postgres@localhost/saas_starter_dev'), null);
+    assert.equal(
+      hostPortOf('postgresql://postgres:postgres@localhost/nest_vite_starter_dev'),
+      null,
+    );
     assert.equal(hostPortOf(''), null);
     assert.equal(hostPortOf('not a url'), null);
   });

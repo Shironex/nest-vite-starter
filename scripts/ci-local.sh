@@ -38,7 +38,7 @@ set -uo pipefail
 CI_PORTS="5432 6379 1025 8025"
 SERVICE_JOBS="test-api test-e2e"
 ALL_JOBS_DEFAULT="quality build test-web test-api test-e2e"
-LOCK_DIR="${TMPDIR:-/tmp}/nest-vite-saas-starter-act-ci-local.lock"
+LOCK_DIR="${TMPDIR:-/tmp}/nest-vite-starter-act-ci-local.lock"
 SETTLE_SECONDS=4
 
 cd "$(dirname "$0")/.." || exit 1

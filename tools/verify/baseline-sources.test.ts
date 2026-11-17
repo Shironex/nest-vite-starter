@@ -24,7 +24,7 @@ const CONTEXT: IParseContext = {
     ['@repo/api', 'apps/api'],
     ['@repo/web', 'apps/web'],
     ['@repo/ui', 'packages/ui'],
-    ['nest-vite-saas-starter', ''],
+    ['nest-vite-starter', ''],
   ]),
   exitCode: 1,
 };
@@ -38,13 +38,13 @@ describe('turbo prefixes', () => {
     const [first, second, third] = splitTurboLines(
       [
         '@repo/api:lint: eslint .',
-        'nest-vite-saas-starter:check-types:tools: src/x.ts(1,1): error TS1: no',
+        'nest-vite-starter:check-types:tools: src/x.ts(1,1): error TS1: no',
         'Failed: x',
       ].join('\n'),
     );
 
     assert.deepEqual(first, { label: '@repo/api:lint', text: 'eslint .' });
-    assert.equal(second?.label, 'nest-vite-saas-starter:check-types:tools');
+    assert.equal(second?.label, 'nest-vite-starter:check-types:tools');
     assert.equal(second?.text, 'src/x.ts(1,1): error TS1: no');
     assert.equal(third?.label, null);
   });
@@ -152,7 +152,7 @@ describe('tsc output', () => {
 
   it('reads a root task, whose paths are already repo-relative', () => {
     const parsed = parseTscOutput(
-      'nest-vite-saas-starter:check-types:tools: tools/verify/baseline.ts(9,5): error TS2322: Type X is not assignable',
+      'nest-vite-starter:check-types:tools: tools/verify/baseline.ts(9,5): error TS2322: Type X is not assignable',
       CONTEXT,
     );
 

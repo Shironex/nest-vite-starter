@@ -58,7 +58,7 @@ export interface IPrefixedLine {
  *
  * turbo prefixes every line of a child with `<package>:<task>: `, including the
  * lines it replays from its cache. Task names hold colons of their own
- * (`nest-vite-saas-starter:check-types:tools:`) but never a space, so the prefix is everything
+ * (`nest-vite-starter:check-types:tools:`) but never a space, so the prefix is everything
  * up to the first `": "` when that head has no whitespace in it.
  */
 export function splitTurboLines(output: string): readonly IPrefixedLine[] {

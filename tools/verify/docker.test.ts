@@ -6,9 +6,12 @@ import { containerName } from './sandbox-lifecycle';
 
 describe('docker run arguments', () => {
   const args = runArgs({
-    name: 'saas-starter-sbx-abc12345-postgres',
+    name: 'nest-vite-starter-sbx-abc12345-postgres',
     image: 'postgres:17-alpine',
-    labels: { 'saas-starter.sandbox.owner': 'sha', 'saas-starter.sandbox.id': 'abc12345' },
+    labels: {
+      'nest-vite-starter.sandbox.owner': 'sha',
+      'nest-vite-starter.sandbox.id': 'abc12345',
+    },
     env: { POSTGRES_USER: 'postgres' },
     ports: ['5432'],
     extraArgs: ['--workdir', '/app'],
@@ -24,8 +27,8 @@ describe('docker run arguments', () => {
   });
 
   it('labels the container with the owner and the sandbox id', () => {
-    assert.ok(args.includes('saas-starter.sandbox.owner=sha'));
-    assert.ok(args.includes('saas-starter.sandbox.id=abc12345'));
+    assert.ok(args.includes('nest-vite-starter.sandbox.owner=sha'));
+    assert.ok(args.includes('nest-vite-starter.sandbox.id=abc12345'));
   });
 
   it('ends with the image, after the env and the extra arguments', () => {
@@ -42,7 +45,7 @@ describe('docker run arguments', () => {
   it('names containers so they cannot be confused with the dev stack', () => {
     const name = containerName('abc12345', 'postgres');
 
-    assert.equal(name, 'saas-starter-sbx-abc12345-postgres');
-    assert.notEqual(name, 'saas-starter-postgres');
+    assert.equal(name, 'nest-vite-starter-sbx-abc12345-postgres');
+    assert.notEqual(name, 'nest-vite-starter-postgres');
   });
 });

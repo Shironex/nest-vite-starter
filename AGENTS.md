@@ -26,7 +26,7 @@ Run `pnpm build:packages` once as well if you want ESLint to work outside turbo 
 edit hook and a bare `eslint` need the internal plugin's `dist`; turbo builds it for you).
 
 Before assuming a Docker stack is clear or data is lost, run `docker ps -a`. Plain `docker ps` hides
-exited containers (`saas-starter-postgres`). Never `pkill`/`killall` by pattern (every worktree path
+exited containers (`nest-vite-starter-postgres`). Never `pkill`/`killall` by pattern (every worktree path
 contains "vite"); kill by explicit PID. A bare `docker compose up -d` from a worktree swaps the dev
 database under you; the compose project name is pinned for that reason, do not work around it.
 
@@ -100,7 +100,7 @@ pnpm sandbox:down      # remove ONLY this worktree's labeled containers; safe to
 ```
 
 Three lanes, each with its own database, Redis index and bucket: `isolation`, `e2e` and
-`prisma_gates`. `sandbox:up` migrates once into `saas_starter_template` and creates each lane with
+`prisma_gates`. `sandbox:up` migrates once into `nest_vite_starter_template` and creates each lane with
 `CREATE DATABASE ... TEMPLATE`, which is under a second per lane, so a lane is recreated fresh on
 every run instead of drifting. Nothing here binds 5432, 6379, 1025 or 8025, and `sandbox:down`
 selects containers by label and never prunes, so the dev compose project is untouched.
@@ -120,7 +120,7 @@ sandbox. To run them by hand:
   `DATABASE_URL` must be EXPORTED, or `setup-env.ts` falls back to the CI-shaped `test` database and
   every spec dies on "Authentication failed".
 - **E2e** (Playwright, `apps/web/e2e`): `pnpm e2e:lane` owns the whole stack. It recreates
-  `saas_starter_e2e` from the template, seeds it with `db:seed` (fresh and near-empty, the shape CI uses,
+  `nest_vite_starter_e2e` from the template, seeds it with `db:seed` (fresh and near-empty, the shape CI uses,
   NOT `db:seed:dev`), builds the api and the web app, starts both on free ports, waits on
   an HTTP probe, runs Playwright with `--retries=0` and tears the children down by process group
   even on failure. It never falls back to an ambient server: no sandbox, no run. Pass Playwright

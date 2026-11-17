@@ -18,12 +18,12 @@ export interface ILane {
   readonly redisDb: number;
 }
 
-export const TEMPLATE_DATABASE = 'saas_starter_template';
+export const TEMPLATE_DATABASE = 'nest_vite_starter_template';
 
 export const LANES: readonly ILane[] = [
-  { id: 'isolation', database: 'saas_starter_isolation', redisDb: 1 },
-  { id: 'e2e', database: 'saas_starter_e2e', redisDb: 2 },
-  { id: 'prisma_gates', database: 'saas_starter_prisma_gates', redisDb: 3 },
+  { id: 'isolation', database: 'nest_vite_starter_isolation', redisDb: 1 },
+  { id: 'e2e', database: 'nest_vite_starter_e2e', redisDb: 2 },
+  { id: 'prisma_gates', database: 'nest_vite_starter_prisma_gates', redisDb: 3 },
 ];
 
 export function laneById(id: string): ILane {

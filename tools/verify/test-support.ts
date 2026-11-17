@@ -51,7 +51,7 @@ function reply(mode: FakePostgresMode): Buffer | null {
     case 'rejects':
       // A ready server that refuses this connection: no such database. Still a
       // Postgres answering, which is all the probe claims to establish.
-      return errorResponse('3D000', 'database "saas_starter" does not exist');
+      return errorResponse('3D000', 'database "nest_vite_starter" does not exist');
     case 'starting-up':
       return errorResponse('57P03', 'the database system is starting up');
     case 'other-server':

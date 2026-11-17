@@ -9,9 +9,9 @@ import { join } from 'node:path';
  * a sandbox, and `sandbox:down` can select its own containers by label instead
  * of by name pattern or a global prune.
  */
-export const LABEL_OWNER = 'saas-starter.sandbox.owner';
-export const LABEL_ID = 'saas-starter.sandbox.id';
-export const LABEL_ROLE = 'saas-starter.sandbox.role';
+export const LABEL_OWNER = 'nest-vite-starter.sandbox.owner';
+export const LABEL_ID = 'nest-vite-starter.sandbox.id';
+export const LABEL_ROLE = 'nest-vite-starter.sandbox.role';
 
 /** Stable id for the worktree at `root`: sha256 of its resolved path. */
 export function ownerId(root: string): string {

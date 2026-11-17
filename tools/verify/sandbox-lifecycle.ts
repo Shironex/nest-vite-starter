@@ -49,7 +49,7 @@ function livePort(container: string, containerPort: string): number | null {
 }
 
 export function containerName(id: string, role: string): string {
-  return `saas-starter-sbx-${id}-${role}`;
+  return `nest-vite-starter-sbx-${id}-${role}`;
 }
 
 export function readImages(root: string): ServiceImages {
@@ -117,7 +117,7 @@ function pgIsReady(container: string): boolean {
  * directory" on the socket, because the temporary server has gone.
  *
  * That is what `pnpm sandbox:up` once did: `CREATE DATABASE
- * saas_starter_template` failed the moment after readiness was confirmed, and because
+ * nest_vite_starter_template` failed the moment after readiness was confirmed, and because
  * `up` had already written its descriptor, the NEXT `up` took the reuse branch
  * and failed differently, complaining that the template did not exist.
  *
@@ -193,7 +193,7 @@ export async function up(root: string): Promise<IUpResult> {
    * the lanes". Writing it before the template and lanes exist means a failure
    * anywhere below leaves a descriptor describing a sandbox that was never
    * finished, and the next `up` then takes the reuse branch and fails with
-   * something unrelated ("template database saas_starter_template does not exist")
+   * something unrelated ("template database nest_vite_starter_template does not exist")
    * instead of the original error. `down` finds containers by label, not by
    * descriptor, so cleaning up without one is safe.
    */
@@ -255,8 +255,8 @@ export interface IDownResult {
 
 /**
  * Remove only what this worktree labeled. Never a prune and never a name
- * pattern: `docker ps -a --filter label=saas-starter.sandbox.owner=<sha>` cannot
- * select the user's `saas-starter-*` dev containers, which carry no such label.
+ * pattern: `docker ps -a --filter label=nest-vite-starter.sandbox.owner=<sha>` cannot
+ * select the user's `nest-vite-starter-*` dev containers, which carry no such label.
  * Running it twice is a no-op, not an error.
  */
 export function down(root: string, id?: string): IDownResult {

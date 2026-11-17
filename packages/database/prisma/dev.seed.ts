@@ -55,7 +55,7 @@ const LOCAL_DB_HOSTS = new Set([
   '0.0.0.0',
   'host.docker.internal',
   'postgres',
-  'saas-starter-postgres',
+  'nest-vite-starter-postgres',
 ]);
 
 interface IDatabaseTarget {

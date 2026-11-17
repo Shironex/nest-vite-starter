@@ -11,7 +11,7 @@
 > its owner out by failing logins on purpose (victim lockout). Do not run this auth in production
 > before the swap.
 
-`nest-vite-saas-starter` is an open-source starter for single-user web apps, built as a monorepo
+`nest-vite-starter` is an open-source starter for single-user web apps, built as a monorepo
 with **Vite + React** and **NestJS 11**: type-safe from database to browser, with authentication,
 auditing, background jobs, observability and a strict verification harness already wired.
 
@@ -55,8 +55,8 @@ Rebranding is a one-line change there plus the handful of surfaces that cannot r
 
 ```bash
 # Clone and install
-git clone https://github.com/Shironex/nest-vite-saas-starter.git
-cd nest-vite-saas-starter
+git clone https://github.com/Shironex/nest-vite-starter.git
+cd nest-vite-starter
 pnpm install
 
 # Start infrastructure (Postgres, Redis, Mailpit)
@@ -126,6 +126,11 @@ docker compose up -d      # Start services
 docker compose down        # Stop services
 docker compose down -v     # Stop and wipe data
 ```
+
+Upgrading an older checkout: the migrations were squashed into one (`0001_init` replaced `0_init`)
+and the compose project, containers and database were renamed, so wipe the local database once
+(`docker compose down -v`, stopping any old containers `docker ps` still shows), copy the new
+`DATABASE_URL` from `.env.example`, then rerun `db:migrate:deploy` and `db:seed`.
 
 ## Production Deployment
 

@@ -258,7 +258,7 @@ describe('pre-push incomplete semantics', () => {
     const { bin, log } = harness();
     const server = await fakePostgres('ready');
 
-    const laneUrl = `postgresql://postgres:postgres@127.0.0.1:${server.port}/saas_starter_prisma_gates`;
+    const laneUrl = `postgresql://postgres:postgres@127.0.0.1:${server.port}/nest_vite_starter_prisma_gates`;
     const result = await runPrePush(bin, { STUB_LANE_URL: laneUrl });
 
     assert.equal(result.status, 0);

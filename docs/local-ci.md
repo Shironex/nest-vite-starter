@@ -117,7 +117,7 @@ a backstop for anyone running bare `act`.
 
 ### One run at a time
 
-The wrapper takes a lock (`$TMPDIR/nest-vite-saas-starter-act-ci-local.lock`) so a second
+The wrapper takes a lock (`$TMPDIR/nest-vite-starter-act-ci-local.lock`) so a second
 `ci:local` run is refused while one is active. Two `act` runs in parallel fight
 over the host ports and over per-package build temp files (tsup writes a
 transient `tsup.config.bundled_*.mjs` that the other run's `eslint .` then fails
@@ -128,7 +128,7 @@ If the wrapper is hard-killed (SIGKILL), the dev containers may be left stopped.
 Restart them by hand:
 
 ```sh
-docker start saas-starter-postgres saas-starter-redis
+docker start nest-vite-starter-postgres nest-vite-starter-redis
 ```
 
 ## Secrets and variables

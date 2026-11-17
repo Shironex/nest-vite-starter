@@ -1,5 +1,5 @@
 {
-  "name": "nest-vite-saas-starter",
+  "name": "nest-vite-starter",
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@10.34.9",

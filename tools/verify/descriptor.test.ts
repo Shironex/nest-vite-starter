@@ -31,17 +31,17 @@ function descriptor(overrides: Partial<ISandboxDescriptor> = {}): ISandboxDescri
     password: 'postgres',
     services: {
       postgres: {
-        container: 'saas-starter-sbx-abc12345-postgres',
+        container: 'nest-vite-starter-sbx-abc12345-postgres',
         image: 'postgres:17-alpine',
         ports: { '5432': 49_200 },
       },
       redis: {
-        container: 'saas-starter-sbx-abc12345-redis',
+        container: 'nest-vite-starter-sbx-abc12345-redis',
         image: 'redis:7-alpine',
         ports: { '6379': 49_201 },
       },
       mailpit: {
-        container: 'saas-starter-sbx-abc12345-mailpit',
+        container: 'nest-vite-starter-sbx-abc12345-mailpit',
         image: 'mailpit',
         ports: { '1025': 49_203, '8025': 49_204 },
       },
@@ -113,12 +113,12 @@ describe('sandbox descriptor', () => {
 
     assert.equal(
       laneDatabaseUrl(subject, laneById('isolation')),
-      'postgresql://postgres:postgres@127.0.0.1:49200/saas_starter_isolation',
+      'postgresql://postgres:postgres@127.0.0.1:49200/nest_vite_starter_isolation',
     );
     assert.equal(laneRedisUrl(subject, laneById('e2e')), 'redis://127.0.0.1:49201/2');
     assert.equal(
-      databaseUrl(subject, 'saas_starter_template'),
-      'postgresql://postgres:postgres@127.0.0.1:49200/saas_starter_template',
+      databaseUrl(subject, 'nest_vite_starter_template'),
+      'postgresql://postgres:postgres@127.0.0.1:49200/nest_vite_starter_template',
     );
     assert.equal(smtpPort(subject), 49_203);
   });
