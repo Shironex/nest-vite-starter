@@ -20,13 +20,4 @@ export const COLOR_THEMES: IColorThemeDefinition[] = [
       },
     },
   },
-  {
-    id: 'slate',
-    name: 'Slate',
-    description: 'Minimal, desaturated and professional',
-    previewColors: {
-      light: { bg: 'oklch(0.97 0.005 260)', accent: 'oklch(0.5 0.04 260)' },
-      dark: { bg: 'oklch(0.18 0.01 260)', accent: 'oklch(0.7 0.03 260)' },
-    },
-  },
 ];

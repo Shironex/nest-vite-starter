@@ -17,16 +17,16 @@ saying where it lives and how to remove or extend it.
 
 ## Tech stack
 
-| Layer        | Technology                                                                                    |
-| ------------ | --------------------------------------------------------------------------------------------- |
-| **Frontend** | React 19, Vite 8, TanStack Router (file-based) and Query, Zustand, react-hook-form, Zod       |
-| **UI**       | shadcn/ui (Radix, Tailwind CSS v4), two color themes with light and dark mode                 |
-| **Backend**  | NestJS 11, tRPC through nestjs-trpc, Zod, Prisma 7 (pg adapter), BullMQ                       |
-| **Data**     | PostgreSQL 18, Valkey 9 (Redis protocol: sessions, rate limits, queues)                       |
-| **Auth**     | Redis-backed session cookies, Argon2id, CSRF double-submit, Cloudflare Turnstile, TOTP        |
-| **Email**    | React Email templates, SMTP through nodemailer, Mailpit in development                        |
-| **Ops**      | Sentry (off until a DSN is set), structured JSON logs, health endpoints, hardened Dockerfiles |
-| **Tooling**  | pnpm 12, Turborepo, ESLint 10 (flat), Prettier, Husky, commitlint, Jest, Vitest, Playwright   |
+| Layer        | Technology                                                                                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Frontend** | React 19, Vite 8, TanStack Router (file-based) and Query, Zustand, react-hook-form, Zod                       |
+| **UI**       | shadcn/ui (Radix, Tailwind CSS v4), one color theme with light and dark mode, and a theme engine for your own |
+| **Backend**  | NestJS 11, tRPC through nestjs-trpc, Zod, Prisma 7 (pg adapter), BullMQ                                       |
+| **Data**     | PostgreSQL 18, Valkey 9 (Redis protocol: sessions, rate limits, queues)                                       |
+| **Auth**     | Redis-backed session cookies, Argon2id, CSRF double-submit, Cloudflare Turnstile, TOTP                        |
+| **Email**    | React Email templates, SMTP through nodemailer, Mailpit in development                                        |
+| **Ops**      | Sentry (off until a DSN is set), structured JSON logs, health endpoints, hardened Dockerfiles                 |
+| **Tooling**  | pnpm 12, Turborepo, ESLint 10 (flat), Prettier, Husky, commitlint, Jest, Vitest, Playwright                   |
 
 ## Quick start
 
@@ -92,7 +92,7 @@ apps/
 packages/
   database/         Prisma schema (one file per domain), migrations, client, seeds
   shared/           Zod schemas, constants, error codes, audit actions, logger (ESM and CJS)
-  ui/               shadcn/ui components and the two themes
+  ui/               shadcn/ui components and the theme
   email/            React Email templates
   eslint-config/    Shared ESLint flat configs (base, react, nestjs) and their tests
   tsconfig/         Shared TypeScript configs
@@ -212,8 +212,8 @@ then edit the few places that cannot read a constant:
 | `.github/workflows/ci.yml`, `scripts/image-smoke.sh`            | The image tags (`nest-vite-starter-api`, `nest-vite-starter-web`)     |
 | `.github/ISSUE_TEMPLATE/config.yml`, `SECURITY.md`, `README.md` | The GitHub repository URL                                             |
 
-The `@repo/*` package scope is internal and does not need to change. The two color themes are
-named in `packages/ui/src/theme/constants.ts`.
+The `@repo/*` package scope is internal and does not need to change. The color theme is
+named in `packages/ui/src/theme/constants.ts`; add yours there and in `globals.css`.
 
 ## Contributing and security
 

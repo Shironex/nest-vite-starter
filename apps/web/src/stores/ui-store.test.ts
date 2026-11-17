@@ -94,20 +94,23 @@ describe('migrateUIStore', () => {
   });
 
   it('keeps a theme the package still ships', () => {
-    const persisted = { theme: 'dark', colorTheme: 'slate', sidebarCollapsed: true };
+    const persisted = { theme: 'dark', colorTheme: 'starter', sidebarCollapsed: true };
 
     expect(migrateUIStore(persisted)).toEqual(persisted);
   });
 
-  it.each(['violet', 'ocean'])('maps the removed %s theme to the default', (colorTheme) => {
-    const migrated = migrateUIStore({ theme: 'dark', colorTheme, sidebarCollapsed: true });
+  it.each(['slate', 'violet', 'ocean'])(
+    'maps the removed %s theme to the default',
+    (colorTheme) => {
+      const migrated = migrateUIStore({ theme: 'dark', colorTheme, sidebarCollapsed: true });
 
-    expect(migrated).toEqual({
-      theme: 'dark',
-      colorTheme: DEFAULT_COLOR_THEME,
-      sidebarCollapsed: true,
-    });
-  });
+      expect(migrated).toEqual({
+        theme: 'dark',
+        colorTheme: DEFAULT_COLOR_THEME,
+        sidebarCollapsed: true,
+      });
+    },
+  );
 });
 
 /**
@@ -132,10 +135,10 @@ describe('migrateUIStore validates the rehydrated blob', () => {
   });
 
   it.each([
-    ['theme', { theme: 'neon', colorTheme: 'slate', sidebarCollapsed: true }, 'theme', 'system'],
+    ['theme', { theme: 'neon', colorTheme: 'starter', sidebarCollapsed: true }, 'theme', 'system'],
     [
       'sidebarCollapsed',
-      { theme: 'dark', colorTheme: 'slate', sidebarCollapsed: 'yes' },
+      { theme: 'dark', colorTheme: 'starter', sidebarCollapsed: 'yes' },
       'sidebarCollapsed',
       false,
     ],
@@ -154,7 +157,7 @@ describe('migrateUIStore validates the rehydrated blob', () => {
   it('drops keys the store does not own rather than writing them back', () => {
     const migrated = migrateUIStore({
       theme: 'dark',
-      colorTheme: 'slate',
+      colorTheme: 'starter',
       sidebarCollapsed: false,
       injected: 'x',
     }) as Record<string, unknown>;
