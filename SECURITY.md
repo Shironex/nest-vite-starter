@@ -1,7 +1,7 @@
 # Security Policy
 
-`nest-vite-saas-starter` is an open-source starter. It ships authentication, sessions, tenancy and
-file handling that products built on it will run in production, so security reports are welcome
+`nest-vite-starter` is an open-source starter. It ships authentication, sessions, two-factor
+and an audit trail that products built on it will run in production, so security reports are welcome
 and handled privately until a fix is available.
 
 ## Reporting a vulnerability

@@ -129,22 +129,13 @@ async function bootstrap() {
           'connect-src': ["'self'"],
           'font-src': ["'self'", 'data:'],
           'object-src': ["'none'"],
-          // The SPA is served by its own nginx image today, so this policy does
-          // not front index.html in the split deployment. It is kept in step
-          // with the web one anyway, because an api that ever serves the built
-          // SPA must not be the deployment where the document preview silently
-          // stops drawing. blob: is the inline preview's local handle, and
-          // 'self' is what frame-src inherited from default-src before this
-          // directive existed. object-src stays 'none' on purpose: <object>
-          // would draw an uploaded document in this origin.
-          'frame-src': ["'self'", 'blob:'],
           'frame-ancestors': ["'none'"],
           'base-uri': ["'self'"],
           'form-action': ["'self'"],
           'upgrade-insecure-requests': isProduction ? [] : null,
         },
       },
-      crossOriginEmbedderPolicy: false, // would break presigned-url media loads
+      crossOriginEmbedderPolicy: false,
       crossOriginOpenerPolicy: { policy: 'same-origin' },
       crossOriginResourcePolicy: { policy: 'same-site' },
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },

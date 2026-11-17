@@ -341,9 +341,9 @@ jobs:
       # independently: same image, same ports. A CI service that differs from the local one produces the failure
       # mode where the suite passes in exactly one of the two places.
       #
-      # Not optional: the journeys follow invitations through the mail
-      # they were actually sent, which is the only automated proof that an
-      # invited user receives a link that works.
+      # Not optional: registration, email verification and password reset
+      # enqueue real mail, and the api's inline worker delivers it here. Without
+      # an SMTP target those jobs fail and retry behind the journeys.
       #
       # No `--health-cmd`: a service health check runs INSIDE the
       # container and the image is not guaranteed to carry a shell or curl. The

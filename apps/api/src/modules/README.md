@@ -3,12 +3,7 @@
 The vocabulary of `apps/api/src`: what a file suffix means, what a module may
 import, and which of those rules lint actually enforces.
 
-This is the reference half. The narrative half, for somebody orienting rather
-than editing, is the API Module Structure page in `apps/docs`
-(`apps/docs/src/content/docs/architecture/api-module-structure.md`): the same
-boundaries as a diagram, why they fall where they do, and how a request travels
-through them. It deliberately does not restate the glossary below, so a new
-suffix is added here and only here.
+A new suffix is added here and only here.
 
 ## File suffixes
 
@@ -53,9 +48,8 @@ import lines carry a justification.
 
 The edge list itself is **generated**, not kept here: a graph written in prose is
 checked by nothing and is wrong the day after somebody adds an import. The live
-one, with fan-in, fan-out and a `file:line` witness per edge, is the Module Map
-page in `apps/docs`
-(`apps/docs/src/content/docs/architecture/module-map.md`). Regenerate it with
+one, with fan-in, fan-out and a `file:line` witness per edge, is
+`docs/architecture/module-map.md`. Regenerate it with
 `pnpm generate:arch-map`; `lint:meta` fails when it is stale or when a new module
 has no purpose line in `tools/arch/registry.ts`.
 

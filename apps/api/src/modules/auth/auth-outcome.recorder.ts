@@ -19,7 +19,7 @@ export interface IAuthOutcome {
   readonly flow: AuthFlow;
   /**
    * Why the flow ended the way it did (`unknown_email`, `bad_password`,
-   * `locked`, `membership_ended`, `fence`, `ok`, ...). Matches the audit row's
+   * `locked`, `fence`, `ok`, ...). Matches the audit row's
    * reason rather than restating an error message.
    */
   readonly outcome: string;
