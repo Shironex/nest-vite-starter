@@ -1,215 +1,224 @@
-# SaaS Starter
+# Nest Vite Starter
 
 > [!WARNING]
-> **Work in progress.** This repository is being trimmed from a multi-tenant SaaS starter into a
-> simple single-user NestJS + Vite starter, one pull request per phase. Until that work lands, parts
-> of this README describe the old tree.
->
-> **The authentication is interim.** It will be replaced by `@noctcore/auth` once that package
-> reaches 1.0. Two known issues stay until then: the login answer for a locked account reveals that
-> the account exists (an account existence oracle), and anyone who knows an email address can lock
-> its owner out by failing logins on purpose (victim lockout). Do not run this auth in production
-> before the swap.
+> **The authentication is interim.** I will replace it with `@noctcore/auth` once that package
+> reaches 1.0, and until then two known issues stay: the login answer for a locked account reveals
+> that the account exists (an account existence oracle), and anyone who knows an email address can
+> lock its owner out by failing logins on purpose (victim lockout). Do not run this auth in
+> production before the swap. [docs/auth.md](docs/auth.md) lists the flows, the known issues and
+> what changes at the swap.
 
-`nest-vite-starter` is an open-source starter for single-user web apps, built as a monorepo
-with **Vite + React** and **NestJS 11**: type-safe from database to browser, with authentication,
-auditing, background jobs, observability and a CI gate already wired.
+A starter for single-user web apps: a NestJS 11 API and a Vite + React SPA in one pnpm monorepo,
+typed from the database to the browser through tRPC. It ships accounts (sign up, verify email,
+password reset, opt-in two-factor, sessions you can revoke), a USER/ADMIN role with a lean admin
+area, an audit log, a mail queue, and a CI gate that already passes. There is no tenancy: one
+account is one user. The code is written to be read and cut down, so each part has a short doc
+saying where it lives and how to remove or extend it.
 
-The display name ("SaaS Starter") lives in one place: `PRODUCT_NAME` in `@repo/shared/constants`.
-Rebranding is a one-line change there plus the handful of surfaces that cannot read a constant
-(`apps/web/index.html`, the compose files).
+## Tech stack
 
-## Tech Stack
+| Layer        | Technology                                                                                    |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| **Frontend** | React 19, Vite 8, TanStack Router (file-based) and Query, Zustand, react-hook-form, Zod       |
+| **UI**       | shadcn/ui (Radix, Tailwind CSS v4), two color themes with light and dark mode                 |
+| **Backend**  | NestJS 11, tRPC through nestjs-trpc, Zod, Prisma 7 (pg adapter), BullMQ                       |
+| **Data**     | PostgreSQL 18, Valkey 9 (Redis protocol: sessions, rate limits, queues)                       |
+| **Auth**     | Redis-backed session cookies, Argon2id, CSRF double-submit, Cloudflare Turnstile, TOTP        |
+| **Email**    | React Email templates, SMTP through nodemailer, Mailpit in development                        |
+| **Ops**      | Sentry (off until a DSN is set), structured JSON logs, health endpoints, hardened Dockerfiles |
+| **Tooling**  | pnpm 12, Turborepo, ESLint 10 (flat), Prettier, Husky, commitlint, Jest, Vitest, Playwright   |
 
-| Layer        | Technology                                                                               |
-| ------------ | ---------------------------------------------------------------------------------------- |
-| **Frontend** | React 19, Vite 8, TanStack Router (file-based), TanStack Query, Zustand                  |
-| **Backend**  | NestJS 11, tRPC (nestjs-trpc), Prisma 7, BullMQ                                          |
-| **Database** | PostgreSQL 18, Valkey 9                                                                  |
-| **Auth**     | Session-based (Redis-backed), Argon2id hashing, CSRF double-submit, Cloudflare Turnstile |
-| **UI**       | shadcn/ui (Radix + Tailwind CSS v4), 2 color themes                                      |
-| **Email**    | React Email templates, Mailpit for dev                                                   |
-| **Tooling**  | pnpm workspaces, Turborepo, ESLint 10 (flat config), Prettier, Husky, Commitlint         |
+## Quick start
 
-## Features
-
-- **End-to-end type safety**: Zod schemas shared between frontend and backend via tRPC
-- **Session-based auth** with progressive account lockout, email verification, password reset
-- **Repository pattern**: clean separation of business logic and data access
-- **Structured logging** with JSON output (production) and correlation IDs via AsyncLocalStorage
-- **Audit trail**: AuditLog service for tracking user actions
-- **Rate limiting**: global ThrottlerGuard + Helmet security headers
-- **Background jobs**: BullMQ queue infrastructure ready for use
-- **UI components**: the core shadcn/ui set plus form, date field, data table, pagination, sidebar and toasts
-- **2 color themes** (indigo accent and neutral slate) with light/dark mode (OKLCH color space)
-- **Error boundaries**: React ErrorBoundary wrapping route layouts
-- **Docker-ready**: multi-stage Dockerfiles for API and Web, production compose file
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) >= 26
-- [pnpm](https://pnpm.io/) 10
-- [Docker](https://www.docker.com/) (for dev infrastructure)
-
-## Quick Start
+You need Node 26 (the repo pins it in `.nvmrc`), pnpm 12 (`npm install --global pnpm@12.18.0`),
+and Docker.
 
 ```bash
-# Clone and install
-git clone https://github.com/Shironex/nest-vite-starter.git
-cd nest-vite-starter
+git clone https://github.com/Shironex/nest-vite-starter.git my-app   # or "Use this template" on GitHub
+cd my-app
+nvm use                          # Node 26 from .nvmrc
 pnpm install
-
-# Start infrastructure (Postgres, Redis, Mailpit)
-docker compose up -d
-
-# Set up environment (one file at the repo root feeds every app), then set
-# ENCRYPTION_KEY in .env (openssl rand -base64 32): the api refuses to boot
-# without a real one. Every key is validated at boot (apps/api/src/config/env.ts).
 cp .env.example .env
+```
 
-# Generate Prisma client and apply migrations
+Open `.env` and set `ENCRYPTION_KEY`. The api refuses to boot without a real one, and the
+placeholder fails on purpose. Generate one with either of these:
+
+```bash
+openssl rand -base64 32
+node -p "require('node:crypto').randomBytes(32).toString('base64')"
+```
+
+Then start the services, create the schema, add the admin and run both apps:
+
+```bash
+docker compose up -d             # Postgres, Valkey, Mailpit
 pnpm --filter @repo/database db:generate
 pnpm --filter @repo/database db:migrate:deploy
-
-# Seed the database
 pnpm --filter @repo/database db:seed
-
-# Start dev servers
 pnpm dev
 ```
 
-Signup always creates a plain `USER`. To make an existing account an admin (the first admin
-included), run this from the repo root; it revokes the account's sessions so the role applies at
-its next sign-in, and writes the same audit row as an in-app role change:
+The web app is on <http://localhost:5173>, the api on <http://localhost:3000> and the Mailpit inbox
+(every mail the app sends in development) on <http://localhost:8035>. Every key in `.env` is
+validated at boot by `apps/api/src/config/env.ts`, which lists each bad key before it exits.
+
+**First admin.** `db:seed` creates an admin from `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `.env`
+(`admin@example.com` and a placeholder password by default; change them for anything but a local
+machine) and, outside production, a `member@example.com` user with the same password. Signing up
+always creates a plain `USER`. To make an existing account an admin, for example the first one
+on a fresh deployment where the seed must not run, use the script. It revokes the account's
+sessions, so the role applies at its next sign-in, and writes the same audit row as an in-app role
+change:
 
 ```bash
 pnpm --filter @repo/api user:promote someone@example.com
 ```
 
-The API runs on `http://localhost:3000` and the web app on `http://localhost:5173`.
+Stop the services with `docker compose down`, or `docker compose down -v` to wipe the data too.
+The host ports are offset from the defaults (Postgres 5442, Valkey 6389, Mailpit SMTP 1035 and UI
+8035, all on loopback) so the stack runs beside other projects' dev stacks. The compose project
+name and container names are pinned, so only one copy of this stack can run on a machine at a
+time.
 
-## Project Structure
+## Layout
 
 ```
 apps/
-  api/              NestJS 11 API with tRPC
-  web/              Vite + React SPA
-
+  api/              NestJS API: modules/ (auth, user, audit, mail, health, data-export),
+                    common/ (redis, queue, security, errors, clock), config/ (zod env schema)
+  web/              Vite SPA: features/ (auth, two-factor, settings, admin, dashboard, ...),
+                    routes/ (TanStack file routes, thin), lib/, stores/
 packages/
-  database/         Prisma 7 schema, client, migrations, seed
-  shared/           Shared types, schemas, constants, logger (dual ESM/CJS)
-  ui/               shadcn/ui components with 2 color themes
+  database/         Prisma schema (one file per domain), migrations, client, seeds
+  shared/           Zod schemas, constants, error codes, audit actions, logger (ESM and CJS)
+  ui/               shadcn/ui components and the two themes
   email/            React Email templates
-  eslint-config/    Shared ESLint flat configs (base, react, nestjs)
+  eslint-config/    Shared ESLint flat configs (base, react, nestjs) and their tests
   tsconfig/         Shared TypeScript configs
-
 tools/
-  verify/           `pnpm verify`, the lane runner (format, lint, typecheck, test, build)
+  verify/           `pnpm verify`, the lane runner
   lint-meta/        `pnpm lint:meta`, the required auth, security and gate rules
+docs/               Architecture, auth, deploy, recipes, invariants, decisions, runbooks
+scripts/            Bundle budget, contrast check, image smoke test
 ```
+
+How the pieces fit together is in [docs/architecture.md](docs/architecture.md).
 
 ## Scripts
 
-| Script             | Description                                                                                     |
-| ------------------ | ----------------------------------------------------------------------------------------------- |
-| `pnpm dev`         | Start API + Web dev servers via Turborepo                                                       |
-| `pnpm build`       | Build all packages and apps                                                                     |
-| `pnpm verify`      | The local gate: format, lint, typecheck, test, build lanes ([tools/README.md](tools/README.md)) |
-| `pnpm lint`        | Lint all packages and apps                                                                      |
-| `pnpm lint:meta`   | The required repo rules ([tools/lint-meta/RULES.md](tools/lint-meta/RULES.md))                  |
-| `pnpm check-types` | Type-check all packages and apps                                                                |
-| `pnpm test`        | Run all tests                                                                                   |
-| `pnpm format`      | Format all files with Prettier                                                                  |
+| Script                                                     | What it does                                                                                           |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `pnpm dev`                                                 | Api and web in watch mode through Turborepo                                                            |
+| `pnpm build`                                               | Build every package and app                                                                            |
+| `pnpm verify`                                              | The local gate: format, lint, typecheck, test, build ([tools/README.md](tools/README.md))              |
+| `pnpm lint:meta`                                           | The required auth, security and gate rules ([tools/lint-meta/RULES.md](tools/lint-meta/RULES.md))      |
+| `pnpm lint`, `pnpm check-types`, `pnpm test`               | One lane each, through Turborepo                                                                       |
+| `pnpm format`                                              | Prettier over the repo                                                                                 |
+| `pnpm knip`                                                | Unused files, exports and dependencies                                                                 |
+| `pnpm test:e2e`                                            | Playwright, against a running api and web (see AGENTS.md)                                              |
+| `pnpm --filter @repo/database db:migrate -- --name <name>` | Create and apply a migration in development ([docs/migration-playbook.md](docs/migration-playbook.md)) |
+| `pnpm --filter @repo/database db:seed:dev`                 | The seed plus sample data, refused outside a local database                                            |
+| `pnpm --filter @repo/api user:promote <email>`             | Make an account an admin                                                                               |
 
-## Docker Services
+## Add a module
 
-| Service       | Host port              | Purpose                 |
-| ------------- | ---------------------- | ----------------------- |
-| PostgreSQL 18 | 5442                   | Primary database        |
-| Valkey 9      | 6389                   | Sessions, cache, BullMQ |
-| Mailpit       | 8035 (UI), 1035 (SMTP) | Email testing           |
+There are no generators: a module is a few files in known places, and `data-export` is the
+smallest complete example (an authenticated, owner-scoped, rate-limited read with an audited
+access). Follow it for a new feature, say `notes`:
 
-The host ports are offset from the defaults (5432, 6379, 1025, 8025) so the stack runs beside
-other projects' dev stacks, and are bound to loopback. `.env.example` already points at them.
+1. **Schema.** Add the Zod input and output schemas to `packages/shared/src/schemas/notes.ts`
+   and re-export them from `schemas/index.ts` (`data-export.ts` shows the output side). The api
+   and the web import the same schemas. If the module adds a new audit action, add it to
+   `AUDIT_ACTIONS` in `packages/shared/src/audit/index.ts`.
+2. **Database.** Add a model in `packages/database/prisma/schema/notes.prisma`, then run
+   `pnpm --filter @repo/database db:migrate -- --name add_notes`. Read the SQL before you commit
+   it. A table that hangs off `User` must also be handled by the account purge
+   (`apps/api/src/modules/user/user-purge.service.ts`) and, if it holds user data, by the data
+   export.
+3. **API.** Create `apps/api/src/modules/notes/` with `notes.module.ts`, `notes.service.ts`,
+   `notes.repository.ts` (Prisma queries only, extending `common/database/base.repository.ts`) and
+   `notes.router.ts`, each with a colocated spec (lint requires one for every service). The router
+   stays thin: `@Router({ alias: 'notes' })`, `@UseMiddlewares(AuthMiddleware)` on the class, one
+   service call per procedure, an `output:` schema on every procedure, and the user id taken from
+   `ctx.user.id`, never from input. Import `SessionModule` and `AuthMiddlewareModule` (as
+   `data-export.module.ts` does) rather than `AuthModule`, then add the module to `AppModule`.
+   Every `@Mutation()` must reach an audit write, outside any transaction.
+4. **Types for the web.** `pnpm exec turbo run generate:trpc --filter=@repo/api` regenerates
+   `apps/api/src/@generated/server.ts`, which gives the web client typed procedures (a build, a
+   typecheck and a lint run it too). Never edit that file.
+5. **Web.** Create `apps/web/src/features/notes/` with component folders (the sibling set in
+   [apps/web/src/features/README.md](apps/web/src/features/README.md)), a `Notes.strings.ts` copy
+   table and a `Notes.queries.ts`. Add a thin route under `apps/web/src/routes/_authenticated/notes/`,
+   a nav entry in `features/layout/Layout.nav.ts`, and run `pnpm dev` once so the router
+   regenerates `routeTree.gen.ts`.
+6. **Prove it.** Run `pnpm verify`. For anything user-facing, add a Playwright spec under
+   `apps/web/e2e/`.
+
+The conventions behind the file names are in
+[apps/api/src/modules/README.md](apps/api/src/modules/README.md). Features you may want next
+(S3 uploads, websockets, OAuth, i18n and more) have short recipes in [docs/recipes](docs/recipes).
+
+## The gate
+
+`.github/workflows/ci.yml` is the source of truth, and `pnpm verify` runs its five lanes locally:
 
 ```bash
-docker compose up -d      # Start services
-docker compose down        # Stop services
-docker compose down -v     # Stop and wipe data
+pnpm verify                      # format, lint (incl. lint:meta), typecheck, test, build
+pnpm knip
+pnpm size:check                  # initial-load byte budget of the web app
+pnpm check:contrast              # WCAG ratios of the design tokens
+pnpm audit --prod --audit-level=high
 ```
 
-Upgrading an older checkout: the migrations were squashed into one (`0001_init` replaced `0_init`)
-and the compose project, containers and database were renamed, so wipe the local database once
-(`docker compose down -v`, which is also needed once after the move from Postgres 17 to 18 because the volume layout changed; stopping any old containers `docker ps` still shows), copy the new
-`DATABASE_URL` from `.env.example`, then rerun `db:migrate:deploy` and `db:seed`.
+CI also runs the api integration specs against real Postgres and Valkey, the Playwright suite
+against the built apps, and a smoke test of both Docker images. AGENTS.md has the commands for
+running each of those locally. A pre-push hook runs the typecheck lane, the tests of affected
+packages and gitleaks.
 
-## Production Deployment
+## Deploy
 
-Multi-stage Dockerfiles are included for both API and Web, both running as uid 10001, and
-a self-host compose file:
+`docker-compose.prod.yml` is a self-host recipe: it builds both images, runs the migrations once,
+then starts the api, the web, Postgres and Valkey, with the web on loopback ready for a reverse
+proxy.
 
 ```bash
-cp .env.prod.example .env     # fill it in; the comments say how to generate each secret
+cp .env.prod.example .env        # fill it in; the comments say how to generate each secret
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-That builds both images from the checkout, runs the migrations once in a `migrate`
-container, then starts the api and the web (published on loopback only: `127.0.0.1:8080`
-and `127.0.0.1:3000`) next to Postgres and Valkey on named volumes. The web container
-forwards `/trpc` and `/api` to the api, so a reverse proxy only has to point at the web.
-To deploy published images instead of building, set `API_IMAGE` and `WEB_IMAGE`, then run
-`docker compose -f docker-compose.prod.yml pull` and `up -d --no-build`.
+Both images run as uid 10001 with a read-only root, and the web image reads its public settings
+(`API_URL`, `TURNSTILE_SITE_KEY`, `SENTRY_DSN`, `APP_NAME`) when it starts, so one image serves
+every environment. `scripts/image-smoke.sh --build` boots both images the way production runs
+them. For Coolify, follow [docs/deploy-coolify.md](docs/deploy-coolify.md). Migrations are in
+[docs/migration-playbook.md](docs/migration-playbook.md).
 
-The web image reads its public settings (`API_URL`, `TURNSTILE_SITE_KEY`, `SENTRY_DSN`,
-`APP_NAME`) from its environment when it starts, so one image serves every environment.
-In development they come from `apps/web/public/config.js`.
+## Rename your fork
 
-`scripts/image-smoke.sh --build` builds both images and boots them the way production
-runs them (CI runs it too). For Coolify, see [docs/deploy-coolify.md](docs/deploy-coolify.md).
+The display name lives in one place: `PRODUCT_NAME` in `packages/shared/src/constants/index.ts`
+(`Nest Vite Starter`), with `PRODUCT_SLUG` (`nest-vite-starter`) beside it for identifiers such as
+the data-export filename. The auth screens, sidebar, page titles, mail and the authenticator label
+all read it, and `APP_NAME` in the environment overrides it at runtime. Change both constants,
+then edit the few places that cannot read a constant:
 
-## Architecture
+| File                                                            | What to change                                                        |
+| --------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `apps/web/index.html`                                           | The `<title>`                                                         |
+| `package.json`                                                  | The root `name`                                                       |
+| `LICENSE`                                                       | The copyright holder                                                  |
+| `docker-compose.yml`                                            | `name:`, the `container_name` values, the volume names, `POSTGRES_DB` |
+| `.env.example`                                                  | The database name in `DATABASE_URL`                                   |
+| `docker-compose.prod.yml` and `.env.prod.example`               | `name:`, the default image names, `POSTGRES_DB`                       |
+| `.github/workflows/ci.yml`, `scripts/image-smoke.sh`            | The image tags (`nest-vite-starter-api`, `nest-vite-starter-web`)     |
+| `.github/ISSUE_TEMPLATE/config.yml`, `SECURITY.md`, `README.md` | The GitHub repository URL                                             |
 
-```
-Browser
-     |
-     | tRPC (HTTP)
-     v
-  NestJS API
-     |
-     |--- ThrottlerGuard (rate limiting)
-     |--- Helmet (security headers)
-     |--- CSRF double-submit
-     |--- RequestContext (correlation IDs)
-     |
-     v
-  Routers (thin, extract context)
-     |
-     v
-  Services (business logic)
-     |
-     v
-  Repositories (data access, soft-delete filtering)
-     |
-     v
-  Prisma 7 (PostgreSQL) + Redis (sessions, cache, queues)
-```
+The `@repo/*` package scope is internal and does not need to change. The two color themes are
+named in `packages/ui/src/theme/constants.ts`.
 
-## Auth Flow
+## Contributing and security
 
-- **Registration**: Email + password -> Argon2id hash -> verification email -> confirm token
-- **Login**: Turnstile CAPTCHA -> credential check -> progressive lockout (5 attempts -> 5min/15min/1hr/permanent) -> session cookie (SHA-256 hashed in Redis)
-- **Sessions**: Max 3 concurrent per user, oldest evicted, 24h TTL (7d remember me)
-- **Password Reset**: Token via email -> invalidates all sessions + unlocks account
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feat/my-feature`)
-3. Commit with conventional commits (`feat:`, `fix:`, `chore:`, etc.)
-4. Push and open a PR
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the merge bar and [SECURITY.md](SECURITY.md) for
-reporting vulnerabilities.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the commit style and the pull request flow, and
+[SECURITY.md](SECURITY.md) for reporting a vulnerability.
 
 ## License
 
