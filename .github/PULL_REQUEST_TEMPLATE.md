@@ -4,7 +4,7 @@
 
 ## Test plan
 
-- [ ] Pre-push gate passes locally (build, `turbo lint`, `turbo check-types`, `pnpm lint:meta`, knip, coverage ratchet)
+- [ ] CI's check job passes locally (`pnpm format:check`, `pnpm lint`, `pnpm check-types`, `pnpm knip`, `pnpm test`, `pnpm build`)
 - [ ] New or changed behavior is covered by tests
 - [ ] Database touched? Migration added and `db:migrate:status` is clean
 

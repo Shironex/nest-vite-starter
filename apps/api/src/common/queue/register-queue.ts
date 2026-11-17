@@ -19,8 +19,7 @@ import type { IQueueDefaults, QueueName } from './queue.constants';
  * decorator. Both sides taking their half from one constant is what keeps a
  * queue's producer and consumer policy in one file.
  *
- * `lint:meta`'s `queue-registration-through-helper` rule fails any call to
- * `BullModule.registerQueue(` outside this folder.
+ * Do not call `BullModule.registerQueue(` outside this folder.
  */
 export function registerQueueWithDefaults(
   name: QueueName,

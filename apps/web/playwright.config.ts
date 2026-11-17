@@ -73,7 +73,7 @@ export default defineConfig({
   ],
   // NOTE: Start dev servers manually before running E2E tests:
   //   1. Start Docker services: docker compose up -d
-  //   2. Start dev servers: pnpm dev (or use ./start.sh)
+  //   2. Start dev servers: pnpm dev
   //   3. Then run: pnpm --filter @repo/web test:e2e
   //
   // If another checkout already owns :5173, vite picks the next free port; pass

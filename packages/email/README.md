@@ -39,9 +39,8 @@ by writing `@react-email/ui` back into this package's `devDependencies`, so an
 accepted prompt leaves a manifest change you did not author. Committing it
 reintroduces all 10 advisories.
 
-The `banned-dependencies` lint:meta rule fails the build if it reaches a commit
-(`pnpm lint:meta`, which runs in CI). If you hit it, drop the manifest change and
-keep the install:
+Never commit that manifest change. If you hit it, drop the change and keep the
+install:
 
 ```bash
 git checkout packages/email/package.json

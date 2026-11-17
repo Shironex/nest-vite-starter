@@ -7,13 +7,9 @@ shape the codebase must keep, not a suggestion.
 
 ## Domains
 
-Each top-level folder under `src/features/` is a domain. The list is **generated**, not kept here:
-the table in this README once named seven domains while seventeen directories shipped, so the
-inventory now lives on the Module Map page
-(`docs/architecture/module-map.md`), with one hand-written purpose line per
-domain, the file counts, and every cross-domain import with a `file:line` witness. Regenerate it
-with `pnpm generate:arch-map`; `lint:meta` fails when it is stale or when a new domain has no
-purpose line in `tools/arch/registry.ts`.
+Each top-level folder under `src/features/` is a domain. The list is not kept here (a table in
+this README once named seven domains while seventeen directories shipped): `ls src/features` is
+the inventory.
 
 A component imports freely from its own domain and from `shared`. Importing
 across two sibling domains (for example `settings` reaching into `auth`) is a
@@ -82,8 +78,7 @@ export const projectStrings = {
 ```
 
 Components and hooks import the table and read it directly
-(`projectStrings.list.editFor({ name })`). `pnpm new:feature` scaffolds the
-file.
+(`projectStrings.list.editFor({ name })`).
 
 Rules:
 
@@ -131,19 +126,6 @@ packages, wired via
 - `props-must-be-visual` - no secret-shaped props
 - `index-must-reexport-default` - barrels re-export the default
 - `interface-prefix-i` - every interface is `I`-prefixed (apps/web + @repo/ui)
-
-## Scaffolding
-
-Generate the boilerplate instead of writing it by hand:
-
-```bash
-pnpm new:feature <Name>                 # a new domain folder under features/
-pnpm new:component <feature>/<Name>     # a component folder (full sibling set)
-pnpm new:component ui/<Name>            # a kebab-case shadcn component in @repo/ui
-```
-
-The generated files are template-native: tRPC `queryOptions`/`mutationOptions`,
-TanStack file routing, `I`-prefixed interfaces, and the shared `cn` helper.
 
 ## Cache invalidation
 

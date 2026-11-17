@@ -14,32 +14,35 @@ Node `>=22.22.3` and pnpm `10.34.9` (see the `packageManager` field). The
 
 ## The merge bar
 
-Every change must pass the pre-push gate, which mirrors
-`.github/workflows/ci.yml`. Push to run it, or invoke the checks directly:
+Every change must pass `.github/workflows/ci.yml`. Its `check` job runs, in order:
 
-| Check                   | Command                                                                               |
-| ----------------------- | ------------------------------------------------------------------------------------- |
-| Build internal packages | `pnpm build:packages`                                                                 |
-| Lint                    | `pnpm exec turbo lint`                                                                |
-| Types                   | `pnpm exec turbo check-types`                                                         |
-| Meta lint (repo rules)  | `pnpm lint:meta`                                                                      |
-| Meta docs drift         | `pnpm check:lint-meta-docs`                                                           |
-| Dead code               | `pnpm --filter @repo/api knip` and `pnpm --filter @repo/web knip`                     |
-| Coverage ratchet        | `pnpm --filter @repo/api test:cov:check` and `pnpm --filter @repo/web test:cov:check` |
-| Secret scan             | gitleaks (see below)                                                                  |
+```bash
+pnpm audit --prod --audit-level=high
+pnpm format:check
+pnpm lint
+pnpm check-types
+pnpm knip
+pnpm test
+pnpm build
+pnpm size:check
+pnpm check:contrast
+```
 
-The Prisma migration gates also run when a database is reachable on
-`localhost:5432`. Set `PRE_PUSH_SKIP_DB=1` to skip them.
+The `integration` job applies the migrations, checks the migration history and schema drift, and
+runs the api integration specs against Postgres and Redis. The `e2e` job runs the Playwright suite
+against the built api and web. The `images` job builds both Dockerfiles. `AGENTS.md` lists the
+commands to run each job locally.
+
+The husky pre-push hook runs the fast subset: `check-types`, the tests affected since
+`origin/main`, and gitleaks over the pushed commits.
 
 ## Secret scanning
 
-A pre-push gitleaks gate blocks commits that contain secrets. Install gitleaks
-once per machine (`brew install gitleaks` on macOS, `scoop install gitleaks` on
-Windows), or have Docker running for the bundled fallback. In an emergency, set
-`PRE_PUSH_SKIP_GITLEAKS=1` to bypass it; CI still enforces the scan.
+Install gitleaks once per machine (`brew install gitleaks` on macOS, `scoop install gitleaks` on
+Windows) and the pre-push hook scans every push. Without it the hook skips the scan and says so.
 
-CI runs the same scan on every push and pull request
-(`.github/workflows/security-secrets.yml`). On the public repository, also keep GitHub
+CI runs the same scan over the full history on every push and pull request
+(`.github/workflows/secrets.yml`). On the public repository, also keep GitHub
 secret scanning and push protection enabled: they block a known-format secret before it
 lands, and gitleaks covers the rest.
 
@@ -49,15 +52,12 @@ Conventional commits, enforced by commitlint on every commit message:
 
 - Type from the conventional set: `feat`, `fix`, `docs`, `chore`, `ci`, `build`,
   `refactor`, `perf`, `test`, `revert`, `style`.
-- Scope must come from this set: `api`, `web`, `ui`, `shared`,
-  `database`, `email`, `config`, `deps`, `auth`, `audit`, `observability`,
-  `docs` (`commitlint.config.cjs` is the source of truth).
+- Scope must come from this set: `api`, `web`, `ui`, `shared`, `database`,
+  `email`, `eslint-config`, `tsconfig`, `config`, `deps`, `ci`, `docs`, `auth`,
+  `audit`, `observability` (`commitlint.config.cjs` is the source of truth).
 - Example: `feat(auth): add session revocation`.
 
 ## Lint policy
 
 Severity is error or off, never warn. If a rule fights real intent, change the
-ESLint config and explain why, rather than adding an inline disable. Inline
-`eslint-disable` and `@ts-ignore` are blocked in source by `lint:meta`. Repo
-rule changes must keep `RULES.md` in sync (regenerate with
-`pnpm generate:lint-meta-docs`); `lint:meta` fails on drift.
+ESLint config and explain why, rather than adding an inline disable.

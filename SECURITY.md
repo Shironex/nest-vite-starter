@@ -35,18 +35,20 @@ starter.
 ## Automated scanning
 
 - `gitleaks` scans for committed secrets on every push, every pull request, and a weekly cron
-  (`.github/workflows/security-secrets.yml`). A finding fails the job; the SARIF report is kept
+  (`.github/workflows/secrets.yml`). A finding fails the job; the SARIF report is kept
   as a workflow artifact.
-- A local pre-push gitleaks gate (`scripts/ci/pre-push.sh`) catches secrets before they leave a
-  developer machine.
-- `pnpm audit --prod --audit-level=high` gates dependency vulnerabilities in CI, and Dependabot
-  opens update pull requests that run the full CI.
+- The husky pre-push hook (`.husky/pre-push`) runs gitleaks over the pushed commits when gitleaks
+  is installed, so secrets are caught before they leave a developer machine.
+- `pnpm audit --prod --audit-level=high` gates dependency vulnerabilities in CI, and a weekly
+  `pnpm audit --prod` runs on a schedule (`.github/workflows/audit.yml`). Renovate opens update
+  pull requests (after a 7-day release age) that run the full CI; GitHub's Dependabot security
+  alerts stay on.
 - GitHub secret scanning and push protection should be enabled on the repository (and on your
   fork): they are free for public repositories.
 
 ## Handling secrets
 
-Never commit real credentials. `.env.example` and `.env.act` hold placeholder values only; the
+Never commit real credentials. `.env.example` holds placeholder values only; the
 boot-time environment validator rejects known placeholders in production. If a secret is ever
 committed, rotate it immediately (removing it from history is not enough) and report it through
 the advisory path above.

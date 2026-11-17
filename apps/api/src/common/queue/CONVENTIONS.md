@@ -23,9 +23,8 @@ how `email-delivery/` sits under `modules/mail/`). Each folder holds:
 - `<queue>.module.ts`: `registerQueueWithDefaults(QUEUE_NAME, X_DEFAULTS)` from
   `common/queue` (registered exactly once), `exports: [BullModule]`. The
   producer side only. Calling `BullModule.registerQueue(` directly outside
-  `common/queue` is a `lint:meta` failure
-  (`queue-registration-through-helper`): it is the one call that can silently
-  drop `defaultJobOptions`.
+  `common/queue` is not allowed: it is the one call that can silently drop
+  `defaultJobOptions`.
 - `<queue>-worker.module.ts`: provides the processor (plus whatever it sends
   through) and imports `<queue>.module.ts`. Registering a `@Processor` is what
   starts a worker, so this module is imported in two places only: AppModule,

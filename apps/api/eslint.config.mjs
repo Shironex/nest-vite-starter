@@ -10,8 +10,7 @@ import globals from 'globals';
  * `no-floating-promises` depends on the return type of whatever is called.
  * Delete the audit call in a service and the unchanged router keeps a cached
  * "clean". No `settings` digest can fix that short of hashing all of src/,
- * which leaves nothing to cache. scripts/lint-cache-api-uncached.test.mjs
- * shows the stale green and fails if a cached api lint comes back.
+ * which leaves nothing to cache.
  */
 
 /** @type {import("eslint").Linter.Config[]} */

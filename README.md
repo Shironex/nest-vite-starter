@@ -13,7 +13,7 @@
 
 `nest-vite-starter` is an open-source starter for single-user web apps, built as a monorepo
 with **Vite + React** and **NestJS 11**: type-safe from database to browser, with authentication,
-auditing, background jobs, observability and a strict verification harness already wired.
+auditing, background jobs, observability and a CI gate already wired.
 
 The display name ("SaaS Starter") lives in one place: `PRODUCT_NAME` in `@repo/shared/constants`.
 Rebranding is a one-line change there plus the handful of surfaces that cannot read a constant

@@ -46,12 +46,9 @@ import lines carry a justification.
 
 ## Cross-module edges
 
-The edge list itself is **generated**, not kept here: a graph written in prose is
-checked by nothing and is wrong the day after somebody adds an import. The live
-one, with fan-in, fan-out and a `file:line` witness per edge, is
-`docs/architecture/module-map.md`. Regenerate it with
-`pnpm generate:arch-map`; `lint:meta` fails when it is stale or when a new module
-has no purpose line in `tools/arch/registry.ts`.
+The edge list itself is not kept here: a graph written in prose is wrong the day
+after somebody adds an import. Read the imports under `src/modules/` for the live
+one.
 
 What that page cannot say is why an edge is allowed, so the rest of this section
 stays here. Every pair on it is DI-safe and the runtime graph is acyclic.
@@ -88,10 +85,8 @@ code only (`interface-prefix-i` is the one that also polices specs). By class:
   every interface is `I`-prefixed, and every service and processor carries a
   colocated spec.
 
-`pnpm lint:meta` adds one more, `api-module-edges`
-(`tools/lint-meta/rules/source-text/api-module-edges.ts`), which holds the three
-edge rules above as data and resolves every relative import under
-`src/modules/` (non-spec):
+Three edge rules have no lint rule behind them and are held in review, for every
+relative import under `src/modules/` (non-spec):
 
 - the **direction table**: which module may not import which. Zero breaks when
   it landed, so it runs with no allowance at all.
