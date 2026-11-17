@@ -39,12 +39,17 @@ runs `prisma migrate deploy` and exits. The `api` service waits for it via
 
 ```bash
 # Bring everything up: migrations run before api starts
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d
 
 # Inspect migration state
-docker compose -f docker-compose.prod.yml run --rm migrate \
-  pnpm exec prisma migrate status --schema=prisma/schema
+docker compose -f docker-compose.prod.yml run --rm -w /app/packages/database \
+  --entrypoint ./node_modules/.bin/prisma migrate migrate status
 ```
+
+The same image also migrates in its own entrypoint before the api starts, which is safe
+with one replica; the compose file sets `RUN_MIGRATIONS=false` on the `api` service so
+the one-shot `migrate` service is the only thing that migrates. Outside compose (one
+container, one replica) leave the default and the api migrates itself.
 
 If a migration fails the api container will not start (good, it prevents the
 "app shipped but DB still on old schema" scenario).

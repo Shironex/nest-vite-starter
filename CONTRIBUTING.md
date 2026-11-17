@@ -31,8 +31,8 @@ pnpm check:contrast
 ```
 
 The `integration` job applies the migrations, checks the migration history and schema drift, and
-runs the api integration specs against Postgres and Redis. The `e2e` job runs the Playwright suite
-against the built api and web. The `images` job builds both Dockerfiles. `AGENTS.md` lists the
+runs the api integration specs against Postgres and Valkey. The `e2e` job runs the Playwright suite
+against the built api and web. The `images` job builds both Dockerfiles and boots them with `scripts/image-smoke.sh`. `AGENTS.md` lists the
 commands to run each job locally.
 
 The husky pre-push hook runs the fast subset: the typecheck lane, the test lane for packages

@@ -48,7 +48,7 @@ pnpm size:check          # initial-load byte budget (scripts/check-initial-bundl
 pnpm check:contrast      # WCAG ratios of the design tokens (scripts/check-contrast.mjs)
 ```
 
-The `integration` and `e2e` jobs need Postgres and Redis (and Mailpit for e2e). Locally, start
+The `integration` and `e2e` jobs need Postgres and Valkey (and Mailpit for e2e). Locally, start
 this repo's compose stack (host ports 5442, 6389, 1035 and 8035; use your own `-p` name for a
 second copy, and note the fixed `container_name` values mean only one copy can run at a time), EXPORT `DATABASE_URL` and `REDIS_URL` in the shell (`setup-env.ts` otherwise falls back to
 the CI-shaped `test` database), then:
@@ -57,7 +57,7 @@ the CI-shaped `test` database), then:
 pnpm --filter @repo/database db:migrate:deploy
 pnpm --filter @repo/database db:migrate:status   # history matches the migrations folder
 pnpm --filter @repo/database db:migrate:check    # schema has no unmigrated change
-pnpm --filter @repo/api test:integration         # *.isolation.spec.ts, real Postgres and Redis
+pnpm --filter @repo/api test:integration         # *.isolation.spec.ts, real Postgres and Valkey
 ```
 
 For e2e, seed with `db:seed` (near-empty, the shape CI uses, not `db:seed:dev`), build with
@@ -65,7 +65,7 @@ For e2e, seed with `db:seed` (near-empty, the shape CI uses, not `db:seed:dev`),
 with the production env from the e2e job's "Start API" step exported (the api refuses localhost, an
 empty captcha and cleartext SMTP in production, see `apps/api/src/config/env.ts`), and `pnpm --filter @repo/web exec vite preview`, then run
 `pnpm --filter @repo/web exec playwright test`. Set `PLAYWRIGHT_BASE_URL` when the web is not on
-:5173. The `images` job runs `docker build` on both Dockerfiles.
+:5173. The `images` job builds both Dockerfiles and runs `scripts/image-smoke.sh` (`--build` builds them first), which boots each image as uid 10001 with a read-only root.
 
 The husky hooks: pre-commit runs lint-staged, commit-msg runs commitlint, and pre-push runs
 `pnpm verify --lane=typecheck`, then `pnpm verify --lane=test --affected=origin/main` (turbo tests

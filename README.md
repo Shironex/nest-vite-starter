@@ -145,14 +145,27 @@ and the compose project, containers and database were renamed, so wipe the local
 
 ## Production Deployment
 
-Multi-stage Dockerfiles are included for both API and Web:
+Multi-stage Dockerfiles are included for both API and Web, both running as uid 10001, and
+a self-host compose file:
 
 ```bash
-# Build and run with production compose
-docker compose -f docker-compose.prod.yml up --build
+cp .env.prod.example .env     # fill it in; the comments say how to generate each secret
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-See `apps/api/Dockerfile`, `apps/web/Dockerfile`, and `docker-compose.prod.yml`.
+That builds both images from the checkout, runs the migrations once in a `migrate`
+container, then starts the api and the web (published on loopback only: `127.0.0.1:8080`
+and `127.0.0.1:3000`) next to Postgres and Valkey on named volumes. The web container
+forwards `/trpc` and `/api` to the api, so a reverse proxy only has to point at the web.
+To deploy published images instead of building, set `API_IMAGE` and `WEB_IMAGE`, then run
+`docker compose -f docker-compose.prod.yml pull` and `up -d --no-build`.
+
+The web image reads its public settings (`API_URL`, `TURNSTILE_SITE_KEY`, `SENTRY_DSN`,
+`APP_NAME`) from its environment when it starts, so one image serves every environment.
+In development they come from `apps/web/public/config.js`.
+
+`scripts/image-smoke.sh --build` builds both images and boots them the way production
+runs them (CI runs it too). For Coolify, see [docs/deploy-coolify.md](docs/deploy-coolify.md).
 
 ## Architecture
 
