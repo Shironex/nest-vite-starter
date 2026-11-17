@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { COLOR_THEMES, DEFAULT_COLOR_THEME } from '@repo/ui/theme';
+import { DEFAULT_COLOR_THEME } from '@repo/ui/theme';
+import type { ColorTheme } from '@repo/ui/theme';
 import { applyColorTheme, applyTheme } from './theme';
 
 /**
@@ -19,32 +20,26 @@ describe('applyColorTheme', () => {
   });
 
   it('applies the default theme by removing data-theme', () => {
-    document.documentElement.setAttribute('data-theme', 'slate');
+    document.documentElement.setAttribute('data-theme', 'fork-theme');
 
     applyColorTheme(DEFAULT_COLOR_THEME);
 
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
   });
 
-  it('sets data-theme for every non-default theme', () => {
-    const nonDefault = COLOR_THEMES.map((theme) => theme.id).filter(
-      (id) => id !== DEFAULT_COLOR_THEME,
-    );
+  it('sets data-theme for a theme that is not the default', () => {
+    // The package ships one theme today, so the type has no second member; a
+    // fork that adds one widens ColorTheme and takes this path.
+    const other = 'fork-theme' as ColorTheme;
 
-    // Guards the list itself: if someone deletes every other theme the loop
-    // below would vacuously pass.
-    expect(nonDefault.length).toBeGreaterThan(0);
-    expect(nonDefault).toContain('slate');
+    applyColorTheme(other);
 
-    for (const id of nonDefault) {
-      applyColorTheme(id);
-      expect(document.documentElement.getAttribute('data-theme')).toBe(id);
-    }
+    expect(document.documentElement.getAttribute('data-theme')).toBe(other);
   });
 
   it('switches from a non-default theme back to the default', () => {
-    applyColorTheme('slate');
-    expect(document.documentElement.getAttribute('data-theme')).toBe('slate');
+    applyColorTheme('fork-theme' as ColorTheme);
+    expect(document.documentElement.getAttribute('data-theme')).toBe('fork-theme');
 
     applyColorTheme(DEFAULT_COLOR_THEME);
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
