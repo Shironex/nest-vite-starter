@@ -142,4 +142,16 @@ describe('TurnstileService', () => {
       });
     });
   });
+
+  it('passes every token without calling siteverify when no secret is configured', async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        TurnstileService,
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue(undefined) } },
+      ],
+    }).compile();
+    const disabled = module.get(TurnstileService);
+    await expect(disabled.validate('anything')).resolves.toBe(true);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 });

@@ -21,17 +21,23 @@ function isTimeoutError(error: unknown): boolean {
 @Injectable()
 export class TurnstileService {
   private readonly logger = new Logger(TurnstileService.name);
-  private readonly secretKey: string;
+  /** Undefined means the captcha is off (config/env.ts decides when that is allowed). */
+  private readonly secretKey: string | undefined;
 
   constructor(private readonly configService: ConfigService) {
-    this.secretKey = this.configService.getOrThrow<string>('TURNSTILE_SECRET_KEY');
+    // An empty secret turns the check off. config/env.ts refuses that in
+    // production unless CAPTCHA_DISABLED=true is set explicitly, and refuses
+    // Cloudflare's always-pass test secret there too.
+    this.secretKey = this.configService.get<string>('TURNSTILE_SECRET_KEY')?.trim() || undefined;
   }
 
   /**
-   * Validate a Cloudflare Turnstile token via the siteverify API.
-   * In development, the test secret key (1x0000000000000000000000000000000AA) always returns success.
+   * Validate a Cloudflare Turnstile token via the siteverify API. With no
+   * secret configured the captcha is off and every token passes. In development
+   * the test secret (1x0000000000000000000000000000000AA) always returns success.
    */
   async validate(token: string, remoteIp?: string): Promise<boolean> {
+    if (this.secretKey === undefined) return true;
     try {
       const formData = new URLSearchParams();
       formData.append('secret', this.secretKey);
