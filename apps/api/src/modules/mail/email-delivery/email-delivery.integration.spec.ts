@@ -77,8 +77,6 @@ describe('email-delivery DI graph + job run (ioredis-mock)', () => {
               // (for the settings deep-link). Provide it explicitly so this
               // spec compiles the module in CI, where no .env file is present.
               APP_URL: 'http://localhost:5173',
-              EMAIL_PROVIDER: 'smtp',
-              RESEND_API_KEY: '',
               SMTP_HOST: 'mailpit',
               SMTP_PORT: 1025,
               SMTP_USER: '',

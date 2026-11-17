@@ -1,9 +1,8 @@
 /**
  * Transport-agnostic email seam. The email-delivery processor sends every mail
  * class through an `IEmailProvider`, so swapping nodemailer/SMTP for a hosted
- * API (Resend) is a one-line DI change in `EmailTransportModule` and nothing
- * in the producer or processor moves. Selected at boot by the `EMAIL_PROVIDER`
- * env var (default `smtp`).
+ * API is a one-line DI change in `EmailTransportModule` and nothing in the
+ * producer or processor moves.
  */
 export interface IEmailMessage {
   readonly to: string;

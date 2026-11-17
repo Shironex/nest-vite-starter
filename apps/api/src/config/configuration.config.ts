@@ -59,13 +59,6 @@ export const validationSchema = Joi.object({
   // account email). Defaults to APP_NAME; override per deployment/brand.
   TOTP_ISSUER: Joi.string().optional().allow(''),
 
-  // Email transport selection. `smtp` (nodemailer, the default) or `resend`
-  // (a stub seam this phase scaffolds; not yet implemented). Swapping the
-  // provider is a config change only.
-  EMAIL_PROVIDER: Joi.string().valid('smtp', 'resend').default('smtp'),
-  // Only consumed when EMAIL_PROVIDER=resend.
-  RESEND_API_KEY: Joi.string().optional().allow(''),
-
   // SMTP (email)
   SMTP_HOST: Joi.string().required(),
   SMTP_PORT: Joi.number().port().default(1025),
