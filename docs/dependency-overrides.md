@@ -1,6 +1,6 @@
 # Dependency overrides
 
-Why each entry in the root `package.json` `pnpm.overrides` exists. Add a row when you add an
+Why each entry in the root `pnpm-workspace.yaml` `overrides` exists. Add a row when you add an
 override, and delete the row with it. Security floors can go once `pnpm why <name>` shows no copy
 below the patched version without the override and `pnpm audit --prod --audit-level=high` stays clean.
 

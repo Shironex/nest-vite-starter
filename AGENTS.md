@@ -6,7 +6,7 @@ config disagree, the lint config wins.
 
 Stack: pnpm + turbo monorepo. `apps/api` (NestJS 11 + nestjs-trpc + Prisma 7), `apps/web` (Vite
 SPA, TanStack Router/Query), `packages/*` (shared, database, eslint-config, ui, ...). Node `>=26`,
-pnpm `10.34.9`.
+pnpm `12.18.0`.
 
 ## Bootstrap a fresh worktree (do all four first)
 
@@ -102,12 +102,12 @@ audit, observability` (`commitlint.config.cjs` is the source of truth).
 
 Read only the one that matches your task; do not load them all.
 
-| When you are ...                             | Read                                                                       |
-| -------------------------------------------- | -------------------------------------------------------------------------- |
-| adding or changing an API module or router   | `apps/api/src/modules/README.md`                                           |
-| adding or changing a web feature or screen   | `apps/web/src/features/README.md`                                          |
-| reviewing a change to a guarded subsystem    | `docs/invariants/` (load only the manifests whose `globs:` match the diff) |
-| changing the Prisma schema or a migration    | `docs/migration-playbook.md`                                               |
-| changing merge bar, hooks or secret scanning | `CONTRIBUTING.md`, `.husky/`, `.github/workflows/`                         |
-| adding or changing a `pnpm.overrides` entry  | `docs/dependency-overrides.md`                                             |
-| running a support procedure                  | `docs/runbooks/`                                                           |
+| When you are ...                                                | Read                                                                       |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| adding or changing an API module or router                      | `apps/api/src/modules/README.md`                                           |
+| adding or changing a web feature or screen                      | `apps/web/src/features/README.md`                                          |
+| reviewing a change to a guarded subsystem                       | `docs/invariants/` (load only the manifests whose `globs:` match the diff) |
+| changing the Prisma schema or a migration                       | `docs/migration-playbook.md`                                               |
+| changing merge bar, hooks or secret scanning                    | `CONTRIBUTING.md`, `.husky/`, `.github/workflows/`                         |
+| adding or changing a `overrides` entry in `pnpm-workspace.yaml` | `docs/dependency-overrides.md`                                             |
+| running a support procedure                                     | `docs/runbooks/`                                                           |

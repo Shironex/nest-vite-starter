@@ -17,7 +17,7 @@
 # Debian 13 (trixie), not 12: the x86_64 nestjs-trpc binary needs GLIBC_2.39,
 # and bookworm ships 2.36, so generate:trpc fails on amd64 builders.
 FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS builder
-RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
+RUN corepack enable && corepack prepare pnpm@12.18.0 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/

@@ -19,7 +19,7 @@
 #
 # Stage 1: Install dependencies
 FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS deps
-RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
+RUN corepack enable && corepack prepare pnpm@12.18.0 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
@@ -39,7 +39,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 
 # Stage 2: Build
 FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS builder
-RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
+RUN corepack enable && corepack prepare pnpm@12.18.0 --activate
 WORKDIR /app
 COPY --from=deps /app ./
 COPY . .
@@ -57,7 +57,7 @@ FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tini \
     && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
+RUN corepack enable && corepack prepare pnpm@12.18.0 --activate
 WORKDIR /app/packages/database
 COPY --from=builder /app/packages/database/package.json ./
 COPY --from=builder /app/packages/database/prisma ./prisma
@@ -76,7 +76,7 @@ FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tini wget \
     && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
+RUN corepack enable && corepack prepare pnpm@12.18.0 --activate
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/api/dist ./apps/api/dist

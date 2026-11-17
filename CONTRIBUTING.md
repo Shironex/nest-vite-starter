@@ -9,7 +9,7 @@ merge bar. Local green is CI green.
 pnpm install
 ```
 
-Node `>=26` and pnpm `10.34.9` (see the `packageManager` field). The
+Node `>=26` and pnpm `12.18.0` (see the `packageManager` field). The
 `prepare` script installs the husky hooks on install.
 
 ## The merge bar
