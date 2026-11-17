@@ -10,6 +10,7 @@
     "check-types": "turbo check-types",
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
+    "verify": "tsx tools/verify/cli.ts",
     "lint:meta": "tsx node_modules/@noctcore/harness/dist/cli.js lint-meta --registry tools/lint-meta/registry.ts",
     "lint:meta:docs": "tsx node_modules/@noctcore/harness/dist/cli.js catalog --registry tools/lint-meta/registry.ts",
     "lint:tools": "eslint tools",

@@ -29,6 +29,7 @@ import {
   createNoTsIgnoreRule,
 } from '@noctcore/lint-meta-rules/typescript';
 
+import { ciGateIntactRule } from './rules/ci-gate-intact';
 import { proceduresRequireGuardRule } from './rules/procedures-require-guard';
 import {
   rawSqlAllowlistPinnedRule,
@@ -143,4 +144,5 @@ export const META_RULES: readonly IMetaRule[] = [
   createNoInlineLintDisableRule(),
   createNoTsIgnoreRule(),
   tsconfigStrictRule,
+  ciGateIntactRule,
 ];

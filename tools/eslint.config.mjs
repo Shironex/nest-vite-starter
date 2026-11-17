@@ -9,8 +9,8 @@ import { config as baseConfig } from '@repo/eslint-config/base';
  * comments are ignored, never honored. A scoped override here is the only
  * way to relax a rule for a path.
  *
- * `pnpm lint:tools` runs this; turbo does not, because tools/ is not a
- * workspace package.
+ * The verify lint lane runs this through `pnpm lint:tools`; turbo does not,
+ * because tools/ is not a workspace package.
  */
 
 /** @type {import("eslint").Linter.Config[]} */
@@ -19,6 +19,17 @@ export default [
   {
     linterOptions: {
       noInlineConfig: true,
+    },
+  },
+  {
+    /*
+     * tools/verify passes its own environment to the commands it runs, before
+     * any application exists. `no-direct-process-env` asks for a typed
+     * `@nestjs/config` accessor, and there is no Nest container here.
+     */
+    files: ['verify/**/*.ts'],
+    rules: {
+      'contracts/no-direct-process-env': 'off',
     },
   },
 ];
