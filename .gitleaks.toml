@@ -36,7 +36,7 @@ regexes = [
   # Exact value, so any real key still fails.
   '''6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81''',
   # CI-only synthetic CSRF_SECRET: a >=32-char test stand-in in
-  # apps/api/test/setup-env.ts that satisfies the Joi `.min(32)` gate when the
+  # apps/api/test/setup-env.ts that satisfies the env schema 32-byte minimum when the
   # AppModule compile spec boots ConfigModule validation. Obviously non-secret
   # (literal "test-csrf-secret..."), never used by the real CSRF flow. Exact
   # value, so a real secret of the same shape still fails the scan.

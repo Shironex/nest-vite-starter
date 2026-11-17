@@ -20,6 +20,8 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+    # .env must hold a production config (apps/api/src/config/env.ts refuses
+    # the dev values), including TRUST_PROXY=1 for the host's reverse proxy.
     ports:
       # Loopback-only: a reverse proxy on the host terminates TLS and forwards here.
       - '127.0.0.1:3000:3000'
