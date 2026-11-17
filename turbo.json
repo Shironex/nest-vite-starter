@@ -87,6 +87,12 @@
     "check-types": {
       "dependsOn": ["^build"]
     },
+    "knip": {
+      "dependsOn": ["^build"]
+    },
+    "@repo/web#knip": {
+      "dependsOn": ["^build", "@repo/api#generate:trpc"]
+    },
     "test": {
       "dependsOn": ["^build"],
       "cache": false
