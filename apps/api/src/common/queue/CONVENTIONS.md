@@ -60,7 +60,7 @@ transient failure, or a worker crash mid-process). Design for re-execution.
 ## `@Cron` vs BullMQ repeatable: the fork in the road
 
 - **Default to `@nestjs/schedule` `@Cron`** for periodic maintenance: a decorator
-  on a provider, no queue/worker/scheduler-id to wire. Phase 3 owns the single
+  on a provider, no queue/worker/scheduler-id to wire. AppModule owns the single
   `ScheduleModule.forRoot()`. The cost: `@Cron` runs on ALL replicas, so the job
   MUST be idempotent by predicate.
 - **Use a BullMQ job scheduler** (`queue.upsertJobScheduler` with a fixed id,

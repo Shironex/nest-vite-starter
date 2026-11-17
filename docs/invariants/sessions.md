@@ -13,7 +13,7 @@ out of that blob, so the properties that matter are all about the moment it is m
 what the blob must say, and what the response must tell the client.
 
 The characteristic bug here is a new door that forgets a field the other doors set, which is why the
-seam carries lint-meta rules rather than a paragraph in a README.
+seam carries lint-meta rules (`pnpm lint:meta`) rather than a paragraph in a README.
 
 ## Entry points
 
@@ -21,7 +21,7 @@ seam carries lint-meta rules rather than a paragraph in a README.
 - `two-factor-challenge.service.ts` - `beginOrEstablish`, the post-credential chokepoint in front
   of it, and the live re-read of account state.
 - `login.service.ts`, `register.service.ts`, `password-change.service.ts`,
-  `password-reset.service.ts`, `session-management.service.ts` - the staff doors.
+  `password-reset.service.ts`, `session-management.service.ts` - the other doors.
 - `middleware/auth.middleware.ts` - where the blob is read back.
 
 ## Risks

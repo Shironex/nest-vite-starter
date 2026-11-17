@@ -47,7 +47,7 @@ A small `prisma-datetime-has-db-type` check in the lint-meta registry: read ever
 `schema/*.prisma`, and fail on any field whose type is `DateTime` or `DateTime?` with no
 `@db.Timestamptz(` or `@db.Date` attribute on the same line. About 60 lines plus a test, and no
 new dependency: the model and field shape is simple enough to read line by line, the same way
-`prisma-method-surface` reads the generated client today. There is no Prisma equivalent in
+the other registry rules read their files today. There is no Prisma equivalent in
 `@noctcore/*` today.
 
 ## Applying it after a deployment: what it would cost

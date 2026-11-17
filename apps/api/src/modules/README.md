@@ -35,8 +35,8 @@ the docblock rather than generalizing from the name.
 `auth` leaf modules - `session`, `auth-middleware`, `lockout`. `common/` adds `PrismaModule`, `RedisModule` and
 `QueueModule`, also `@Global()`.
 
-Everything else is a **feature**: `user`, `storage`, `mail`, `data-export`,
-`health`, and AuthModule proper.
+Everything else is a **feature**: `user`, `mail`, `data-export`, `health`, and
+AuthModule proper.
 
 `modules/auth` is both at once, and that is the load-bearing fact here. A router
 needing `AuthMiddleware` imports `AuthMiddlewareModule`, never `AuthModule` -
@@ -48,61 +48,38 @@ import lines carry a justification.
 
 The edge list itself is not kept here: a graph written in prose is wrong the day
 after somebody adds an import. Read the imports under `src/modules/` for the live
-one.
+one. Every pair on it is DI-safe and the runtime graph is acyclic.
 
-What that page cannot say is why an edge is allowed, so the rest of this section
-stays here. Every pair on it is DI-safe and the runtime graph is acyclic.
-
-For a new edge: import another module's **service** through its module, or go
-through a `.port`. Never import a foreign repository, and never reach into a
-foreign subdirectory. Both are enforced (`api-module-edges`, below).
-
-There is one sanctioned way to reach into another module's subdirectory, and it
-is the platform half of `auth`: `auth/middleware` and `auth/services`. Those
-leaves exist so a router can guard itself without importing AuthModule and
-reopening a cycle, so every import of them necessarily names a subdirectory. The
-rule holds them as named entry points, each with its reason.
+For a new edge: import another module's **service** through its module. Never
+import a foreign repository by value (a type-only import is fine: it binds
+nothing at run time, so it cannot create a cycle), and never reach into a
+foreign subdirectory. The one sanctioned reach is the platform half of `auth`
+(`auth/middleware` and `auth/services`): those leaves exist so a router can guard
+itself without importing AuthModule and reopening a cycle. No lint rule backs these
+edge rules; they are held in review.
 
 ## What lint already guarantees
 
-`packages/eslint-config/nestjs.js` runs sixteen rules at `error`, production
-code only (`interface-prefix-i` is the one that also polices specs). By class:
+`packages/eslint-config/nestjs.js` runs these rules at `error` (production code
+only, except `interface-prefix-i`, which also polices specs). By class:
 
-- **Data access and transactions (4)** - no raw SQL outside an allowlist, a
-  soft-deletable model's reads filter `deletedAt`, every multi-row write inside
-  a transaction, and inside one use `tx` rather than the outer client.
-
-- **Single-writer fences** - a fenced column is written by exactly one named
-  service.
-- **Audit (3)** - an audit write never runs inside a transaction, so a rollback
-  cannot erase it; every PII-shaped key in an audit payload is declared; and
-  every `@Mutation()` entry point must reach an audit write
+- **Data access and transactions**: no raw SQL outside an allowlist, a
+  soft-deletable model's reads filter `deletedAt`, every multi-row write sits
+  inside a transaction, and inside one you use `tx` rather than the outer client.
+  Writes to a fenced model are limited to the named service.
+- **Audit**: an audit write never runs inside a transaction, so a rollback cannot
+  erase it; every PII-shaped key in an audit payload is declared; and every
+  `@Mutation()` entry point must reach an audit write
   (`mutation-entry-must-reach-audit`). None of them checks that the row
   describes the write it accompanies, so that is on review and the specs.
-- **Errors, logging, promises, time, naming and tests (8)** - throws stay inside
-  the error taxonomy, log calls are structured and name no sensitive field, no
+- **Errors, logging, promises, time, naming and tests**: throws stay inside the
+  error taxonomy, log calls are structured and name no sensitive field, no
   floating or misused promise, no bare `Date.now()` in place of `common/clock`,
   every interface is `I`-prefixed, and every service and processor carries a
   colocated spec.
 
-Three edge rules have no lint rule behind them and are held in review, for every
-relative import under `src/modules/` (non-spec):
-
-- the **direction table**: which module may not import which. Zero breaks when
-  it landed, so it runs with no allowance at all.
-- a **value import of a foreign `*.repository`**. A type-only import is allowed:
-  it binds nothing at run time, so it cannot create the cycle the rule is about.
-- a **reach into a foreign subdirectory**, other than the sanctioned platform
-  entry points above.
-
-Its `EDGE_EXCEPTIONS` table carries the edges that already existed, each with a
-written reason and a destination (the `storage` imports of `UserRepository`,
-which want a port, because storage needs behavior rather than a value). An
-entry naming an import that no longer exists is itself reported, so the table
-shrinks as the debt is paid instead of quietly widening the rule.
-
 Nothing enforces the suffix vocabulary or the platform/feature split. Those are
-still convention, and only review catches a break.
+convention, and only review catches a break.
 
 ## The innocence proofs
 
