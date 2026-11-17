@@ -57,6 +57,9 @@
     "@repo/web#check-types": {
       "dependsOn": ["^build", "@repo/api#generate:trpc"]
     },
+    "@repo/database#check-types": {
+      "dependsOn": ["^build", "db:generate"]
+    },
     "@repo/api#check-types": {
       "dependsOn": ["^build", "@repo/api#generate:trpc"]
     },
