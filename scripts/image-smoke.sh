@@ -45,16 +45,17 @@ check() { # check "description" command...
 }
 
 TMP=$(mktemp -d)
-CONTAINERS=""
 cleanup() {
   rm -rf "$TMP"
-  for c in $CONTAINERS; do docker rm -f "$c" > /dev/null 2>&1 || true; done
+  # By name prefix: start_web runs in a command substitution, so a list kept in a
+  # variable would never see its containers.
+  docker ps -aq --filter "name=$RUN_ID-" | while read -r c; do
+    docker rm -f "$c" > /dev/null 2>&1 || true
+  done
   docker network rm "$NETWORK" > /dev/null 2>&1 || true
 }
 trap cleanup EXIT
 trap 'exit 130' INT TERM
-
-track() { CONTAINERS="$CONTAINERS $1"; }
 
 # The pinned service images are read from docker-compose.yml so there is one pin.
 compose_image() {
@@ -99,11 +100,9 @@ smoke_api() {
   docker run -d --name "$RUN_ID-pg" --network "$NETWORK" --network-alias postgres \
     -e POSTGRES_USER=app -e POSTGRES_PASSWORD="$PG_PASS" -e POSTGRES_DB=app \
     "$PG_IMAGE" > /dev/null
-  track "$RUN_ID-pg"
   docker run -d --name "$RUN_ID-valkey" --network "$NETWORK" --network-alias redis \
     -e REDIS_PASSWORD="$REDIS_PASS" "$VALKEY_IMAGE" \
     sh -c 'exec valkey-server --requirepass "$REDIS_PASSWORD"' > /dev/null
-  track "$RUN_ID-valkey"
 
   # Postgres reports ready twice (a temporary init server answers first), so
   # probe over TCP, which only the real server serves, and require 3 in a row.
@@ -140,7 +139,6 @@ smoke_api() {
 
   # As compose runs it: migrations skipped, the migrate service already did them.
   docker run -d --name "$RUN_ID-api" -e RUN_MIGRATIONS=false "$@" "$API_IMAGE" > /dev/null
-  track "$RUN_ID-api"
   ready() { docker exec "$RUN_ID-api" wget -q -O - http://127.0.0.1:3000/health/ready | grep -q '"status":"ok"'; }
   wait_for "api answers /health/ready" ready || { docker logs "$RUN_ID-api" >&2; return; }
   check "api runs as uid 10001" test "$(docker exec "$RUN_ID-api" id -u)" = 10001
@@ -152,7 +150,6 @@ smoke_api() {
 
   # The default: the entrypoint migrates, then starts.
   docker run -d --name "$RUN_ID-api2" "$@" "$API_IMAGE" > /dev/null
-  track "$RUN_ID-api2"
   ready2() { docker exec "$RUN_ID-api2" wget -q -O - http://127.0.0.1:3000/health/ready | grep -q '"status":"ok"'; }
   wait_for "api migrates in its entrypoint, then answers /health/ready" ready2 || docker logs "$RUN_ID-api2" >&2
   check "the default entrypoint ran the migration" \
@@ -168,7 +165,6 @@ start_web() {
   shift
   docker run -d --name "$name" --read-only --tmpfs /tmp --cap-drop ALL \
     --security-opt no-new-privileges:true -p 127.0.0.1::8080 "$@" "$WEB_IMAGE" > /dev/null
-  track "$name"
   port=$(docker port "$name" 8080/tcp | head -n 1 | sed 's/.*://')
   echo "http://127.0.0.1:$port"
 }
