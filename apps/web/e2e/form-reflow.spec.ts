@@ -37,6 +37,9 @@ import { ADMIN_STORAGE_STATE } from './support/auth';
 /** Frames a settling measurement gives up after, at ~60fps. */
 const SETTLE_FRAMES = 120;
 
+/** Consecutive identical samples that count as settled (~130ms at 60fps). */
+const STABLE_FRAMES = 8;
+
 /**
  * An element's top edge in DOCUMENT space, once it has stopped moving.
  *
@@ -46,31 +49,39 @@ const SETTLE_FRAMES = 120;
  * would move a viewport-relative y for a reason that has nothing to do with
  * this bug. Document space measures the layout itself, the thing under test.
  *
- * Settling, because a dialog opens with a zoom animation: an element is
- * `visible` well before it reaches its final position, and a measurement taken
- * mid-animation reads a fraction of a pixel off. Sampling until two consecutive
- * frames agree keeps that sub-pixel noise out of an assertion whose real
- * subject is a ~20px jump.
+ * Settling, because a dialog opens with a zoom animation and the page can still
+ * reflow after first paint: an element is `visible` well before it reaches its
+ * final position, and a measurement taken mid-animation or just before the
+ * self-hosted fonts apply reads a different position (a ~100px shift was seen
+ * once on a loaded machine). Waiting for `document.fonts.ready`, then sampling
+ * until STABLE_FRAMES consecutive frames agree, keeps that noise out of an
+ * assertion whose real subject is a ~20px jump. A single pair of equal frames
+ * is not enough: a late layout shift can follow one.
  */
 async function documentTop(locator: Locator): Promise<number> {
   return locator.evaluate(
-    (el, frames) =>
-      new Promise<number>((resolve) => {
-        let previous = Number.NaN;
-        let left = frames;
-        const sample = () => {
-          const top = el.getBoundingClientRect().top + window.scrollY;
-          if (top === previous || left <= 0) {
-            resolve(top);
-            return;
-          }
-          previous = top;
-          left -= 1;
-          requestAnimationFrame(sample);
-        };
-        requestAnimationFrame(sample);
-      }),
-    SETTLE_FRAMES,
+    (el, { frames, stable }) =>
+      document.fonts.ready.then(
+        () =>
+          new Promise<number>((resolve) => {
+            let previous = Number.NaN;
+            let agreeing = 0;
+            let left = frames;
+            const sample = () => {
+              const top = el.getBoundingClientRect().top + window.scrollY;
+              agreeing = top === previous ? agreeing + 1 : 0;
+              if (agreeing >= stable || left <= 0) {
+                resolve(top);
+                return;
+              }
+              previous = top;
+              left -= 1;
+              requestAnimationFrame(sample);
+            };
+            requestAnimationFrame(sample);
+          }),
+      ),
+    { frames: SETTLE_FRAMES, stable: STABLE_FRAMES },
   );
 }
 
