@@ -25,7 +25,7 @@ Rebranding is a one-line change there plus the handful of surfaces that cannot r
 | ------------ | ---------------------------------------------------------------------------------------- |
 | **Frontend** | React 19, Vite 8, TanStack Router (file-based), TanStack Query, Zustand                  |
 | **Backend**  | NestJS 11, tRPC (nestjs-trpc), Prisma 7, BullMQ                                          |
-| **Database** | PostgreSQL 18, Redis 7                                                                   |
+| **Database** | PostgreSQL 18, Valkey 9                                                                  |
 | **Auth**     | Session-based (Redis-backed), Argon2id hashing, CSRF double-submit, Cloudflare Turnstile |
 | **UI**       | shadcn/ui (Radix + Tailwind CSS v4), 2 color themes                                      |
 | **Email**    | React Email templates, Mailpit for dev                                                   |

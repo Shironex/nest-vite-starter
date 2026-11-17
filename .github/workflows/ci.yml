@@ -78,7 +78,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
       redis:
-        image: redis:7-alpine@sha256:520775a41a63e77e06c73e35d2fd9cc15921a609516818796b4ecbb813078bc7
+        image: valkey/valkey:9-alpine@sha256:bf09d58e96d6b4524a15396b65b242bbe18beebbcc15a04d8ee75ddac62fae0b
         ports:
           - 6379:6379
         options: >-
@@ -107,7 +107,7 @@ jobs:
       - run: pnpm --filter @repo/database db:migrate:status
       # Fails when the schema changed without a migration.
       - run: pnpm --filter @repo/database db:migrate:check
-      # The *.isolation.spec.ts specs that need a real Postgres and Redis.
+      # The *.isolation.spec.ts specs that need a real Postgres and Valkey.
       - run: pnpm exec turbo build --filter=@repo/api^...
       - run: pnpm --filter @repo/api test:integration
 
@@ -130,7 +130,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
       redis:
-        image: redis:7-alpine@sha256:520775a41a63e77e06c73e35d2fd9cc15921a609516818796b4ecbb813078bc7
+        image: valkey/valkey:9-alpine@sha256:bf09d58e96d6b4524a15396b65b242bbe18beebbcc15a04d8ee75ddac62fae0b
         ports:
           - 6379:6379
         options: >-
@@ -192,7 +192,7 @@ jobs:
           echo "mailpit never became ready"; exit 1
 
       # Boots the built entrypoint and waits for /health/ready, which only
-      # answers once the database and Redis are wired. This doubles as the boot
+      # answers once the database and Valkey are wired. This doubles as the boot
       # smoke for the api.
       - name: Start API
         run: |
