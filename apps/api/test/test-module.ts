@@ -1,7 +1,7 @@
 /**
  * NestJS test module factory for the auth flow services.
  *
- * Each per-flow service (RegisterService, LoginService, etc.) takes 8–10
+ * Each per-flow service (RegisterService, LoginService, etc.) takes 8 to 10
  * collaborators. Without a factory, every spec re-declares the same
  * `provide: X, useValue: {}` rows. With this factory, specs only mock the
  * collaborators they actually exercise.
