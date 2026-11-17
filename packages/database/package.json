@@ -39,7 +39,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/tsconfig": "workspace:*",
     "@types/pg": "^8.23.1",
-    "eslint": "^10.10.0",
+    "eslint": "^10.15.0",
     "prisma": "^7.10.0",
     "tsup": "^8.5.1",
     "tsx": "^4.23.13",
