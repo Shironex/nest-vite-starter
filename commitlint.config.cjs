@@ -17,6 +17,7 @@ module.exports = {
         'config',
         'deps',
         'ci',
+        'docker',
         'docs',
         'auth',
         'audit',
