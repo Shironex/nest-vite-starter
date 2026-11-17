@@ -165,3 +165,44 @@ describe('migrateUIStore validates the rehydrated blob', () => {
     expect(migrated).not.toHaveProperty('injected');
   });
 });
+
+/**
+ * `migrate` only runs when the stored version differs, and the version has always
+ * been 1, so a stale theme at the current version must be caught by `merge`
+ * during a real rehydrate.
+ */
+describe('rehydrating a stored blob at the current version', () => {
+  it.each(['slate', 'violet', 'ocean', 'sunset', 42, null, { id: 'slate' }])(
+    'ends on the default theme for a stored colorTheme of %j',
+    async (colorTheme) => {
+      localStorage.setItem(
+        'ui-store',
+        JSON.stringify({
+          state: { theme: 'dark', colorTheme, sidebarCollapsed: true },
+          version: 1,
+        }),
+      );
+
+      await useUIStore.persist.rehydrate();
+
+      const state = useUIStore.getState();
+      expect(state.colorTheme).toBe(DEFAULT_COLOR_THEME);
+      expect(state.theme).toBe('dark');
+      expect(state.sidebarCollapsed).toBe(true);
+    },
+  );
+
+  it('keeps a valid stored blob as it is', async () => {
+    localStorage.setItem(
+      'ui-store',
+      JSON.stringify({
+        state: { theme: 'light', colorTheme: 'starter', sidebarCollapsed: false },
+        version: 1,
+      }),
+    );
+
+    await useUIStore.persist.rehydrate();
+
+    expect(useUIStore.getState()).toMatchObject({ theme: 'light', colorTheme: 'starter' });
+  });
+});
