@@ -1,13 +1,14 @@
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { CsrfService } from './csrf.service';
+import { CSRF_SERVICE_SPEC_SECRET } from '../../config/committed-test-secrets';
 import { expressMocks } from '@test/fixtures';
 import { CSRF_HEADER } from '@repo/shared/constants';
 
 const buildSubject = async (nodeEnv: 'production' | 'development' | 'test') => {
   const values: Record<string, string> = {
     NODE_ENV: nodeEnv,
-    CSRF_SECRET: 'super-long-secret-for-csrf-tests-123456',
+    CSRF_SECRET: CSRF_SERVICE_SPEC_SECRET,
   };
   const config = {
     get: jest.fn((k: string) => values[k]),

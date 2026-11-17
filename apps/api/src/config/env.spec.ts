@@ -1,3 +1,4 @@
+import { COMMITTED_TEST_SECRETS } from './committed-test-secrets';
 import { collectEnvIssues, parseEnv, validateEnv } from './env';
 
 /**
@@ -284,5 +285,35 @@ describe('parseEnv', () => {
 
   it('requires a well-formed ENCRYPTION_KEY', () => {
     expect(refusedKeys({ ...devEnv(), ENCRYPTION_KEY: 'too-short' })).toEqual(['ENCRYPTION_KEY']);
+  });
+
+  describe('secrets committed to the repo for tests and CI', () => {
+    const cases = Object.entries(COMMITTED_TEST_SECRETS).flatMap(([key, values]) =>
+      values.map((value, index) => [key, index, value] as const),
+    );
+
+    it.each(cases)('refuses %s value %i in production without echoing it', (key, _index, value) => {
+      let message = '';
+      try {
+        parseEnv({ ...prodEnv(), [key]: value }, quiet);
+      } catch (error) {
+        message = (error as Error).message;
+      }
+      expect(message).toMatch(new RegExp(`${key} is a value committed to this repo`, 'u'));
+      expect(message).not.toContain(value);
+    });
+
+    it('refuses the committed encryption key in upper case too', () => {
+      const [key] = COMMITTED_TEST_SECRETS['ENCRYPTION_KEY'] ?? [];
+      expect(refusedKeys({ ...prodEnv(), ENCRYPTION_KEY: (key ?? '').toUpperCase() })).toEqual([
+        'ENCRYPTION_KEY',
+      ]);
+    });
+
+    it('accepts them outside production, where the test setup uses them', () => {
+      const [csrf] = COMMITTED_TEST_SECRETS['CSRF_SECRET'] ?? [];
+      const [key] = COMMITTED_TEST_SECRETS['ENCRYPTION_KEY'] ?? [];
+      expect(refusedKeys({ ...devEnv(), CSRF_SECRET: csrf, ENCRYPTION_KEY: key })).toEqual([]);
+    });
   });
 });

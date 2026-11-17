@@ -4,6 +4,7 @@ import { PRODUCT_NAME } from '@repo/shared/constants';
 import { QUEUE_WORKER_MODES } from '../common/queue/queue-worker';
 import { nowIso } from '../common/clock/clock';
 import { InvariantError } from '../common/errors/invariant-error';
+import { COMMITTED_TEST_SECRETS } from './committed-test-secrets';
 
 /**
  * The api's environment, parsed once at boot. `ConfigModule.forRoot({ validate })`
@@ -282,6 +283,18 @@ function productionIssues(raw: RawEnv): IEnvIssue[] {
       key: 'CSRF_SECRET',
       message: `is required in production (${CSRF_SECRET_MIN_BYTES}+ bytes, openssl rand -hex 32)`,
     });
+  }
+
+  // Secrets committed to this repo for tests and CI are public. Compared, never
+  // echoed: the issue names the key only. Hex keys compare case-insensitively.
+  for (const [key, known] of Object.entries(COMMITTED_TEST_SECRETS)) {
+    const value = (raw[key] ?? '').trim().toLowerCase();
+    if (value !== '' && known.some((entry) => entry.toLowerCase() === value)) {
+      issues.push({
+        key,
+        message: 'is a value committed to this repo for tests or CI; generate a real one',
+      });
+    }
   }
 
   // Mail: a real relay, reached over TLS.

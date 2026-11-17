@@ -16,6 +16,7 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import type { Provider, Type } from '@nestjs/common';
+import { TEST_MODULE_CSRF_SECRET } from '../src/config/committed-test-secrets';
 import { PasswordService } from '../src/modules/auth/services/password.service';
 import { SessionService } from '../src/modules/auth/services/session.service';
 import { LockoutService } from '../src/modules/auth/services/lockout.service';
@@ -382,7 +383,7 @@ const buildConfigMock = (defaults: Record<string, string> = {}) => {
     NODE_ENV: 'test',
     APP_URL: 'http://localhost:3000',
     TURNSTILE_SECRET_KEY: 'test-secret',
-    CSRF_SECRET: 'test-csrf-secret',
+    CSRF_SECRET: TEST_MODULE_CSRF_SECRET,
     REDIS_URL: 'redis://localhost:6379',
     ...defaults,
   };

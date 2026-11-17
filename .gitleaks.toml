@@ -31,12 +31,13 @@ paths = [
 
 regexes = [
   # CI-only throwaway ENCRYPTION_KEY: a synthetic AES-256 key for the API test
-  # boot path. Appears in .github/workflows/ci.yml (x3) and
-  # apps/api/test/setup-env.ts. The env validator rejects it in production.
+  # boot path. Appears in .github/workflows/ci.yml and
+  # apps/api/src/config/committed-test-secrets.ts. The env validator rejects it
+  # in production.
   # Exact value, so any real key still fails.
   '''6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81''',
   # CI-only synthetic CSRF_SECRET: a >=32-char test stand-in in
-  # apps/api/test/setup-env.ts that satisfies the env schema 32-byte minimum when the
+  # apps/api/src/config/committed-test-secrets.ts (fed by test/setup-env.ts) that satisfies the env schema 32-byte minimum when the
   # AppModule compile spec boots ConfigModule validation. Obviously non-secret
   # (literal "test-csrf-secret..."), never used by the real CSRF flow. Exact
   # value, so a real secret of the same shape still fails the scan.
