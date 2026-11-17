@@ -3,9 +3,10 @@
  * them, so `parseEnv` refuses every one of them in production (env.ts).
  *
  * The test setup and specs import these constants instead of repeating the
- * literals. `.github/workflows/ci.yml` cannot import, so it carries copies of
- * TEST_ENCRYPTION_KEY and CI_E2E_CSRF_SECRET; change them together. The two
- * long literals are exempted from gitleaks by exact value in `.gitleaks.toml`.
+ * literals. `.github/workflows/ci.yml` cannot import, so its integration job
+ * carries a copy of TEST_ENCRYPTION_KEY; change them together. Its e2e job
+ * boots in production, so it mints fresh secrets per run instead. The two long
+ * literals are exempted from gitleaks by exact value in `.gitleaks.toml`.
  */
 
 /** test/setup-env.ts and ci.yml: a valid hex-64 key with high byte diversity. */
@@ -21,7 +22,7 @@ export const TEST_MODULE_CSRF_SECRET = 'test-csrf-secret';
 /** csrf.service.spec.ts. */
 export const CSRF_SERVICE_SPEC_SECRET = 'super-long-secret-for-csrf-tests-123456';
 
-/** ci.yml's e2e job (`CSRF_SECRET`). */
+/** ci.yml's e2e job used this before it minted its own; it stays in git history. */
 export const CI_E2E_CSRF_SECRET = 'ci-e2e-csrf-secret-not-used-by-these-specs-0000';
 
 /** Every committed value per key, for the production refusal in env.ts. */

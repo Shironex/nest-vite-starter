@@ -196,6 +196,10 @@ jobs:
       # smoke for the api.
       - name: Start API
         run: |
+          # Fresh per run: production refuses the secrets committed for tests.
+          CSRF_SECRET=$(openssl rand -hex 32)
+          ENCRYPTION_KEY=$(openssl rand -hex 32)
+          export CSRF_SECRET ENCRYPTION_KEY
           node apps/api/dist/src/main.js > /tmp/api.log 2>&1 &
           api_pid=$!
           for i in $(seq 1 30); do
@@ -210,8 +214,9 @@ jobs:
         # api same-origin through vite preview, so CORS never applies), the
         # captcha is off explicitly (the Cloudflare test secret is refused),
         # and SMTP requires TLS, which Mailpit does not offer, so mail jobs
-        # fail at STARTTLS; no spec reads mail. CSRF and encryption values are
-        # CI-only throwaways (allowlisted in .gitleaks.toml).
+        # fail at STARTTLS; no spec reads mail. CSRF_SECRET and ENCRYPTION_KEY
+        # are minted in the script above, because production refuses every
+        # value committed to the repo (config/committed-test-secrets.ts).
         env:
           PORT: '3000'
           NODE_ENV: production
@@ -223,8 +228,6 @@ jobs:
           MAIL_FROM: noreply@example.com
           SMTP_REQUIRE_TLS: 'true'
           CAPTCHA_DISABLED: 'true'
-          CSRF_SECRET: ci-e2e-csrf-secret-not-used-by-these-specs-0000
-          ENCRYPTION_KEY: 6e3dd5bc354524fb2d30c764eb2902badcb705c411870216be3234c4b33b1e81
 
       # vite preview serves the built app and proxies the api paths to :3000.
       - name: Start web
