@@ -18,7 +18,9 @@ services:
     container_name: nest-vite-starter-postgres
     restart: unless-stopped
     ports:
-      - '5432:5432'
+      # Host ports are offset from the defaults (5432, 6379, 1025, 8025) so this
+      # stack runs beside other projects' dev stacks. Bound to loopback only.
+      - '127.0.0.1:5442:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -30,36 +32,47 @@ services:
       # with `docker compose down -v`.
       - nest-vite-starter-pgdata:/var/lib/postgresql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      # Over TCP on purpose. The image runs a temporary server during first-time
+      # init that listens on the unix socket only, then restarts; a probe over
+      # the socket reports ready twice and the second report is a lie. Probing
+      # 127.0.0.1 only succeeds once the real server is up.
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U postgres -d nest_vite_starter']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
 
   redis:
+    # Valkey, a Redis-compatible server. The service keeps the name `redis`
+    # because the app's key is REDIS_URL and the client is ioredis.
     image: valkey/valkey:9-alpine@sha256:bf09d58e96d6b4524a15396b65b242bbe18beebbcc15a04d8ee75ddac62fae0b
     container_name: nest-vite-starter-redis
     restart: unless-stopped
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6389:6379'
     volumes:
       - nest-vite-starter-redis-data:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 5s
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 3s
       timeout: 3s
-      retries: 5
+      retries: 10
 
   mailpit:
-    image: axllent/mailpit:latest@sha256:74d609a42ec279aa63c6b4622a6fa9b5408d1ad5b1d76a1c4be40a265ce0863d
+    image: axllent/mailpit:latest@sha256:aef2aacc11f075ec0fb6874275ee4a421e688e11a96ebb296134d1735c7761ce
     container_name: nest-vite-starter-mailpit
     restart: unless-stopped
     ports:
-      - '1025:1025'
-      - '8025:8025'
+      - '127.0.0.1:1035:1025'
+      - '127.0.0.1:8035:8025'
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    healthcheck:
+      test: ['CMD', '/mailpit', 'readyz']
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   nest-vite-starter-pgdata:

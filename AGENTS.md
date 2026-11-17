@@ -49,8 +49,8 @@ pnpm check:contrast      # WCAG ratios of the design tokens (scripts/check-contr
 ```
 
 The `integration` and `e2e` jobs need Postgres and Redis (and Mailpit for e2e). Locally, start
-this repo's compose stack (or one on offset ports under its own `-p` name if the default ports are
-taken), EXPORT `DATABASE_URL` and `REDIS_URL` in the shell (`setup-env.ts` otherwise falls back to
+this repo's compose stack (host ports 5442, 6389, 1035 and 8035; use your own `-p` name for a
+second copy, and note the fixed `container_name` values mean only one copy can run at a time), EXPORT `DATABASE_URL` and `REDIS_URL` in the shell (`setup-env.ts` otherwise falls back to
 the CI-shaped `test` database), then:
 
 ```bash
@@ -102,12 +102,12 @@ audit, observability` (`commitlint.config.cjs` is the source of truth).
 
 Read only the one that matches your task; do not load them all.
 
-| When you are ...                                                | Read                                                                       |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| adding or changing an API module or router                      | `apps/api/src/modules/README.md`                                           |
-| adding or changing a web feature or screen                      | `apps/web/src/features/README.md`                                          |
-| reviewing a change to a guarded subsystem                       | `docs/invariants/` (load only the manifests whose `globs:` match the diff) |
-| changing the Prisma schema or a migration                       | `docs/migration-playbook.md`                                               |
-| changing merge bar, hooks or secret scanning                    | `CONTRIBUTING.md`, `.husky/`, `.github/workflows/`                         |
-| adding or changing a `overrides` entry in `pnpm-workspace.yaml` | `docs/dependency-overrides.md`                                             |
-| running a support procedure                                     | `docs/runbooks/`                                                           |
+| When you are ...                                                 | Read                                                                       |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| adding or changing an API module or router                       | `apps/api/src/modules/README.md`                                           |
+| adding or changing a web feature or screen                       | `apps/web/src/features/README.md`                                          |
+| reviewing a change to a guarded subsystem                        | `docs/invariants/` (load only the manifests whose `globs:` match the diff) |
+| changing the Prisma schema or a migration                        | `docs/migration-playbook.md`                                               |
+| changing merge bar, hooks or secret scanning                     | `CONTRIBUTING.md`, `.husky/`, `.github/workflows/`                         |
+| adding or changing an `overrides` entry in `pnpm-workspace.yaml` | `docs/dependency-overrides.md`                                             |
+| running a support procedure                                      | `docs/runbooks/`                                                           |

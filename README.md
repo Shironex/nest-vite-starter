@@ -123,11 +123,14 @@ tools/
 
 ## Docker Services
 
-| Service       | Port                   | Purpose                 |
+| Service       | Host port              | Purpose                 |
 | ------------- | ---------------------- | ----------------------- |
-| PostgreSQL 18 | 5432                   | Primary database        |
-| Redis 7       | 6379                   | Sessions, cache, BullMQ |
-| Mailpit       | 8025 (UI), 1025 (SMTP) | Email testing           |
+| PostgreSQL 18 | 5442                   | Primary database        |
+| Valkey 9      | 6389                   | Sessions, cache, BullMQ |
+| Mailpit       | 8035 (UI), 1035 (SMTP) | Email testing           |
+
+The host ports are offset from the defaults (5432, 6379, 1025, 8025) so the stack runs beside
+other projects' dev stacks, and are bound to loopback. `.env.example` already points at them.
 
 ```bash
 docker compose up -d      # Start services
