@@ -151,8 +151,8 @@ const PAIRINGS = [
   { ink: 'brand-ink-hover', bg: 'surface' },
   { ink: 'brand-ink-hover', bg: 'bg-app' },
   { ink: 'brand-ink-hover', bg: 'surface-subtle' },
-  // `card` currently equals `surface`, but the ink links in StatTile, the
-  // dashboard counters and DashboardPage sit on the Card primitive, which binds
+  // `card` currently equals `surface`, but ink links on the Card primitive
+  // (dashboard counters, DashboardPage) sit on a surface that binds
   // bg-card. Asserted separately so decoupling the two cannot move them quietly.
   { ink: 'brand-ink', bg: 'card' },
   { ink: 'brand-ink-hover', bg: 'card' },

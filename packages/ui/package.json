@@ -49,9 +49,6 @@
     "./container": {
       "import": "./src/primitives/container.tsx"
     },
-    "./section": {
-      "import": "./src/primitives/section.tsx"
-    },
     "./sidebar": {
       "import": "./src/components/sidebar.tsx"
     },
@@ -79,9 +76,6 @@
     "./nav-rail": {
       "import": "./src/components/nav-rail.tsx"
     },
-    "./stat-tile": {
-      "import": "./src/components/stat-tile.tsx"
-    },
     "./status-pill": {
       "import": "./src/components/status-pill.tsx"
     },
@@ -97,44 +91,8 @@
     "./pagination": {
       "import": "./src/components/pagination.tsx"
     },
-    "./kanban": {
-      "import": "./src/components/kanban.tsx"
-    },
-    "./gantt": {
-      "import": "./src/components/gantt.tsx"
-    },
-    "./tree": {
-      "import": "./src/components/tree.tsx"
-    },
-    "./editor": {
-      "import": "./src/components/editor.tsx"
-    },
-    "./dropzone": {
-      "import": "./src/components/dropzone.tsx"
-    },
-    "./tags-input": {
-      "import": "./src/components/tags-input.tsx"
-    },
-    "./combobox": {
-      "import": "./src/components/combobox.tsx"
-    },
-    "./command": {
-      "import": "./src/components/command.tsx"
-    },
     "./popover": {
       "import": "./src/components/popover.tsx"
-    },
-    "./color-picker": {
-      "import": "./src/components/color-picker.tsx"
-    },
-    "./rating": {
-      "import": "./src/components/rating.tsx"
-    },
-    "./toolbar": {
-      "import": "./src/components/toolbar.tsx"
-    },
-    "./relative-time": {
-      "import": "./src/components/relative-time.tsx"
     },
     "./spinner": {
       "import": "./src/components/spinner.tsx"
@@ -154,9 +112,6 @@
     "./theme": {
       "import": "./src/theme/index.ts"
     },
-    "./theme-selector": {
-      "import": "./src/components/theme-selector.tsx"
-    },
     "./error-boundary": {
       "import": "./src/components/error-boundary.tsx"
     },
@@ -171,12 +126,6 @@
     },
     "./radio-group": {
       "import": "./src/components/radio-group.tsx"
-    },
-    "./detail-drawer": {
-      "import": "./src/components/detail-drawer.tsx"
-    },
-    "./double-sheet": {
-      "import": "./src/components/double-sheet.tsx"
     },
     "./confirm-dialog": {
       "import": "./src/components/confirm-dialog.tsx"
@@ -193,29 +142,15 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
-    "@hookform/resolvers": "^5.9.1",
-    "@radix-ui/react-dialog": "^1.1.23",
-    "@radix-ui/react-icons": "^1.3.2",
     "@radix-ui/react-popover": "^1.1.23",
-    "@tanstack/react-virtual": "^3.14.13",
-    "@tiptap/extensions": "^3.31.3",
-    "@tiptap/react": "^3.31.3",
-    "@tiptap/starter-kit": "^3.31.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
-    "date-fns": "^4.4.0",
     "framer-motion": "^13.3.0",
     "lucide-react": "1.46.0",
     "radix-ui": "^1.6.7",
-    "react-dropzone": "^20.1.2",
     "react-hook-form": "^7.88.0",
     "sonner": "^2.0.8",
-    "tailwind-merge": "^3.7.0",
-    "zod": "^4.6.7"
+    "tailwind-merge": "^3.7.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",

@@ -90,7 +90,7 @@ function ListSurface({
       data-state={state}
       // The placeholder is already `role="status"`, but without aria-busy the
       // announcement is a status with no text next to unlabeled pulsing bars.
-      // PageSkeleton and StatTile both set it; every list in both shells
+      // PageSkeleton sets it too; every list in both shells
       // inherited this one's silence.
       aria-busy={state === 'loading' || undefined}
       className={cn(SURFACE_CLASS, className)}

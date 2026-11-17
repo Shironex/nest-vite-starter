@@ -4,7 +4,6 @@ import * as React from 'react';
 import { XIcon } from 'lucide-react';
 
 import { cn } from '@repo/ui/lib/utils';
-import { useOverlayDockScrimActive } from '@repo/ui/lib/overlay';
 import { Button } from '@repo/ui/button';
 import {
   Dialog,
@@ -19,7 +18,7 @@ import {
  * Centered confirmation modal.
  *
  * In the design system a centered modal is reserved for confirmations.
- * Creating and editing records uses `DoubleSheet` docked beside `DetailDrawer`.
+ * Creating and editing records belongs in a sheet or a page, not here.
  * This component takes no `children` on purpose: there is no slot to grow a
  * form into, so it cannot quietly become a general purpose modal.
  */
@@ -76,7 +75,6 @@ function ConfirmDialog({
 }: IConfirmDialogProps) {
   const [pending, setPending] = React.useState(false);
   const busy = pending || loading;
-  const pageAlreadyDimmed = useOverlayDockScrimActive();
 
   const handleConfirm = () => {
     const result = onConfirm?.();
@@ -111,7 +109,6 @@ function ConfirmDialog({
         data-tone={tone}
         aria-modal="true"
         showCloseButton={false}
-        overlayClassName={pageAlreadyDimmed ? 'bg-transparent' : ''}
         onCloseAutoFocus={handleCloseAutoFocus}
         className={cn(
           'flex w-105 flex-col gap-0 rounded-2xl p-0 shadow-xl sm:max-w-105',

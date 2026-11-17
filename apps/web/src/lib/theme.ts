@@ -34,7 +34,7 @@ export function applyTheme(theme: ThemePreference): void {
  * The default theme is the one @repo/ui authors on bare `:root`, so it is
  * expressed as the ABSENCE of the attribute. Every other theme sets it.
  * Keep this keyed off DEFAULT_COLOR_THEME, never off a hardcoded theme id:
- * hardcoding it is what made "Violet" silently render the default palette.
+ * a hardcoded id silently inverts the moment the default changes.
  */
 export function applyColorTheme(theme: ColorTheme): void {
   if (theme === DEFAULT_COLOR_THEME) {

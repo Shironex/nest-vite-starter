@@ -75,7 +75,7 @@ function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPr
        * Radix renders Tabs.Content with tabIndex={0}, so tabbing out of the
        * tab list lands here. `outline-none` on its own left that stop with no
        * visible focus at all, which loses a keyboard user their place after
-       * every tab list in the app. Same tokens DetailDrawerTab already uses.
+       * every tab list in the app.
        */
       data-slot="tabs-content"
       className={cn(

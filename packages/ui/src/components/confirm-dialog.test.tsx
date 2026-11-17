@@ -4,13 +4,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { OVERLAY_SCRIM_CLASS } from '../lib/overlay';
 import { Button } from './button';
 import { ConfirmDialog } from './confirm-dialog';
-import {
-  DetailDrawer,
-  DetailDrawerContent,
-  DetailDrawerHeader,
-  DetailDrawerTitle,
-  DetailDrawerTrigger,
-} from './detail-drawer';
 
 const COPY = {
   title: 'Delete this project?',
@@ -108,45 +101,7 @@ describe('ConfirmDialog', () => {
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
-  it('closes only itself when confirming from inside an open drawer', async () => {
-    render(
-      <DetailDrawer defaultOpen>
-        <DetailDrawerTrigger asChild>
-          <Button>Open project card</Button>
-        </DetailDrawerTrigger>
-        <DetailDrawerContent description="Project card">
-          <DetailDrawerHeader>
-            <DetailDrawerTitle>Project details</DetailDrawerTitle>
-          </DetailDrawerHeader>
-          <ConfirmDialog {...COPY} trigger={<Button>Delete project</Button>} />
-        </DetailDrawerContent>
-      </DetailDrawer>,
-    );
-
-    const confirmTrigger = await screen.findByRole('button', { name: 'Delete project' });
-    fireEvent.click(confirmTrigger);
-
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toHaveAccessibleName(COPY.title);
-    });
-
-    // The drawer already dims the page, so the modal must not scrim on top of it.
-    expect(document.querySelector('[data-slot="dialog-overlay"]')?.className).toContain(
-      'bg-transparent',
-    );
-
-    fireEvent.keyDown(document, { key: 'Escape' });
-
-    await waitFor(() => {
-      expect(document.querySelector('[data-slot="confirm-dialog-content"]')).toBeNull();
-    });
-    expect(document.querySelector('[data-slot="detail-drawer-content"]')).not.toBeNull();
-    await waitFor(() => {
-      expect(document.activeElement).toBe(confirmTrigger);
-    });
-  });
-
-  it('keeps its own scrim when nothing else is dimming the page', async () => {
+  it('dims the page with the shared scrim', async () => {
     render(<ConfirmDialog {...COPY} defaultOpen />);
     await screen.findByRole('dialog');
 

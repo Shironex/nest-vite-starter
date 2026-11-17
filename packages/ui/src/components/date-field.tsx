@@ -246,7 +246,6 @@ function DateFieldImpl({
    * a resolver rejected. Before this, `ref={inputRef}` simply overwrote the ref
    * arriving in the `{...field}` spread, so `shouldFocusError` had nothing to
    * focus and a form failing validation below the fold appeared to do nothing.
-   * Combobox had the identical defect and the identical fix (`adb9bf83`).
    *
    * `useImperativeHandle` rather than a merged callback ref because the
    * forwarded ref may be an object, and writing to a prop's `.current` from a

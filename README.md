@@ -27,7 +27,7 @@ Rebranding is a one-line change there plus the handful of surfaces that cannot r
 | **Backend**  | NestJS 11, tRPC (nestjs-trpc), Prisma 7, BullMQ                                          |
 | **Database** | PostgreSQL 17, Redis 7                                                                   |
 | **Auth**     | Session-based (Redis-backed), Argon2id hashing, CSRF double-submit, Cloudflare Turnstile |
-| **UI**       | shadcn/ui (Radix + Tailwind CSS v4), 40+ components, 8 color themes                      |
+| **UI**       | shadcn/ui (Radix + Tailwind CSS v4), 2 color themes                                      |
 | **Email**    | React Email templates, Mailpit for dev                                                   |
 | **Tooling**  | pnpm workspaces, Turborepo, ESLint 10 (flat config), Prettier, Husky, Commitlint         |
 
@@ -40,8 +40,8 @@ Rebranding is a one-line change there plus the handful of surfaces that cannot r
 - **Audit trail**: AuditLog service for tracking user actions
 - **Rate limiting**: global ThrottlerGuard + Helmet security headers
 - **Background jobs**: BullMQ queue infrastructure ready for use
-- **40+ UI components**: DataTable, Kanban, Gantt, Tree, Editor, DialogStack, and more
-- **8 color themes** with light/dark mode (OKLCH color space)
+- **UI components**: the core shadcn/ui set plus form, date field, data table, pagination, sidebar and toasts
+- **2 color themes** (indigo accent and neutral slate) with light/dark mode (OKLCH color space)
 - **Error boundaries**: React ErrorBoundary wrapping route layouts
 - **Docker-ready**: multi-stage Dockerfiles for API and Web, production compose file
 
@@ -96,7 +96,7 @@ apps/
 packages/
   database/         Prisma 7 schema, client, migrations, seed
   shared/           Shared types, schemas, constants, logger (dual ESM/CJS)
-  ui/               40+ shadcn/ui components with 8 color themes
+  ui/               shadcn/ui components with 2 color themes
   email/            React Email templates
   eslint-config/    Shared ESLint flat configs (base, react, nestjs)
   tsconfig/         Shared TypeScript configs

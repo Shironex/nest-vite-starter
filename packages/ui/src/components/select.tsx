@@ -11,10 +11,8 @@ import { cn } from '@repo/ui/lib/utils';
  * for and no search field to justify.
  *
  * If the list comes from the database rather than from a schema, or if you
- * cannot promise it stays short, reach for `Combobox` instead. It has
- * type-to-search, grouping and server-side filtering, and it requires a
- * `searchPlaceholder` so the decision has to be made rather than defaulted
- * into. A `Select` over 74 audit event types is the shape this rule exists to
+ * cannot promise it stays short, reach for a searchable picker with type-to-search
+ * and server-side filtering instead. A `Select` over 74 audit event types is the shape this rule exists to
  * prevent.
  */
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {

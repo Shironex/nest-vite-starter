@@ -87,54 +87,26 @@ describe('useUIStore', () => {
   });
 });
 
-/**
- * Before SaaS Starter became the default, 'violet' was BOTH the value the store
- * seeded itself with and the sentinel meaning "this user never picked a theme",
- * so every profile that has ever loaded the app has a literal 'violet' stored
- * under `ui-store`. Without this migration, flipping the default would pin all
- * of those existing users to the old palette while only brand new profiles got
- * SaaS Starter, which is the exact opposite of the intent.
- */
 describe('migrateUIStore', () => {
-  it('rewrites a v0 stored violet to the default theme', () => {
-    const migrated = migrateUIStore(
-      { theme: 'system', colorTheme: 'violet', sidebarCollapsed: false },
-      0,
-    );
+  it('passes through state it cannot read instead of throwing', () => {
+    expect(migrateUIStore(null)).toBeNull();
+    expect(migrateUIStore('corrupt')).toBe('corrupt');
+  });
+
+  it('keeps a theme the package still ships', () => {
+    const persisted = { theme: 'dark', colorTheme: 'slate', sidebarCollapsed: true };
+
+    expect(migrateUIStore(persisted)).toEqual(persisted);
+  });
+
+  it.each(['violet', 'ocean'])('maps the removed %s theme to the default', (colorTheme) => {
+    const migrated = migrateUIStore({ theme: 'dark', colorTheme, sidebarCollapsed: true });
 
     expect(migrated).toEqual({
-      theme: 'system',
+      theme: 'dark',
       colorTheme: DEFAULT_COLOR_THEME,
-      sidebarCollapsed: false,
+      sidebarCollapsed: true,
     });
-  });
-
-  it('leaves a deliberately chosen theme alone', () => {
-    const persisted = { theme: 'dark', colorTheme: 'ocean', sidebarCollapsed: true };
-
-    expect(migrateUIStore(persisted, 0)).toEqual(persisted);
-  });
-
-  it('preserves the rest of the persisted state while rewriting the theme', () => {
-    const migrated = migrateUIStore(
-      { theme: 'dark', colorTheme: 'violet', sidebarCollapsed: true },
-      0,
-    ) as Record<string, unknown>;
-
-    expect(migrated['theme']).toBe('dark');
-    expect(migrated['sidebarCollapsed']).toBe(true);
-  });
-
-  it('does not re-run once the state is already at the current version', () => {
-    // Someone who genuinely picks Violet AFTER the migration must keep it.
-    const persisted = { theme: 'system', colorTheme: 'violet', sidebarCollapsed: false };
-
-    expect(migrateUIStore(persisted, 1)).toEqual(persisted);
-  });
-
-  it('passes through state it cannot read instead of throwing', () => {
-    expect(migrateUIStore(null, 0)).toBeNull();
-    expect(migrateUIStore('corrupt', 0)).toBe('corrupt');
   });
 });
 
@@ -143,16 +115,15 @@ describe('migrateUIStore', () => {
  *
  * `applyColorTheme` puts the stored string in `data-theme`, so a value from a
  * REMOVED theme (or a hand-edited entry) leaves the document carrying a theme
- * no token block matches: the brand colors fall back inconsistently while
- * `ThemeSelector` masks it with `?? themes[0]!`, showing the default in the
- * picker while the DOM says otherwise.
+ * no token block matches, and the brand colors fall back inconsistently.
  */
 describe('migrateUIStore validates the rehydrated blob', () => {
   it('replaces a colorTheme that no longer exists with the default', () => {
-    const migrated = migrateUIStore(
-      { theme: 'dark', colorTheme: 'sunset', sidebarCollapsed: true },
-      1,
-    ) as Record<string, unknown>;
+    const migrated = migrateUIStore({
+      theme: 'dark',
+      colorTheme: 'sunset',
+      sidebarCollapsed: true,
+    }) as Record<string, unknown>;
 
     expect(migrated['colorTheme']).toBe(DEFAULT_COLOR_THEME);
     // One bad key costs that key only: the width the user chose survives.
@@ -161,30 +132,32 @@ describe('migrateUIStore validates the rehydrated blob', () => {
   });
 
   it.each([
-    ['theme', { theme: 'neon', colorTheme: 'ocean', sidebarCollapsed: true }, 'theme', 'system'],
+    ['theme', { theme: 'neon', colorTheme: 'slate', sidebarCollapsed: true }, 'theme', 'system'],
     [
       'sidebarCollapsed',
-      { theme: 'dark', colorTheme: 'ocean', sidebarCollapsed: 'yes' },
+      { theme: 'dark', colorTheme: 'slate', sidebarCollapsed: 'yes' },
       'sidebarCollapsed',
       false,
     ],
   ])('falls back to the default for a bad %s', (_name, persisted, field, expected) => {
-    const migrated = migrateUIStore(persisted, 1) as Record<string, unknown>;
+    const migrated = migrateUIStore(persisted) as Record<string, unknown>;
     expect(migrated[field]).toBe(expected);
   });
 
   it('fills in a field the blob is missing entirely', () => {
-    const migrated = migrateUIStore({ theme: 'dark' }, 1) as Record<string, unknown>;
+    const migrated = migrateUIStore({ theme: 'dark' }) as Record<string, unknown>;
 
     expect(migrated['colorTheme']).toBe(DEFAULT_COLOR_THEME);
     expect(migrated['sidebarCollapsed']).toBe(false);
   });
 
   it('drops keys the store does not own rather than writing them back', () => {
-    const migrated = migrateUIStore(
-      { theme: 'dark', colorTheme: 'ocean', sidebarCollapsed: false, injected: 'x' },
-      1,
-    ) as Record<string, unknown>;
+    const migrated = migrateUIStore({
+      theme: 'dark',
+      colorTheme: 'slate',
+      sidebarCollapsed: false,
+      injected: 'x',
+    }) as Record<string, unknown>;
 
     expect(migrated).not.toHaveProperty('injected');
   });
