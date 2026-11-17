@@ -31,7 +31,9 @@ export default function LandingPage({ className }: ILandingPageProps) {
               >
                 {v.productMark}
               </span>
-              <span className="type-display-wordmark text-text">{v.productName}</span>
+              <span className="type-display-wordmark text-text max-sm:sr-only">
+                {v.productName}
+              </span>
             </Link>
 
             <nav aria-label={landingStrings.nav.label} className="flex items-center gap-4">

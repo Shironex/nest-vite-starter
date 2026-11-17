@@ -23,8 +23,8 @@ export const ctaSecondary = `${CTA_BASE} border border-border bg-surface px-5 py
 
 /** Compact nav CTA. */
 export const ctaNav =
-  'inline-flex items-center justify-center rounded-lg bg-brand px-4 py-2 type-body-medium text-brand-fg transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand';
+  'inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-brand px-4 py-2 type-body-medium text-brand-fg transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand';
 
 /** Ghost nav link that shares the CTA focus treatment. */
 export const navLink =
-  'rounded-sm type-body-regular text-text-secondary transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand';
+  'whitespace-nowrap rounded-sm type-body-regular text-text-secondary transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand';
