@@ -6,9 +6,11 @@
 **/.turbo
 **/dist
 *.log
-.env
-.env.*
-!.env.example
+# Env files at any depth (apps/api/.env and the like hold real secrets). No image
+# reads an example file; .env.example stays in only for parity with the tree.
+**/.env
+**/.env.*
+!**/.env.example
 coverage
 **/coverage
 **/playwright-report
