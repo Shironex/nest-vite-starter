@@ -62,7 +62,8 @@ pnpm --filter @repo/api test:integration         # *.isolation.spec.ts, real Pos
 
 For e2e, seed with `db:seed` (near-empty, the shape CI uses, not `db:seed:dev`), build with
 `pnpm exec turbo build --filter=@repo/api --filter=@repo/web`, start `node apps/api/dist/src/main.js`
-and `pnpm --filter @repo/web exec vite preview`, then run
+with the production env from the e2e job's "Start API" step exported (the api refuses localhost, an
+empty captcha and cleartext SMTP in production, see `apps/api/src/config/env.ts`), and `pnpm --filter @repo/web exec vite preview`, then run
 `pnpm --filter @repo/web exec playwright test`. Set `PLAYWRIGHT_BASE_URL` when the web is not on
 :5173. The `images` job runs `docker build` on both Dockerfiles.
 

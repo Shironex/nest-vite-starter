@@ -62,7 +62,9 @@ pnpm install
 # Start infrastructure (Postgres, Redis, Mailpit)
 docker compose up -d
 
-# Set up environment (one file at the repo root feeds every app)
+# Set up environment (one file at the repo root feeds every app), then set
+# ENCRYPTION_KEY in .env (openssl rand -base64 32): the api refuses to boot
+# without a real one. Every key is validated at boot (apps/api/src/config/env.ts).
 cp .env.example .env
 
 # Generate Prisma client and apply migrations
