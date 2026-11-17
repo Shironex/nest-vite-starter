@@ -125,14 +125,16 @@ const HTTP_CONTROLLER_EXCEPTIONS = [
 // call. A HAND-KEPT MIRROR of SENSITIVE_KEY_PATTERNS in
 // packages/shared/src/logger/index.ts, the list the runtime redactor and the
 // Sentry scrubber share. It cannot be imported: @repo/shared already depends on
-// this package, so the reverse edge is a workspace cycle. Nothing checks that the
-// two stay equal: when you add a pattern to the runtime list, add it here too.
+// this package, so the reverse edge is a workspace cycle. The parity test
+// packages/shared/src/logger/lint-denylist-parity.test.ts (which may import both)
+// fails when the two differ: when you add a pattern to the runtime list, add it
+// here too.
 //
 // The published rule matches whole name SEGMENTS (`sessionId` is `session` +
 // `id`, so it matches `sessionid` only as a compacted multi-word entry) and has
 // no allowlist, so a key the runtime treats as safe (SAFE_KEY_ALLOWLIST, e.g.
 // `contentLength`) is still reported here: rename it at the call site.
-const LOG_DENY_NAMES = [
+export const LOG_DENY_NAMES = [
   'password',
   'passwd',
   'secret',
