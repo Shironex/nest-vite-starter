@@ -1,6 +1,6 @@
 # Repo-wide gitleaks configuration. Single source of truth for the
-# security-secrets CI workflow (.github/workflows/security-secrets.yml) and the
-# local pre-push secret gate (scripts/ci/pre-push.sh). Both run
+# secrets CI workflow (.github/workflows/secrets.yml) and the local pre-push
+# hook (.husky/pre-push). Both run
 # `gitleaks git . --config .gitleaks.toml`.
 #
 # extend.useDefault keeps the full upstream rule set. The allowlist below is
