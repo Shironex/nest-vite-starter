@@ -131,6 +131,28 @@ describe('parseEnv', () => {
       expect(refusedKeys({ ...prodEnv(), APP_URL: 'http://localhost:5173' })).toEqual(['APP_URL']);
     });
 
+    // Spellings of loopback that once slipped past the check. CORS_ORIGINS gets
+    // the bare form the URL parser produces (anything else already fails the
+    // bare-origin rule); APP_URL gets the form a person would type.
+    it.each([
+      ['a trailing-dot localhost', 'http://localhost.:5173', 'http://localhost.:5173'],
+      ['the IPv6 unspecified address', 'http://[::]:5173', 'http://[::]:5173'],
+      ['an IPv4-mapped loopback address', 'http://[::ffff:7f00:1]', 'http://[::ffff:127.0.0.1]'],
+    ])('refuses %s in CORS_ORIGINS and APP_URL', (_label, origin, appUrl) => {
+      expect(refusedKeys({ ...prodEnv(), CORS_ORIGINS: origin })).toEqual(['CORS_ORIGINS']);
+      expect(refusedKeys({ ...prodEnv(), APP_URL: appUrl })).toEqual(['APP_URL']);
+    });
+
+    it('still accepts a public host that merely starts with 127 or ends in a dot', () => {
+      expect(
+        refusedKeys({
+          ...prodEnv(),
+          APP_URL: 'https://app.example.com.',
+          CORS_ORIGINS: 'https://127.example.com',
+        }),
+      ).toEqual([]);
+    });
+
     it('allows localhost outside production', () => {
       expect(refusedKeys({ ...devEnv(), CORS_ORIGINS: 'http://localhost:5173' })).toEqual([]);
     });

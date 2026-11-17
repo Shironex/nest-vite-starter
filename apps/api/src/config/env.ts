@@ -103,7 +103,19 @@ function isBareOrigin(entry: string): boolean {
   }
 }
 
-/** localhost, *.localhost and the loopback / unspecified addresses. */
+/**
+ * IPv4-mapped IPv6 forms of 127.0.0.0/8 and 0.0.0.0, written dotted
+ * (`::ffff:127.0.0.1`) or hex the way the URL parser normalises them
+ * (`::ffff:7f00:1`, `::ffff:0:0`).
+ */
+const MAPPED_LOOPBACK_V6 =
+  /^::ffff:(?:127\.\d+\.\d+\.\d+|0\.0\.0\.0|7f[0-9a-f]{2}:[0-9a-f]{1,4}|0:0)$/u;
+
+/**
+ * localhost, *.localhost and the loopback / unspecified addresses, IPv4 or
+ * IPv6 (including IPv4-mapped). One trailing dot is stripped first:
+ * `localhost.` is the fully qualified spelling of the same name.
+ */
 function isLoopbackUrl(value: string): boolean {
   let host: string;
   try {
@@ -111,11 +123,15 @@ function isLoopbackUrl(value: string): boolean {
   } catch {
     return false;
   }
+  if (host.endsWith('.')) host = host.slice(0, -1);
+  if (host.startsWith('[') && host.endsWith(']')) {
+    const ip = host.slice(1, -1);
+    return ip === '::1' || ip === '::' || MAPPED_LOOPBACK_V6.test(ip);
+  }
   return (
     host === 'localhost' ||
     host.endsWith('.localhost') ||
     /^127\.\d+\.\d+\.\d+$/u.test(host) ||
-    host === '[::1]' ||
     host === '0.0.0.0'
   );
 }
