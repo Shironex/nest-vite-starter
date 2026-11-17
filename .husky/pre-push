@@ -1,7 +1,7 @@
-# Pre-push: type check, the tests affected since origin/main, and a gitleaks
-# scan over the commits being pushed. POSIX sh only, so it runs the same on
-# macOS and in Git Bash on Windows. CI runs the full gate; this is the fast
-# local subset.
+# Pre-push: the verify typecheck and test lanes (tests only for packages
+# affected since origin/main), and a gitleaks scan over the commits being
+# pushed. POSIX sh only, so it runs the same on macOS and in Git Bash on
+# Windows. CI runs every lane; this is the fast local subset.
 set -eu
 
 ZERO=0000000000000000000000000000000000000000
@@ -15,15 +15,15 @@ if resolves origin/main; then
   main_base="origin/main"
 fi
 
-echo "pre-push: check-types"
-pnpm exec turbo check-types
+echo "pre-push: verify typecheck"
+pnpm verify --lane=typecheck
 
 if [ -n "$main_base" ]; then
-  echo "pre-push: tests affected since $main_base"
-  TURBO_SCM_BASE="$main_base" pnpm exec turbo test --affected
+  echo "pre-push: verify test, affected since $main_base"
+  pnpm verify --lane=test --affected="$main_base"
 else
   echo "pre-push: origin/main does not resolve, running every test"
-  pnpm exec turbo test
+  pnpm verify --lane=test
 fi
 
 if ! command -v gitleaks >/dev/null 2>&1; then
