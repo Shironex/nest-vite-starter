@@ -29,7 +29,6 @@ const config = {
     // passthrough, or is pure config, so a unit test would only mock it.
     '!common/database/prisma.service.ts',
     '!common/decorators/public.decorator.ts',
-    '!config/configuration.config.ts',
   ],
   coverageDirectory: '../coverage',
   coverageReporters: ['text', 'lcov'],

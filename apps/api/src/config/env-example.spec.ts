@@ -1,22 +1,24 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { validationSchema } from './configuration.config';
+import { ENV_KEYS } from './env';
 
 /**
- * Keeps `.env.example` and the api's env schema in step: every key the schema
- * declares is documented, and every documented key is either read by the api or
- * listed below with the process that reads it. A new env var that skips the
- * example file (or a stale one left behind after a removal) fails here.
+ * Keeps `.env.example` and the api's env schema (env.ts) in step: the example
+ * lists exactly the schema's keys, plus the few keys another process reads,
+ * each named below with its reader. A new key that skips the example file, a
+ * stale one left behind after a removal, or a duplicate fails here.
  */
 const ENV_EXAMPLE = join(__dirname, '..', '..', '..', '..', '.env.example');
 
-/** Keys in `.env.example` that another process reads, not the api's ConfigModule. */
+/** Keys in `.env.example` that another process reads, not the api. */
 const READ_ELSEWHERE: Readonly<Record<string, string>> = {
-  POSTGRES_USER: 'docker compose (postgres service)',
-  POSTGRES_PASSWORD: 'docker compose (postgres service)',
-  POSTGRES_DB: 'docker compose (postgres service)',
-  REDIS_PASSWORD: 'docker compose (redis service)',
+  POSTGRES_USER: 'docker-compose.prod.yml (postgres service)',
+  POSTGRES_PASSWORD: 'docker-compose.prod.yml (postgres service)',
+  POSTGRES_DB: 'docker-compose.prod.yml (postgres service)',
+  REDIS_PASSWORD: 'docker-compose.prod.yml (redis service)',
+  ADMIN_EMAIL: 'packages/database seed and the web e2e specs',
+  ADMIN_PASSWORD: 'packages/database seed and the web e2e specs',
   SEED_DEV_ALLOW_REMOTE: 'packages/database dev seed',
   SEED_DEV_CONFIRM_DATABASE: 'packages/database dev seed',
   VITE_API_PROXY_TARGET: 'apps/web vite.config.ts',
@@ -24,45 +26,30 @@ const READ_ELSEWHERE: Readonly<Record<string, string>> = {
   VITE_TURNSTILE_SITE_KEY: 'apps/web build',
 };
 
-/** Active (`KEY=`) and commented-out (`# KEY=`) assignments; prose lines are skipped. */
-function exampleKeys(): Set<string> {
-  const keys = new Set<string>();
+/** Active (`KEY=`) and commented-out (`# KEY=`) assignments, in file order. */
+function exampleKeys(): string[] {
+  const keys: string[] = [];
   for (const line of readFileSync(ENV_EXAMPLE, 'utf8').split(/\r?\n/u)) {
     const match = /^#?\s*([A-Z][A-Z0-9_]*)=/u.exec(line);
-    if (match?.[1]) keys.add(match[1]);
+    if (match?.[1]) keys.push(match[1]);
   }
   return keys;
 }
 
-function schemaKeys(): string[] {
-  const description = validationSchema.describe() as { keys?: Record<string, unknown> };
-  return Object.keys(description.keys ?? {});
-}
-
 describe('.env.example matches the env schema', () => {
   const documented = exampleKeys();
-  const declared = schemaKeys();
 
-  it('reads a non-trivial set of keys from both sides', () => {
-    expect(documented.size).toBeGreaterThan(10);
-    expect(declared.length).toBeGreaterThan(10);
+  it('lists each key once', () => {
+    const duplicates = documented.filter((key, index) => documented.indexOf(key) !== index);
+    expect(duplicates).toEqual([]);
   });
 
-  it('documents every key the schema declares', () => {
-    const missing = declared.filter((key) => !documented.has(key));
-    expect(missing).toEqual([]);
+  it('lists exactly the schema keys plus the keys other processes read', () => {
+    const expected = [...ENV_KEYS, ...Object.keys(READ_ELSEWHERE)].sort();
+    expect([...new Set(documented)].sort()).toEqual(expected);
   });
 
-  it('declares or explains every key the example documents', () => {
-    const known = new Set([...declared, ...Object.keys(READ_ELSEWHERE)]);
-    const unexplained = [...documented].filter((key) => !known.has(key));
-    expect(unexplained).toEqual([]);
-  });
-
-  it('keeps no stale READ_ELSEWHERE entry', () => {
-    const stale = Object.keys(READ_ELSEWHERE).filter(
-      (key) => !documented.has(key) || declared.includes(key),
-    );
-    expect(stale).toEqual([]);
+  it('never claims a schema key is read elsewhere', () => {
+    expect(Object.keys(READ_ELSEWHERE).filter((key) => ENV_KEYS.includes(key))).toEqual([]);
   });
 });

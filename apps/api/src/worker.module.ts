@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { validationSchema } from './config/configuration.config';
+import { validateEnv } from './config/env';
 import { QueueModule } from './common/queue/queue.module';
 import { CustomLogger } from './modules/logger/logger.service';
 import { EmailDeliveryWorkerModule } from './modules/mail/email-delivery/email-delivery-worker.module';
@@ -17,7 +17,7 @@ import { EmailDeliveryWorkerModule } from './modules/mail/email-delivery/email-d
  */
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, validationSchema, envFilePath: '.env' }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnv, envFilePath: '.env' }),
     QueueModule,
     EmailDeliveryWorkerModule,
   ],

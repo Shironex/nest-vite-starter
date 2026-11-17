@@ -26,6 +26,12 @@ export class NodemailerEmailProvider implements IEmailProvider {
     const port = this.configService.getOrThrow<number>('SMTP_PORT');
     const user = this.configService.get<string>('SMTP_USER');
     const pass = this.configService.get<string>('SMTP_PASS');
+    // STARTTLS is mandatory when true (true is enforced in production, see
+    // config/env.ts): without it nodemailer upgrades only when the server
+    // advertises STARTTLS, so anyone on the path can strip the offer and read
+    // the credentials and every reset link in cleartext. Port 465 is implicit
+    // TLS, which nodemailer turns on by itself.
+    const requireTLS = this.configService.get<boolean>('SMTP_REQUIRE_TLS') === true;
 
     // If SMTP_USER/SMTP_PASS are empty, create transport without auth (Mailpit).
     const auth = user && pass ? { user, pass } : undefined;
@@ -36,11 +42,12 @@ export class NodemailerEmailProvider implements IEmailProvider {
       host,
       port,
       auth,
+      requireTLS,
       connectionTimeout: SMTP_CONNECTION_TIMEOUT_MS,
       greetingTimeout: SMTP_GREETING_TIMEOUT_MS,
       socketTimeout: SMTP_SOCKET_TIMEOUT_MS,
     });
-    this.from = this.configService.getOrThrow<string>('SMTP_FROM');
+    this.from = this.configService.getOrThrow<string>('MAIL_FROM');
   }
 
   async send(message: IEmailMessage): Promise<void> {

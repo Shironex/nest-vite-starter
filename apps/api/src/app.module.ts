@@ -8,7 +8,7 @@ import { TRPCModule } from 'nestjs-trpc';
 import superjson from 'superjson';
 import type Redis from 'ioredis';
 import { REDIS_CLIENT, RedisModule } from './common/redis/redis.module';
-import { validationSchema } from './config/configuration.config';
+import { validateEnv } from './config/env';
 import { LoggerModule } from './modules/logger/logger.module';
 import { CustomLogger } from './modules/logger/logger.service';
 import { PrismaModule } from './common/database/prisma.module';
@@ -41,7 +41,7 @@ const GLOBAL_THROTTLE = { ttl: 60_000, limit: 100 };
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema,
+      validate: validateEnv,
       envFilePath,
     }),
     LoggerModule,

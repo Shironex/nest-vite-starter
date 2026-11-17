@@ -15,14 +15,14 @@ import {
 import { NodemailerEmailProvider } from './nodemailer.provider';
 
 const buildConfig = (
-  overrides: Record<string, string | number | undefined> = {},
+  overrides: Record<string, string | number | boolean | undefined> = {},
 ): ConfigService => {
-  const values: Record<string, string | number | undefined> = {
+  const values: Record<string, string | number | boolean | undefined> = {
     SMTP_HOST: 'mailpit',
     SMTP_PORT: 1025,
     SMTP_USER: 'user',
     SMTP_PASS: 'pass',
-    SMTP_FROM: 'from@example.com',
+    MAIL_FROM: 'from@example.com',
     ...overrides,
   };
   return {
@@ -60,6 +60,18 @@ describe('NodemailerEmailProvider', () => {
     expect(createTransportMock).toHaveBeenCalledWith(expect.objectContaining({ auth: undefined }));
   });
 
+  it('requires STARTTLS when SMTP_REQUIRE_TLS is true', () => {
+    new NodemailerEmailProvider(buildConfig({ SMTP_REQUIRE_TLS: true }));
+    expect(createTransportMock).toHaveBeenCalledWith(expect.objectContaining({ requireTLS: true }));
+  });
+
+  it('leaves STARTTLS opportunistic when SMTP_REQUIRE_TLS is false (dev Mailpit)', () => {
+    new NodemailerEmailProvider(buildConfig({ SMTP_REQUIRE_TLS: false }));
+    expect(createTransportMock).toHaveBeenCalledWith(
+      expect.objectContaining({ requireTLS: false }),
+    );
+  });
+
   it('builds the transporter with explicit connection, greeting and socket timeouts', () => {
     new NodemailerEmailProvider(buildConfig());
     expect(createTransportMock).toHaveBeenCalledWith(
@@ -71,7 +83,7 @@ describe('NodemailerEmailProvider', () => {
     );
   });
 
-  it('send() forwards to/subject/html and defaults from to SMTP_FROM', async () => {
+  it('send() forwards to/subject/html and defaults from to MAIL_FROM', async () => {
     const provider = new NodemailerEmailProvider(buildConfig());
     await provider.send({ to: 'jane@example.com', subject: 'Hi', html: '<p/>' });
     expect(sendMailMock).toHaveBeenCalledWith({

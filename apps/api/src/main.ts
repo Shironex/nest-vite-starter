@@ -19,6 +19,7 @@ import { ConfigService } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import helmet from 'helmet';
+import type { Env } from './config/env';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { CustomLogger, createAppLogger } from './modules/logger/logger.service';
@@ -88,26 +89,27 @@ async function bootstrap() {
     'Bootstrap',
   );
 
-  const configService = app.get(ConfigService);
-  app.useGlobalFilters(new AllExceptionsFilter(configService));
+  app.useGlobalFilters(new AllExceptionsFilter(app.get(ConfigService)));
 
-  const isProduction = configService.get<string>('NODE_ENV') === 'production';
+  // Typed view of the validated env (config/env.ts): `infer` reads each key
+  // with the type the schema produced.
+  const configService = app.get<ConfigService<Env, true>>(ConfigService);
+
+  const isProduction = configService.get('NODE_ENV', { infer: true }) === 'production';
 
   // Trust the proxy chain so req.ip and req.protocol reflect the client,
   // not the reverse proxy. Rate-limit and audit IPs depend on this.
   //
-  // The `loopback` DEFAULT is only correct when the reverse proxy reaches this
-  // process over 127.0.0.1. Behind a reverse proxy on a Docker bridge
-  // network it does not: express then refuses to trust the hop, `req.ip`
-  // becomes the proxy's bridge address for every request, and every per-IP
-  // limiter (login, register, forgot-password, 2FA at 10/60 s, download)
-  // collapses into ONE shared bucket. A
-  // single unauthenticated client sending ten login attempts a minute then
-  // locks login, registration and password reset for the whole deployment, and
-  // every audit row records the proxy IP instead of the caller's. Set
-  // TRUST_PROXY=1 (or the proxy's subnet) on any deployment that is not
-  // loopback-fronted. See the deployment runbook.
-  const trustProxy = configService.get<string>('TRUST_PROXY', 'loopback');
+  // TRUST_PROXY is a hop count (validated in config/env.ts): 0 (the default)
+  // trusts no X-Forwarded-For hop, which is right when clients reach this
+  // process directly. Behind one reverse proxy (Coolify/Traefik, nginx, Caddy,
+  // including one on a Docker bridge network) set 1: with 0 there, `req.ip`
+  // is the proxy's address for every request and every per-IP limiter (login,
+  // register, forgot-password, 2FA) collapses into ONE shared bucket, so one
+  // client can lock those flows for the whole deployment. A boolean `true` is
+  // refused at boot: it trusts every hop, so any client could pick its own
+  // req.ip with a forged header and walk around the same limiters.
+  const trustProxy = configService.get('TRUST_PROXY', { infer: true });
   app.set('trust proxy', trustProxy);
 
   // ---------------------------------------------------------------------------
@@ -168,17 +170,10 @@ async function bootstrap() {
     next();
   });
 
-  // CORS: explicit origin allowlist for the web client
-  const corsOrigins = (() => {
-    if (!isProduction) {
-      return ['http://localhost:5173'];
-    }
-    const configured = configService.get<string>('CORS_ORIGINS');
-    if (configured) {
-      return configured.split(',').map((s) => s.trim());
-    }
-    return [configService.getOrThrow<string>('APP_URL')];
-  })();
+  // CORS: explicit origin allowlist for the web client. CORS_ORIGINS, or
+  // APP_URL's origin when it is empty; production refuses loopback entries at
+  // boot (config/env.ts).
+  const corsOrigins = [...configService.get('CORS_ORIGINS', { infer: true })];
 
   app.enableCors({
     origin: corsOrigins,
@@ -209,7 +204,7 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  const port = configService.get<number>('PORT', 3000);
+  const port = configService.get('PORT', { infer: true });
   await app.listen(port);
   logger.log(`API running on http://localhost:${port}`, 'Bootstrap');
 }
