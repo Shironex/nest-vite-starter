@@ -4,7 +4,7 @@ import { SENTRY_DSN } from './env';
 /**
  * Frontend error-reporting facade over @sentry/react, off by default.
  *
- * Enabled only when VITE_SENTRY_DSN is a non-empty string.
+ * Enabled only when the SENTRY_DSN runtime config key is a non-empty string.
  *
  * The SDK is loaded via dynamic import inside initErrorReporting() so it never
  * lands in the entry chunk (see error-reporting.sentry.ts for why the import

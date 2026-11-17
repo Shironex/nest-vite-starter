@@ -1,4 +1,5 @@
 import { CSRF_HEADER, CSRF_TOKEN_PATH } from '@repo/shared/constants';
+import { API_CREDENTIALS, apiUrl } from './env';
 import { SMALL_FETCH_TIMEOUT_MS } from './fetch-timeouts';
 
 // Cache the in-flight promise (not the resolved string) so parallel first
@@ -35,8 +36,8 @@ function requiresCsrfToken(init?: RequestInit): boolean {
 export function getCsrfToken(): Promise<string> {
   if (csrfTokenPromise) return csrfTokenPromise;
 
-  const pending = fetch(CSRF_TOKEN_PATH, {
-    credentials: 'same-origin',
+  const pending = fetch(apiUrl(CSRF_TOKEN_PATH), {
+    credentials: API_CREDENTIALS,
     // The promise is cached: without a bound, a hung token fetch would block
     // every mutation until reload. A timeout rejects, which clears the cache
     // below, so the next mutation retries.
@@ -114,7 +115,7 @@ export async function fetchWithCsrfRetry(
   const opts: RequestInit = {
     ...init,
     headers,
-    credentials: 'same-origin',
+    credentials: API_CREDENTIALS,
   };
 
   const response = await fetch(url, opts);
@@ -141,7 +142,7 @@ export async function fetchWithCsrfRetry(
         return fetch(url, {
           ...init,
           headers: retryHeaders,
-          credentials: 'same-origin',
+          credentials: API_CREDENTIALS,
         });
       }
     } catch {

@@ -8,6 +8,10 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SaaS Starter</title>
+    <!-- Runtime config (window.__APP_CONFIG__), read by src/lib/env.ts. Written by the web
+         container at start; public/config.js holds the development defaults. Sync and
+         external, like the theme bootstrapper, so script-src 'self' is enough. -->
+    <script src="/config.js"></script>
     <!-- Sync theme bootstrapper. External so a strict CSP (script-src 'self')
          doesn't have to permit 'unsafe-inline'. -->
     <script src="/theme-boot.js"></script>

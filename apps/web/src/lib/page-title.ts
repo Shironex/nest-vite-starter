@@ -1,4 +1,4 @@
-import { PRODUCT_NAME } from '@repo/shared/constants';
+import { APP_NAME } from '@/lib/env';
 
 /**
  * The `<title>` for one route, as TanStack's `head()` wants it.
@@ -13,5 +13,5 @@ import { PRODUCT_NAME } from '@repo/shared/constants';
  * React, before (and independently of) the component that will render.
  */
 export function pageTitle(title: string): { meta: Array<{ title: string }> } {
-  return { meta: [{ title: `${title} | ${PRODUCT_NAME}` }] };
+  return { meta: [{ title: `${title} | ${APP_NAME}` }] };
 }

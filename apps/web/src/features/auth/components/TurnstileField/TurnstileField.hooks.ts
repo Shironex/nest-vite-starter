@@ -26,7 +26,7 @@ export function useTurnstileField(
     // auth usable while the server's fail-closed turnstile verification stays
     // the real gate. The loud log makes a misconfigured build visible.
     console.error(
-      '[turnstile] VITE_TURNSTILE_SITE_KEY is not set in a production build; ' +
+      '[turnstile] TURNSTILE_SITE_KEY is not set in the runtime config; ' +
         'rendering the always-pass test widget. Server-side verification remains enforced.',
     );
   }

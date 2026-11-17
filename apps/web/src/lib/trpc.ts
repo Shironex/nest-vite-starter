@@ -7,6 +7,7 @@ import type { AppRouter } from '@api/@generated/server';
 import { fetchWithCsrfRetry } from './csrf';
 import { translateAppError } from './trpc-errors';
 import { captureException } from './error-reporting';
+import { apiUrl } from './env';
 import { commonStrings } from '@/lib/strings';
 
 /** True when the error is a tRPC UNAUTHORIZED (HTTP 401) rejection. */
@@ -112,8 +113,8 @@ export const queryClient = new QueryClient({
 // Re-export so existing consumers keep importing the CSRF reset from here.
 export { resetCsrfToken } from './csrf';
 
-/** Same-origin: the dev server and the platform router forward `/trpc` to the api. */
-const TRPC_URL = '/trpc';
+/** Same-origin unless API_URL is set: the dev server and the web server forward `/trpc` to the api. */
+const TRPC_URL = apiUrl('/trpc');
 
 /**
  * The batching link's options.

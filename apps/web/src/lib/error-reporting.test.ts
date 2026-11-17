@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 /**
- * The facade is off by default and gates on VITE_SENTRY_DSN,
+ * The facade is off by default and gates on the SENTRY_DSN runtime config key,
  * so these tests are the only proof that (a) the SDK is never loaded or
  * called when disabled, (b) the enabled path wires the conservative init
  * config and the scrubbers, and (c) the scrub functions redact sensitive
@@ -22,6 +22,11 @@ vi.mock('@sentry/react', () => sentryMock);
 
 type ErrorReportingModule = typeof import('./error-reporting');
 
+/** Sets the runtime config `/config.js` would have assigned before the module loads. */
+function setSentryDsn(dsn: string): void {
+  window.__APP_CONFIG__ = { SENTRY_DSN: dsn };
+}
+
 async function importFacade(): Promise<ErrorReportingModule> {
   return import('./error-reporting');
 }
@@ -34,11 +39,11 @@ describe('error-reporting facade', () => {
   });
 
   afterEach(() => {
-    vi.unstubAllEnvs();
+    delete window.__APP_CONFIG__;
   });
 
-  it('is a no-op by default (no VITE_SENTRY_DSN)', async () => {
-    vi.stubEnv('VITE_SENTRY_DSN', '');
+  it('is a no-op by default (no SENTRY_DSN)', async () => {
+    setSentryDsn('');
     const { initErrorReporting, captureException } = await importFacade();
 
     await initErrorReporting();
@@ -51,7 +56,7 @@ describe('error-reporting facade', () => {
   });
 
   it('captureException without init never throws and never touches the SDK', async () => {
-    vi.stubEnv('VITE_SENTRY_DSN', 'https://key@o0.ingest.sentry.io/0');
+    setSentryDsn('https://key@o0.ingest.sentry.io/0');
     const { captureException } = await importFacade();
 
     expect(() => captureException(new Error('early'))).not.toThrow();
@@ -60,7 +65,7 @@ describe('error-reporting facade', () => {
   });
 
   it('initializes the SDK with a conservative, scrubbing config when enabled', async () => {
-    vi.stubEnv('VITE_SENTRY_DSN', 'https://key@o0.ingest.sentry.io/0');
+    setSentryDsn('https://key@o0.ingest.sentry.io/0');
     const { initErrorReporting } = await importFacade();
 
     await initErrorReporting();
@@ -84,7 +89,7 @@ describe('error-reporting facade', () => {
   });
 
   it('is idempotent: repeated init calls configure the SDK once', async () => {
-    vi.stubEnv('VITE_SENTRY_DSN', 'https://key@o0.ingest.sentry.io/0');
+    setSentryDsn('https://key@o0.ingest.sentry.io/0');
     const { initErrorReporting } = await importFacade();
 
     await Promise.all([initErrorReporting(), initErrorReporting()]);
@@ -94,7 +99,7 @@ describe('error-reporting facade', () => {
   });
 
   it('forwards captureException with context after init', async () => {
-    vi.stubEnv('VITE_SENTRY_DSN', 'https://key@o0.ingest.sentry.io/0');
+    setSentryDsn('https://key@o0.ingest.sentry.io/0');
     const { initErrorReporting, captureException } = await importFacade();
 
     await initErrorReporting();
@@ -107,7 +112,7 @@ describe('error-reporting facade', () => {
   });
 
   it('queues a capture fired while init is still in flight', async () => {
-    vi.stubEnv('VITE_SENTRY_DSN', 'https://key@o0.ingest.sentry.io/0');
+    setSentryDsn('https://key@o0.ingest.sentry.io/0');
     const { initErrorReporting, captureException } = await importFacade();
 
     const initInFlight = initErrorReporting();

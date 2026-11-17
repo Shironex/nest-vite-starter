@@ -1,5 +1,5 @@
 import { Check, ShieldCheck } from 'lucide-react';
-import { PRODUCT_NAME } from '@repo/shared/constants';
+import { APP_NAME } from '@/lib/env';
 import { useBrandPanel } from './BrandPanel.hooks';
 import { authStrings } from '@/features/auth/Auth.strings';
 
@@ -40,9 +40,9 @@ export default function BrandPanel() {
 
       <div className="relative flex items-center gap-2.5">
         <span className="flex size-7 items-center justify-center rounded-lg bg-white/20 type-display-wordmark text-white">
-          {PRODUCT_NAME.charAt(0)}
+          {APP_NAME.charAt(0)}
         </span>
-        <span className="type-display-wordmark text-white">{PRODUCT_NAME}</span>
+        <span className="type-display-wordmark text-white">{APP_NAME}</span>
       </div>
 
       <div className="relative">

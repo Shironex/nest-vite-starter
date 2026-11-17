@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { PRODUCT_NAME } from '@repo/shared/constants';
+import { APP_NAME } from '@/lib/env';
 import { NavRailBrand, navRailGroupLabelClass, navRailItemClass } from '@repo/ui/nav-rail';
 import {
   Sidebar,
@@ -69,7 +69,7 @@ export default function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-border">
       <SidebarHeader className="p-0">
-        <NavRailBrand asChild mark={PRODUCT_NAME.charAt(0)} wordmark={PRODUCT_NAME}>
+        <NavRailBrand asChild mark={APP_NAME.charAt(0)} wordmark={APP_NAME}>
           <Link to="/dashboard" />
         </NavRailBrand>
       </SidebarHeader>
