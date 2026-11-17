@@ -84,6 +84,12 @@ Create a second **Application** from the same repository.
   - `API_UPSTREAM=http://<api-service-name>:3000`, the api's internal address, so the
     web forwards `/trpc` and `/api` to it on its own origin. This is the simplest setup:
     cookies and the CSRF origin check need nothing extra. Leave `API_URL` empty.
+    The web passes the `X-Forwarded-Proto` that Traefik (or a tunnel) sets on to the
+    api, so the api sees `https` although TLS ended before the web. Only `http` and
+    `https` pass; without the header the web sends its own scheme (`http`). Keep the
+    web reachable only through that proxy, or a client could claim `https` itself.
+    The api's cookies do not depend on it (they are `Secure` whenever
+    `NODE_ENV=production`), and `TRUST_PROXY` must count the web as a hop.
   - Alternatively serve the api on `https://api.example.com` and set
     `API_URL=https://api.example.com` (an origin, no path) instead. Then
     `APP_URL` and `CORS_ORIGINS` on the api must name the web origin, and cookies cross
