@@ -17,11 +17,23 @@
 # Debian 13 (trixie), not 12: the x86_64 nestjs-trpc binary needs GLIBC_2.39,
 # and bookworm ships 2.36, so generate:trpc fails on amd64 builders.
 #
+# Node 26 images no longer bundle corepack, so pnpm comes from npm, pinned to the
+# `packageManager` version in package.json. It is only needed by the build stages:
+# the runtime image runs plain node and the Prisma CLI, never pnpm.
+#
+# HUSKY=0: a dependency install runs the root `prepare` script, which invokes husky
+# and fails without a .git directory (.dockerignore excludes it).
+#
 # Stage 1: Install dependencies
 FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS deps
-RUN corepack enable && corepack prepare pnpm@12.18.0 --activate
+ENV HUSKY=0
+RUN npm install --global pnpm@12.18.0
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# A `pnpm patch` lists its file in the workspace config, and a frozen install
+# refuses to run when a listed patch file is missing from the context. The folder
+# always exists (patches/.gitkeep), so this COPY never fails.
+COPY patches/ ./patches/
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/database/package.json ./packages/database/
@@ -39,7 +51,8 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
 
 # Stage 2: Build
 FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS builder
-RUN corepack enable && corepack prepare pnpm@12.18.0 --activate
+ENV HUSKY=0
+RUN npm install --global pnpm@12.18.0
 WORKDIR /app
 COPY --from=deps /app ./
 COPY . .
@@ -50,33 +63,19 @@ ARG BUILD_DATABASE_URL=postgresql://build:build@localhost:5432/build
 RUN DATABASE_URL=$BUILD_DATABASE_URL pnpm --filter @repo/database db:generate
 RUN DATABASE_URL=$BUILD_DATABASE_URL pnpm turbo build --filter=@repo/api
 
-# Stage 3: Migrate one-shot
-# Used by docker-compose.prod.yml as a `restart: "no"` service that runs
-# `prisma migrate deploy` against the live DB before the api container starts.
-FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS migrate
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends tini \
-    && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@12.18.0 --activate
-WORKDIR /app/packages/database
-COPY --from=builder /app/packages/database/package.json ./
-COPY --from=builder /app/packages/database/prisma ./prisma
-COPY --from=builder /app/packages/database/generated ./generated
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/packages/database/node_modules ./node_modules
-ENV NODE_ENV=production
-USER node
-ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["pnpm", "exec", "prisma", "migrate", "deploy", "--schema=prisma/schema"]
-
-# Stage 4: Production runtime
-# wget is not in node:26-trixie-slim and the HEALTHCHECK below, plus the one
-# docker-compose.prod.yml declares for this service, both call it.
+# Stage 3: Production runtime
+# Runs as uid/gid 10001 (created below, no shell, no home). The same image serves
+# the api (default command) and the one-shot migration (`api-entrypoint migrate`,
+# used by docker-compose.prod.yml), so a deploy never ships two builds that could
+# drift. wget is not in node:26-trixie-slim and the HEALTHCHECK below
+# calls it.
 FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS runner
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tini wget \
-    && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@12.18.0 --activate
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system --gid 10001 app \
+    && useradd --system --uid 10001 --gid 10001 --no-create-home \
+         --home-dir /nonexistent --shell /usr/sbin/nologin app
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
@@ -85,15 +84,30 @@ COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder /app/packages/database/generated ./packages/database/generated
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
 COPY --from=builder /app/packages/database/package.json ./packages/database/
+# What `prisma migrate deploy` reads: the config, the schema folder, the
+# migrations, and the CLI in this package's own node_modules.
+COPY --from=builder /app/packages/database/prisma.config.ts ./packages/database/
+COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
+COPY --from=builder /app/packages/database/node_modules ./packages/database/node_modules
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/packages/shared/package.json ./packages/shared/
+COPY --from=builder /app/packages/shared/node_modules ./packages/shared/node_modules
 COPY --from=builder /app/packages/email/dist ./packages/email/dist
 COPY --from=builder /app/packages/email/package.json ./packages/email/
+COPY --from=builder /app/packages/email/node_modules ./packages/email/node_modules
+# pnpm links each workspace package's dependencies into its own node_modules (symlinks
+# into /app/node_modules/.pnpm, so cheap) and hoists nothing to the root: every
+# package copied above needs its node_modules, or the boot dies with
+# `Cannot find module 'zod'`.
 COPY --from=builder /app/node_modules ./node_modules
 COPY package.json pnpm-workspace.yaml ./
+COPY --chmod=0755 apps/api/docker/entrypoint.sh /usr/local/bin/api-entrypoint
+# Prisma and other tools write caches under $HOME or XDG_CACHE_HOME; with a read-only
+# root filesystem the only writable place is the tmpfs on /tmp.
+ENV HOME=/tmp XDG_CACHE_HOME=/tmp
 EXPOSE 3000
-USER node
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health || exit 1
-ENTRYPOINT ["/usr/bin/tini", "--"]
+USER 10001:10001
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health/ready || exit 1
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/api-entrypoint"]
 CMD ["node", "apps/api/dist/src/main.js"]

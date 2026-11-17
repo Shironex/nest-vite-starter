@@ -1,9 +1,15 @@
-node_modules
+# Patterns without a leading **/ match the build context root only, so a bare
+# `node_modules` would let every apps/*/node_modules and packages/*/node_modules
+# (pnpm symlinks into the HOST store) into the image.
+**/node_modules
 .git
-.turbo
-dist
+**/.turbo
+**/dist
 *.log
 .env
 .env.*
 !.env.example
 coverage
+**/coverage
+**/playwright-report
+**/test-results
