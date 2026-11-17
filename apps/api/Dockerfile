@@ -40,8 +40,12 @@ RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app
 COPY --from=deps /app ./
 COPY . .
-RUN pnpm --filter @repo/database db:generate
-RUN pnpm turbo build --filter=@repo/api
+# prisma.config.ts refuses to load without DATABASE_URL, even for `prisma
+# generate`, which never connects. A placeholder on the build steps only, so it
+# never reaches the runtime image.
+ARG BUILD_DATABASE_URL=postgresql://build:build@localhost:5432/build
+RUN DATABASE_URL=$BUILD_DATABASE_URL pnpm --filter @repo/database db:generate
+RUN DATABASE_URL=$BUILD_DATABASE_URL pnpm turbo build --filter=@repo/api
 
 # Stage 3: Migrate one-shot
 # Used by docker-compose.prod.yml as a `restart: "no"` service that runs

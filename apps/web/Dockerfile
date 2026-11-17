@@ -43,7 +43,11 @@ ARG VITE_TURNSTILE_SITE_KEY=""
 ARG VITE_SENTRY_DSN=""
 ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY \
     VITE_SENTRY_DSN=$VITE_SENTRY_DSN
-RUN pnpm turbo build --filter=@repo/web
+# prisma.config.ts refuses to load without DATABASE_URL, even for `prisma
+# generate`, which never connects. A placeholder on the build steps only, so it
+# never reaches the runtime image.
+ARG BUILD_DATABASE_URL=postgresql://build:build@localhost:5432/build
+RUN DATABASE_URL=$BUILD_DATABASE_URL pnpm turbo build --filter=@repo/web
 
 # Stage 2: Serve with nginx-unprivileged (UID 101) so the container runs as
 # non-root by default.
