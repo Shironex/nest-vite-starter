@@ -83,13 +83,16 @@ services:
           memory: 128M
 
   postgres:
-    image: postgres:17-alpine@sha256:f02121de6f74d30d8a94cd1d9584125e2178d7e6c377d8130112d4e52d867995
+    image: postgres:18-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}
       POSTGRES_DB: ${POSTGRES_DB:-nest_vite_starter}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # Postgres 18 keeps the cluster in /var/lib/postgresql/18/docker, so the
+      # volume mounts at the parent. A Postgres 17 volume must be dumped and
+      # restored (pg_upgrade), not reused.
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
       interval: 5s

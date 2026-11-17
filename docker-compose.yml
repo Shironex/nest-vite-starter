@@ -14,7 +14,7 @@ name: nest-vite-starter
 
 services:
   postgres:
-    image: postgres:17-alpine@sha256:f02121de6f74d30d8a94cd1d9584125e2178d7e6c377d8130112d4e52d867995
+    image: postgres:18-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
     container_name: nest-vite-starter-postgres
     restart: unless-stopped
     ports:
@@ -24,7 +24,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: nest_vite_starter
     volumes:
-      - nest-vite-starter-pgdata:/var/lib/postgresql/data
+      # Postgres 18 images keep the cluster in a versioned subdirectory
+      # (/var/lib/postgresql/18/docker), so the volume mounts one level up. A
+      # volume from a Postgres 17 checkout does not carry over: reset it once
+      # with `docker compose down -v`.
+      - nest-vite-starter-pgdata:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s

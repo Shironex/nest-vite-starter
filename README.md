@@ -25,7 +25,7 @@ Rebranding is a one-line change there plus the handful of surfaces that cannot r
 | ------------ | ---------------------------------------------------------------------------------------- |
 | **Frontend** | React 19, Vite 8, TanStack Router (file-based), TanStack Query, Zustand                  |
 | **Backend**  | NestJS 11, tRPC (nestjs-trpc), Prisma 7, BullMQ                                          |
-| **Database** | PostgreSQL 17, Redis 7                                                                   |
+| **Database** | PostgreSQL 18, Redis 7                                                                   |
 | **Auth**     | Session-based (Redis-backed), Argon2id hashing, CSRF double-submit, Cloudflare Turnstile |
 | **UI**       | shadcn/ui (Radix + Tailwind CSS v4), 2 color themes                                      |
 | **Email**    | React Email templates, Mailpit for dev                                                   |
@@ -125,7 +125,7 @@ tools/
 
 | Service       | Port                   | Purpose                 |
 | ------------- | ---------------------- | ----------------------- |
-| PostgreSQL 17 | 5432                   | Primary database        |
+| PostgreSQL 18 | 5432                   | Primary database        |
 | Redis 7       | 6379                   | Sessions, cache, BullMQ |
 | Mailpit       | 8025 (UI), 1025 (SMTP) | Email testing           |
 
@@ -137,7 +137,7 @@ docker compose down -v     # Stop and wipe data
 
 Upgrading an older checkout: the migrations were squashed into one (`0001_init` replaced `0_init`)
 and the compose project, containers and database were renamed, so wipe the local database once
-(`docker compose down -v`, stopping any old containers `docker ps` still shows), copy the new
+(`docker compose down -v`, which is also needed once after the move from Postgres 17 to 18 because the volume layout changed; stopping any old containers `docker ps` still shows), copy the new
 `DATABASE_URL` from `.env.example`, then rerun `db:migrate:deploy` and `db:seed`.
 
 ## Production Deployment
