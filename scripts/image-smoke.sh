@@ -15,7 +15,8 @@
 #      form, the in-container migration, RUN_MIGRATIONS=false, and /health/ready.
 # web: checks the SPA's nested route (asset URLs absolute and served as JavaScript,
 #      a missing asset is a 404), the cache and security headers, the runtime
-#      /config.js with a hostile value, and the refusal of an unsafe API_URL.
+#      /config.js with a hostile value, and the refusal of an unsafe or multi-line
+#      API_URL or API_UPSTREAM.
 set -eu
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -254,6 +255,31 @@ JS
   docker run --rm --read-only --tmpfs /tmp -e 'API_URL=https://evil.example.com/path";x' "$WEB_IMAGE" > "$TMP/refusal.log" 2>&1 || code=$?
   check "an unsafe API_URL stops the container" test "$code" -ne 0
   check "the refusal does not echo the value" sh -c '! grep -q evil "$1"' _ "$TMP/refusal.log"
+
+  # A multi-line API_URL or API_UPSTREAM whose first line is a valid origin. grep
+  # matches line by line, so without the single-line check the second line lands
+  # in nginx's config as a directive. The newline is a literal: $(printf '\n')
+  # would lose a trailing one to command substitution.
+  nl='
+'
+  cr=$(printf '\r')
+  injected='location = /x { return 200 injected; }'
+  for var in API_URL API_UPSTREAM; do
+    origin=https://api.example.com
+    [ "$var" = API_UPSTREAM ] && origin=http://api:3000
+    for shape in newline trailing-newline carriage-return; do
+      case "$shape" in
+        newline) value="$origin$nl$injected" ;;
+        trailing-newline) value="$origin$nl" ;;
+        carriage-return) value="$origin$cr$injected" ;;
+      esac
+      code=0
+      docker run --rm --read-only --tmpfs /tmp -e "$var=$value" "$WEB_IMAGE" > "$TMP/refusal.log" 2>&1 || code=$?
+      check "$var with a $shape stops the container" test "$code" -ne 0
+      check "$var with a $shape is refused as multi-line" grep -q "$var must be a single line" "$TMP/refusal.log"
+      check "the $var $shape refusal does not echo the value" sh -c '! grep -q injected "$1"' _ "$TMP/refusal.log"
+    done
+  done
 }
 
 case "$TARGET" in

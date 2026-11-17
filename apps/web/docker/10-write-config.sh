@@ -15,8 +15,10 @@
 # literal, whatever the value holds (and non-ASCII text survives intact).
 #
 # API_URL and API_UPSTREAM also land in nginx directives, so they are validated
-# against a strict origin pattern and refused otherwise. The refusal message is
-# fixed: it never echoes the value.
+# against a strict origin pattern and refused otherwise. A value holding a
+# newline or carriage return is refused first: grep matches line by line, so one
+# valid line would carry the rest of the value (more nginx directives) past the
+# pattern. The refusal message is fixed: it never echoes the value.
 set -eu
 
 OUT=/tmp/web
@@ -39,16 +41,30 @@ pair() {
 
 ORIGIN_PATTERN='^https?://[A-Za-z0-9._-]+(:[0-9]{1,5})?$'
 
+# A literal newline (not $(printf '\n'): command substitution strips trailing
+# newlines, which would leave this empty) and a carriage return.
+NL='
+'
+CR=$(printf '\r')
+
+# Refuses $2 (named $1) unless it is one line matching ORIGIN_PATTERN.
+require_origin() {
+  case "$2" in
+    *"$NL"* | *"$CR"*) fail "$1 must be a single line; refusing to start" ;;
+  esac
+  printf '%s' "$2" | grep -Eq "$ORIGIN_PATTERN" || fail "$1 $3; refusing to start"
+}
+
 API_URL="${API_URL:-}"
 API_UPSTREAM="${API_UPSTREAM:-}"
 
 if [ -n "$API_URL" ]; then
-  printf '%s' "$API_URL" | grep -Eq "$ORIGIN_PATTERN" \
-    || fail "API_URL must be an origin such as https://api.example.com (scheme, host, optional port, no path); refusing to start"
+  require_origin API_URL "$API_URL" \
+    "must be an origin such as https://api.example.com (scheme, host, optional port, no path)"
 fi
 if [ -n "$API_UPSTREAM" ]; then
-  printf '%s' "$API_UPSTREAM" | grep -Eq "$ORIGIN_PATTERN" \
-    || fail "API_UPSTREAM must be an origin such as http://api:3000 (scheme, host, optional port, no path); refusing to start"
+  require_origin API_UPSTREAM "$API_UPSTREAM" \
+    "must be an origin such as http://api:3000 (scheme, host, optional port, no path)"
 fi
 
 {
