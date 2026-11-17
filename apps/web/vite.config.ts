@@ -45,6 +45,9 @@ export default defineConfig({
     tanstackRouter({
       target: 'react',
       autoCodeSplitting: true,
+      // Specs sit beside the route files. They export no Route, so without
+      // this the generator warns about each one on every dev server start.
+      routeFileIgnorePattern: '\\.test\\.tsx?$',
       codeSplittingOptions: {
         /*
          * The plugin's default groupings split `component`, `errorComponent`
