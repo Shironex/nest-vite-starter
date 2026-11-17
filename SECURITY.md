@@ -32,6 +32,19 @@ responsible for pulling in upstream fixes and for the security of their own depl
 product to that product's maintainers, not here, unless the flaw is in code inherited from the
 starter.
 
+## Known issues in the interim authentication
+
+The authentication in this repository is interim and is due to be replaced by `@noctcore/auth`
+once that package reaches 1.0. Two issues are known and are not treated as vulnerabilities to
+report until then:
+
+- a login against a locked account answers `ACCOUNT_LOCKED`, which reveals that the account exists;
+- anyone who knows an email address can lock its owner out by failing logins on purpose.
+
+Do not run this authentication in production before the swap. Anything beyond these two is welcome
+as a report, through the advisory link above. [docs/auth.md](docs/auth.md) describes the flows and
+what changes at the swap.
+
 ## Automated scanning
 
 - `gitleaks` scans for committed secrets on every push, every pull request, and a weekly cron
