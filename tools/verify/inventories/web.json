@@ -483,7 +483,6 @@
       "error-reporting facade > is idempotent: repeated init calls configure the SDK once": 1,
       "error-reporting facade > queues a capture fired while init is still in flight": 1,
       "scrubBreadcrumb > blanks credentials in navigation and fetch breadcrumb URLs": 1,
-      "scrubBreadcrumb > blanks the staff invite token in a navigation breadcrumb": 1,
       "scrubBreadcrumb > blanks the tRPC batch input param and keeps the procedure path": 1,
       "scrubBreadcrumb > drops message content that mentions a sensitive key name": 1,
       "scrubBreadcrumb > is pure: the input breadcrumb is not mutated": 1,
@@ -494,7 +493,6 @@
       "scrubEvent > redacts sensitive keys in extra, contexts, and request, including nested objects": 1,
       "scrubEvent: credentials inside URL strings > blanks credentials quoted in the message and the exception text": 1,
       "scrubEvent: credentials inside URL strings > blanks identifiers carried as search params, matching the key-based rule": 1,
-      "scrubEvent: credentials inside URL strings > blanks the credential in auth/invite (staff invite, same path-segment shape) and keeps the route": 1,
       "scrubEvent: credentials inside URL strings > blanks the credential in confirm-email-change and keeps the route": 1,
       "scrubEvent: credentials inside URL strings > blanks the credential in reset-password and keeps the route": 1,
       "scrubEvent: credentials inside URL strings > blanks the credential in the Referer header, not just the url": 1,
@@ -547,8 +545,7 @@
     },
     "apps/web/src/lib/theme.test.ts": {
       "applyColorTheme > applies the default theme by removing data-theme": 1,
-      "applyColorTheme > renders violet as violet rather than as the default palette": 1,
-      "applyColorTheme > sets data-theme for every non-default theme, violet included": 1,
+      "applyColorTheme > sets data-theme for every non-default theme": 1,
       "applyColorTheme > switches from a non-default theme back to the default": 1,
       "applyTheme > adds the dark class for the dark preference and drops it for light": 1
     },
@@ -610,11 +607,10 @@
       "topbar subtitle store > republishes when the value changes without losing ownership": 1
     },
     "apps/web/src/stores/ui-store.test.ts": {
-      "migrateUIStore > does not re-run once the state is already at the current version": 1,
-      "migrateUIStore > leaves a deliberately chosen theme alone": 1,
+      "migrateUIStore > keeps a theme the package still ships": 1,
+      "migrateUIStore > maps the removed ocean theme to the default": 1,
+      "migrateUIStore > maps the removed violet theme to the default": 1,
       "migrateUIStore > passes through state it cannot read instead of throwing": 1,
-      "migrateUIStore > preserves the rest of the persisted state while rewriting the theme": 1,
-      "migrateUIStore > rewrites a v0 stored violet to the default theme": 1,
       "migrateUIStore validates the rehydrated blob > drops keys the store does not own rather than writing them back": 1,
       "migrateUIStore validates the rehydrated blob > falls back to the default for a bad sidebarCollapsed": 1,
       "migrateUIStore validates the rehydrated blob > falls back to the default for a bad theme": 1,

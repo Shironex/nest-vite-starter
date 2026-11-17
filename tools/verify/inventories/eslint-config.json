@@ -86,6 +86,7 @@
       "noctcore preset adoption > @noctcore/eslint-plugin-contracts: every preset rule is wired at error or listed": 1,
       "noctcore preset adoption > @noctcore/eslint-plugin-observability: every preset rule is wired at error or listed": 1,
       "noctcore preset adoption > @noctcore/eslint-plugin-prisma: every preset rule is wired at error or listed": 1,
+      "noctcore preset adoption > @noctcore/eslint-plugin-query: every preset rule is wired at error or listed": 1,
       "noctcore preset adoption > @noctcore/eslint-plugin-react: every preset rule is wired at error or listed": 1,
       "noctcore preset adoption > @noctcore/eslint-plugin-security: every preset rule is wired at error or listed": 1,
       "noctcore preset adoption > checks every @noctcore plugin this package declares": 1,

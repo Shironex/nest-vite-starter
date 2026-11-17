@@ -62,6 +62,11 @@
       "PrismaService > probes connectivity at boot": 1,
       "PrismaService > shuts down cleanly when init never ran (nothing to disconnect)": 1
     },
+    "apps/api/src/common/database/raw-sql-allowlist.spec.ts": {
+      "raw SQL never leaves the allowlist > control: the resolved config reports an unguarded raw query in a fixture": 1,
+      "raw SQL never leaves the allowlist > finds the raw queries this repo does have, so the tree case lints something": 1,
+      "raw SQL never leaves the allowlist > no file under src uses raw SQL outside the allowlist": 1
+    },
     "apps/api/src/common/database/shared-enum-parity.spec.ts": {
       "shared z.enum mirrors match their Prisma enums > ALL_ROLES has exactly the members of Prisma Role": 1,
       "shared z.enum mirrors match their Prisma enums > finds the Prisma schema at all": 1,
@@ -117,38 +122,24 @@
       "configureBodyParsers > states the caps rather than inheriting them": 1,
       "configureBodyParsers > still answers malformed JSON with 400, which proves nothing about the cap": 1
     },
-    "apps/api/src/common/observability/otel-http-redaction.spec.ts": {
-      "redactedIncomingSpanAttributes > drops the batched tRPC input rather than enumerating parameters": 1,
-      "redactedIncomingSpanAttributes > drops the OAuth callback authorization code and state": 1,
-      "redactedIncomingSpanAttributes > leaves an ordinary path legible so traces stay useful": 1,
-      "redactedIncomingSpanAttributes > sets only the stable target attributes a server span carries": 1,
-      "redactedIncomingSpanAttributes > tolerates a request with no target at all": 1,
-      "redactUrlText > is idempotent, so the exporter can run over what the hook already redacted": 1,
-      "redactUrlText > keeps the path of any other URL and drops its query": 1,
-      "redactUrlText > leaves text with no URL credential alone": 1
-    },
-    "apps/api/src/common/observability/redacting-span-exporter.spec.ts": {
-      "RedactingSpanExporter > delegates shutdown and forceFlush, and tolerates an inner exporter with no forceFlush": 1,
-      "RedactingSpanExporter > drops a non-empty url.query wholesale and leaves an empty one alone": 1,
-      "RedactingSpanExporter > keeps scheme, host and path of a full URL but drops its query": 1,
-      "RedactingSpanExporter > leaves what the server span hook already redacted unchanged": 1,
-      "RedactingSpanExporter > never mutates the original span, and keeps the resource the same object": 1,
-      "RedactingSpanExporter > passes a span with nothing to redact through with its identity fields intact": 1,
-      "RedactingSpanExporter > redacts an attribute under a key nobody listed, and inside string arrays": 1,
-      "RedactingSpanExporter > redacts the nestjs-core handler url.full and the router http.route": 1,
-      "RedactingSpanExporter > redacts the span name, the status message, events and links": 1
+    "apps/api/src/common/observability/log-redaction-boundary.spec.ts": {
+      "log redaction fails closed at every boundary > control: correlation fields and ordinary context still come through": 1,
+      "log redaction fails closed at every boundary > keeps raw error text out of the tRPC log MESSAGE, on a data field instead": 1,
+      "log redaction fails closed at every boundary > replaces a subtree past the depth cap instead of returning it": 1,
+      "log redaction fails closed at every boundary > scrubs a string leaf whose key looks innocent": 1,
+      "log redaction fails closed at every boundary > scrubs secret shapes out of free text, which no key name describes": 1
     },
     "apps/api/src/common/observability/sentry-scrub.spec.ts": {
+      "sentry-scrub (API) > credential query params > blanks the batched tRPC input= and identifier query values, keeping the procedure path": 1,
+      "sentry-scrub (API) > credential query params > leaves other params and non-boundary occurrences alone": 1,
+      "sentry-scrub (API) > credential query params > redacts token keys in request/extra objects, but not statusCode/appCode": 1,
+      "sentry-scrub (API) > credential query params > scrubQueryParams blanks token values inside URL-ish strings": 1,
+      "sentry-scrub (API) > credential query params > scrubs a mailed link inside message, exception text and breadcrumb messages": 1,
       "sentry-scrub (API) > cycle + depth safety > does not loop on a self-referential extra tree": 1,
       "sentry-scrub (API) > egress identifiers (parity with the web Sentry boundary) > keeps the record identifiers that answer \"which record is broken\"": 1,
       "sentry-scrub (API) > non-plain / exotic objects survive scrubbing intact > preserves Date, Map, Set, RegExp, and typed arrays instead of wiping them to {}": 1,
       "sentry-scrub (API) > non-plain / exotic objects survive scrubbing intact > redacts PII INSIDE Map values, Set members, and Error props": 1,
       "sentry-scrub (API) > non-plain / exotic objects survive scrubbing intact > still redacts PII on a class instance, not only on plain objects": 1,
-      "sentry-scrub (API) > OAuth wire fields > blanks the batched tRPC input= and identifier query values, keeping the procedure path": 1,
-      "sentry-scrub (API) > OAuth wire fields > leaves non-OAuth params and non-boundary occurrences alone": 1,
-      "sentry-scrub (API) > OAuth wire fields > redacts the exact-match OAuth keys in request/extra objects, but not statusCode/appCode": 1,
-      "sentry-scrub (API) > OAuth wire fields > scrubQueryParams blanks code/state/id_token/token values inside URL-ish strings": 1,
-      "sentry-scrub (API) > OAuth wire fields > scrubs a callback URL inside message, exception text and breadcrumb messages": 1,
       "sentry-scrub (API) > path-segment credentials > leaves a route that only shares a prefix legible": 1,
       "sentry-scrub (API) > scrubBreadcrumb - deep data scrub > redacts sensitive keys inside breadcrumb data": 1,
       "sentry-scrub (API) > scrubEvent - app-level PII in nested extra / contexts / request / breadcrumbs > drops nothing structurally - a clean event passes through": 1,
@@ -158,6 +149,10 @@
       "sentry-scrub (API) > scrubPathString - OS username / home dir > rewrites a bare username occurrence": 1,
       "sentry-scrub (API) > scrubPathString - OS username / home dir > rewrites the home directory to a sentinel": 1
     },
+    "apps/api/src/common/observability/sentry-trpc-input-redaction.spec.ts": {
+      "no Sentry event carries a batched tRPC input or an identifier query value > control: the registered beforeSend keeps the procedure path and the batch flag": 1,
+      "no Sentry event carries a batched tRPC input or an identifier query value > request.url, request.query_string and the message leave with no procedure input": 1
+    },
     "apps/api/src/common/observability/unhandled-rejection.spec.ts": {
       "unhandledRejection policy > logs every rejection but exits once while the first is draining": 1,
       "unhandledRejection policy > redacts a secret carried by the rejection reason": 1,
@@ -165,28 +160,22 @@
       "unhandledRejection policy > with SENTRY_DSN: holds the exit until Sentry has drained, then exits 1": 1,
       "unhandledRejection policy > without SENTRY_DSN: logs through the structured logger, then exits 1": 1
     },
+    "apps/api/src/common/observability/url-redaction.spec.ts": {
+      "redactUrlText > drops the batched tRPC input rather than enumerating parameters": 1,
+      "redactUrlText > is idempotent": 1,
+      "redactUrlText > keeps the path of a full URL and drops its query": 1,
+      "redactUrlText > leaves text with no URL credential alone": 1,
+      "redactUrlText > redacts a URL embedded in an error message": 1
+    },
     "apps/api/src/common/queue/example.processor.spec.ts": {
       "ExampleProcessor > fails a non-string message straight to the DLQ as an UnrecoverableError, without running the body": 1,
       "ExampleProcessor > fails a payload that is not an object straight to the DLQ as an UnrecoverableError, without running the body": 1,
       "ExampleProcessor > fails an empty userId straight to the DLQ as an UnrecoverableError, without running the body": 1,
       "ExampleProcessor > falls back to \"anon\" when the payload carries no userId": 1,
-      "ExampleProcessor > ignores the withJobContext envelope keys instead of rejecting the payload": 1,
-      "ExampleProcessor > is a TracedWorkerHost, so it inherits context and trace propagation": 1,
+      "ExampleProcessor > ignores keys the schema does not name instead of rejecting the payload": 1,
+      "ExampleProcessor > is a QueueProcessor, so it inherits the job context and failure reporting": 1,
       "ExampleProcessor > processes a valid payload and names the job and the user in its log line": 1,
       "ExampleProcessor > reports issue paths and codes but never the payload values": 1
-    },
-    "apps/api/src/common/queue/job-context.spec.ts": {
-      "rebuildRequestContextFromJob > carries a well-formed envelope through unchanged": 1,
-      "rebuildRequestContextFromJob > drops an envelope carrying a field the producer never writes": 1,
-      "rebuildRequestContextFromJob > drops an envelope carrying an empty userId": 1,
-      "rebuildRequestContextFromJob > drops an envelope that is not an object at all (\"a string\")": 1,
-      "rebuildRequestContextFromJob > drops an envelope that is not an object at all ([\"u-1\"])": 1,
-      "rebuildRequestContextFromJob > drops an envelope that is not an object at all (42)": 1,
-      "rebuildRequestContextFromJob > drops an envelope that is not an object at all (true)": 1,
-      "rebuildRequestContextFromJob > drops an envelope whose userId is a Prisma filter rather than an id": 1,
-      "rebuildRequestContextFromJob > falls back to a job-derived requestId when there is no envelope": 1,
-      "rebuildRequestContextFromJob > names the context even when the job has no id": 1,
-      "rebuildRequestContextFromJob > treats null like a missing envelope rather than a malformed one": 1
     },
     "apps/api/src/common/queue/queue-metrics.service.spec.ts": {
       "QueueMetricsService resolution > fails the boot when a declared queue was never registered": 1,
@@ -194,22 +183,27 @@
       "QueueMetricsService.collect > caches a snapshot per queue": 1,
       "QueueMetricsService.collect > is best-effort: a getJobCounts failure does not throw and leaves no snapshot": 1
     },
+    "apps/api/src/common/queue/queue-processor.spec.ts": {
+      "isFinalJobAttempt > is false while BullMQ still has retries left": 1,
+      "isFinalJobAttempt > is true for an UnrecoverableError regardless of remaining retries": 1,
+      "isFinalJobAttempt > is true on the last configured attempt": 1,
+      "isFinalJobAttempt > is true when no attempts option is set (single-attempt job)": 1,
+      "QueueProcessor > names the context even when the job has no id": 1,
+      "QueueProcessor > reports the final failed attempt to Sentry": 1,
+      "QueueProcessor > rethrows a failed attempt so BullMQ can retry it, logging it but not paging": 1,
+      "QueueProcessor > returns what the processor returned": 1,
+      "QueueProcessor > runs the job inside a request context named after the job": 1
+    },
+    "apps/api/src/common/queue/queue-worker.spec.ts": {
+      "runsInlineQueueWorker > leaves the workers to a separate process when QUEUE_WORKER=off": 1,
+      "runsInlineQueueWorker > runs the workers in this process when QUEUE_WORKER is unset": 1,
+      "runsInlineQueueWorker > runs the workers in this process when QUEUE_WORKER=inline": 1
+    },
     "apps/api/src/common/queue/queue.module.spec.ts": {
       "createBullRedisConnection > preserves auth + db from the full REDIS_URL and sets maxRetriesPerRequest null": 1
     },
     "apps/api/src/common/queue/register-queue.spec.ts": {
       "registerQueueWithDefaults > registers the queue with the defaults object job options": 1
-    },
-    "apps/api/src/common/queue/traced-worker.host.spec.ts": {
-      "isFinalJobAttempt > is false while BullMQ still has retries left": 1,
-      "isFinalJobAttempt > is true for an UnrecoverableError regardless of remaining retries": 1,
-      "isFinalJobAttempt > is true on the last configured attempt": 1,
-      "isFinalJobAttempt > is true when no attempts option is set (single-attempt job)": 1,
-      "TracedWorkerHost instrumentation > carries a well-formed envelope into the ALS store": 1,
-      "TracedWorkerHost instrumentation > ignores a traceparent that is not a string": 1,
-      "TracedWorkerHost instrumentation > rethrows a failed attempt so BullMQ can retry it": 1,
-      "TracedWorkerHost instrumentation > returns what the processor returned": 1,
-      "TracedWorkerHost instrumentation > runs the job with no actor when the context envelope is malformed": 1
     },
     "apps/api/src/common/security/csrf.controller.spec.ts": {
       "CsrfController > declares a per-route throttle tighter than the global 100/60s default": 1,
@@ -350,6 +344,13 @@
       "load-env-files > resolveEnvFiles > prefers the package .env over the workspace-root .env": 1,
       "load-env-files > resolveEnvFiles > returns nothing when the workspace ships no .env (the production image)": 1,
       "load-env-files > resolveEnvFiles > returns the root .env once when launched from the workspace root": 1
+    },
+    "apps/api/src/instrument.spec.ts": {
+      "instrument (Sentry bootstrap) > initialises once with the scrubber wired when SENTRY_DSN is set": 1,
+      "instrument (Sentry bootstrap) > initSentry is a no-op when SENTRY_DSN is empty": 1,
+      "instrument (Sentry bootstrap) > initSentry is a no-op when SENTRY_DSN is unset": 1,
+      "instrument (Sentry bootstrap) > initSentry is a no-op when SENTRY_DSN is whitespace": 1,
+      "instrument (Sentry bootstrap) > never initialises Sentry when the module loads with an empty SENTRY_DSN": 1
     },
     "apps/api/src/modules/audit/audit-pii-registry.parity.spec.ts": {
       "audit PII registry parity (lint rule <-> purge scrub) > resolves the rule for every probed file": 1,
@@ -940,11 +941,11 @@
       "EmailDeliveryProcessor > renders the password-changed template and sends": 1,
       "EmailDeliveryProcessor > renders the password-reset template with ipAddress and sends": 1,
       "EmailDeliveryProcessor > renders the verification template and sends (critical class rides the queue)": 1,
-      "EmailDeliveryProcessor > renders the welcome template and sends once, ignoring withJobContext keys": 1,
+      "EmailDeliveryProcessor > renders the welcome template and sends once, ignoring keys the schema does not name": 1,
       "EmailDeliveryProcessor > rethrows a send failure so BullMQ retries": 1,
       "EmailDeliveryProcessor > runtime payload validation (Redis round-trip is untrusted) > does not leak payload values into the validation error message": 1,
       "EmailDeliveryProcessor > runtime payload validation (Redis round-trip is untrusted) > fails a malformed payload straight to the DLQ with UnrecoverableError, no render/send": 1,
-      "EmailDeliveryProcessor > runtime payload validation (Redis round-trip is untrusted) > strips the withJobContext reserved keys via the schema before rendering": 1,
+      "EmailDeliveryProcessor > runtime payload validation (Redis round-trip is untrusted) > strips keys the schema does not name before rendering": 1,
       "EmailDeliveryProcessor > runtime payload validation (Redis round-trip is untrusted) > treats a payload mismatch as final (UnrecoverableError) even on attempt 1": 1,
       "EmailDeliveryProcessor > throws a non-retryable UnrecoverableError on an unknown job name": 1
     },

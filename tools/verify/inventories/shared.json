@@ -43,7 +43,6 @@
       "SENSITIVE_KEY_PATTERNS / isSensitiveKey > SAFE_KEY_ALLOWLIST (exact match, checked first) > exempts contentType despite the content substring": 1,
       "SENSITIVE_KEY_PATTERNS / isSensitiveKey > SAFE_KEY_ALLOWLIST (exact match, checked first) > exempts daysId despite the sid substring": 1,
       "SENSITIVE_KEY_PATTERNS / isSensitiveKey > SAFE_KEY_ALLOWLIST (exact match, checked first) > exempts emailSent despite the email substring": 1,
-      "SENSITIVE_KEY_PATTERNS / isSensitiveKey > SAFE_KEY_ALLOWLIST (exact match, checked first) > exempts releaseNotes despite the notes substring": 1,
       "SENSITIVE_KEY_PATTERNS / isSensitiveKey > SAFE_KEY_ALLOWLIST (exact match, checked first) > exempts sidebarCollapsed despite the sid substring": 1,
       "SENSITIVE_KEY_PATTERNS / isSensitiveKey > SAFE_KEY_ALLOWLIST (exact match, checked first) > exempts whole keys only, never a key that merely contains one": 1,
       "SENSITIVE_KEY_PATTERNS / isSensitiveKey > SAFE_KEY_ALLOWLIST (exact match, checked first) > never exempts a genuine secret or PII key": 1,

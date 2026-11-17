@@ -1,24 +1,12 @@
 {
   "suite": "ui",
   "cases": {
-    "packages/ui/src/components/combobox.test.tsx": {
-      "Combobox form contract > carries an injected aria-invalid through to the trigger": 1,
-      "Combobox form contract > carries either id alone": 1,
-      "Combobox form contract > forwards a ref to the trigger so a rejected field can be focused": 1,
-      "Combobox form contract > forwards unnamed props such as aria-required to the trigger": 1,
-      "Combobox form contract > is valid when neither source says otherwise": 1,
-      "Combobox form contract > joins an injected aria-describedby with a caller-supplied describedBy": 1,
-      "Combobox form contract > keeps its own attributes when a caller spreads a conflicting one": 1,
-      "Combobox form contract > sets no aria-describedby when there is nothing to point at": 1,
-      "Combobox form contract > still honors hasError for callers outside a form": 1
-    },
     "packages/ui/src/components/confirm-dialog.test.tsx": {
       "ConfirmDialog > closes on cancel": 1,
-      "ConfirmDialog > closes only itself when confirming from inside an open drawer": 1,
+      "ConfirmDialog > dims the page with the shared scrim": 1,
       "ConfirmDialog > disables both choices while an async confirm is in flight": 1,
       "ConfirmDialog > honors a caller owned loading flag": 1,
       "ConfirmDialog > is a modal dialog labeled and described by its copy": 1,
-      "ConfirmDialog > keeps its own scrim when nothing else is dimming the page": 1,
       "ConfirmDialog > offers no close affordance beyond cancel and confirm": 1,
       "ConfirmDialog > puts initial focus on the non destructive choice": 1,
       "ConfirmDialog > runs onConfirm and leaves closing to the caller": 1
@@ -49,27 +37,6 @@
       "DateField, typed entry > refuses a day that does not exist rather than rolling it forward": 1,
       "DateField, typed entry > renders an existing value in the locale order, en-US by default": 1,
       "DateField, typed entry > renders and reads a day-first locale day first": 1
-    },
-    "packages/ui/src/components/detail-drawer.test.tsx": {
-      "DetailDrawer > closes from the header close control": 1,
-      "DetailDrawer > closes on Escape and returns focus to the trigger": 1,
-      "DetailDrawer > exposes a modal dialog labeled by its title": 1,
-      "DetailDrawer > follows the WAI-ARIA tabs pattern with arrow key navigation": 1,
-      "DetailDrawer > mounts into the shared overlay dock rather than straight into the body": 1,
-      "DetailDrawer > removes the dock once the last panel unmounts": 1
-    },
-    "packages/ui/src/components/double-sheet.test.tsx": {
-      "DoubleSheet beside DetailDrawer > becomes the right-most panel when opened without a drawer": 1,
-      "DoubleSheet beside DetailDrawer > closes only the sheet on Escape and puts focus back inside the drawer": 1,
-      "DoubleSheet beside DetailDrawer > closes the drawer on the second Escape and restores the page trigger": 1,
-      "DoubleSheet beside DetailDrawer > closes the sheet from the footer cancel control": 1,
-      "DoubleSheet beside DetailDrawer > docks the sheet to the left of the drawer inside one dock": 1,
-      "DoubleSheet beside DetailDrawer > does not double apply the scroll lock": 1,
-      "DoubleSheet beside DetailDrawer > drops the slide animation under prefers-reduced-motion": 1,
-      "DoubleSheet beside DetailDrawer > hides the drawer from assistive tech while the sheet is on top": 1,
-      "DoubleSheet beside DetailDrawer > releases the scroll lock only once both panels have closed": 1,
-      "DoubleSheet beside DetailDrawer > tints exactly one scrim while both panels are open": 1,
-      "DoubleSheet beside DetailDrawer > traps focus inside whichever panel is on top": 1
     },
     "packages/ui/src/components/error-boundary.test.tsx": {
       "ErrorBoundary > does not print the raw error message by default": 1,
@@ -118,24 +85,6 @@
       "Pagination > renders no page numbers, because a keyset list cannot reach page 7": 1,
       "Pagination > states the range AND the total beside the two controls": 1,
       "Pagination > steps forward and back": 1
-    },
-    "packages/ui/src/components/stat-tile.test.tsx": {
-      "StatTile > colors the figure for the danger tone": 1,
-      "StatTile > colors the figure for the default tone": 1,
-      "StatTile > colors the figure for the warning tone": 1,
-      "StatTile > footer > omits the footer entirely when no slot content is given": 1,
-      "StatTile > footer > renders a link passed into the slot": 1,
-      "StatTile > icon chip > hides the chip from assistive tech, since the label already names the tile": 1,
-      "StatTile > icon chip > omits the chip entirely when no icon is given": 1,
-      "StatTile > keeps the default tone for a zero count, since whether zero is good news is the consumer call": 1,
-      "StatTile > loading > keeps the label and its accessible name while pending": 1,
-      "StatTile > loading > marks the tile busy only while loading": 1,
-      "StatTile > loading > replaces the figure with a skeleton": 1,
-      "StatTile > merges a consumer className over the card chrome": 1,
-      "StatTile > names the group with its label": 1,
-      "StatTile > renders a zero count rather than dropping the figure": 1,
-      "StatTile > renders the label and the figure": 1,
-      "StatTile > sets the figure in the stat figure utility, not in a display style": 1
     },
     "packages/ui/src/components/ui-labels.test.tsx": {
       "UiLabelsProvider > falls back to the English defaults with no provider mounted": 1,
