@@ -34,32 +34,6 @@ const config = {
     '^.+\\.ts$': ['@swc/jest'],
   },
   testEnvironment: 'node',
-  /*
-   * JUnit beside the human reporter, for the committed test inventory
-   * (tools/verify/inventories/). Every run leaves a case list behind, so
-   * `pnpm verify:inventory` can see a test that was deleted, skipped or
-   * duplicated in a suite that still exits 0. The templates match the ones
-   * jest.config.js uses, so `{file, name}` reads the same across both
-   * jest lanes; `.agent-state/` is gitignored.
-   */
-  reporters: [
-    'default',
-    [
-      'jest-junit',
-      {
-        outputDirectory: '<rootDir>/../../../.agent-state/inventory',
-        outputName: 'isolation.junit.xml',
-        suiteNameTemplate: '{filename}',
-        classNameTemplate: '{classname}',
-        titleTemplate: '{classname} > {title}',
-        ancestorSeparator: ' > ',
-        addFileAttribute: 'true',
-        // A file that cannot even load leaves no testcase behind otherwise, and
-        // "absent" is what the inventory must never read as "fine".
-        reportTestSuiteErrors: 'true',
-      },
-    ],
-  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^@test/(.*)$': '<rootDir>/../test/$1',
