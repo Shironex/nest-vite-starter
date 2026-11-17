@@ -13,7 +13,10 @@
 # Alpine ships musl and has no such loader, so execve returns ENOENT on every
 # architecture. The runner below stays on Alpine: it only serves static files
 # and never loads anything from node_modules.
-FROM node:22-slim@sha256:48e4b67d85f87bd551df43704e24d252f56cc5f8e9718841aace50f19948f0f9 AS builder
+#
+# Debian 13 (trixie), not 12: the x86_64 nestjs-trpc binary needs GLIBC_2.39,
+# and bookworm ships 2.36, so generate:trpc fails on amd64 builders.
+FROM node:22-trixie-slim@sha256:68c76cfad89921b927eae28ba21407475e29d0ce450afcdbe70c1532db042b64 AS builder
 RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
