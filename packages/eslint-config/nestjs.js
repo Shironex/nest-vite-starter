@@ -125,9 +125,8 @@ const HTTP_CONTROLLER_EXCEPTIONS = [
 // call. A HAND-KEPT MIRROR of SENSITIVE_KEY_PATTERNS in
 // packages/shared/src/logger/index.ts, the list the runtime redactor and the
 // Sentry scrubber share. It cannot be imported: @repo/shared already depends on
-// this package, so the reverse edge is a workspace cycle. The
-// `log-redaction-denylist-parity` lint:meta rule holds the two equal, so adding
-// a pattern to the runtime list without adding it here is red before the push.
+// this package, so the reverse edge is a workspace cycle. Nothing checks that the
+// two stay equal: when you add a pattern to the runtime list, add it here too.
 //
 // The published rule matches whole name SEGMENTS (`sessionId` is `session` +
 // `id`, so it matches `sessionid` only as a compacted multi-word entry) and has

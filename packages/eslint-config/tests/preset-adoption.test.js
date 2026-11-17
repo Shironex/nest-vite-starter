@@ -23,20 +23,20 @@ import { config as reactConfig } from '../react.js';
  * A listed rule that is later wired, or that leaves the preset, also fails, so
  * the list cannot silently outlive its reasons.
  *
- * Hit counts below are the preset's own options run over `src/` of api, web,
- * desktop, ui, shared, database and email, measured when the list was written.
+ * Hit counts below are the preset's own options run over `src/` of api, web, ui,
+ * shared, database and email, measured on the tree before the starter was trimmed:
+ * read them as an order of magnitude, not a current count.
  */
 const NOT_ADOPTED = {
-  'noctcore-architecture/barrel-purity':
-    'Not reviewed. 153 hits (shared 93, web 28, email 19, desktop 13).',
+  'noctcore-architecture/barrel-purity': 'Not reviewed. 153 hits (shared 93, web 28, email 19).',
   'noctcore-architecture/filename-matches-export':
-    'Not reviewed. 417 hits (web 340, ui 32, api 22, email 19, desktop 3, database 1).',
+    'Not reviewed. 417 hits (web 340, ui 32, api 22, email 19, database 1).',
   'noctcore-architecture/max-import-depth':
     'Not reviewed. 39 hits, all in apps/api; adopting it means choosing a depth for that tree.',
   'noctcore-code-quality/prefer-early-return':
     "Wired 'off' in base.js, which records the sites it waits on; the no-warn policy rules out a 'warn' rollout. 24 hits.",
   'noctcore-contracts/zod-schema-naming':
-    'Not reviewed. 206 hits (shared 202, api 2, desktop 2); the shared schemas are imported by web and api, so a rename there is coordinated.',
+    'Not reviewed. 206 hits (shared 202, api 2); the shared schemas are imported by web and api, so a rename there is coordinated.',
   'noctcore-contracts/wire-message-naming':
     'Not reviewed. 0 hits, so wiring it needs a probe in dormant-guard-wiring.test.js first.',
   'noctcore-contracts/money-must-be-decimal':

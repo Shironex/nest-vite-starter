@@ -50,9 +50,8 @@ const NO_DIRECT_PROCESS_ENV_ALLOWED_FILES = [
   '**/*.{spec,test}.{ts,tsx}',
 ];
 
-// Marker patterns matching the old lint:meta skipped-tests-need-tracking rule
-// (an issue URL or a TODO(owner)). Kept faithful to the whole-repo scanner this
-// replaces so no previously-tracked skip regresses.
+// Marker patterns a skipped test must carry (an issue URL or a TODO(owner)),
+// so a skip always says who tracks it.
 const SKIPPED_TESTS_MARKERS = ['https?://\\S+', 'TODO\\([^\\s)]+\\)'];
 
 // `architecture/single-semantic-module`, scoped to the file kinds whose name
@@ -290,8 +289,8 @@ export const config = [
   },
   {
     // Test-file-scoped rules. no-focused-tests bans .only outright;
-    // skipped-tests-need-tracking (migrated from the lint:meta whole-repo
-    // scanner) requires every .skip/.fixme/xit/xdescribe to carry an owner.
+    // skipped-tests-need-tracking requires every .skip/.fixme/xit/xdescribe to
+    // carry an owner.
     files: ['**/*.{spec,test}.{ts,tsx}'],
     plugins: {
       'code-quality': codeQuality,

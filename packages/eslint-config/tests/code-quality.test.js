@@ -55,7 +55,7 @@ ruleTester.run('no-process-exit', codeQuality.rules['no-process-exit'], {
     },
     {
       code: 'process.exit(1);',
-      filename: '/repo/tools/lint-meta/cli.ts',
+      filename: '/repo/tools/verify/cli.ts',
       options: allowExitOptions,
     },
     {
