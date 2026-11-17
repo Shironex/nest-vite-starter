@@ -1,31 +1,96 @@
+# Self-host stack: postgres, valkey, a one-shot migration, the api and the web.
+#
+#   cp .env.prod.example .env       # then fill it in (secrets: see the comments)
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Compose reads .env for the ${...} values below. A required value that is missing
+# stops `up` with a message naming it, before anything starts.
+#
+# Nothing but the web (and, loopback-only, the api) is published, and no database
+# port is. The web container forwards /trpc and /api to the api on its own origin,
+# so a reverse proxy only needs to point at the web port.
+#
+# IMAGE AND BUILD. Each of our services names an `image:` and a `build:`. That is
+# convenient for a local self-host (the first `up` builds the working tree) and a
+# trap for a deploy: when the pull of a release tag fails, a plain `up` quietly
+# builds whatever is checked out and tags it with the release name. To deploy or
+# roll back published images, set API_IMAGE and WEB_IMAGE to the tags, then run
+#
+#   docker compose -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.prod.yml up -d --no-build
+#
+# --no-build turns a missing image into an error instead of a silent local build.
+
+name: nest-vite-starter-prod
+
+# One definition for the two services that run the api image (migrate and api), so
+# they always build the same thing.
+x-api-build: &api-build
+  context: .
+  dockerfile: apps/api/Dockerfile
+
+x-hardening: &hardening
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
 services:
+  # Applies pending migrations once, then exits. The api and the web wait for it
+  # to finish successfully, so a failed migration leaves the old version running.
   migrate:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-      target: migrate
-    env_file: .env
+    <<: *hardening
+    image: ${API_IMAGE:-nest-vite-starter-api:local}
+    build: *api-build
+    command: ['migrate']
+    user: '10001:10001'
     environment:
-      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL required}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-nest_vite_starter}
     depends_on:
       postgres:
         condition: service_healthy
     restart: 'no'
-    deploy:
-      resources:
-        limits:
-          memory: 256M
 
   api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    # .env must hold a production config (apps/api/src/config/env.ts refuses
-    # the dev values), including TRUST_PROXY=1 for the host's reverse proxy.
+    <<: *hardening
+    image: ${API_IMAGE:-nest-vite-starter-api:local}
+    build: *api-build
+    user: '10001:10001'
     ports:
-      # Loopback-only: a reverse proxy on the host terminates TLS and forwards here.
-      - '127.0.0.1:3000:3000'
-    env_file: .env
+      # Loopback only. The web reaches the api over the compose network; publish
+      # this port only for a reverse proxy that routes /trpc and /api itself.
+      - '127.0.0.1:${API_PORT:-3000}:3000'
+    environment:
+      # The migrate service above does the migrations, so the entrypoint skips
+      # them. Leave this out (the default is true) to migrate in the api
+      # container instead: fine with one replica, a race with several.
+      RUN_MIGRATIONS: 'false'
+      NODE_ENV: production
+      PORT: '3000'
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Reverse-proxy hops in front of the api: 1 when browsers reach the web
+      # container directly, 2 with one more proxy in front of it (a host reverse
+      # proxy, cloudflared). Never true.
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-nest_vite_starter}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379
+      APP_URL: ${APP_URL:?APP_URL is required (the public web origin, https://app.example.com)}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      APP_NAME: ${APP_NAME:-}
+      CSRF_SECRET: ${CSRF_SECRET:?CSRF_SECRET is required (openssl rand -hex 32)}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY is required (openssl rand -base64 32)}
+      SMTP_HOST: ${SMTP_HOST:?SMTP_HOST is required}
+      SMTP_PORT: ${SMTP_PORT:?SMTP_PORT is required}
+      SMTP_USER: ${SMTP_USER:?SMTP_USER is required}
+      SMTP_PASS: ${SMTP_PASS:?SMTP_PASS is required}
+      MAIL_FROM: ${MAIL_FROM:?MAIL_FROM is required}
+      SMTP_REQUIRE_TLS: ${SMTP_REQUIRE_TLS:-true}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+      CAPTCHA_DISABLED: ${CAPTCHA_DISABLED:-false}
+      SENTRY_DSN: ${API_SENTRY_DSN:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -35,11 +100,19 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://127.0.0.1:3000/health']
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://127.0.0.1:3000/health/ready',
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 20s
+      start_period: 30s
     logging:
       driver: json-file
       options:
@@ -53,17 +126,26 @@ services:
           memory: 256M
 
   web:
+    <<: *hardening
+    image: ${WEB_IMAGE:-nest-vite-starter-web:local}
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-      # Baked into the bundle at build time, not read at runtime.
-      args:
-        VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY:-}
-        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+    user: '10001:10001'
     ports:
-      - '80:8080'
+      # Loopback only: terminate TLS in a reverse proxy (or a tunnel) in front of this.
+      - '127.0.0.1:${WEB_PORT:-8080}:8080'
+    environment:
+      # Runtime config, written to /config.js when the container starts (no
+      # rebuild needed to change them). Empty API_URL means same-origin.
+      API_URL: ${WEB_API_URL:-}
+      API_UPSTREAM: http://api:3000
+      TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+      SENTRY_DSN: ${WEB_SENTRY_DSN:-}
+      APP_NAME: ${APP_NAME:-}
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test:
@@ -84,9 +166,25 @@ services:
 
   postgres:
     image: postgres:18-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /run/postgresql
+    # The image starts as root, fixes the data directory's owner and drops to the
+    # postgres user, which needs these five capabilities and nothing else.
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-nest_vite_starter}
     volumes:
       # Postgres 18 keeps the cluster in /var/lib/postgresql/18/docker, so the
@@ -94,10 +192,13 @@ services:
       # restored (pg_upgrade), not reused.
       - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
+      # Over TCP, so the first-start init server (unix socket only) does not
+      # count as ready.
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 20
+      start_period: 10s
     restart: unless-stopped
     deploy:
       resources:
@@ -107,26 +208,31 @@ services:
           memory: 256M
 
   redis:
+    # Valkey, a Redis-compatible server. The service keeps the name `redis`
+    # because the app's key is REDIS_URL and the client is ioredis.
     image: valkey/valkey:9-alpine@sha256:bf09d58e96d6b4524a15396b65b242bbe18beebbcc15a04d8ee75ddac62fae0b
-    # AOF persistence so a crash doesn't lose the session/queue state.
-    # Default volume path for valkey:alpine is /data, NOT /var/lib/redis/data.
+    <<: *hardening
+    # The image's own user, so the entrypoint never has to drop privileges.
+    user: valkey
+    # AOF persistence so a crash does not lose session and queue state. The
+    # password is read from the environment by the shell, never put on the
+    # command line of a second process or logged by compose.
     command:
-      - 'redis-server'
-      - '--requirepass'
-      - '${REDIS_PASSWORD:?REDIS_PASSWORD required}'
-      - '--appendonly'
-      - 'yes'
+      - sh
+      - -c
+      - exec valkey-server --requirepass "$$REDIS_PASSWORD" --appendonly yes
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
     volumes:
       - redis_data:/data
     healthcheck:
-      # CMD-SHELL so the container shell expands $REDIS_PASSWORD ($$ escapes
-      # compose interpolation); exec-form CMD would pass the literal string.
-      test: ['CMD-SHELL', 'redis-cli --no-auth-warning -a "$$REDIS_PASSWORD" ping | grep -q PONG']
+      # CMD-SHELL so the container's shell expands $REDIS_PASSWORD ($$ escapes
+      # compose interpolation). REDISCLI_AUTH keeps the password off the process
+      # list.
+      test: ['CMD-SHELL', 'REDISCLI_AUTH="$$REDIS_PASSWORD" valkey-cli ping | grep -q PONG']
       interval: 5s
       timeout: 5s
-      retries: 5
-    environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      retries: 10
     restart: unless-stopped
     deploy:
       resources:

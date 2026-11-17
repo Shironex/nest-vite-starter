@@ -13,17 +13,11 @@ const ENV_EXAMPLE = join(__dirname, '..', '..', '..', '..', '.env.example');
 
 /** Keys in `.env.example` that another process reads, not the api. */
 const READ_ELSEWHERE: Readonly<Record<string, string>> = {
-  POSTGRES_USER: 'docker-compose.prod.yml (postgres service)',
-  POSTGRES_PASSWORD: 'docker-compose.prod.yml (postgres service)',
-  POSTGRES_DB: 'docker-compose.prod.yml (postgres service)',
-  REDIS_PASSWORD: 'docker-compose.prod.yml (redis service)',
   ADMIN_EMAIL: 'packages/database seed and the web e2e specs',
   ADMIN_PASSWORD: 'packages/database seed and the web e2e specs',
   SEED_DEV_ALLOW_REMOTE: 'packages/database dev seed',
   SEED_DEV_CONFIRM_DATABASE: 'packages/database dev seed',
   VITE_API_PROXY_TARGET: 'apps/web vite.config.ts',
-  VITE_SENTRY_DSN: 'apps/web build',
-  VITE_TURNSTILE_SITE_KEY: 'apps/web build',
 };
 
 /** Active (`KEY=`) and commented-out (`# KEY=`) assignments, in file order. */
