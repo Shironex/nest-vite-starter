@@ -20,3 +20,15 @@ if (typeof StorageCtor === 'function') {
     configurable: true,
   });
 }
+
+// happy-dom 21 implements the Web Animations API, and its Animation.cancel()
+// rejects the `finished` promise with an AbortError that motion never awaits,
+// so every interrupted exit animation surfaces as an unhandled rejection.
+// Browsers resolve that case without noise. Hide `Element.prototype.animate`
+// so motion takes its JS animation path, as it did under happy-dom 20, which
+// had no animate().
+Object.defineProperty(Element.prototype, 'animate', {
+  value: undefined,
+  writable: true,
+  configurable: true,
+});

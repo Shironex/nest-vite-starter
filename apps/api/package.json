@@ -65,7 +65,7 @@
     "@nestjs/testing": "^11.1.28",
     "@repo/eslint-config": "workspace:*",
     "@repo/tsconfig": "workspace:*",
-    "@swc/cli": "^0.8.1",
+    "@swc/cli": "^0.8.2",
     "@swc/core": "^1.16.2",
     "@swc/jest": "^0.2.39",
     "@types/cookie-parser": "^1.4.10",
