@@ -1,6 +1,7 @@
 module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
+    // One scope per app and package, plus the cross-cutting areas.
     'scope-enum': [
       2,
       'always',
@@ -11,12 +12,15 @@ module.exports = {
         'shared',
         'database',
         'email',
+        'eslint-config',
+        'tsconfig',
         'config',
         'deps',
+        'ci',
+        'docs',
         'auth',
         'audit',
         'observability',
-        'docs',
       ],
     ],
     'scope-empty': [1, 'never'],
