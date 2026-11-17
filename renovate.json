@@ -1,0 +1,76 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests", "docker:pinDigests"],
+  "schedule": ["before 6am on monday"],
+  "timezone": "UTC",
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "rangeStrategy": "bump",
+  "automerge": false,
+  "dependencyDashboard": true,
+  "prConcurrentLimit": 10,
+  "labels": ["dependencies"],
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "minimumReleaseAge": null,
+    "schedule": ["at any time"]
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "semanticCommitScope": "ci",
+      "groupName": "github actions"
+    },
+    {
+      "matchManagers": ["dockerfile", "docker-compose"],
+      "groupName": "docker images"
+    },
+    {
+      "matchPackageNames": ["@nestjs/**", "nestjs-**"],
+      "groupName": "nestjs"
+    },
+    {
+      "matchPackageNames": ["prisma", "@prisma/**"],
+      "groupName": "prisma"
+    },
+    {
+      "matchPackageNames": ["@tanstack/**"],
+      "groupName": "tanstack"
+    },
+    {
+      "matchPackageNames": ["@trpc/**"],
+      "groupName": "trpc"
+    },
+    {
+      "matchPackageNames": [
+        "eslint",
+        "eslint-**",
+        "@eslint/**",
+        "typescript-eslint",
+        "@typescript-eslint/**",
+        "@noctcore/eslint-plugin-**",
+        "globals"
+      ],
+      "groupName": "eslint"
+    },
+    {
+      "matchPackageNames": ["vitest", "@vitest/**"],
+      "groupName": "vitest"
+    },
+    {
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"],
+      "groupName": "react"
+    },
+    {
+      "matchPackageNames": ["@types/**", "!@types/react", "!@types/react-dom"],
+      "groupName": "types"
+    },
+    {
+      "matchPackageNames": ["@noctcore/**"],
+      "minimumReleaseAge": null
+    }
+  ]
+}
