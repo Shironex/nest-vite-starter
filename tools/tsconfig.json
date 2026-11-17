@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@repo/tsconfig/base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    // tools/ is not a workspace, so turbo never caches `check-types:tools` and
+    // every local run pays the full cost. Nothing else compiles this project.
+    "incremental": true,
+    "tsBuildInfoFile": "../node_modules/.cache/tsc/tools.tsbuildinfo"
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}
