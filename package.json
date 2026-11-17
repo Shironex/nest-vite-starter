@@ -33,7 +33,7 @@
     "@noctcore/lint-meta-rules": "^1.1.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/tsconfig": "workspace:*",
-    "@types/node": "^22.20.2",
+    "@types/node": "^26.6.6",
     "eslint": "^10.10.0",
     "globals": "^17.12.0",
     "husky": "^9.1.7",
@@ -46,7 +46,7 @@
     "typescript": "~5.9.3"
   },
   "engines": {
-    "node": ">=22.22.3"
+    "node": ">=26"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

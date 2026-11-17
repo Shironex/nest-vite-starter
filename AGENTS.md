@@ -5,7 +5,7 @@ working in this repo, in the main checkout or in any git worktree. If this file 
 config disagree, the lint config wins.
 
 Stack: pnpm + turbo monorepo. `apps/api` (NestJS 11 + nestjs-trpc + Prisma 7), `apps/web` (Vite
-SPA, TanStack Router/Query), `packages/*` (shared, database, eslint-config, ui, ...). Node `>=22.22.3`,
+SPA, TanStack Router/Query), `packages/*` (shared, database, eslint-config, ui, ...). Node `>=26`,
 pnpm `10.34.9`.
 
 ## Bootstrap a fresh worktree (do all four first)

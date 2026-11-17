@@ -18,7 +18,7 @@
 # and bookworm ships 2.36, so generate:trpc fails on amd64 builders.
 #
 # Stage 1: Install dependencies
-FROM node:22-trixie-slim@sha256:68c76cfad89921b927eae28ba21407475e29d0ce450afcdbe70c1532db042b64 AS deps
+FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS deps
 RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -38,7 +38,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
 # Stage 2: Build
-FROM node:22-trixie-slim@sha256:68c76cfad89921b927eae28ba21407475e29d0ce450afcdbe70c1532db042b64 AS builder
+FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS builder
 RUN corepack enable && corepack prepare pnpm@10.34.9 --activate
 WORKDIR /app
 COPY --from=deps /app ./
@@ -53,7 +53,7 @@ RUN DATABASE_URL=$BUILD_DATABASE_URL pnpm turbo build --filter=@repo/api
 # Stage 3: Migrate one-shot
 # Used by docker-compose.prod.yml as a `restart: "no"` service that runs
 # `prisma migrate deploy` against the live DB before the api container starts.
-FROM node:22-trixie-slim@sha256:68c76cfad89921b927eae28ba21407475e29d0ce450afcdbe70c1532db042b64 AS migrate
+FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS migrate
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tini \
     && rm -rf /var/lib/apt/lists/*
@@ -70,9 +70,9 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["pnpm", "exec", "prisma", "migrate", "deploy", "--schema=prisma/schema"]
 
 # Stage 4: Production runtime
-# wget is not in node:22-trixie-slim and the HEALTHCHECK below, plus the one
+# wget is not in node:26-trixie-slim and the HEALTHCHECK below, plus the one
 # docker-compose.prod.yml declares for this service, both call it.
-FROM node:22-trixie-slim@sha256:68c76cfad89921b927eae28ba21407475e29d0ce450afcdbe70c1532db042b64 AS runner
+FROM node:26-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc AS runner
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tini wget \
     && rm -rf /var/lib/apt/lists/*

@@ -47,7 +47,7 @@ Rebranding is a one-line change there plus the handful of surfaces that cannot r
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) >= 22.22.3
+- [Node.js](https://nodejs.org/) >= 26
 - [pnpm](https://pnpm.io/) 10
 - [Docker](https://www.docker.com/) (for dev infrastructure)
 

@@ -23,6 +23,6 @@ jobs:
           version: 10.34.9
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: 22
+          node-version: 26
       # Reads the lockfile only: no install needed.
       - run: pnpm audit --prod

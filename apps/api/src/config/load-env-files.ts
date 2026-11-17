@@ -76,7 +76,7 @@ export function resolveEnvFiles(startDir: string): string[] {
  * Loads every resolved `.env` into `process.env` and returns the paths applied.
  *
  * `load` is injectable for tests; production always uses Node's built-in
- * parser, which keeps this dependency-free (the repo pins node >= 22.22.1).
+ * parser, which keeps this dependency-free (the repo pins node >= 26).
  */
 export function loadEnvFiles(
   startDir: string,
