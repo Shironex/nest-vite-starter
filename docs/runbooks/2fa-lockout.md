@@ -7,13 +7,12 @@ stop at the first one that works.
 
 1. **Recovery code (self-serve).** At the login challenge the user enters one of their 16-character
    recovery codes instead of a TOTP. No operator involved. Each code works once.
-2. **Admin reset.** Another admin calls `twoFactor.resetUserTwoFactor` with the locked-out user's
-   id (an admin cannot target themselves; self-removal is `twoFactor.disable`, which needs the
-   password and a code). The procedure wipes the user's factors, trusted devices and pending
-   challenges, revokes every session, writes an `auth.2fa.admin_reset` audit row and emails the
-   user. There is no screen for it in the admin area: call the tRPC procedure from an admin
-   session, or write the small screen your product needs. The user then signs in with the
-   password alone and can enrol again from settings.
+2. **Admin reset.** Another admin opens the admin area (`/admin`), finds the user in the users table
+   and chooses **Reset two-factor** (the procedure is `twoFactor.resetUserTwoFactor`). An admin
+   cannot target themselves; self-removal is `twoFactor.disable`, which needs the password and a
+   code. The reset wipes the user's factors, trusted devices and pending challenges, revokes every
+   session, writes an `auth.2fa.admin_reset` audit row and emails the user. The user then signs in
+   with the password alone and can enrol again from settings.
 3. **Operator reset.** Only when no other admin exists (the locked-out user is the sole admin). The
    cheapest route is still rung 2: promote a second account you control, then use it.
 
