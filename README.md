@@ -215,6 +215,12 @@ then edit the few places that cannot read a constant:
 The `@repo/*` package scope is internal and does not need to change. The color theme is
 named in `packages/ui/src/theme/constants.ts`; add yours there and in `globals.css`.
 
+## Upgrading a fork
+
+- The `slate` color theme was removed; `starter` is the only shipped theme. A browser that stored
+  `slate` falls back to `starter` on the next load. If your fork added its own theme next to it,
+  keep your `[data-theme]` blocks, your `COLOR_THEMES` entry and your `ColorTheme` union member.
+
 ## Contributing and security
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the commit style and the pull request flow, and
