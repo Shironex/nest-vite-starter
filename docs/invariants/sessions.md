@@ -51,7 +51,7 @@ password change revokes first and re-issues after.
 
 ### Every tRPC procedure declares a guard and an output
 
-**Enforced by:** `lint-meta:procedures-require-guard`, `lint-meta:procedure-requires-output`
+**Enforced by:** `lint-meta:procedures-require-guard` (the guard); the output half is `unenforced`, follow-up in `docs/invariants/README.md#unenforced-invariants`
 
 ## Review checklist
 

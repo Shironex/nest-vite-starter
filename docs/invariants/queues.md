@@ -37,7 +37,7 @@ impossible to forget.
 
 ### A queue is registered through the helper, exactly once
 
-**Enforced by:** `lint-meta:queue-registration-through-helper`, `file:apps/api/src/common/queue/register-queue.ts`
+**Enforced by:** `file:apps/api/src/common/queue/register-queue.ts`; a direct `BullModule.registerQueue(` call is `unenforced`, follow-up in `docs/invariants/README.md#unenforced-invariants`
 
 ### A processor extends `QueueProcessor`
 

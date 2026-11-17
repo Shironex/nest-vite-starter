@@ -100,18 +100,24 @@ packages/
   email/            React Email templates
   eslint-config/    Shared ESLint flat configs (base, react, nestjs)
   tsconfig/         Shared TypeScript configs
+
+tools/
+  verify/           `pnpm verify`, the lane runner (format, lint, typecheck, test, build)
+  lint-meta/        `pnpm lint:meta`, the required auth, security and gate rules
 ```
 
 ## Scripts
 
-| Script             | Description                               |
-| ------------------ | ----------------------------------------- |
-| `pnpm dev`         | Start API + Web dev servers via Turborepo |
-| `pnpm build`       | Build all packages and apps               |
-| `pnpm lint`        | Lint all packages and apps                |
-| `pnpm check-types` | Type-check all packages and apps          |
-| `pnpm test`        | Run all tests                             |
-| `pnpm format`      | Format all files with Prettier            |
+| Script             | Description                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------- |
+| `pnpm dev`         | Start API + Web dev servers via Turborepo                                                       |
+| `pnpm build`       | Build all packages and apps                                                                     |
+| `pnpm verify`      | The local gate: format, lint, typecheck, test, build lanes ([tools/README.md](tools/README.md)) |
+| `pnpm lint`        | Lint all packages and apps                                                                      |
+| `pnpm lint:meta`   | The required repo rules ([tools/lint-meta/RULES.md](tools/lint-meta/RULES.md))                  |
+| `pnpm check-types` | Type-check all packages and apps                                                                |
+| `pnpm test`        | Run all tests                                                                                   |
+| `pnpm format`      | Format all files with Prettier                                                                  |
 
 ## Docker Services
 

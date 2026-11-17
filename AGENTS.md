@@ -29,18 +29,21 @@ database under you; the compose project name is pinned for that reason, do not w
 
 ## The gate (what CI runs)
 
-`.github/workflows/ci.yml` is the source of truth. Its jobs, runnable locally in the same order:
+`.github/workflows/ci.yml` is the source of truth. `pnpm verify` runs its five lanes locally
+(format, lint, typecheck, test, build; `pnpm verify --list` prints each lane's commands, and
+`tools/README.md` explains them). The lint lane includes `pnpm lint:meta` (the required rules in
+`tools/lint-meta/RULES.md`) and the test lane includes the tools tests. The `check` job, in order:
 
 ```bash
 # check (no services)
 pnpm install --frozen-lockfile
 pnpm audit --prod --audit-level=high
-pnpm format:check
-pnpm lint
-pnpm check-types
+pnpm verify --lane=format
+pnpm verify --lane=lint
+pnpm verify --lane=typecheck
 pnpm knip
-pnpm test
-pnpm build
+pnpm verify --lane=test
+pnpm verify --lane=build
 pnpm size:check          # initial-load byte budget (scripts/check-initial-bundle.mjs)
 pnpm check:contrast      # WCAG ratios of the design tokens (scripts/check-contrast.mjs)
 ```
@@ -64,8 +67,9 @@ and `pnpm --filter @repo/web exec vite preview`, then run
 :5173. The `images` job runs `docker build` on both Dockerfiles.
 
 The husky hooks: pre-commit runs lint-staged, commit-msg runs commitlint, and pre-push runs
-`check-types`, the tests turbo finds affected since `origin/main` (all tests when that ref does not
-resolve), and gitleaks over the pushed range when gitleaks is installed.
+`pnpm verify --lane=typecheck`, then `pnpm verify --lane=test --affected=origin/main` (turbo tests
+only for affected packages; every test when that ref does not resolve), and gitleaks over the pushed
+range when gitleaks is installed.
 
 ## Commits
 

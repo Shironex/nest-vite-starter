@@ -14,16 +14,18 @@ Node `>=22.22.3` and pnpm `10.34.9` (see the `packageManager` field). The
 
 ## The merge bar
 
-Every change must pass `.github/workflows/ci.yml`. Its `check` job runs, in order:
+Every change must pass `.github/workflows/ci.yml`. Run `pnpm verify` before you push: it runs the
+same five lanes as the `check` job (format, lint, typecheck, test, build, including the lint-meta
+rules and the tools tests). The `check` job runs, in order:
 
 ```bash
 pnpm audit --prod --audit-level=high
-pnpm format:check
-pnpm lint
-pnpm check-types
+pnpm verify --lane=format
+pnpm verify --lane=lint
+pnpm verify --lane=typecheck
 pnpm knip
-pnpm test
-pnpm build
+pnpm verify --lane=test
+pnpm verify --lane=build
 pnpm size:check
 pnpm check:contrast
 ```
@@ -33,8 +35,8 @@ runs the api integration specs against Postgres and Redis. The `e2e` job runs th
 against the built api and web. The `images` job builds both Dockerfiles. `AGENTS.md` lists the
 commands to run each job locally.
 
-The husky pre-push hook runs the fast subset: `check-types`, the tests affected since
-`origin/main`, and gitleaks over the pushed commits.
+The husky pre-push hook runs the fast subset: the typecheck lane, the test lane for packages
+affected since `origin/main`, and gitleaks over the pushed commits.
 
 ## Secret scanning
 

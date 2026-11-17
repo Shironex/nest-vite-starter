@@ -5,9 +5,9 @@ packages:
 # If you run pnpm with a minimum release age (the `minimumReleaseAge` setting,
 # a supply-chain gate worth enabling in your user config), the @noctcore/*
 # ESLint rule packages this repo's lint config depends on are exempt: they are
-# released together with the rules this repo adopts, and a lint-meta rule
-# (`noctcore-packages-current`) keeps them current. The gate stays in force for
-# every other dependency.
+# released together with the rules this repo adopts (and with the lint-meta
+# harness and rules under tools/). The gate stays in force for every other
+# dependency.
 minimumReleaseAgeExclude:
   - '@noctcore/*'
 

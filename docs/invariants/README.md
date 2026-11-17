@@ -42,14 +42,13 @@ Citations are one of:
 | `` `file:<path>` ``    | a spec, fence or registry that exists in the tree                                   |
 | `` `unenforced` ``     | nothing mechanical checks it; the same line must carry `#<issue>` or a `docs/` link |
 
-## The rot check
+## Keeping them current
 
-`pnpm lint:meta` runs `invariant-manifest-fresh`, which fails when a `globs:` entry matches no file,
-an invariant has no `**Enforced by:**` line, a cited lint-meta rule is not registered, a cited
-ESLint rule is not configured, a cited path is gone, or an `unenforced` invariant has no follow-up
-(an issue number or a `docs/` path).
+No tool checks these manifests. When a change renames or removes a cited lint-meta rule, ESLint
+rule or path, update the manifest in the same change. `tools/lint-meta/RULES.md` lists the
+registered lint-meta rules.
 
-It cannot check that an invariant is TRUE. That is review's job, and the manifest is what tells
+Nothing can check that an invariant is TRUE. That is review's job, and the manifest is what tells
 review where to look.
 
 ## Using them in a review
@@ -79,5 +78,5 @@ Invariants cited as `unenforced` point here. Each is a known gap, not an oversig
 holds in the code today, but nothing mechanical stops a future change from breaking it. Closing one
 means adding a lint-meta rule, an ESLint rule or a spec and replacing the `unenforced` citation.
 
-- `queues.md`, `audit.md`, `account-lifecycle.md`: see the
+- `queues.md`, `audit.md`, `account-lifecycle.md`, `sessions.md`: see the
   invariant marked `unenforced` in each manifest.
