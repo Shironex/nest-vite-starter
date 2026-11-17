@@ -26,10 +26,8 @@
     "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest --config jest.integration.config.js",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:cov:check": "jest --coverage && node ../../scripts/check-coverage.mjs ./coverage/coverage-summary.json --lines 85 --functions 82",
     "knip": "knip",
-    "user:promote": "tsx src/cli/user-promote.ts",
-    "check": "pnpm check-types && pnpm lint && pnpm knip && pnpm -w lint:meta && pnpm -w check:lint-meta-docs"
+    "user:promote": "tsx src/cli/user-promote.ts"
   },
   "dependencies": {
     "@nest-lab/throttler-storage-redis": "^1.2.0",

@@ -15,8 +15,7 @@
  * would measure everything except the asset with the most direct claim on
  * first paint.
  *
- * Compression is brotli at quality 11, per file, matching what size-limit
- * reports for the same output.
+ * Compression is brotli at quality 11, per file.
  *
  * Usage:
  *   node scripts/check-initial-bundle.mjs <dist-dir> --limit <kB>

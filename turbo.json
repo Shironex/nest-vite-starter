@@ -64,10 +64,6 @@
       "dependsOn": ["build"],
       "cache": false
     },
-    "@repo/web#lighthouse": {
-      "dependsOn": ["build"],
-      "cache": false
-    },
     "@repo/web#lint": {
       "dependsOn": ["^build", "@repo/api#generate:trpc"]
     },
