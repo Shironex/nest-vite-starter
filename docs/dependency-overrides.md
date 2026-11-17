@@ -36,6 +36,12 @@ Each lifts a transitive dependency to the first patched release of an advisory.
 | `multer@<2.3.0`                                                  | three advisories (GHSA-wc9g-mqfw-jrwm ...)                    | @nestjs/platform-express (exact 2.2.0)                     |
 | `qs@<6.16.1`                                                     | GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g, GHSA-6pq8-jhm2-2vcw | @nestjs/platform-express > express                         |
 | `ws@>=8.0.0 <8.21.0`                                             | GHSA-96hv-2xvq-fx4p                                           | socket.io > engine.io                                      |
+| `@jest/reporters>glob@>=9.0.0 <14.0.2`                           | GHSA-3g3m-2fjr-6pw4                                           | jest 30.5 (glob 13)                                        |
+| `jest-config>glob@>=9.0.0 <14.0.2`                               | GHSA-3g3m-2fjr-6pw4                                           | jest 30.5 (glob 13)                                        |
+| `jest-runtime>glob@>=9.0.0 <14.0.2`                              | GHSA-3g3m-2fjr-6pw4                                           | jest 30.5 (glob 13)                                        |
+| `test-exclude>glob@>=9.0.0 <14.0.2`                              | GHSA-3g3m-2fjr-6pw4                                           | jest > babel-plugin-istanbul > test-exclude 7 (glob 10)    |
+| `test-exclude>minimatch@>=7.0.0 <11.0.1`                         | GHSA-g3hv-75wg-m249                                           | same chain as above                                        |
+| `@swc/cli>minimatch@>=7.0.0 <11.0.1`                             | GHSA-g3hv-75wg-m249                                           | @nestjs/cli > @swc/cli 0.8.2 (minimatch 9)                 |
 | `eslint>minimatch@>=7.0.0 <11.0.1`                               | GHSA-g3hv-75wg-m249                                           | eslint 10.10 (10.15 moves to minimatch 11 itself)          |
 | `@eslint/config-array>minimatch@>=7.0.0 <11.0.1`                 | GHSA-g3hv-75wg-m249                                           | eslint > @eslint/config-array 0.23.5 (0.23.6 moves itself) |
 | `@typescript-eslint/typescript-estree>minimatch@>=7.0.0 <11.0.1` | GHSA-g3hv-75wg-m249                                           | typescript-eslint 8.70 / 8.72 (8.73 moves itself)          |
@@ -45,3 +51,12 @@ reaches instead of every minimatch copy. Minimatch 11 drops only the `AST` and `
 these three parents use `Minimatch` and `minimatch()`, both kept, and their own next releases
 (still inside the 7-day release-age gate when the floors were added) depend on minimatch 11. Drop
 each floor once the parent is refreshed past that release.
+
+The jest rows cross a major of glob (13 or 10 to 14) and of minimatch (10 to 11), scoped to the four
+parents that depend on them, because the newest jest (30.5.2) still pins `glob@^13`, and
+`@swc/cli` (0.8.2, latest) pins `minimatch@^9`. glob 14.0.2 is the first patched release and is
+older than the release-age gate. Those parents only call `globSync` / `minimatch()`, which both
+majors keep. `pnpm --filter @repo/api test:cov` (coverage runs `test-exclude` and the `@jest/reporters`
+glob) and the Nest build pass with them. Drop each row once jest, `test-exclude` or `@swc/cli`
+ships a release that depends on the patched version itself. `@nestjs/cli` 12 moved to minimatch 11,
+so the Nest CLI itself needs no override.
